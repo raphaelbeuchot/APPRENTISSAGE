@@ -76,20 +76,15 @@ public class LevelManager : MonoBehaviour
 
     void DisplayStats()
     {
-        // Ici tu peux afficher des stats du joueur
-        ZombieHealth zombieHealth = player != null ? player.GetComponent<ZombieHealth>() : null;
-
-        if (zombieHealth != null)
+        // Stats du joueur
+        PlayerHealth playerHealth = player != null ? player.GetComponent<PlayerHealth>() : null;
+        if (playerHealth != null)
         {
-            int membersLost = 0;
-            if (!zombieHealth.HasLeftArm()) membersLost++;
-            if (!zombieHealth.HasRightArm()) membersLost++;
-            if (!zombieHealth.HasLeftLeg()) membersLost++;
-            if (!zombieHealth.HasRightLeg()) membersLost++;
+            float healthPercent = playerHealth.GetHealthPercentage();
 
             Debug.Log("Statistiques du niveau:");
-            Debug.Log("- Membres perdus: " + membersLost + "/4");
-            Debug.Log("- Etat: " + (zombieHealth.IsCrawling() ? "Rampant" : "Debout"));
+            Debug.Log("- Sante restante: " + (healthPercent * 100f) + "%");
+            Debug.Log("- Etat: " + (playerHealth.IsCritical() ? "CRITIQUE" : "OK"));
         }
     }
 

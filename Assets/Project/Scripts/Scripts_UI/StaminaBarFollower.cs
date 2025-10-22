@@ -4,10 +4,9 @@ using UnityEngine.UI;
 public class StaminaBarFollower : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private StaminaSystem staminaSystem;
+    [SerializeField] private PlayerPhysicsMovement playerMovement; // CHANGE
     [SerializeField] private Image staminaFillImage;
     [SerializeField] private CanvasGroup canvasGroup;
-
 
     [Header("Display Settings")]
     [SerializeField] private float showThreshold = 0.99f; // Afficher si stamina < 99%
@@ -16,7 +15,7 @@ public class StaminaBarFollower : MonoBehaviour
     [Header("Colors")]
     [SerializeField] private Color fullColor = Color.cyan;
     [SerializeField] private Color emptyColor = Color.red;
-    [SerializeField] private Color exhaustedColor = Color.gray;
+    [SerializeField] private Color depletedColor = Color.gray; // RENAME pour clarte
 
     private Camera mainCamera;
     private bool shouldShow = false;
@@ -34,9 +33,14 @@ public class StaminaBarFollower : MonoBehaviour
             }
         }
 
-        if (staminaSystem == null)
+        if (playerMovement == null)
         {
-            staminaSystem = GetComponentInParent<StaminaSystem>();
+            // Chercher dans le parent ou dans la scene
+            playerMovement = GetComponentInParent<PlayerPhysicsMovement>();
+            if (playerMovement == null)
+            {
+                playerMovement = FindObjectOfType<PlayerPhysicsMovement>();
+            }
         }
 
         // Commencer invisible
@@ -54,29 +58,36 @@ public class StaminaBarFollower : MonoBehaviour
     {
         if (mainCamera == null) return;
 
-        // Faire face à la caméra
+        // Faire face a la camera
         transform.LookAt(transform.position + mainCamera.transform.rotation * Vector3.forward,
                          mainCamera.transform.rotation * Vector3.up);
     }
 
     void UpdateStaminaBar()
     {
-        if (staminaSystem == null || staminaFillImage == null) return;
+        if (playerMovement == null || staminaFillImage == null) return;
 
-        float staminaPercent = staminaSystem.GetStaminaPercentage();
+        float currentStamina = playerMovement.GetCurrentStamina();
+        float maxStamina = playerMovement.GetMaxStamina();
+
+        if (maxStamina <= 0f) return;
+
+        float staminaPercent = currentStamina / maxStamina;
         staminaFillImage.fillAmount = staminaPercent;
 
-        // Couleur selon l'état
-        if (staminaSystem.IsExhausted())
+        // Couleur selon l'etat
+        if (currentStamina <= 0f)
         {
-            staminaFillImage.color = exhaustedColor;
+            // Completement epuise
+            staminaFillImage.color = depletedColor;
         }
         else
         {
+            // Gradient entre vide et plein
             staminaFillImage.color = Color.Lerp(emptyColor, fullColor, staminaPercent);
         }
 
-        // Déterminer si on doit afficher la barre
+        // Determiner si on doit afficher la barre
         shouldShow = staminaPercent < showThreshold;
     }
 

@@ -6,9 +6,10 @@ using TMPro;
 public class GameUIManager : MonoBehaviour
 {
     [Header("Health UI")]
-    [SerializeField] private Image[] healthSegments;
+    [SerializeField] private Image healthBarFill; // Remplacer les segments par une barre
     [SerializeField] private Color healthyColor = Color.green;
-    [SerializeField] private Color injuredColor = Color.red;
+    [SerializeField] private Color lowHealthColor = Color.yellow;
+    [SerializeField] private Color criticalHealthColor = Color.red;
 
     [Header("Damage Vignette")]
     [SerializeField] private Image damageVignette;
@@ -24,7 +25,7 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private float countdownFontSize = 100f;
 
     [Header("References")]
-    [SerializeField] private HumanHealth playerHealth;
+    [SerializeField] private PlayerHealth playerHealth; // CHANGE
     [SerializeField] private ZombieGrabSystem[] zombies;
 
     private bool isGrabbed = false;
@@ -49,13 +50,13 @@ public class GameUIManager : MonoBehaviour
             countdownText.gameObject.SetActive(false);
         }
 
-        // S'abonner aux événements
+        // S'abonner aux evenements
         if (playerHealth != null)
         {
-            playerHealth.OnInjuryReceived += UpdateHealthUI;
+            playerHealth.OnHealthChanged += UpdateHealthUI; // CHANGE
 
-            // Initialiser les couleurs SANS le flash
-            UpdateHealthDisplay(playerHealth.GetCurrentInjuries());
+            // Initialiser l'affichage
+            UpdateHealthDisplay(playerHealth.GetCurrentHealth(), playerHealth.GetMaxHealth());
         }
     }
 
@@ -64,32 +65,34 @@ public class GameUIManager : MonoBehaviour
         CheckGrabStatus();
     }
 
-    void UpdateHealthUI(int currentInjuries)
+    void UpdateHealthUI(float currentHealth, float maxHealth) // CHANGE
     {
-        UpdateHealthDisplay(currentInjuries);
+        UpdateHealthDisplay(currentHealth, maxHealth);
 
-        // Flash de dégâts
+        // Flash de degats
         StartCoroutine(DamageFlash());
     }
 
-    void UpdateHealthDisplay(int currentInjuries)
+    void UpdateHealthDisplay(float currentHealth, float maxHealth) // CHANGE
     {
-        // Mettre à jour les segments de vie
-        if (healthSegments != null && healthSegments.Length > 0)
+        // Mettre a jour la barre de vie
+        if (healthBarFill != null)
         {
-            int maxHealth = healthSegments.Length;
-            int healthRemaining = maxHealth - currentInjuries;
+            float healthPercent = currentHealth / maxHealth;
+            healthBarFill.fillAmount = healthPercent;
 
-            for (int i = 0; i < healthSegments.Length; i++)
+            // Changer la couleur selon le pourcentage
+            if (healthPercent > 0.5f)
             {
-                if (i < healthRemaining)
-                {
-                    healthSegments[i].color = healthyColor;
-                }
-                else
-                {
-                    healthSegments[i].color = injuredColor;
-                }
+                healthBarFill.color = healthyColor;
+            }
+            else if (healthPercent > 0.25f)
+            {
+                healthBarFill.color = lowHealthColor;
+            }
+            else
+            {
+                healthBarFill.color = criticalHealthColor;
             }
         }
     }
@@ -122,7 +125,7 @@ public class GameUIManager : MonoBehaviour
             yield return null;
         }
 
-        // S'assurer que c'est transparent à la fin
+        // S'assurer que c'est transparent a la fin
         Color finalColor = damageVignette.color;
         finalColor.a = 0f;
         damageVignette.color = finalColor;
@@ -228,7 +231,7 @@ public class GameUIManager : MonoBehaviour
         countdownText.gameObject.SetActive(false);
     }
 
-    // Méthode publique pour mettre à jour manuellement la liste des zombies
+    // Methode publique pour mettre a jour manuellement la liste des zombies
     public void UpdateZombiesList()
     {
         zombies = FindObjectsOfType<ZombieGrabSystem>();
@@ -238,7 +241,7 @@ public class GameUIManager : MonoBehaviour
     {
         if (playerHealth != null)
         {
-            playerHealth.OnInjuryReceived -= UpdateHealthUI;
+            playerHealth.OnHealthChanged -= UpdateHealthUI; // CHANGE
         }
     }
 }

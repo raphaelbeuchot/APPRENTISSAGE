@@ -4,44 +4,26 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
-    public enum GameState { GreenLight, Alert, RedLight, Blocked }
+    public enum GameState { GreenLight, Alert, RedLight, Release }
 
-    [Header("Parametres du Cycle")]
-    public float minGreenTime = 5f;
-    public float maxGreenTime = 10f;
-    public float minRedTime = 2f;
-    public float maxRedTime = 4f;
+    [Header("Sentinel Settings")]
+    public SentinelSettings sentinelSettings; // Reference au ScriptableObject
 
     [Header("References")]
     public PlayerPhysicsMovement player;
-    public HumanHealth playerHealth;
+    public PlayerHealth playerHealth;
     public Renderer sentinelLightRenderer;
     public Material greenMaterial;
     public Material redMaterial;
+    public Material yellowMaterial; // Pour Alert
 
     [Header("Audio")]
-    public AudioClip alertBuzzerClip;
-    public AudioClip blockedSoundClip;
-    public AudioClip gunshotClip;
-    public AudioClip detectionAlarmClip;
     private AudioSource audioSource;
-
-    [Header("Systeme de Tir")]
-    public float headshotChance = 0.1f;
-    public float detectionCheckInterval = 0.05f;
-    public float velocityThreshold = 0.02f;
-    public float playerAlarmDuration = 0.3f;
-    public float botShootFixedDelay = 0.4f;
-    public float botShootRandomDelay = 0.4f;
-    public float minTimeBetweenShots = 0.15f;
-
-    [Header("Bot Detection")]
-    public LayerMask zombieLayer;
-    public float detectionRadius = 50f;
 
     [Header("Start System")]
     public bool waitForStart = true;
 
+    // State
     public GameState currentState = GameState.GreenLight;
     private float cycleTimer;
     private float targetDuration;
@@ -53,6 +35,12 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        if (sentinelSettings == null)
+        {
+            Debug.LogError("GameManager: SentinelSettings non assigne!");
+            return;
+        }
+
         if (player == null)
         {
             Debug.LogError("GameManager: PlayerPhysicsMovement non assigne!");
@@ -60,10 +48,10 @@ public class GameManager : MonoBehaviour
 
         if (playerHealth == null)
         {
-            playerHealth = player != null ? player.GetComponent<HumanHealth>() : null;
+            playerHealth = player != null ? player.GetComponent<PlayerHealth>() : null;
             if (playerHealth == null)
             {
-                Debug.LogError("GameManager: HumanHealth non trouve sur le joueur!");
+                Debug.LogError("GameManager: PlayerHealth non trouve sur le joueur!");
             }
         }
 
@@ -83,25 +71,17 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (!gameStarted) return;
+        if (!gameStarted || sentinelSettings == null) return;
 
         cycleTimer += Time.deltaTime;
 
-        if (currentState == GameState.Blocked)
-        {
-            if (audioSource != null && !audioSource.isPlaying)
-            {
-                StopAndResetCycle(player);
-                return;
-            }
-            return;
-        }
-
+        // STATE: ALERT (attendre la fin du son)
         if (currentState == GameState.Alert)
         {
-            bool audioFinished = (audioSource != null && !audioSource.isPlaying) || (audioSource == null || alertBuzzerClip == null);
+            bool audioFinished = (audioSource != null && !audioSource.isPlaying) ||
+                                (audioSource == null || sentinelSettings.alertSound == null);
 
-            if (audioFinished)
+            if (audioFinished || cycleTimer >= sentinelSettings.alertDuration)
             {
                 StartNewCycle(GameState.RedLight);
                 return;
@@ -109,17 +89,30 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        // STATE: REDLIGHT (detection et tir)
         if (currentState == GameState.RedLight)
         {
             detectionTimer += Time.deltaTime;
 
-            if (detectionTimer >= detectionCheckInterval)
+            if (detectionTimer >= sentinelSettings.redlightScanInterval)
             {
                 detectionTimer = 0f;
-                CheckForMovingZombies();
+                CheckForMovingTargets();
             }
         }
 
+        // STATE: RELEASE (transition vers GreenLight)
+        if (currentState == GameState.Release)
+        {
+            if (cycleTimer >= sentinelSettings.releaseDuration)
+            {
+                StartNewCycle(GameState.GreenLight);
+                return;
+            }
+            return;
+        }
+
+        // Changement de cycle
         if (cycleTimer >= targetDuration)
         {
             if (currentState == GameState.GreenLight)
@@ -129,46 +122,53 @@ public class GameManager : MonoBehaviour
             }
             else if (currentState == GameState.RedLight)
             {
-                StartNewCycle(GameState.GreenLight);
+                StartNewCycle(GameState.Release);
                 return;
             }
         }
     }
 
-    void CheckForMovingZombies()
-    {
-        int combinedLayers = zombieLayer | LayerMask.GetMask("Human");
-        Collider[] zombies = Physics.OverlapSphere(transform.position, detectionRadius, combinedLayers);
+    // ===============================================
+    // DETECTION ET TIR
+    // ===============================================
 
-        foreach (Collider col in zombies)
+    void CheckForMovingTargets()
+    {
+        Collider[] targets = Physics.OverlapSphere(
+            transform.position,
+            sentinelSettings.detectionRadius,
+            sentinelSettings.targetLayers
+        );
+
+        foreach (Collider col in targets)
         {
             if (alreadyShot.Contains(col.gameObject)) continue;
 
-            // Ignorer les zombies en récupération après un tir
+            // Ignorer les zombies en recuperation apres un tir
             ZombieHealth zombieHealth = col.GetComponent<ZombieHealth>();
             if (zombieHealth != null && zombieHealth.IsRecovering()) continue;
 
-            // NOUVEAU : Vérifier si le zombie est en train de grab
+            // Verifier si le zombie est en train de grab
             ZombieGrabSystem grabSystem = col.GetComponent<ZombieGrabSystem>();
             bool isGrabbing = grabSystem != null && grabSystem.IsGrabbing();
 
-            // NOUVEAU : Vérifier si l'entité est en knockback (grace period)
+            // Verifier si l'entite est en knockback (grace period)
             bool isInKnockbackGrace = false;
             if (grabSystem != null)
             {
                 isInKnockbackGrace = grabSystem.IsInKnockbackGracePeriod();
             }
-            // Vérifier aussi pour le joueur
+            // Verifier aussi pour le joueur
             if (col.gameObject == player.gameObject && player != null)
             {
-                HumanHealth humanHealth = col.GetComponent<HumanHealth>();
+                PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
                 if (humanHealth != null)
                 {
                     isInKnockbackGrace = humanHealth.IsInKnockbackGracePeriod();
                 }
             }
 
-            // Si en grace period de knockback, ignorer la détection
+            // Si en grace period de knockback, ignorer la detection
             if (isInKnockbackGrace) continue;
 
             Rigidbody rb = col.GetComponent<Rigidbody>();
@@ -177,42 +177,42 @@ public class GameManager : MonoBehaviour
             if (rb != null)
             {
                 Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-                bool isStunned = meleeSystem != null;
                 bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
 
-                bool isMoving = horizontalVelocity.magnitude > velocityThreshold;
+                bool isMoving = horizontalVelocity.magnitude > sentinelSettings.movementThreshold;
 
-                // MODIFIE : Ajouter isGrabbing aux conditions
+                // Conditions de tir
                 bool shouldBeShot = isMoving || isAttacking || isGrabbing;
 
                 if (shouldBeShot)
                 {
-                    HumanHealth humanHealth = col.GetComponent<HumanHealth>();
+                    PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
+                    // ZOMBIE
                     if (zombieHealth != null && !zombieHealth.IsDead())
                     {
                         alreadyShot.Add(col.gameObject);
 
                         string reason = "MOUVEMENT";
-                        if (isGrabbing) reason = "GRAB ACTIF"; // NOUVEAU
+                        if (isGrabbing) reason = "GRAB ACTIF";
                         else if (isAttacking) reason = "ATTAQUE";
 
-                        // Si le zombie est en train de grab, le tirer immédiatement libère le joueur
-                        if (isGrabbing)
+                        // Si le zombie est en train de grab, le tirer immediatement libere le joueur
+                        if (isGrabbing && sentinelSettings.shootGrabbingZombiesInRedlight)
                         {
-                            grabSystem.ForceRelease(); // Libérer immédiatement
+                            grabSystem.ForceRelease();
                             Debug.Log($"Zombie {col.gameObject.name} tire pendant un grab - liberation du joueur!");
                         }
 
-                        StartCoroutine(ShootBotWithDelay(col.gameObject, zombieHealth, reason));
+                        StartCoroutine(ShootZombieWithDelay(col.gameObject, zombieHealth, reason));
                     }
+                    // JOUEUR
                     else if (humanHealth != null && !humanHealth.IsDead())
                     {
                         alreadyShot.Add(col.gameObject);
 
                         string reason = "MOUVEMENT";
-                        if (isStunned) reason = "ETOURDI";
-                        else if (isAttacking) reason = "ATTAQUE";
+                        if (isAttacking) reason = "ATTAQUE";
 
                         if (col.gameObject == player.gameObject)
                         {
@@ -228,42 +228,50 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    IEnumerator ShootPlayerWithAlarm(GameObject playerObject, HumanHealth humanHealth, string reason)
+    IEnumerator ShootPlayerWithAlarm(GameObject playerObject, PlayerHealth humanHealth, string reason)
     {
-        if (audioSource != null && detectionAlarmClip != null)
+        if (audioSource != null && sentinelSettings.shootSound != null)
         {
-            audioSource.PlayOneShot(detectionAlarmClip);
+            audioSource.PlayOneShot(sentinelSettings.shootSound);
         }
 
         Debug.Log("ALARME! Joueur detecte! (" + reason + ")");
 
-        yield return new WaitForSeconds(playerAlarmDuration);
+        // Optionnel : Cutscene / Slow-mo
+        if (sentinelSettings.enableDetectionCutscene)
+        {
+            Time.timeScale = sentinelSettings.slowMoTimeScale;
+            yield return new WaitForSecondsRealtime(sentinelSettings.slowMoDuration);
+            Time.timeScale = 1f;
+        }
+
+        yield return new WaitForSeconds(sentinelSettings.shootDelay);
 
         if (humanHealth != null && !humanHealth.IsDead())
         {
-            ShootHuman(playerObject, humanHealth, reason);
+            ShootPlayer(playerObject, humanHealth, reason);
 
             if (humanHealth.IsDead())
             {
                 Debug.Log("GAME OVER!");
-                InterruptCycleAndStartBlock(player);
+                // Tu peux gerer le game over ici
             }
         }
     }
 
-    IEnumerator ShootBotWithDelay(GameObject bot, ZombieHealth zombieHealth, string reason)
+    IEnumerator ShootZombieWithDelay(GameObject zombie, ZombieHealth zombieHealth, string reason)
     {
-        float totalDelay = botShootFixedDelay + Random.Range(0f, botShootRandomDelay);
-        yield return new WaitForSeconds(totalDelay);
+        float delay = sentinelSettings.shootDelay;
+        yield return new WaitForSeconds(delay);
 
-        while (Time.time - lastShotTime < minTimeBetweenShots)
+        while (Time.time - lastShotTime < 0.15f) // minTimeBetweenShots
         {
             yield return new WaitForSeconds(0.05f);
         }
 
         if (zombieHealth != null && !zombieHealth.IsDead())
         {
-            ShootZombie(bot, zombieHealth, reason);
+            ShootZombie(zombie, zombieHealth, reason);
             lastShotTime = Time.time;
         }
     }
@@ -272,13 +280,13 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("BANG! " + zombie.name + " (" + reason + ")");
 
-        if (audioSource != null && gunshotClip != null)
+        if (audioSource != null && sentinelSettings.shootSound != null)
         {
-            audioSource.PlayOneShot(gunshotClip);
+            audioSource.PlayOneShot(sentinelSettings.shootSound);
         }
 
-        bool isHeadshot = Random.value < headshotChance;
-        zombieHealth.TakeDamage(isHeadshot);
+        bool isHeadshot = UnityEngine.Random.value < 0.1f; // Tu peux mettre ca dans settings
+        zombieHealth.TakeSentinelShot(isHeadshot);
 
         if (zombieHealth.IsDead())
         {
@@ -286,16 +294,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void ShootHuman(GameObject human, HumanHealth humanHealth, string reason)
+    void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason)
     {
         Debug.Log("BANG! " + human.name + " (" + reason + ")");
 
-        if (audioSource != null && gunshotClip != null)
+        if (audioSource != null && sentinelSettings.shootSound != null)
         {
-            audioSource.PlayOneShot(gunshotClip);
+            audioSource.PlayOneShot(sentinelSettings.shootSound);
         }
 
-        humanHealth.TakeDamage();
+        humanHealth.TakeSentinelShot();
 
         if (humanHealth.IsDead())
         {
@@ -303,40 +311,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void InterruptCycleAndStartBlock(PlayerPhysicsMovement targetPlayer)
-    {
-        SetState(GameState.Blocked);
-        cycleTimer = 0f;
-        targetDuration = 0f;
-
-        if (audioSource != null && blockedSoundClip != null)
-        {
-            audioSource.Stop();
-            audioSource.PlayOneShot(blockedSoundClip);
-        }
-
-        if (targetPlayer != null)
-        {
-            targetPlayer.enabled = false;
-
-            Rigidbody rb = targetPlayer.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-            }
-        }
-    }
-
-    void StopAndResetCycle(PlayerPhysicsMovement targetPlayer)
-    {
-        if (targetPlayer != null)
-        {
-            targetPlayer.ResetMovementState();
-        }
-
-        StartNewCycle(GameState.GreenLight);
-    }
+    // ===============================================
+    // GESTION DES CYCLES
+    // ===============================================
 
     void StartNewCycle(GameState newState)
     {
@@ -349,28 +326,38 @@ public class GameManager : MonoBehaviour
             {
                 player.enabled = true;
             }
-            targetDuration = Random.Range(minGreenTime, maxGreenTime);
+            targetDuration = sentinelSettings.GetRandomGreenlightDuration();
             playerAlarmTriggered = false;
             alreadyShot.Clear();
             detectionTimer = 0f;
         }
         else if (newState == GameState.Alert)
         {
-            targetDuration = 0f;
-            if (audioSource != null && alertBuzzerClip != null)
+            targetDuration = sentinelSettings.alertDuration;
+            if (audioSource != null && sentinelSettings.alertSound != null)
             {
-                audioSource.PlayOneShot(alertBuzzerClip);
+                audioSource.PlayOneShot(sentinelSettings.alertSound);
             }
         }
         else if (newState == GameState.RedLight)
         {
-            targetDuration = Random.Range(minRedTime, maxRedTime);
+            targetDuration = sentinelSettings.redlightDuration;
             alreadyShot.Clear();
             playerAlarmTriggered = false;
+
+            if (audioSource != null && sentinelSettings.redlightSound != null)
+            {
+                audioSource.PlayOneShot(sentinelSettings.redlightSound);
+            }
         }
-        else if (newState == GameState.Blocked)
+        else if (newState == GameState.Release)
         {
-            targetDuration = 0f;
+            targetDuration = sentinelSettings.releaseDuration;
+
+            if (audioSource != null && sentinelSettings.releaseSound != null)
+            {
+                audioSource.PlayOneShot(sentinelSettings.releaseSound);
+            }
         }
     }
 
@@ -382,13 +369,25 @@ public class GameManager : MonoBehaviour
 
         player.isRedLight = (newState == GameState.RedLight);
 
+        // Changement de couleur des lumieres
         if (sentinelLightRenderer != null)
         {
-            sentinelLightRenderer.material = (newState == GameState.Alert ||
-                                           newState == GameState.RedLight ||
-                                           newState == GameState.Blocked)
-                                           ? redMaterial
-                                           : greenMaterial;
+            if (newState == GameState.GreenLight)
+            {
+                sentinelLightRenderer.material = greenMaterial;
+            }
+            else if (newState == GameState.Alert)
+            {
+                sentinelLightRenderer.material = yellowMaterial != null ? yellowMaterial : redMaterial;
+            }
+            else if (newState == GameState.RedLight)
+            {
+                sentinelLightRenderer.material = redMaterial;
+            }
+            else if (newState == GameState.Release)
+            {
+                sentinelLightRenderer.material = greenMaterial;
+            }
         }
     }
 
@@ -400,7 +399,6 @@ public class GameManager : MonoBehaviour
         StartNewCycle(GameState.GreenLight);
     }
 
-    // NOUVEAU : Getter public pour l'état
     public bool IsInRedLight()
     {
         return currentState == GameState.RedLight;

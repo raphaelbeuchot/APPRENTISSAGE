@@ -3,38 +3,37 @@ using System.Collections;
 
 public class MeleeAttackSystem : MonoBehaviour
 {
-    [Header("Attack Settings")]
-    [SerializeField] private float attackRange = 2f;
-    [SerializeField] private float attackKnockbackForce = 35f;
-    [SerializeField] private float attackDuration = 0.3f;
-    [SerializeField] private float attackCooldown = 0.5f; // Petit délai entre les attaques
+    [Header("Player Stats")]
+    public PlayerStats stats; // Reference au ScriptableObject
 
-    [Header("Target Knockdown")]
-    [SerializeField] private float knockdownDuration = 3f;
-
-    [Header("Visual Feedback")]
-    [SerializeField] private float armRotationAngle = 90f;
-
+    [Header("References")]
     private Rigidbody rb;
-    private HumanHealth health;
+    private PlayerHealth health;
     private PlayerPhysicsMovement movement;
 
+    // State runtime
     private bool isAttacking = false;
     private float lastAttackTime = 0f;
 
+    // Visual
     private enum AttackArm { Left, Right }
     private AttackArm currentArm = AttackArm.Left;
 
     void Start()
     {
+        if (stats == null)
+        {
+            Debug.LogError("PlayerStats non assigne sur " + gameObject.name);
+            return;
+        }
+
         rb = GetComponent<Rigidbody>();
-        health = GetComponent<HumanHealth>();
+        health = GetComponent<PlayerHealth>();
         movement = GetComponent<PlayerPhysicsMovement>();
     }
 
     void OnDisable()
     {
-        // Réactiver le movement si le script est désactivé
         if (movement != null && !movement.enabled)
         {
             movement.enabled = true;
@@ -44,6 +43,8 @@ public class MeleeAttackSystem : MonoBehaviour
 
     void Update()
     {
+        if (stats == null) return;
+
         // TOUJOURS avec clic gauche
         if (Input.GetMouseButtonDown(0) && CanAttack())
         {
@@ -53,8 +54,8 @@ public class MeleeAttackSystem : MonoBehaviour
 
     bool CanAttack()
     {
-        // Vérifier le cooldown
-        if (Time.time - lastAttackTime < attackCooldown)
+        // Verifier le cooldown (depuis stats)
+        if (Time.time - lastAttackTime < stats.attackCooldown)
         {
             return false;
         }
@@ -85,22 +86,28 @@ public class MeleeAttackSystem : MonoBehaviour
         isAttacking = true;
         lastAttackTime = Time.time;
 
-        if (movement != null) movement.enabled = false;
+        // Desactiver le mouvement pendant l'attaque
+        if (movement != null)
+            movement.enabled = false;
 
+        // Animation visuelle
         StartCoroutine(RotateArmVisual());
 
+        // Delai avant le hit
         yield return new WaitForSeconds(0.1f);
         DetectAndHitTargets();
 
-        yield return new WaitForSeconds(attackDuration - 0.1f);
+        // Attendre la fin de l'animation
+        yield return new WaitForSeconds(stats.attackDuration - 0.1f);
 
         // Alterner le bras
         currentArm = (currentArm == AttackArm.Left) ? AttackArm.Right : AttackArm.Left;
 
         isAttacking = false;
 
-        // Réactiver le mouvement
-        if (movement != null) movement.enabled = true;
+        // Reactiver le mouvement
+        if (movement != null)
+            movement.enabled = true;
     }
 
     IEnumerator RotateArmVisual()
@@ -108,21 +115,23 @@ public class MeleeAttackSystem : MonoBehaviour
         float elapsed = 0f;
         float rotationDirection = (currentArm == AttackArm.Left) ? -1f : 1f;
         Quaternion startRotation = transform.rotation;
-        Quaternion targetRotation = startRotation * Quaternion.Euler(0, rotationDirection * armRotationAngle, 0);
+        Quaternion targetRotation = startRotation * Quaternion.Euler(0, rotationDirection * 90f, 0);
 
-        while (elapsed < attackDuration / 2f)
+        // Rotation vers l'avant
+        while (elapsed < stats.attackDuration / 2f)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / (attackDuration / 2f);
+            float t = elapsed / (stats.attackDuration / 2f);
             transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
             yield return null;
         }
 
+        // Rotation retour
         elapsed = 0f;
-        while (elapsed < attackDuration / 2f)
+        while (elapsed < stats.attackDuration / 2f)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / (attackDuration / 2f);
+            float t = elapsed / (stats.attackDuration / 2f);
             transform.rotation = Quaternion.Slerp(targetRotation, startRotation, t);
             yield return null;
         }
@@ -134,7 +143,7 @@ public class MeleeAttackSystem : MonoBehaviour
     {
         Collider[] hits = Physics.OverlapSphere(
             transform.position,
-            attackRange,
+            stats.attackRange, // Depuis stats !
             LayerMask.GetMask("Zombie")
         );
 
@@ -142,32 +151,44 @@ public class MeleeAttackSystem : MonoBehaviour
         {
             if (hit.gameObject == gameObject) continue;
 
+            // Verifier l'angle (90 degres devant)
             Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
             float angleToTarget = Vector3.Angle(transform.forward, directionToTarget);
 
             if (angleToTarget <= 90f)
             {
+                // Appliquer knockback
                 Rigidbody targetRb = hit.GetComponent<Rigidbody>();
-
                 if (targetRb != null)
                 {
                     Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
                     knockbackDir.y = 0;
 
-                    targetRb.AddForce(knockbackDir * attackKnockbackForce, ForceMode.Impulse);
-
-                    StartCoroutine(KnockdownTarget(hit.gameObject));
-
-                    // Si le zombie était en grab, le forcer à relâcher
-                    ZombieGrabSystem grabSystem = hit.GetComponent<ZombieGrabSystem>();
-                    if (grabSystem != null && grabSystem.IsGrabbing())
-                    {
-                        grabSystem.ForceRelease();
-                        Debug.Log($"Forcé {hit.gameObject.name} à relâcher!");
-                    }
-
-                    Debug.Log($"{gameObject.name} hit {hit.gameObject.name}!");
+                    // Knockback depuis stats (avec force multiplier)
+                    float knockbackForce = stats.GetAdjustedKnockback();
+                    targetRb.AddForce(knockbackDir * knockbackForce, ForceMode.Impulse);
                 }
+
+                // Appliquer damage
+                ZombieHealth zombieHealth = hit.GetComponent<ZombieHealth>();
+                if (zombieHealth != null)
+                {
+                    float damage = stats.GetAdjustedDamage();
+                    zombieHealth.TakeMeleeDamage(damage);
+                }
+
+                // Si le zombie etait en grab, le forcer a relacher
+                ZombieGrabSystem grabSystem = hit.GetComponent<ZombieGrabSystem>();
+                if (grabSystem != null && grabSystem.IsGrabbing())
+                {
+                    grabSystem.ForceRelease();
+                    Debug.Log($"Force {hit.gameObject.name} a relacher!");
+                }
+
+                // Knockdown temporaire
+                StartCoroutine(KnockdownTarget(hit.gameObject));
+
+                Debug.Log($"{gameObject.name} hit {hit.gameObject.name} for {stats.GetAdjustedDamage()} damage!");
             }
         }
     }
@@ -180,9 +201,10 @@ public class MeleeAttackSystem : MonoBehaviour
             zombieAI.enabled = false;
         }
 
-        yield return new WaitForSeconds(knockdownDuration);
+        // Duree du knockdown (tu peux la mettre dans stats si tu veux)
+        yield return new WaitForSeconds(2f);
 
-        if (zombieAI != null)
+        if (zombieAI != null && target != null)
         {
             zombieAI.enabled = true;
         }
@@ -192,7 +214,9 @@ public class MeleeAttackSystem : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
+        if (stats == null) return;
+
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.DrawWireSphere(transform.position, stats.attackRange);
     }
 }

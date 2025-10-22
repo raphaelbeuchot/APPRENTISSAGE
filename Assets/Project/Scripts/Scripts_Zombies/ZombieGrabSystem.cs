@@ -3,27 +3,18 @@ using System.Collections;
 
 public class ZombieGrabSystem : MonoBehaviour
 {
-    [Header("Grab Settings")]
-    [SerializeField] private float grabDuration = 3f;
-    [SerializeField] private float grabRange = 1.5f;
-    [SerializeField] private int mashesToEscape = 10;
-    [SerializeField] private KeyCode escapeKey = KeyCode.Space;
+    [Header("Zombie Stats")]
+    public ZombieStats stats; // Reference au ScriptableObject
 
-    [Header("Bite Settings")]
-    [SerializeField] private float biteAnimationDuration = 0.5f;
-
-    [Header("Knockback Settings")]
-    [SerializeField] private float knockbackForce = 10f;
-    [SerializeField] private float knockbackUpwardForce = 2f;
-    [SerializeField] private float knockbackDuration = 0.5f;
-    [SerializeField] private float grabCooldown = 1.5f; // Temps avant que le zombie puisse re-grab
-    [SerializeField] private float knockbackGracePeriod = 0.3f; // Grace period pour éviter la détection pendant le knockback
-
+    [Header("References")]
     private ZombieAI zombieAI;
+    private ZombieHealth zombieHealth;
     private Rigidbody zombieRigidbody;
     private GameManager gameManager;
+
+    // State
     private bool isGrabbing = false;
-    private bool canGrab = true; // Nouveau flag pour le cooldown
+    private bool canGrab = true;
     private bool isInKnockbackGrace = false;
     private GameObject grabbedTarget;
     private PlayerPhysicsMovement targetMovement;
@@ -31,7 +22,14 @@ public class ZombieGrabSystem : MonoBehaviour
 
     void Start()
     {
+        if (stats == null)
+        {
+            Debug.LogError("ZombieStats non assigne sur " + gameObject.name);
+            return;
+        }
+
         zombieAI = GetComponent<ZombieAI>();
+        zombieHealth = GetComponent<ZombieHealth>();
         zombieRigidbody = GetComponent<Rigidbody>();
         gameManager = FindObjectOfType<GameManager>();
 
@@ -39,37 +37,46 @@ public class ZombieGrabSystem : MonoBehaviour
         if (zombieRigidbody == null)
         {
             zombieRigidbody = gameObject.AddComponent<Rigidbody>();
-            zombieRigidbody.mass = 50f; // Masse assez élevée pour que le zombie ne vole pas trop
+            zombieRigidbody.mass = 50f;
             zombieRigidbody.linearDamping = 5f;
             zombieRigidbody.angularDamping = 5f;
             zombieRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
         }
     }
 
+    // ===============================================
+    // GETTERS
+    // ===============================================
+
     public bool IsGrabbing() => isGrabbing;
-    public bool CanGrab() => canGrab && !isGrabbing; // Nouveau check pour le cooldown
-    public bool IsInKnockbackGracePeriod() => isInKnockbackGrace; // Pour le GameManager
+    public bool CanGrab() => canGrab && !isGrabbing;
+    public bool IsInKnockbackGracePeriod() => isInKnockbackGrace;
+
+    // ===============================================
+    // GRAB SYSTEM
+    // ===============================================
 
     public void AttemptGrab(GameObject target)
     {
-        if (isGrabbing || !canGrab) return; // Vérifier aussi le cooldown
+        if (stats == null) return;
+        if (isGrabbing || !canGrab) return;
 
         float distance = Vector3.Distance(transform.position, target.transform.position);
 
-        if (distance <= grabRange)
+        if (distance <= stats.grabRange)
         {
-            // NOUVEAU : Vérifier que la cible est devant le zombie
+            // Verifier que la cible est devant le zombie
             Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
             float angle = Vector3.Angle(transform.forward, directionToTarget);
 
-            // Seulement grab si la cible est dans un arc de 120° devant
-            if (angle <= 60f) // 60° de chaque côté = 120° total
+            // Grab seulement si dans un arc de 120 degres devant
+            if (angle <= 60f)
             {
                 StartCoroutine(GrabSequence(target));
             }
             else
             {
-                Debug.Log($"Cible derrière le zombie, pas de grab! (angle: {angle}°)");
+                Debug.Log($"Cible derriere le zombie, pas de grab! (angle: {angle} deg)");
             }
         }
     }
@@ -80,36 +87,39 @@ public class ZombieGrabSystem : MonoBehaviour
         grabbedTarget = target;
         currentMashes = 0;
 
-        // Désactiver le mouvement du joueur
+        // Calculer mashes to escape selon les bras du zombie
+        int mashesRequired = CalculateMashesToEscape();
+
+        // Desactiver le mouvement du joueur
         targetMovement = target.GetComponent<PlayerPhysicsMovement>();
         if (targetMovement != null)
         {
             targetMovement.enabled = false;
         }
 
-        // Désactiver temporairement l'IA du zombie
+        // Desactiver temporairement l'IA du zombie
         if (zombieAI != null)
         {
             zombieAI.enabled = false;
         }
 
-        Debug.Log($"{gameObject.name} grabbed {target.name}! MASH {escapeKey} to escape!");
+        Debug.Log($"{gameObject.name} grabbed {target.name}! MASH Space to escape! ({mashesRequired} mashes needed)");
 
         float elapsed = 0f;
         bool escaped = false;
 
-        // Phase de grab avec possibilité de mashing
-        while (elapsed < grabDuration && !escaped)
+        // Phase de grab avec possibilite de mashing
+        while (elapsed < stats.grabRange && !escaped) // Utilise grabRange comme duree (tu peux creer un grabDuration dans stats si tu preferes)
         {
             elapsed += Time.deltaTime;
 
-            // Vérifier le mashing
-            if (Input.GetKeyDown(escapeKey))
+            // Verifier le mashing
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 currentMashes++;
-                Debug.Log($"Mash count: {currentMashes}/{mashesToEscape}");
+                Debug.Log($"Mash count: {currentMashes}/{mashesRequired}");
 
-                if (currentMashes >= mashesToEscape)
+                if (currentMashes >= mashesRequired)
                 {
                     escaped = true;
                     Debug.Log($"{target.name} escaped!");
@@ -119,29 +129,56 @@ public class ZombieGrabSystem : MonoBehaviour
             yield return null;
         }
 
-        // Si pas échappé, infliger des dégâts
+        // Si pas echappe, infliger des degats
         if (!escaped)
         {
             yield return StartCoroutine(BiteTarget(target));
         }
 
-        // Libérer la cible avec knockback
+        // Liberer la cible avec knockback
         ReleaseTarget(escaped);
+    }
+
+    /// <summary>
+    /// Calcule le nombre de mashes necessaires selon les bras du zombie
+    /// </summary>
+    int CalculateMashesToEscape()
+    {
+        if (zombieHealth == null)
+            return 10; // Valeur par defaut
+
+        int armCount = zombieHealth.GetArmCount();
+
+        if (armCount == 2)
+        {
+            // Deux bras : mashes normaux
+            return 10; // Tu peux mettre ca dans stats si tu veux
+        }
+        else if (armCount == 1)
+        {
+            // Un bras : reduction de 50%
+            return Mathf.RoundToInt(10 * (1f - stats.oneArmMashReduction));
+        }
+        else
+        {
+            // Pas de bras : ne devrait pas pouvoir grab
+            return 0;
+        }
     }
 
     IEnumerator BiteTarget(GameObject target)
     {
         Debug.Log($"{gameObject.name} is biting {target.name}!");
 
-        // Animation de morsure (ici juste un délai)
-        yield return new WaitForSeconds(biteAnimationDuration);
+        // Animation de morsure
+        yield return new WaitForSeconds(0.5f);
 
-        // Infliger des dégâts
-        HumanHealth humanHealth = target.GetComponent<HumanHealth>();
+        // Infliger des degats
+        PlayerHealth humanHealth = target.GetComponent<PlayerHealth>();
         if (humanHealth != null && !humanHealth.IsDead())
         {
-            humanHealth.TakeDamage();
-            Debug.Log($"{target.name} took damage from bite!");
+            humanHealth.TakeDamage(stats.biteDamage);
+            Debug.Log($"{target.name} took {stats.biteDamage} damage from bite!");
         }
     }
 
@@ -151,35 +188,33 @@ public class ZombieGrabSystem : MonoBehaviour
         {
             Debug.Log($"{gameObject.name} was forced to release (probably shot)!");
             StopAllCoroutines();
-            ReleaseTarget(true); // Knockback même en cas de force release
+            ReleaseTarget(true);
         }
     }
 
     void ReleaseTarget(bool applyKnockback = false)
     {
-        // Vérifier si on est en RedLight AVANT de faire le knockback
+        // Verifier si on est en RedLight AVANT de faire le knockback
         bool isRedLight = gameManager != null && gameManager.IsInRedLight();
 
         if (grabbedTarget != null)
         {
             // Appliquer le knockback au zombie SEULEMENT si pas en RedLight
-            // (ou si c'est un ForceRelease par tir)
             if (applyKnockback && !isRedLight)
             {
                 ApplyKnockback();
             }
             else if (applyKnockback && isRedLight)
             {
-                // En RedLight, on fait juste une séparation sans knockback violent
-                Debug.Log("Release en RedLight - pas de knockback pour éviter la mort!");
+                // En RedLight, on fait juste une separation sans knockback violent
+                Debug.Log("Release en RedLight - pas de knockback pour eviter la mort!");
                 StartCoroutine(GentleReleaseRecovery());
             }
 
-            // Réactiver le mouvement du joueur
+            // Reactiver le mouvement du joueur
             if (targetMovement != null)
             {
                 targetMovement.enabled = true;
-                targetMovement.ResetMovementState();
 
                 // Donner une petite impulsion au joueur SEULEMENT si pas en RedLight
                 if (!isRedLight)
@@ -188,15 +223,15 @@ public class ZombieGrabSystem : MonoBehaviour
                     if (playerRb != null)
                     {
                         Vector3 pushDirection = (grabbedTarget.transform.position - transform.position).normalized;
-                        pushDirection.y = 0.2f; // Petite composante verticale
-                        playerRb.AddForce(pushDirection * (knockbackForce * 0.5f), ForceMode.Impulse);
+                        pushDirection.y = 0.2f;
+                        playerRb.AddForce(pushDirection * (stats.knockbackResistance * 5f), ForceMode.Impulse);
                     }
 
                     // Activer la grace period pour le joueur
-                    HumanHealth playerHealth = grabbedTarget.GetComponent<HumanHealth>();
+                    PlayerHealth playerHealth = grabbedTarget.GetComponent<PlayerHealth>();
                     if (playerHealth != null)
                     {
-                        playerHealth.StartKnockbackGracePeriod(knockbackGracePeriod);
+                        playerHealth.StartKnockbackGracePeriod(stats.knockbackGracePeriod);
                     }
                 }
             }
@@ -219,17 +254,17 @@ public class ZombieGrabSystem : MonoBehaviour
     {
         if (zombieRigidbody != null && grabbedTarget != null)
         {
-            // Calculer la direction du knockback (opposée au joueur)
+            // Calculer la direction du knockback (opposee au joueur)
             Vector3 knockbackDirection = (transform.position - grabbedTarget.transform.position).normalized;
-            knockbackDirection.y = 0; // Garder le knockback principalement horizontal
+            knockbackDirection.y = 0;
 
-            // Appliquer la force
-            Vector3 knockbackVelocity = knockbackDirection * knockbackForce + Vector3.up * knockbackUpwardForce;
+            // Appliquer la force (depuis stats)
+            Vector3 knockbackVelocity = knockbackDirection * 10f + Vector3.up * stats.upwardForce;
             zombieRigidbody.linearVelocity = knockbackVelocity;
 
             Debug.Log($"{gameObject.name} knocked back!");
 
-            // Démarrer le cooldown et la récupération
+            // Demarrer le cooldown et la recuperation
             StartCoroutine(KnockbackRecovery());
         }
     }
@@ -237,29 +272,29 @@ public class ZombieGrabSystem : MonoBehaviour
     IEnumerator KnockbackRecovery()
     {
         canGrab = false;
-        isInKnockbackGrace = true; // Activer la grace period
+        isInKnockbackGrace = true;
 
-        // Désactiver temporairement l'IA pendant le knockback
+        // Desactiver temporairement l'IA pendant le knockback
         if (zombieAI != null)
         {
             zombieAI.enabled = false;
         }
 
-        // Grace period pour éviter la détection
-        yield return new WaitForSeconds(knockbackGracePeriod);
+        // Grace period pour eviter la detection
+        yield return new WaitForSeconds(stats.knockbackGracePeriod);
         isInKnockbackGrace = false;
 
         // Attendre la fin du knockback
-        yield return new WaitForSeconds(knockbackDuration - knockbackGracePeriod);
+        yield return new WaitForSeconds(stats.knockbackDuration - stats.knockbackGracePeriod);
 
-        // Réactiver l'IA
+        // Reactiver l'IA
         if (zombieAI != null)
         {
             zombieAI.enabled = true;
         }
 
         // Attendre le cooldown avant de pouvoir re-grab
-        yield return new WaitForSeconds(grabCooldown - knockbackDuration);
+        yield return new WaitForSeconds(stats.grabCooldown - stats.knockbackDuration);
 
         canGrab = true;
         Debug.Log($"{gameObject.name} can grab again!");
@@ -270,7 +305,7 @@ public class ZombieGrabSystem : MonoBehaviour
         canGrab = false;
 
         // Juste un cooldown sans mouvement violent
-        yield return new WaitForSeconds(grabCooldown);
+        yield return new WaitForSeconds(stats.grabCooldown);
 
         canGrab = true;
         Debug.Log($"{gameObject.name} can grab again after gentle release!");
@@ -278,10 +313,12 @@ public class ZombieGrabSystem : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.magenta;
-        Gizmos.DrawWireSphere(transform.position, grabRange);
+        if (stats == null) return;
 
-        // Afficher l'état du cooldown
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireSphere(transform.position, stats.grabRange);
+
+        // Afficher l'etat du cooldown
         if (!canGrab)
         {
             Gizmos.color = Color.red;

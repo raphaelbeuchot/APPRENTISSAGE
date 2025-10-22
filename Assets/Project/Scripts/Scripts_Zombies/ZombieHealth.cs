@@ -3,21 +3,8 @@ using System;
 
 public class ZombieHealth : MonoBehaviour
 {
-    [Header("Configuration des Membres")]
-    [Range(0f, 1f)]
-    public float speedWithOneArm = 1f;
-
-    [Range(0f, 1f)]
-    public float speedWithOneArmOneLeg = 0.6f;
-
-    [Range(0f, 1f)]
-    public float crawlSpeed = 0.3f;
-
-    [Range(0f, 1f)]
-    public float crawlSpeedNoArms = 0.15f;
-
-    [Header("References")]
-    public PlayerPhysicsMovement playerMovement;
+    [Header("Zombie Stats")]
+    public ZombieStats stats; // Reference au ScriptableObject
 
     [Header("Effets Visuels")]
     public GameObject leftArmVisual;
@@ -27,42 +14,41 @@ public class ZombieHealth : MonoBehaviour
 
     [Header("Prefabs")]
     public GameObject limbPrefab;
-    public float limbEjectionForce = 10f;
 
-    [Header("Gunshot Recovery")]
-    public float gunshotRecoveryDuration = 2f;
-
+    // Etat des membres
     private bool hasLeftArm = true;
     private bool hasRightArm = true;
     private bool hasLeftLeg = true;
     private bool hasRightLeg = true;
 
-    private int damageCount = 0;
+    // Sante
+    private float currentHealth;
     private bool isDead = false;
-    private float baseSpeed;
+
+    // Recovery apres tir
     private bool isRecovering = false;
     private float recoverUntilTime = 0f;
 
+    // Events
     public event Action<string> OnLimbLost;
     public event Action OnHeadshot;
     public event Action OnDeath;
-
-    public bool HasAtLeastOneArm()
-    {
-        return hasLeftArm || hasRightArm;
-    }
+    public event Action<float, float> OnHealthChanged; // current, max
 
     void Start()
     {
-        if (playerMovement == null)
+        if (stats == null)
         {
-            playerMovement = GetComponent<PlayerPhysicsMovement>();
+            Debug.LogError("ZombieStats non assigne sur " + gameObject.name);
+            return;
         }
 
-        if (playerMovement != null)
-        {
-            baseSpeed = playerMovement.speed;
-        }
+        // Initialisation
+        currentHealth = stats.maxHealth;
+        hasLeftArm = stats.startingArmCount >= 1;
+        hasRightArm = stats.startingArmCount >= 2;
+        hasLeftLeg = stats.startingLegCount >= 1;
+        hasRightLeg = stats.startingLegCount >= 2;
     }
 
     void Update()
@@ -74,7 +60,40 @@ public class ZombieHealth : MonoBehaviour
         }
     }
 
-    public void TakeDamage(bool isHeadshot = false)
+    // ===============================================
+    // SYSTEME DE DEGATS
+    // ===============================================
+
+    /// <summary>
+    /// Degats par melee attack du joueur
+    /// </summary>
+    public void TakeMeleeDamage(float damage)
+    {
+        if (isDead) return;
+
+        currentHealth -= damage;
+        currentHealth = Mathf.Max(0f, currentHealth);
+
+        Debug.Log($"{gameObject.name} took {damage} melee damage! Health: {currentHealth}/{stats.maxHealth}");
+
+        OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
+
+        // Check perte de membres
+        CheckLimbLoss();
+
+        // Check mort
+        if (currentHealth <= 0f)
+        {
+            HandleDeath();
+        }
+
+        UpdateSpeed();
+    }
+
+    /// <summary>
+    /// Degats par tir de sentinelle
+    /// </summary>
+    public void TakeSentinelShot(bool isHeadshot = false)
     {
         if (isDead) return;
 
@@ -84,65 +103,95 @@ public class ZombieHealth : MonoBehaviour
             return;
         }
 
-        damageCount++;
+        // Degats de sentinelle (depuis stats)
+        currentHealth -= stats.sentinelDamageTaken;
+        currentHealth = Mathf.Max(0f, currentHealth);
 
+        Debug.Log($"{gameObject.name} shot by sentinel! Health: {currentHealth}/{stats.maxHealth}");
+
+        OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
+
+        // Recovery stun
         StartRecovery();
 
-        switch (damageCount)
+        // Check perte de membres
+        CheckLimbLoss();
+
+        // Check mort
+        if (currentHealth <= 0f)
         {
-            case 1:
-                LoseFirstArm();
-                break;
-            case 2:
-                LoseFirstLeg();
-                break;
-            case 3:
-                LoseSecondLeg();
-                break;
-            case 4:
-                LoseSecondArm();
-                Debug.Log("TOUS LES MEMBRES PERDUS! Le zombie meurt!");
-                HandleDeath();
-                break;
-            default:
-                Debug.Log("Zombie a deja perdu tous ses membres!");
-                break;
+            HandleDeath();
         }
 
-        UpdateMovementSpeed();
+        UpdateSpeed();
     }
 
     void StartRecovery()
     {
         isRecovering = true;
-        recoverUntilTime = Time.time + gunshotRecoveryDuration;
+        recoverUntilTime = Time.time + 2f; // Tu peux mettre ca dans stats si tu veux
 
         ZombieAI zombieAI = GetComponent<ZombieAI>();
         if (zombieAI != null)
         {
-            zombieAI.StunByGunshot(gunshotRecoveryDuration);
+            zombieAI.StunByGunshot(2f);
         }
 
-        // Libérer la cible si le zombie est en train de grabber
+        // Liberer la cible si grab
         ZombieGrabSystem grabSystem = GetComponent<ZombieGrabSystem>();
         if (grabSystem != null && grabSystem.IsGrabbing())
         {
             grabSystem.ForceRelease();
         }
 
-        Debug.Log($"{gameObject.name} starts recovery for {gunshotRecoveryDuration}s");
+        Debug.Log($"{gameObject.name} starts recovery");
     }
 
-    void LoseFirstArm()
+    // ===============================================
+    // SYSTEME DE PERTE DE MEMBRES
+    // ===============================================
+
+    void CheckLimbLoss()
     {
-        if (UnityEngine.Random.value > 0.5f)
+        float healthPercent = currentHealth / stats.maxHealth;
+
+        // Perte de membres seulement en dessous du seuil
+        if (healthPercent > stats.limbLossThreshold)
+            return;
+
+        // Determiner quel membre perdre aleatoirement
+        if (hasLeftArm && hasRightArm && hasLeftLeg && hasRightLeg)
+        {
+            // Premier membre : un bras
+            LoseRandomArm();
+        }
+        else if ((hasLeftArm || hasRightArm) && hasLeftLeg && hasRightLeg)
+        {
+            // Deuxieme membre : une jambe
+            LoseRandomLeg();
+        }
+        else if ((hasLeftArm || hasRightArm) && (hasLeftLeg || hasRightLeg))
+        {
+            // Troisieme membre : autre jambe
+            LoseOtherLeg();
+        }
+        else if ((hasLeftArm || hasRightArm) && !hasLeftLeg && !hasRightLeg)
+        {
+            // Dernier membre : dernier bras
+            LoseOtherArm();
+        }
+    }
+
+    void LoseRandomArm()
+    {
+        if (UnityEngine.Random.value > 0.5f && hasLeftArm)
         {
             hasLeftArm = false;
             Debug.Log("Bras GAUCHE arrache!");
             OnLimbLost?.Invoke("LeftArm");
             EjectLimb(leftArmVisual);
         }
-        else
+        else if (hasRightArm)
         {
             hasRightArm = false;
             Debug.Log("Bras DROIT arrache!");
@@ -151,25 +200,25 @@ public class ZombieHealth : MonoBehaviour
         }
     }
 
-    void LoseFirstLeg()
+    void LoseRandomLeg()
     {
-        if (UnityEngine.Random.value > 0.5f)
+        if (UnityEngine.Random.value > 0.5f && hasLeftLeg)
         {
             hasLeftLeg = false;
-            Debug.Log("Jambe GAUCHE arrachee! (Ralentissement)");
+            Debug.Log("Jambe GAUCHE arrachee!");
             OnLimbLost?.Invoke("LeftLeg");
             EjectLimb(leftLegVisual);
         }
-        else
+        else if (hasRightLeg)
         {
             hasRightLeg = false;
-            Debug.Log("Jambe DROITE arrachee! (Ralentissement)");
+            Debug.Log("Jambe DROITE arrachee!");
             OnLimbLost?.Invoke("RightLeg");
             EjectLimb(rightLegVisual);
         }
     }
 
-    void LoseSecondLeg()
+    void LoseOtherLeg()
     {
         if (hasLeftLeg)
         {
@@ -178,7 +227,7 @@ public class ZombieHealth : MonoBehaviour
             OnLimbLost?.Invoke("LeftLeg");
             EjectLimb(leftLegVisual);
         }
-        else
+        else if (hasRightLeg)
         {
             hasRightLeg = false;
             Debug.Log("Jambe DROITE arrachee! (ON RAMPE!)");
@@ -187,93 +236,22 @@ public class ZombieHealth : MonoBehaviour
         }
     }
 
-    void LoseSecondArm()
+    void LoseOtherArm()
     {
         if (hasLeftArm)
         {
             hasLeftArm = false;
-            Debug.Log("Dernier bras (GAUCHE) arrache! (Rampe avec 1 bras)");
+            Debug.Log("Dernier bras (GAUCHE) arrache!");
             OnLimbLost?.Invoke("LeftArm");
             EjectLimb(leftArmVisual);
         }
-        else
+        else if (hasRightArm)
         {
             hasRightArm = false;
-            Debug.Log("Dernier bras (DROIT) arrache! (Rampe avec 1 bras)");
+            Debug.Log("Dernier bras (DROIT) arrache!");
             OnLimbLost?.Invoke("RightArm");
             EjectLimb(rightArmVisual);
         }
-    }
-
-    void HandleHeadshot()
-    {
-        isDead = true;
-        Debug.Log("HEADSHOT! MORT INSTANTANEE!");
-
-        OnHeadshot?.Invoke();
-        OnDeath?.Invoke();
-
-        if (playerMovement != null)
-        {
-            playerMovement.enabled = false;
-        }
-
-        EjectBody();
-    }
-
-    void HandleDeath()
-    {
-        isDead = true;
-        Debug.Log("Le zombie est mort (tous les membres perdus)");
-
-        OnDeath?.Invoke();
-
-        if (playerMovement != null)
-        {
-            playerMovement.enabled = false;
-        }
-
-        Destroy(gameObject, 3f);
-    }
-
-    void UpdateMovementSpeed()
-    {
-        if (playerMovement == null) return;
-
-        int legsLost = (!hasLeftLeg ? 1 : 0) + (!hasRightLeg ? 1 : 0);
-        int armsLost = (!hasLeftArm ? 1 : 0) + (!hasRightArm ? 1 : 0);
-
-        float speedMultiplier = 1f;
-
-        if (legsLost == 0)
-        {
-            if (armsLost == 0)
-            {
-                speedMultiplier = 1f;
-            }
-            else
-            {
-                speedMultiplier = speedWithOneArm;
-            }
-        }
-        else if (legsLost == 1)
-        {
-            speedMultiplier = speedWithOneArmOneLeg;
-        }
-        else if (legsLost == 2)
-        {
-            if (armsLost <= 1)
-            {
-                speedMultiplier = crawlSpeed;
-            }
-            else
-            {
-                speedMultiplier = crawlSpeedNoArms;
-            }
-        }
-
-        playerMovement.speed = baseSpeed * speedMultiplier;
-        Debug.Log("Membres perdus - Bras: " + armsLost + " / Jambes: " + legsLost + " | Vitesse: " + playerMovement.speed + " (x" + speedMultiplier + ")");
     }
 
     void EjectLimb(GameObject limbVisual)
@@ -297,10 +275,38 @@ public class ZombieHealth : MonoBehaviour
                     UnityEngine.Random.Range(-1f, 0.5f)
                 ).normalized;
 
-                limbRb.AddForce(ejectDirection * limbEjectionForce, ForceMode.Impulse);
+                limbRb.AddForce(ejectDirection * 10f, ForceMode.Impulse);
                 limbRb.AddTorque(UnityEngine.Random.insideUnitSphere * 5f, ForceMode.Impulse);
             }
         }
+    }
+
+    // ===============================================
+    // MORT
+    // ===============================================
+
+    void HandleHeadshot()
+    {
+        isDead = true;
+        Debug.Log("HEADSHOT! MORT INSTANTANEE!");
+
+        OnHeadshot?.Invoke();
+        OnDeath?.Invoke();
+
+        EjectBody();
+    }
+
+    void HandleDeath()
+    {
+        isDead = true;
+        Debug.Log("Le zombie est mort");
+
+        OnDeath?.Invoke();
+
+        ZombieAI ai = GetComponent<ZombieAI>();
+        if (ai != null) ai.enabled = false;
+
+        Destroy(gameObject, 3f);
     }
 
     void EjectBody()
@@ -314,13 +320,31 @@ public class ZombieHealth : MonoBehaviour
                 UnityEngine.Random.Range(-1f, 0f)
             ).normalized;
 
-            rb.AddForce(ejectDirection * limbEjectionForce * 2f, ForceMode.Impulse);
+            rb.AddForce(ejectDirection * 20f, ForceMode.Impulse);
             rb.AddTorque(UnityEngine.Random.insideUnitSphere * 10f, ForceMode.Impulse);
         }
 
         Destroy(gameObject, 5f);
     }
 
+    // ===============================================
+    // UPDATE VITESSE
+    // ===============================================
+
+    void UpdateSpeed()
+    {
+        ZombieAI ai = GetComponent<ZombieAI>();
+        if (ai != null)
+        {
+            ai.UpdateSpeed(currentHealth, IsCrawling());
+        }
+    }
+
+    // ===============================================
+    // GETTERS
+    // ===============================================
+
+    public bool HasAtLeastOneArm() => hasLeftArm || hasRightArm;
     public bool HasLeftArm() => hasLeftArm;
     public bool HasRightArm() => hasRightArm;
     public bool HasLeftLeg() => hasLeftLeg;
@@ -328,4 +352,7 @@ public class ZombieHealth : MonoBehaviour
     public bool IsDead() => isDead;
     public bool IsCrawling() => !hasLeftLeg && !hasRightLeg;
     public bool IsRecovering() => isRecovering;
+    public float GetCurrentHealth() => currentHealth;
+    public float GetMaxHealth() => stats.maxHealth;
+    public int GetArmCount() => (hasLeftArm ? 1 : 0) + (hasRightArm ? 1 : 0);
 }

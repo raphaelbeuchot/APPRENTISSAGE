@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1787ff25769006b4883c67294b8163dc, type: 3}
+  m_Name: MainSentinel 1
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelSettings
+  sentinelName: Main Sentinel
+  sentinelModel: {fileID: 0}
+  detectionRadius: 1000
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 192
+  movementThreshold: 0.1
+  playerDamage: 25
+  zombieDamage: 25
+  headshotInstakill: 0
+  greenlightMinDuration: 3
+  greenlightMaxDuration: 8
+  greenlightAnimation: {fileID: 0}
+  greenlightAmbientSound: {fileID: 0}
+  alertDuration: 3
+  alertAnimation: {fileID: 0}
+  alertSound: {fileID: 8300000, guid: 875f629b10f5a524d9810773684bde2c, type: 3}
+  alertLightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  alertParticlesPrefab: {fileID: 0}
+  redlightDuration: 5
+  redlightAnimation: {fileID: 0}
+  redlightSound: {fileID: 0}
+  shootSound: {fileID: 8300000, guid: f0d9b3360b17b244ca5a5fae1b3e1e6e, type: 3}
+  redlightLightColor: {r: 1, g: 0, b: 0, a: 1}
+  redlightParticlesPrefab: {fileID: 0}
+  redlightScanInterval: 0.2
+  shootDelay: 0.1
+  releaseDuration: 2
+  releaseAnimation: {fileID: 0}
+  releaseSound: {fileID: 8300000, guid: 19d85f214084cf04d9e15f7132a77aa7, type: 3}
+  releaseLightColor: {r: 0, g: 1, b: 0, a: 1}
+  releaseParticlesPrefab: {fileID: 0}
+  shootGrabbingZombiesInRedlight: 1
+  punishDegrabInRedlight: 0
+  degrabPunishmentDelay: 0.2
+  bulletPrefab: {fileID: 0}
+  bulletSpeed: 100
+  useInstantRaycast: 1
+  playerHitEffectPrefab: {fileID: 0}
+  zombieHitEffectPrefab: {fileID: 0}
+  enableDetectionCutscene: 0
+  slowMoDuration: 1
+  slowMoTimeScale: 0.3
+  type: 0

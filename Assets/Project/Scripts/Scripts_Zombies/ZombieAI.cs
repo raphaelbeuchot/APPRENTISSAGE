@@ -4,55 +4,61 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody))]
 public class ZombieAI : MonoBehaviour
 {
-    [Header("Detection")]
-    [SerializeField] private float detectionRadius = 8f;
-    [SerializeField] private float detectionCheckInterval = 0.3f;
-    [SerializeField] private LayerMask humanLayer;
+    [Header("Zombie Stats")]
+    public ZombieStats stats; // Reference au ScriptableObject
 
-    [Header("Movement")]
-    [SerializeField] private float walkSpeed = 1.5f;
-    [SerializeField] private float chaseSpeed = 2.5f;
-    [SerializeField] private float rotationSpeed = 3f;
-
-    [Header("Attack")]
-    [SerializeField] private float attackRange = 1.5f;
-    [SerializeField] private float attackCooldown = 2f;
-
-    [Header("Behavior")]
-    [SerializeField] private float idleWanderChance = 0.2f;
-    [SerializeField] private float wanderInterval = 3f;
-    [SerializeField] private float wanderDuration = 1f;
-
+    [Header("References")]
     private Rigidbody rb;
     private ZombieHealth health;
     private ZombieGrabSystem grabSystem;
 
+    // Detection
     private Transform targetHuman;
+
+    // Wander
     private Vector3 wanderDirection;
-    private float lastAttackTime = 0f;
     private float lastWanderTime = 0f;
     private float wanderTimer = 0f;
+
+    // Attack
+    private float lastAttackTime = 0f;
+
+    // Stun
     private bool isStunnedByShot = false;
     private float stunnedUntilTime = 0f;
 
+    // State machine
     private enum State { Idle, Wandering, Chasing, Attacking }
     private State currentState = State.Idle;
 
+    // Speed runtime (ajustee selon sante)
+    private float currentSpeed;
+
     void Start()
     {
+        if (stats == null)
+        {
+            Debug.LogError("ZombieStats non assigne sur " + gameObject.name);
+            return;
+        }
+
         rb = GetComponent<Rigidbody>();
         health = GetComponent<ZombieHealth>();
         grabSystem = GetComponent<ZombieGrabSystem>();
 
-        detectionRadius += Random.Range(-1f, 1f);
-        walkSpeed += Random.Range(-0.3f, 0.3f);
-        chaseSpeed += Random.Range(-0.5f, 0.5f);
+        // Variation aleatoire (optionnel, tu peux le retirer)
+        // stats.detectionRadius += Random.Range(-1f, 1f);
+
+        // Vitesse initiale
+        currentSpeed = stats.walkSpeed;
 
         StartCoroutine(DetectionLoop());
     }
 
     void Update()
     {
+        if (stats == null) return;
+
         if (health != null && health.IsDead())
         {
             StopMovement();
@@ -70,7 +76,7 @@ public class ZombieAI : MonoBehaviour
             return;
         }
 
-        // MODIFICATION 1: Ne pas traiter les états si le zombie est en train de grab
+        // Ne pas traiter les etats si en grab
         if (grabSystem != null && grabSystem.IsGrabbing())
         {
             StopMovement();
@@ -94,16 +100,20 @@ public class ZombieAI : MonoBehaviour
         }
     }
 
+    // ===============================================
+    // DETECTION
+    // ===============================================
+
     IEnumerator DetectionLoop()
     {
         while (true)
         {
-            yield return new WaitForSeconds(detectionCheckInterval);
+            yield return new WaitForSeconds(stats.detectionCheckInterval);
 
             if (health != null && health.IsDead()) continue;
             if (isStunnedByShot) continue;
 
-            // MODIFICATION 2: Ne pas détecter pendant le grab
+            // Ne pas detecter pendant le grab
             if (grabSystem != null && grabSystem.IsGrabbing()) continue;
 
             DetectHumans();
@@ -112,14 +122,14 @@ public class ZombieAI : MonoBehaviour
 
     void DetectHumans()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius, humanLayer);
+        Collider[] hits = Physics.OverlapSphere(transform.position, stats.detectionRadius, stats.targetLayer);
 
         Transform closestHuman = null;
         float closestDistance = Mathf.Infinity;
 
         foreach (Collider hit in hits)
         {
-            HumanHealth humanHealth = hit.GetComponent<HumanHealth>();
+            PlayerHealth humanHealth = hit.GetComponent<PlayerHealth>();
             if (humanHealth != null && !humanHealth.IsDead())
             {
                 float distance = Vector3.Distance(transform.position, hit.transform.position);
@@ -136,7 +146,7 @@ public class ZombieAI : MonoBehaviour
         {
             targetHuman = closestHuman;
 
-            if (closestDistance <= attackRange)
+            if (closestDistance <= stats.grabRange)
             {
                 currentState = State.Attacking;
             }
@@ -155,15 +165,19 @@ public class ZombieAI : MonoBehaviour
         }
     }
 
+    // ===============================================
+    // STATES
+    // ===============================================
+
     void HandleIdleState()
     {
         StopMovement();
 
-        if (Time.time - lastWanderTime >= wanderInterval)
+        if (Time.time - lastWanderTime >= stats.wanderInterval)
         {
             lastWanderTime = Time.time;
 
-            if (Random.value < idleWanderChance)
+            if (UnityEngine.Random.value < stats.idleWanderChance)
             {
                 StartWandering();
             }
@@ -174,7 +188,7 @@ public class ZombieAI : MonoBehaviour
     {
         wanderTimer += Time.deltaTime;
 
-        if (wanderTimer >= wanderDuration)
+        if (wanderTimer >= stats.wanderDuration)
         {
             currentState = State.Idle;
             wanderTimer = 0f;
@@ -182,7 +196,7 @@ public class ZombieAI : MonoBehaviour
             return;
         }
 
-        MoveInDirection(wanderDirection, walkSpeed);
+        MoveInDirection(wanderDirection, currentSpeed);
     }
 
     void HandleChasingState()
@@ -195,14 +209,14 @@ public class ZombieAI : MonoBehaviour
 
         float distance = Vector3.Distance(transform.position, targetHuman.position);
 
-        if (distance <= attackRange)
+        if (distance <= stats.grabRange)
         {
             currentState = State.Attacking;
             return;
         }
 
         Vector3 direction = (targetHuman.position - transform.position).normalized;
-        MoveInDirection(direction, GetCurrentSpeed());
+        MoveInDirection(direction, currentSpeed);
     }
 
     void HandleAttackingState()
@@ -215,33 +229,28 @@ public class ZombieAI : MonoBehaviour
 
         float distance = Vector3.Distance(transform.position, targetHuman.position);
 
-        if (distance > attackRange * 1.5f)
+        if (distance > stats.grabRange * 1.5f)
         {
             currentState = State.Chasing;
             return;
         }
 
+        // Rotation vers la cible
         Vector3 direction = (targetHuman.position - transform.position).normalized;
         direction.y = 0;
         if (direction.magnitude > 0.1f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
         }
 
-        // MODIFICATION 3: Vérifier si le zombie peut grab avant d'attaquer
-        if (Time.time - lastAttackTime >= attackCooldown)
+        // Tentative de grab
+        if (Time.time - lastAttackTime >= stats.grabCooldown)
         {
             if (grabSystem != null && grabSystem.CanGrab())
             {
                 AttemptAttack();
             }
-            else if (grabSystem == null)
-            {
-                // Fallback si pas de grab system
-                AttemptAttack();
-            }
-            // Si le zombie ne peut pas grab (cooldown), il attend sans attaquer
         }
         else
         {
@@ -255,18 +264,17 @@ public class ZombieAI : MonoBehaviour
 
         lastAttackTime = Time.time;
 
-        // Utiliser le système de grab au lieu de dégâts instantanés
-        if (grabSystem != null && grabSystem.CanGrab())  // MODIFICATION 4: Double check CanGrab
+        if (grabSystem != null && grabSystem.CanGrab())
         {
             grabSystem.AttemptGrab(targetHuman.gameObject);
         }
         else if (grabSystem == null)
         {
             // Fallback si pas de grab system
-            HumanHealth humanHealth = targetHuman.GetComponent<HumanHealth>();
+            PlayerHealth humanHealth = targetHuman.GetComponent<PlayerHealth>();
             if (humanHealth != null && !humanHealth.IsDead())
             {
-                humanHealth.TakeDamage();
+                humanHealth.TakeDamage(stats.biteDamage);
                 Debug.Log($"{gameObject.name} attacked {targetHuman.name}!");
             }
         }
@@ -276,8 +284,12 @@ public class ZombieAI : MonoBehaviour
     {
         currentState = State.Wandering;
         wanderTimer = 0f;
-        wanderDirection = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
+        wanderDirection = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f)).normalized;
     }
+
+    // ===============================================
+    // MOUVEMENT
+    // ===============================================
 
     void MoveInDirection(Vector3 direction, float speed)
     {
@@ -287,7 +299,7 @@ public class ZombieAI : MonoBehaviour
         if (direction.magnitude > 0.1f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
 
             Vector3 velocity = direction * speed;
             rb.linearVelocity = new Vector3(velocity.x, rb.linearVelocity.y, velocity.z);
@@ -299,26 +311,22 @@ public class ZombieAI : MonoBehaviour
         rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
     }
 
-    float GetCurrentSpeed()
+    /// <summary>
+    /// Mise a jour de la vitesse selon la sante (appelee par ZombieHealth)
+    /// </summary>
+    public void UpdateSpeed(float currentHealth, bool isCrawler)
     {
-        if (health == null) return chaseSpeed;
+        if (stats == null) return;
 
-        if (health.IsCrawling())
-        {
-            return chaseSpeed * 0.3f;
-        }
-        else
-        {
-            int injuries = 0;
-            if (!health.HasLeftArm()) injuries++;
-            if (!health.HasRightArm()) injuries++;
-            if (!health.HasLeftLeg()) injuries++;
-            if (!health.HasRightLeg()) injuries++;
+        bool isChasing = (currentState == State.Chasing || currentState == State.Attacking);
+        currentSpeed = stats.GetAdjustedSpeed(currentHealth, isChasing, isCrawler);
 
-            float speedReduction = 1f - (injuries * 0.15f);
-            return chaseSpeed * Mathf.Max(0.3f, speedReduction);
-        }
+        Debug.Log($"{gameObject.name} speed updated: {currentSpeed}");
     }
+
+    // ===============================================
+    // STUN
+    // ===============================================
 
     public void StunByGunshot(float duration)
     {
@@ -326,7 +334,6 @@ public class ZombieAI : MonoBehaviour
         stunnedUntilTime = Time.time + duration;
         StopMovement();
 
-        // MODIFICATION 5: Forcer la libération si en grab
         if (grabSystem != null && grabSystem.IsGrabbing())
         {
             grabSystem.ForceRelease();
@@ -335,13 +342,19 @@ public class ZombieAI : MonoBehaviour
 
     public bool IsStunnedByShot() => isStunnedByShot;
 
+    // ===============================================
+    // GIZMOS
+    // ===============================================
+
     void OnDrawGizmosSelected()
     {
+        if (stats == null) return;
+
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, detectionRadius);
+        Gizmos.DrawWireSphere(transform.position, stats.detectionRadius);
 
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.DrawWireSphere(transform.position, stats.grabRange);
 
         if (targetHuman != null)
         {
@@ -349,7 +362,6 @@ public class ZombieAI : MonoBehaviour
             Gizmos.DrawLine(transform.position, targetHuman.position);
         }
 
-        // MODIFICATION 6: Indicateur visuel du cooldown de grab
         if (grabSystem != null && !grabSystem.CanGrab())
         {
             Gizmos.color = Color.yellow;

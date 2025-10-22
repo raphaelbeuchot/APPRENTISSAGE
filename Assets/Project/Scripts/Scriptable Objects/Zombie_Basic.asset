@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d8b57929b96da94caf38c63491699cf, type: 3}
+  m_Name: Zombie_Basic
+  m_EditorClassIdentifier: Assembly-CSharp::ZombieStats
+  zombieName: Basic Zombie
+  zombieModel: {fileID: 0}
+  skinVariants: []
+  maxHealth: 100
+  limbLossThreshold: 0.5
+  walkSpeed: 0.7
+  chaseSpeed: 1.2
+  rotationSpeed: 30
+  crawlSpeed: 0.7
+  speedReductionPerHealthPercent: 0.3
+  detectionRadius: 5
+  detectionAngle: 90
+  detectionCheckInterval: 0.5
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  stealthDetectionMultiplier: 1
+  idleWanderChance: 0.728
+  wanderInterval: 4
+  wanderDuration: 3
+  grabRange: 1
+  biteDamage: 15
+  grabCooldown: 2.5
+  knockbackResistance: 0.8
+  upwardForce: 2
+  knockbackDuration: 5
+  knockbackGracePeriod: 3
+  startingArmCount: 2
+  startingLegCount: 2
+  oneArmMashReduction: 0.5
+  canBecomeCrawler: 0
+  meleeHitsForFinisher: 3
+  forceMultiplier: 1
+  hasWeapon: 0
+  weaponPrefab: {fileID: 0}
+  meleeDamageTaken: 5
+  sentinelDamageTaken: 20
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  damagedColor: {r: 1, g: 0, b: 0, a: 1}
+  grabbingColor: {r: 1, g: 1, b: 0, a: 1}
+  crawlerColor: {r: 0, g: 0, b: 0, a: 1}
+  idleSounds: []
+  chaseSounds: []
+  grabSound: {fileID: 0}
+  biteSound: {fileID: 0}
+  deathSound: {fileID: 0}
