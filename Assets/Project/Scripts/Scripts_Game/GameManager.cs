@@ -177,13 +177,13 @@ public class GameManager : MonoBehaviour
             if (rb != null)
             {
                 Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-                bool isStunned = meleeSystem != null && meleeSystem.IsStunned();
+                bool isStunned = meleeSystem != null;
                 bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
 
                 bool isMoving = horizontalVelocity.magnitude > velocityThreshold;
 
                 // MODIFIE : Ajouter isGrabbing aux conditions
-                bool shouldBeShot = isMoving || isStunned || isAttacking || isGrabbing;
+                bool shouldBeShot = isMoving || isAttacking || isGrabbing;
 
                 if (shouldBeShot)
                 {
@@ -195,7 +195,6 @@ public class GameManager : MonoBehaviour
 
                         string reason = "MOUVEMENT";
                         if (isGrabbing) reason = "GRAB ACTIF"; // NOUVEAU
-                        else if (isStunned) reason = "ETOURDI";
                         else if (isAttacking) reason = "ATTAQUE";
 
                         // Si le zombie est en train de grab, le tirer immédiatement libère le joueur

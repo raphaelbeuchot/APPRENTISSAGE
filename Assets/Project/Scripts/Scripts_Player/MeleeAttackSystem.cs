@@ -7,14 +7,10 @@ public class MeleeAttackSystem : MonoBehaviour
     [SerializeField] private float attackRange = 2f;
     [SerializeField] private float attackKnockbackForce = 35f;
     [SerializeField] private float attackDuration = 0.3f;
-    [SerializeField] private float comboWindow = 0.8f;
-    [SerializeField] private float knockdownDuration = 3f;
-    [SerializeField] private int maxComboCount = 3;
+    [SerializeField] private float attackCooldown = 0.5f; // Petit délai entre les attaques
 
-    [Header("Stun Settings")]
-    [SerializeField] private float staggerDuration = 0.5f;
-    [SerializeField] private float fallDuration = 1f;
-    [SerializeField] private float getUpDuration = 1.5f;
+    [Header("Target Knockdown")]
+    [SerializeField] private float knockdownDuration = 3f;
 
     [Header("Visual Feedback")]
     [SerializeField] private float armRotationAngle = 90f;
@@ -23,10 +19,8 @@ public class MeleeAttackSystem : MonoBehaviour
     private HumanHealth health;
     private PlayerPhysicsMovement movement;
 
-    private int comboCount = 0;
-    private float lastAttackTime = 0f;
     private bool isAttacking = false;
-    private bool isStunned = false;
+    private float lastAttackTime = 0f;
 
     private enum AttackArm { Left, Right }
     private AttackArm currentArm = AttackArm.Left;
@@ -45,19 +39,12 @@ public class MeleeAttackSystem : MonoBehaviour
         {
             movement.enabled = true;
         }
-
-        // Reset les états
         isAttacking = false;
-        isStunned = false;
     }
 
     void Update()
     {
-        if (Time.time - lastAttackTime > comboWindow && comboCount > 0)
-        {
-            ResetCombo();
-        }
-
+        // TOUJOURS avec clic gauche
         if (Input.GetMouseButtonDown(0) && CanAttack())
         {
             StartCoroutine(PerformAttack());
@@ -66,15 +53,15 @@ public class MeleeAttackSystem : MonoBehaviour
 
     bool CanAttack()
     {
-        if (isAttacking)
+        // Vérifier le cooldown
+        if (Time.time - lastAttackTime < attackCooldown)
         {
-            Debug.Log("Cannot attack: isAttacking = true");
             return false;
         }
 
-        if (isStunned)
+        if (isAttacking)
         {
-            Debug.Log("Cannot attack: isStunned = true");
+            Debug.Log("Cannot attack: already attacking");
             return false;
         }
 
@@ -87,20 +74,15 @@ public class MeleeAttackSystem : MonoBehaviour
         if (movement != null && !movement.enabled)
         {
             Debug.Log("Cannot attack: movement disabled, trying to re-enable...");
-            if (!isAttacking && !isStunned)
-            {
-                movement.enabled = true;
-            }
+            movement.enabled = true;
         }
 
-        Debug.Log("CAN ATTACK!");
         return true;
     }
 
     IEnumerator PerformAttack()
     {
         isAttacking = true;
-        comboCount++;
         lastAttackTime = Time.time;
 
         if (movement != null) movement.enabled = false;
@@ -112,18 +94,13 @@ public class MeleeAttackSystem : MonoBehaviour
 
         yield return new WaitForSeconds(attackDuration - 0.1f);
 
+        // Alterner le bras
         currentArm = (currentArm == AttackArm.Left) ? AttackArm.Right : AttackArm.Left;
 
         isAttacking = false;
 
-        if (comboCount >= maxComboCount)
-        {
-            yield return StartCoroutine(EnterStunSequence());
-        }
-        else
-        {
-            if (movement != null) movement.enabled = true;
-        }
+        // Réactiver le mouvement
+        if (movement != null) movement.enabled = true;
     }
 
     IEnumerator RotateArmVisual()
@@ -181,7 +158,15 @@ public class MeleeAttackSystem : MonoBehaviour
 
                     StartCoroutine(KnockdownTarget(hit.gameObject));
 
-                    Debug.Log($"{gameObject.name} melee hit: {hit.gameObject.name}!");
+                    // Si le zombie était en grab, le forcer à relâcher
+                    ZombieGrabSystem grabSystem = hit.GetComponent<ZombieGrabSystem>();
+                    if (grabSystem != null && grabSystem.IsGrabbing())
+                    {
+                        grabSystem.ForceRelease();
+                        Debug.Log($"Forcé {hit.gameObject.name} à relâcher!");
+                    }
+
+                    Debug.Log($"{gameObject.name} hit {hit.gameObject.name}!");
                 }
             }
         }
@@ -203,74 +188,11 @@ public class MeleeAttackSystem : MonoBehaviour
         }
     }
 
-    IEnumerator EnterStunSequence()
-    {
-        isStunned = true;
-        ResetCombo();
-
-        yield return StartCoroutine(StaggerPhase());
-        yield return StartCoroutine(FallPhase());
-        yield return StartCoroutine(GetUpPhase());
-
-        isStunned = false;
-        if (movement != null) movement.enabled = true;
-    }
-
-    IEnumerator StaggerPhase()
-    {
-        float elapsed = 0f;
-        Vector3 originalPos = transform.position;
-
-        while (elapsed < staggerDuration)
-        {
-            elapsed += Time.deltaTime;
-
-            float randomRotation = Mathf.Sin(elapsed * 20f) * 30f;
-            transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + randomRotation * Time.deltaTime, 0);
-
-            Vector3 randomOffset = new Vector3(
-                Mathf.Sin(elapsed * 15f) * 0.3f,
-                0,
-                Mathf.Cos(elapsed * 15f) * 0.3f
-            );
-            transform.position = originalPos + randomOffset;
-
-            yield return null;
-        }
-
-        transform.position = originalPos;
-    }
-
-    IEnumerator FallPhase()
-    {
-        yield return new WaitForSeconds(fallDuration);
-    }
-
-    IEnumerator GetUpPhase()
-    {
-        float elapsed = 0f;
-        Quaternion targetRot = Quaternion.Euler(0, transform.eulerAngles.y, 0);
-
-        while (elapsed < getUpDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / getUpDuration;
-
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, t);
-
-            yield return null;
-        }
-
-        transform.rotation = targetRot;
-    }
-
-    void ResetCombo()
-    {
-        comboCount = 0;
-        currentArm = AttackArm.Left;
-    }
-
-    public bool IsStunned() => isStunned;
     public bool IsAttacking() => isAttacking;
-    public int GetComboCount() => comboCount;
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+    }
 }
