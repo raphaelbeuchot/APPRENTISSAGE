@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
     public enum GameState { GreenLight, Alert, RedLight, Release }
 
     [Header("Sentinel Settings")]
-    public SentinelSettings sentinelSettings; // Reference au ScriptableObject
+    public SentinelSettings sentinelSettings;
 
     [Header("References")]
     public PlayerPhysicsMovement player;
@@ -16,8 +16,7 @@ public class GameManager : MonoBehaviour
     public Renderer sentinelLightRenderer;
     public Material greenMaterial;
     public Material redMaterial;
-    public Material yellowMaterial; // Pour Alert
-    
+    public Material yellowMaterial;
 
     [Header("Audio")]
     private AudioSource audioSource;
@@ -25,8 +24,8 @@ public class GameManager : MonoBehaviour
     [Header("Start System")]
     public bool waitForStart = true;
     public bool stunBySentinel = false;
+    public bool zombieStunBySentinel = false;
 
-    // State
     public GameState currentState = GameState.GreenLight;
     private float cycleTimer;
     private float targetDuration;
@@ -45,26 +44,20 @@ public class GameManager : MonoBehaviour
         }
 
         if (player == null)
-        {
             Debug.LogError("GameManager: PlayerPhysicsMovement non assigne!");
-        }
 
         if (playerHealth == null)
         {
             playerHealth = player != null ? player.GetComponent<PlayerHealth>() : null;
             if (playerHealth == null)
-            {
                 Debug.LogError("GameManager: PlayerHealth non trouve sur le joueur!");
-            }
         }
 
         audioSource = GetComponent<AudioSource>();
         Time.timeScale = 1f;
 
         if (waitForStart)
-        {
             gameStarted = false;
-        }
         else
         {
             gameStarted = true;
@@ -78,12 +71,9 @@ public class GameManager : MonoBehaviour
 
         cycleTimer += Time.deltaTime;
 
-        // STATE: ALERT (attendre la fin du son)
         if (currentState == GameState.Alert)
         {
-            bool audioFinished = (audioSource != null && !audioSource.isPlaying) ||
-                                (audioSource == null || sentinelSettings.alertSound == null);
-
+            bool audioFinished = (audioSource != null && !audioSource.isPlaying) || (audioSource == null || sentinelSettings.alertSound == null);
             if (audioFinished || cycleTimer >= sentinelSettings.alertDuration)
             {
                 StartNewCycle(GameState.RedLight);
@@ -92,11 +82,9 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // STATE: REDLIGHT (detection et tir)
         if (currentState == GameState.RedLight)
         {
             detectionTimer += Time.deltaTime;
-
             if (detectionTimer >= sentinelSettings.redlightScanInterval)
             {
                 detectionTimer = 0f;
@@ -104,7 +92,6 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // STATE: RELEASE (transition vers GreenLight)
         if (currentState == GameState.Release)
         {
             if (cycleTimer >= sentinelSettings.releaseDuration)
@@ -115,64 +102,36 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Changement de cycle
         if (cycleTimer >= targetDuration)
         {
             if (currentState == GameState.GreenLight)
-            {
                 StartNewCycle(GameState.Alert);
-                return;
-            }
             else if (currentState == GameState.RedLight)
-            {
                 StartNewCycle(GameState.Release);
-                return;
-            }
         }
     }
 
-    // ===============================================
-    // DETECTION ET TIR
-    // ===============================================
-
     void CheckForMovingTargets()
     {
-        Collider[] targets = Physics.OverlapSphere(
-            transform.position,
-            sentinelSettings.detectionRadius,
-            sentinelSettings.targetLayers
-        );
+        Collider[] targets = Physics.OverlapSphere(transform.position, sentinelSettings.detectionRadius, sentinelSettings.targetLayers);
 
         foreach (Collider col in targets)
         {
             if (alreadyShot.Contains(col.gameObject)) continue;
 
-            // Ignorer les zombies en recuperation apres un tir
             ZombieHealth zombieHealth = col.GetComponent<ZombieHealth>();
             if (zombieHealth != null && zombieHealth.IsRecovering()) continue;
 
-            // Verifier si le zombie est en train de grab
             ZombieGrabSystem grabSystem = col.GetComponent<ZombieGrabSystem>();
             bool isGrabbing = grabSystem != null && grabSystem.IsGrabbing();
+            bool isInKnockbackGrace = grabSystem != null && grabSystem.IsInKnockbackGracePeriod();
 
-            // Verifier si l'entite est en knockback (grace period)
-            bool isInKnockbackGrace = false;
-            if (grabSystem != null)
-            {
-                isInKnockbackGrace = grabSystem.IsInKnockbackGracePeriod();
-            }
-            // Verifier aussi pour le joueur
             if (col.gameObject == player.gameObject && player != null)
             {
                 PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
                 if (humanHealth != null)
-                {
                     isInKnockbackGrace = humanHealth.IsInKnockbackGracePeriod();
-                }
             }
-
-            // Si en grace period de knockback, ignorer la detection
-            //if (isInKnockbackGrace) continue;
 
             Rigidbody rb = col.GetComponent<Rigidbody>();
             MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
@@ -181,49 +140,39 @@ public class GameManager : MonoBehaviour
             {
                 Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
                 bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
-
                 bool isMoving = horizontalVelocity.magnitude > sentinelSettings.movementThreshold;
 
-                // Conditions de tir
-                bool shouldBeShot = isMoving || isAttacking || isGrabbing;
+                bool shouldBeShot = isMoving || isAttacking;
 
                 if (shouldBeShot)
                 {
                     PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
-                    // ZOMBIE
                     if (zombieHealth != null && !zombieHealth.IsDead())
                     {
                         alreadyShot.Add(col.gameObject);
-
                         string reason = "MOUVEMENT";
                         if (isGrabbing) reason = "GRAB ACTIF";
                         else if (isAttacking) reason = "ATTAQUE";
 
-                        // Si le zombie est en train de grab, le tirer immediatement libere le joueur
                         if (isGrabbing && sentinelSettings.shootGrabbingZombiesInRedlight)
                         {
                             grabSystem.ForceRelease();
-                            Debug.Log($"Zombie {col.gameObject.name} tire pendant un grab - liberation du joueur!");
+                            Debug.Log("Zombie " + col.gameObject.name + " tire pendant un grab - liberation du joueur!");
                         }
 
                         StartCoroutine(ShootZombieWithDelay(col.gameObject, zombieHealth, reason));
                     }
-                    // JOUEUR
                     else if (humanHealth != null && !humanHealth.IsDead())
                     {
                         alreadyShot.Add(col.gameObject);
-
                         string reason = "MOUVEMENT";
                         if (isAttacking) reason = "ATTAQUE";
 
-                        if (col.gameObject == player.gameObject)
+                        if (col.gameObject == player.gameObject && !playerAlarmTriggered)
                         {
-                            if (!playerAlarmTriggered)
-                            {
-                                playerAlarmTriggered = true;
-                                StartCoroutine(ShootPlayerWithAlarm(col.gameObject, humanHealth, reason));
-                            }
+                            playerAlarmTriggered = true;
+                            StartCoroutine(ShootPlayerWithAlarm(col.gameObject, humanHealth, reason));
                         }
                     }
                 }
@@ -234,35 +183,16 @@ public class GameManager : MonoBehaviour
     IEnumerator ShootPlayerWithAlarm(GameObject playerObject, PlayerHealth humanHealth, string reason)
     {
         if (audioSource != null && sentinelSettings.shootSound != null)
-        /*{
-            audioSource.PlayOneShot(sentinelSettings.shootSound);
-        }
-        */
+            /* audioSource.PlayOneShot(sentinelSettings.shootSound); */
 
-        Debug.Log("ALARME! Joueur detecte! (" + reason + ")");
-
-        /*
-        // Optionnel : Cutscene / Slow-mo
-        if (sentinelSettings.enableDetectionCutscene)
-        {
-            Time.timeScale = sentinelSettings.slowMoTimeScale;
-            yield return new WaitForSecondsRealtime(sentinelSettings.slowMoDuration);
-            Time.timeScale = 1f;
-        }
-        */
-
+            Debug.Log("ALARME! Joueur detecte! (" + reason + ")");
         yield return new WaitForSeconds(sentinelSettings.shootDelay);
 
         if (humanHealth != null && !humanHealth.IsDead())
         {
             ShootPlayer(playerObject, humanHealth, reason);
-
-
             if (humanHealth.IsDead())
-            {
                 Debug.Log("GAME OVER!");
-                // Tu peux gerer le game over ici
-            }
         }
     }
 
@@ -271,10 +201,8 @@ public class GameManager : MonoBehaviour
         float delay = sentinelSettings.shootDelay;
         yield return new WaitForSeconds(delay);
 
-        while (Time.time - lastShotTime < 0.15f) // minTimeBetweenShots
-        {
+        while (Time.time - lastShotTime < 0.15f)
             yield return new WaitForSeconds(0.05f);
-        }
 
         if (zombieHealth != null && !zombieHealth.IsDead())
         {
@@ -286,38 +214,36 @@ public class GameManager : MonoBehaviour
     void ShootZombie(GameObject zombie, ZombieHealth zombieHealth, string reason)
     {
         Debug.Log("BANG! " + zombie.name + " (" + reason + ")");
-
         if (audioSource != null && sentinelSettings.shootSound != null)
-        {
             audioSource.PlayOneShot(sentinelSettings.shootSound);
-        }
 
-        bool isHeadshot = UnityEngine.Random.value < 0.1f; // Tu peux mettre ca dans settings
+        bool isHeadshot = UnityEngine.Random.value < 0.1f;
         zombieHealth.TakeSentinelShot(isHeadshot);
 
         if (zombieHealth.IsDead())
-        {
             Debug.Log(zombie.name + " MORT!");
-        }
+
+        StartCoroutine(ZombieStunBySentinel());
+    }
+
+    private IEnumerator ZombieStunBySentinel()
+    {
+        zombieStunBySentinel = true;
+        yield return new WaitForSeconds(sentinel.stunZombieDuration);
+        zombieStunBySentinel = false;
     }
 
     void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason)
     {
         Debug.Log("BANG! " + human.name + " (" + reason + ")");
-
         if (audioSource != null && sentinelSettings.shootSound != null)
-        {
             audioSource.PlayOneShot(sentinelSettings.shootSound);
-        }
 
         StartCoroutine(StunBySentinel());
-                       
         humanHealth.TakeSentinelShot();
 
         if (humanHealth.IsDead())
-        {
             Debug.Log(human.name + " MORT!");
-        }
     }
 
     private IEnumerator StunBySentinel()
@@ -326,9 +252,6 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(sentinel.stunDuration);
         stunBySentinel = false;
     }
-    // ===============================================
-    // GESTION DES CYCLES
-    // ===============================================
 
     void StartNewCycle(GameState newState)
     {
@@ -337,10 +260,7 @@ public class GameManager : MonoBehaviour
 
         if (newState == GameState.GreenLight)
         {
-            if (player != null)
-            {
-                player.enabled = true;
-            }
+            if (player != null) player.enabled = true;
             targetDuration = sentinelSettings.GetRandomGreenlightDuration();
             playerAlarmTriggered = false;
             alreadyShot.Clear();
@@ -350,66 +270,47 @@ public class GameManager : MonoBehaviour
         {
             targetDuration = sentinelSettings.alertDuration;
             if (audioSource != null && sentinelSettings.alertSound != null)
-            {
                 audioSource.PlayOneShot(sentinelSettings.alertSound);
-            }
         }
         else if (newState == GameState.RedLight)
         {
-            targetDuration = sentinelSettings.redlightDuration;
+            targetDuration = sentinelSettings.GetRandomRedlightDuration();
             alreadyShot.Clear();
             playerAlarmTriggered = false;
-
             if (audioSource != null && sentinelSettings.redlightSound != null)
-            {
                 audioSource.PlayOneShot(sentinelSettings.redlightSound);
-            }
         }
         else if (newState == GameState.Release)
         {
             targetDuration = sentinelSettings.releaseDuration;
-
             if (audioSource != null && sentinelSettings.releaseSound != null)
-            {
                 audioSource.PlayOneShot(sentinelSettings.releaseSound);
-            }
         }
     }
 
     void SetState(GameState newState)
     {
         currentState = newState;
-
         if (player == null) return;
 
         player.isRedLight = (newState == GameState.RedLight);
 
-        // Changement de couleur des lumieres
         if (sentinelLightRenderer != null)
         {
             if (newState == GameState.GreenLight)
-            {
                 sentinelLightRenderer.material = greenMaterial;
-            }
             else if (newState == GameState.Alert)
-            {
                 sentinelLightRenderer.material = yellowMaterial != null ? yellowMaterial : redMaterial;
-            }
             else if (newState == GameState.RedLight)
-            {
                 sentinelLightRenderer.material = redMaterial;
-            }
             else if (newState == GameState.Release)
-            {
                 sentinelLightRenderer.material = greenMaterial;
-            }
         }
     }
 
     public void StartGameCycle()
     {
         if (gameStarted) return;
-
         gameStarted = true;
         StartNewCycle(GameState.GreenLight);
     }

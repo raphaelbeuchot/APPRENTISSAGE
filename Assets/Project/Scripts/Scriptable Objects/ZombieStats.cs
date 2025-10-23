@@ -8,7 +8,7 @@ public class ZombieStats : ScriptableObject
     public GameObject zombieModel;
     public GameObject[] skinVariants;
 
-    [Header("SANTÉ")]
+    [Header("SANTE")]
     public float maxHealth = 100f;
     [Range(0f, 1f)]
     public float limbLossThreshold = 0.5f;
@@ -21,7 +21,7 @@ public class ZombieStats : ScriptableObject
     [Range(0f, 1f)]
     public float speedReductionPerHealthPercent = 0.3f;
 
-    [Header("DÉTECTION")]
+    [Header("DETECTION")]
     public float detectionRadius = 10f;
     [Range(0f, 360f)]
     public float detectionAngle = 90f;
@@ -38,8 +38,8 @@ public class ZombieStats : ScriptableObject
 
     [Header("ATTAQUE / GRAB")]
     public float grabRange = 1.5f;
+    public float grabDuration = 4f;
     public float biteDamage = 15f;
-    public float grabCooldown = 2f;
 
     [Header("KNOCKBACK")]
     public float knockbackResistance = 0.8f;
@@ -47,7 +47,7 @@ public class ZombieStats : ScriptableObject
     public float knockbackDuration = 0.5f;
     public float knockbackGracePeriod = 1f;
 
-    [Header("SYSTÈME DE MEMBRES")]
+    [Header("SYSTEME DE MEMBRES")]
     public int startingArmCount = 2;
     public int startingLegCount = 2;
     [Range(0f, 1f)]
@@ -63,15 +63,9 @@ public class ZombieStats : ScriptableObject
     public bool hasWeapon = false;
     public GameObject weaponPrefab;
 
-    [Header("DÉGÂTS")]
+    [Header("DEGATS")]
     public float meleeDamageTaken = 25f;
     public float sentinelDamageTaken = 60f;
-
-    [Header("COULEURS DE FEEDBACK")]
-    public Color normalColor = Color.white;
-    public Color damagedColor = Color.red;
-    public Color grabbingColor = Color.yellow;
-    public Color crawlerColor = new Color(0.5f, 0f, 0f);
 
     [Header("SONS")]
     public AudioClip[] idleSounds;
@@ -82,13 +76,10 @@ public class ZombieStats : ScriptableObject
 
     public float GetAdjustedSpeed(float currentHealth, bool isChasing, bool isCrawler)
     {
-        if (isCrawler)
-            return crawlSpeed;
-
+        if (isCrawler) return crawlSpeed;
         float baseSpeed = isChasing ? chaseSpeed : walkSpeed;
         float healthPercent = currentHealth / maxHealth;
         float speedReduction = (1f - healthPercent) * speedReductionPerHealthPercent;
-
         return baseSpeed * (1f - speedReduction);
     }
 

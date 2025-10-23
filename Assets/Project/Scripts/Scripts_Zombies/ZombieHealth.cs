@@ -132,10 +132,12 @@ public class ZombieHealth : MonoBehaviour
         recoverUntilTime = Time.time + 2f; // Tu peux mettre ca dans stats si tu veux
 
         ZombieAI zombieAI = GetComponent<ZombieAI>();
-        if (zombieAI != null)
+        /*
+         * if (zombieAI != null)
         {
             zombieAI.StunByGunshot(2f);
         }
+        */
 
         // Liberer la cible si grab
         ZombieGrabSystem grabSystem = GetComponent<ZombieGrabSystem>();

@@ -33,11 +33,11 @@ MonoBehaviour:
   wanderInterval: 4
   wanderDuration: 3
   grabRange: 1
-  biteDamage: 15
-  grabCooldown: 2.5
-  knockbackResistance: 0.8
+  grabDuration: 6
+  biteDamage: 10
+  knockbackResistance: 0.1
   upwardForce: 2
-  knockbackDuration: 5
+  knockbackDuration: 2
   knockbackGracePeriod: 3
   startingArmCount: 2
   startingLegCount: 2
@@ -47,12 +47,8 @@ MonoBehaviour:
   forceMultiplier: 1
   hasWeapon: 0
   weaponPrefab: {fileID: 0}
-  meleeDamageTaken: 5
-  sentinelDamageTaken: 20
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  damagedColor: {r: 1, g: 0, b: 0, a: 1}
-  grabbingColor: {r: 1, g: 1, b: 0, a: 1}
-  crawlerColor: {r: 0, g: 0, b: 0, a: 1}
+  meleeDamageTaken: 25
+  sentinelDamageTaken: 25
   idleSounds: []
   chaseSounds: []
   grabSound: {fileID: 0}

@@ -22,6 +22,8 @@ MonoBehaviour:
   playerDamage: 25
   zombieDamage: 25
   headshotInstakill: 0
+  stunDuration: 2
+  stunZombieDuration: 3
   greenlightMinDuration: 3
   greenlightMaxDuration: 8
   greenlightAnimation: {fileID: 0}
@@ -31,7 +33,8 @@ MonoBehaviour:
   alertSound: {fileID: 8300000, guid: 875f629b10f5a524d9810773684bde2c, type: 3}
   alertLightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertParticlesPrefab: {fileID: 0}
-  redlightDuration: 5
+  redlightMinDuration: 4
+  redlightMaxDuration: 8
   redlightAnimation: {fileID: 0}
   redlightSound: {fileID: 0}
   shootSound: {fileID: 8300000, guid: f0d9b3360b17b244ca5a5fae1b3e1e6e, type: 3}
@@ -44,9 +47,9 @@ MonoBehaviour:
   releaseSound: {fileID: 8300000, guid: 19d85f214084cf04d9e15f7132a77aa7, type: 3}
   releaseLightColor: {r: 0, g: 1, b: 0, a: 1}
   releaseParticlesPrefab: {fileID: 0}
-  shootGrabbingZombiesInRedlight: 1
-  punishDegrabInRedlight: 0
-  degrabPunishmentDelay: 0.2
+  shootGrabbingZombiesInRedlight: 0
+  punishDegrabInRedlight: 1
+  degrabPunishmentDelay: 0.5
   bulletPrefab: {fileID: 0}
   bulletSpeed: 100
   useInstantRaycast: 1
