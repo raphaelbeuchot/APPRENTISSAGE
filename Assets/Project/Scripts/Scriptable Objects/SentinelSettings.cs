@@ -16,6 +16,7 @@ public class SentinelSettings : ScriptableObject
     public float playerDamage = 25f;
     public float zombieDamage = 60f;
     public bool headshotInstakill = true;
+    public float stunDuration = 2f;
 
     [Header("ÉTAT : GREENLIGHT")]
     public float greenlightMinDuration = 3f;

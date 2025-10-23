@@ -11,17 +11,20 @@ public class GameManager : MonoBehaviour
 
     [Header("References")]
     public PlayerPhysicsMovement player;
+    public SentinelSettings sentinel;
     public PlayerHealth playerHealth;
     public Renderer sentinelLightRenderer;
     public Material greenMaterial;
     public Material redMaterial;
     public Material yellowMaterial; // Pour Alert
+    
 
     [Header("Audio")]
     private AudioSource audioSource;
 
     [Header("Start System")]
     public bool waitForStart = true;
+    public bool stunBySentinel = false;
 
     // State
     public GameState currentState = GameState.GreenLight;
@@ -169,7 +172,7 @@ public class GameManager : MonoBehaviour
             }
 
             // Si en grace period de knockback, ignorer la detection
-            if (isInKnockbackGrace) continue;
+            //if (isInKnockbackGrace) continue;
 
             Rigidbody rb = col.GetComponent<Rigidbody>();
             MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
@@ -231,12 +234,14 @@ public class GameManager : MonoBehaviour
     IEnumerator ShootPlayerWithAlarm(GameObject playerObject, PlayerHealth humanHealth, string reason)
     {
         if (audioSource != null && sentinelSettings.shootSound != null)
-        {
+        /*{
             audioSource.PlayOneShot(sentinelSettings.shootSound);
         }
+        */
 
         Debug.Log("ALARME! Joueur detecte! (" + reason + ")");
 
+        /*
         // Optionnel : Cutscene / Slow-mo
         if (sentinelSettings.enableDetectionCutscene)
         {
@@ -244,12 +249,14 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSecondsRealtime(sentinelSettings.slowMoDuration);
             Time.timeScale = 1f;
         }
+        */
 
         yield return new WaitForSeconds(sentinelSettings.shootDelay);
 
         if (humanHealth != null && !humanHealth.IsDead())
         {
             ShootPlayer(playerObject, humanHealth, reason);
+
 
             if (humanHealth.IsDead())
             {
@@ -303,6 +310,8 @@ public class GameManager : MonoBehaviour
             audioSource.PlayOneShot(sentinelSettings.shootSound);
         }
 
+        StartCoroutine(StunBySentinel());
+                       
         humanHealth.TakeSentinelShot();
 
         if (humanHealth.IsDead())
@@ -311,6 +320,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private IEnumerator StunBySentinel()
+    {
+        stunBySentinel = true;
+        yield return new WaitForSeconds(sentinel.stunDuration);
+        stunBySentinel = false;
+    }
     // ===============================================
     // GESTION DES CYCLES
     // ===============================================

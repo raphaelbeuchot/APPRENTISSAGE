@@ -11,6 +11,7 @@ public class ZombieGrabSystem : MonoBehaviour
     private ZombieHealth zombieHealth;
     private Rigidbody zombieRigidbody;
     private GameManager gameManager;
+    
 
     // State
     private bool isGrabbing = false;
@@ -59,7 +60,7 @@ public class ZombieGrabSystem : MonoBehaviour
     public void AttemptGrab(GameObject target)
     {
         if (stats == null) return;
-        if (isGrabbing || !canGrab) return;
+        if (isGrabbing || !canGrab || gameManager.stunBySentinel)  return;
 
         float distance = Vector3.Distance(transform.position, target.transform.position);
 

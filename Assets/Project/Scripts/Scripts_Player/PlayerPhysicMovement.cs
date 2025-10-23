@@ -11,6 +11,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     [Header("State")]
     public bool isRedLight = false;
+    public bool canMove;
 
     // Variables runtime (état actuel)
     private Rigidbody rb;
@@ -25,6 +26,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     // Health (pour ajuster la vitesse)
     private float currentHealth;
+    //réference
+    public GameManager gameManager;
 
     void Awake()
     {
@@ -60,7 +63,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     void HandleInput()
     {
         // Input de mouvement
-        if (!isRedLight)
+        if (!gameManager.stunBySentinel)
         {
             float h = Input.GetAxisRaw("Horizontal");
             float v = Input.GetAxisRaw("Vertical");

@@ -3173,6 +3173,8 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
   cameraTransform: {fileID: 1361275057}
   isRedLight: 0
+  canMove: 0
+  gameManager: {fileID: 1801742136}
 --- !u!33 &882987302
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -5805,12 +5807,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   sentinelSettings: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
   player: {fileID: 882987298}
+  sentinel: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
   playerHealth: {fileID: 882987304}
   sentinelLightRenderer: {fileID: 887716754}
   greenMaterial: {fileID: 2100000, guid: 7d4919ec70114eb48a54864c2cc6636b, type: 2}
   redMaterial: {fileID: 2100000, guid: 23d8ea2022ab1654c87fc6d911610a35, type: 2}
   yellowMaterial: {fileID: 2100000, guid: 9c0666d93dcf41740ba7ff45298dcdcd, type: 2}
   waitForStart: 1
+  stunBySentinel: 0
   currentState: 0
 --- !u!4 &1801742137
 Transform:
