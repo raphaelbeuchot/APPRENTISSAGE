@@ -165,7 +165,7 @@ public class PlayerHealth : MonoBehaviour
         return isInKnockbackGrace;
     }
 
-    public void StartKnockbackGracePeriod(float duration = 0.3f)
+    public void StartKnockbackGracePeriod(float duration = 1f)
     {
         isInKnockbackGrace = true;
         knockbackGraceEndTime = Time.time + duration;

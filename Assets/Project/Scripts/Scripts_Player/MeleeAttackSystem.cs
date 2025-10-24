@@ -90,8 +90,10 @@ public class MeleeAttackSystem : MonoBehaviour
         if (movement != null)
             movement.enabled = false;
 
+        
         // Animation visuelle
         StartCoroutine(RotateArmVisual());
+        
 
         // Delai avant le hit
         yield return new WaitForSeconds(0.1f);
@@ -165,8 +167,8 @@ public class MeleeAttackSystem : MonoBehaviour
                     knockbackDir.y = 0;
 
                     // Knockback depuis stats (avec force multiplier)
-                    float knockbackForce = stats.GetAdjustedKnockback();
-                    targetRb.AddForce(knockbackDir * knockbackForce, ForceMode.Impulse);
+                    //float knockbackForce = stats.GetAdjustedKnockback();
+                    targetRb.AddForce(knockbackDir * stats.knockbackForce, ForceMode.Impulse);
                 }
 
                 // Appliquer damage

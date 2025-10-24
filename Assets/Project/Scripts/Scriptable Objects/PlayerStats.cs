@@ -48,10 +48,10 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Duree de l'animation d'attaque (en secondes)")]
     public float attackDuration = 0.5f;
     [Tooltip("Cooldown entre deux attaques (en secondes)")]
-    public float attackCooldown = 1f;
+    public float attackCooldown = 0.5f;
 
     [Header("FORCE")]
-    [Tooltip("Force globale du personnage (influe damage et knockback)")]
+    [Tooltip("Force globale du personnage (influe damage)")]
     [Range(0.5f, 2f)]
     public float forceMultiplier = 1f;
 
@@ -111,6 +111,6 @@ public class PlayerStats : ScriptableObject
     /// </summary>
     public float GetAdjustedKnockback()
     {
-        return knockbackForce * forceMultiplier;
+        return knockbackForce;
     }
 }

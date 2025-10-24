@@ -42,7 +42,7 @@ public class ZombieStats : ScriptableObject
     public float biteDamage = 15f;
 
     [Header("KNOCKBACK")]
-    public float knockbackResistance = 0.8f;
+    //public float knockbackResistance = 0.8f;
     public float upwardForce = 2f;
     public float knockbackDuration = 0.5f;
     public float knockbackGracePeriod = 1f;

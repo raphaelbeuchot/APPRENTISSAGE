@@ -28,7 +28,7 @@ public class ZombieAI : MonoBehaviour
 
     private float currentSpeed;
 
-    [Header("R�f�rences")]
+    [Header("Références")]
     public GameManager gameManager;
 
     void Start()
