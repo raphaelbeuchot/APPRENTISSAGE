@@ -1,24 +1,35 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Gère le déroulement complet du niveau :
+/// - Détection de la victoire (GoalDoor)
+/// - Détection de la défaite (PlayerHealth)
+/// - Affichage des écrans UI
+/// - Chargement des niveaux
+/// </summary>
 public class LevelManager : MonoBehaviour
 {
     [Header("References")]
     public GoalDoor goalDoor;
     public GameManager gameManager;
     public PlayerPhysicsMovement player;
+    public PlayerHealth playerHealth;
+
+    [Header("UI")]
+    public VictoryUI victoryUI;
+    public GameOverUI gameOverUI;
 
     [Header("Configuration")]
-    public float delayBeforeNextLevel = 2f;
-
-    [Header("UI (Optionnel)")]
-    public GameObject victoryUI;
+    public float delayBeforeNextLevel = 3f;
+    public float delayBeforeRestart = 2f;
 
     private bool levelCompleted = false;
+    private bool gameOver = false;
 
     void Start()
     {
-        // Trouver automatiquement les references si non assignees
+        // Trouver automatiquement les références si non assignées
         if (goalDoor == null)
         {
             goalDoor = FindObjectOfType<GoalDoor>();
@@ -34,103 +45,169 @@ public class LevelManager : MonoBehaviour
             player = FindObjectOfType<PlayerPhysicsMovement>();
         }
 
-        // S'abonner a l'evenement de la porte
+        if (playerHealth == null && player != null)
+        {
+            playerHealth = player.GetComponent<PlayerHealth>();
+        }
+
+        if (victoryUI == null)
+        {
+            victoryUI = FindObjectOfType<VictoryUI>();
+        }
+
+        if (gameOverUI == null)
+        {
+            gameOverUI = FindObjectOfType<GameOverUI>();
+        }
+
+        // S'abonner aux événements
         if (goalDoor != null)
         {
             goalDoor.OnPlayerReached += OnPlayerReachedGoal;
         }
         else
         {
-            Debug.LogWarning("LevelManager: Aucune GoalDoor trouvee dans la scene!");
+            Debug.LogWarning("LevelManager: Aucune GoalDoor trouvée dans la scène!");
         }
 
-        // Cacher l'UI de victoire au debut
-        if (victoryUI != null)
+        if (playerHealth != null)
         {
-            victoryUI.SetActive(false);
+            playerHealth.OnDeath += OnPlayerDeath;
+        }
+        else
+        {
+            Debug.LogWarning("LevelManager: PlayerHealth non trouvé!");
         }
 
         // S'assurer que le temps est normal
         Time.timeScale = 1f;
     }
 
+    // ============================================
+    // VICTOIRE
+    // ============================================
+
     void OnPlayerReachedGoal(GameObject playerObject)
     {
-        if (levelCompleted) return;
+        if (levelCompleted || gameOver) return;
 
         levelCompleted = true;
-        Debug.Log("=== NIVEAU COMPLETE! ===");
+        Debug.Log("=== NIVEAU COMPLETÉ! ===");
 
-        // Afficher l'UI de victoire
+        // Désactiver le mouvement du joueur
+        if (player != null)
+        {
+            player.enabled = false;
+        }
+
+        // Afficher l'écran de victoire
         if (victoryUI != null)
         {
-            victoryUI.SetActive(true);
+            victoryUI.Show(playerHealth);
         }
-
-        // Calculer des stats (optionnel)
-        DisplayStats();
-
-        // Charger le niveau suivant apres un delai
-        Invoke("LoadNextLevel", delayBeforeNextLevel);
-    }
-
-    void DisplayStats()
-    {
-        // Stats du joueur
-        PlayerHealth playerHealth = player != null ? player.GetComponent<PlayerHealth>() : null;
-        if (playerHealth != null)
+        else
         {
-            float healthPercent = playerHealth.GetHealthPercentage();
-
-            Debug.Log("Statistiques du niveau:");
-            Debug.Log("- Sante restante: " + (healthPercent * 100f) + "%");
-            Debug.Log("- Etat: " + (playerHealth.IsCritical() ? "CRITIQUE" : "OK"));
+            Debug.LogWarning("VictoryUI non trouvé! Chargement automatique du niveau suivant.");
+            Invoke(nameof(LoadNextLevel), delayBeforeNextLevel);
         }
     }
 
-    void LoadNextLevel()
+    // ============================================
+    // DÉFAITE
+    // ============================================
+
+    void OnPlayerDeath()
+    {
+        if (gameOver || levelCompleted) return;
+
+        gameOver = true;
+        Debug.Log("=== GAME OVER ===");
+
+        // Désactiver le mouvement du joueur
+        if (player != null)
+        {
+            player.enabled = false;
+        }
+
+        // Afficher l'écran de Game Over
+        if (gameOverUI != null)
+        {
+            gameOverUI.Show();
+        }
+        else
+        {
+            Debug.LogWarning("GameOverUI non trouvé! Redémarrage automatique.");
+            Invoke(nameof(RestartLevel), delayBeforeRestart);
+        }
+    }
+
+    // ============================================
+    // NAVIGATION DE NIVEAU
+    // ============================================
+
+    /// <summary>
+    /// Charge le niveau suivant
+    /// </summary>
+    public void LoadNextLevel()
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         int nextSceneIndex = currentSceneIndex + 1;
 
-        // Verifier s'il y a un niveau suivant
+        // Vérifier s'il y a un niveau suivant
         if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
         {
             Debug.Log("Chargement du niveau " + nextSceneIndex + "...");
+            Time.timeScale = 1f;
             SceneManager.LoadScene(nextSceneIndex);
         }
         else
         {
-            // Plus de niveaux, on recommence ou on affiche un ecran de fin
-            Debug.Log("TOUS LES NIVEAUX COMPLETES! Recommencer...");
+            // Plus de niveaux, retour au menu ou niveau 1
+            Debug.Log("TOUS LES NIVEAUX COMPLÉTÉS! Recommencer...");
+            Time.timeScale = 1f;
             SceneManager.LoadScene(0); // Retour au niveau 1
         }
     }
 
     /// <summary>
-    /// Rejouer le niveau actuel
+    /// Rejoue le niveau actuel
     /// </summary>
     public void RestartLevel()
     {
+        Debug.Log("Redémarrage du niveau...");
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     /// <summary>
-    /// Quitter le jeu
+    /// Quitte le jeu
     /// </summary>
     public void QuitGame()
     {
-        Debug.Log("Quitter le jeu");
+        Debug.Log("Quitter le jeu...");
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
         Application.Quit();
+#endif
     }
+
+    // ============================================
+    // CLEANUP
+    // ============================================
 
     void OnDestroy()
     {
-        // Se desabonner de l'evenement
+        // Se désabonner des événements
         if (goalDoor != null)
         {
             goalDoor.OnPlayerReached -= OnPlayerReachedGoal;
+        }
+
+        if (playerHealth != null)
+        {
+            playerHealth.OnDeath -= OnPlayerDeath;
         }
     }
 }

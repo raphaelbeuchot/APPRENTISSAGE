@@ -15,6 +15,9 @@ public class MeleeAttackSystem : MonoBehaviour
     private bool isAttacking = false;
     private float lastAttackTime = 0f;
 
+    // Grab state tracking
+    private bool isGrabbed = false;
+
     // Visual
     private enum AttackArm { Left, Right }
     private AttackArm currentArm = AttackArm.Left;
@@ -54,6 +57,13 @@ public class MeleeAttackSystem : MonoBehaviour
 
     bool CanAttack()
     {
+        // CRITIQUE : Ne pas pouvoir attaquer si grabbed
+        if (isGrabbed)
+        {
+            Debug.Log("Cannot attack: player is grabbed!");
+            return false;
+        }
+
         // Verifier le cooldown (depuis stats)
         if (Time.time - lastAttackTime < stats.attackCooldown)
         {
@@ -72,10 +82,12 @@ public class MeleeAttackSystem : MonoBehaviour
             return false;
         }
 
+        // MODIFICATION : Ne pas réactiver automatiquement le movement s'il est désactivé
+        // Car ça pourrait interférer avec un grab en cours
         if (movement != null && !movement.enabled)
         {
-            Debug.Log("Cannot attack: movement disabled, trying to re-enable...");
-            movement.enabled = true;
+            Debug.Log("Cannot attack: movement disabled (probably grabbed)");
+            return false;
         }
 
         return true;
@@ -90,10 +102,10 @@ public class MeleeAttackSystem : MonoBehaviour
         if (movement != null)
             movement.enabled = false;
 
-        
+
         // Animation visuelle
         StartCoroutine(RotateArmVisual());
-        
+
 
         // Delai avant le hit
         yield return new WaitForSeconds(0.1f);
@@ -193,7 +205,7 @@ public class MeleeAttackSystem : MonoBehaviour
 
     IEnumerator KnockdownTarget(GameObject target)
     {
-        ZombieAI zombieAI = target.GetComponent<ZombieAI>();
+        EnemyAI zombieAI = target.GetComponent<EnemyAI>();
         if (zombieAI != null)
         {
             zombieAI.enabled = false;
@@ -208,7 +220,38 @@ public class MeleeAttackSystem : MonoBehaviour
         }
     }
 
+    // ============================================
+    // GESTION DU GRAB (appelé par ZombieGrabSystem)
+    // ============================================
+
+    /// <summary>
+    /// Appelé par le ZombieGrabSystem quand le joueur se fait grab
+    /// </summary>
+    public void OnGrabStart()
+    {
+        isGrabbed = true;
+
+        // Arrêter l'attaque en cours si il y en a une
+        if (isAttacking)
+        {
+            StopAllCoroutines();
+            isAttacking = false;
+        }
+
+        Debug.Log("MeleeAttackSystem: Player grabbed, attacks disabled");
+    }
+
+    /// <summary>
+    /// Appelé par le ZombieGrabSystem quand le joueur est libéré
+    /// </summary>
+    public void OnGrabEnd()
+    {
+        isGrabbed = false;
+        Debug.Log("MeleeAttackSystem: Player released, attacks enabled");
+    }
+
     public bool IsAttacking() => isAttacking;
+    public bool IsGrabbed() => isGrabbed;
 
     void OnDrawGizmosSelected()
     {

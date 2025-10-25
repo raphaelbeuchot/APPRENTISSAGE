@@ -25,8 +25,8 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private float countdownFontSize = 100f;
 
     [Header("References")]
-    [SerializeField] private PlayerHealth playerHealth; // CHANGE
-    [SerializeField] private ZombieGrabSystem[] zombies;
+    [SerializeField] private PlayerHealth playerHealth;
+    [SerializeField] private GrabAttack[] zombies; // CHANGÉ: ZombieGrabSystem en GrabAttack
 
     private bool isGrabbed = false;
 
@@ -53,7 +53,7 @@ public class GameUIManager : MonoBehaviour
         // S'abonner aux evenements
         if (playerHealth != null)
         {
-            playerHealth.OnHealthChanged += UpdateHealthUI; // CHANGE
+            playerHealth.OnHealthChanged += UpdateHealthUI;
 
             // Initialiser l'affichage
             UpdateHealthDisplay(playerHealth.GetCurrentHealth(), playerHealth.GetMaxHealth());
@@ -65,7 +65,7 @@ public class GameUIManager : MonoBehaviour
         CheckGrabStatus();
     }
 
-    void UpdateHealthUI(float currentHealth, float maxHealth) // CHANGE
+    void UpdateHealthUI(float currentHealth, float maxHealth)
     {
         UpdateHealthDisplay(currentHealth, maxHealth);
 
@@ -73,7 +73,7 @@ public class GameUIManager : MonoBehaviour
         StartCoroutine(DamageFlash());
     }
 
-    void UpdateHealthDisplay(float currentHealth, float maxHealth) // CHANGE
+    void UpdateHealthDisplay(float currentHealth, float maxHealth)
     {
         // Mettre a jour la barre de vie
         if (healthBarFill != null)
@@ -137,7 +137,8 @@ public class GameUIManager : MonoBehaviour
 
         bool currentlyGrabbed = false;
 
-        foreach (ZombieGrabSystem zombie in zombies)
+        // CHANGÉ: ZombieGrabSystem en GrabAttack
+        foreach (GrabAttack zombie in zombies)
         {
             if (zombie != null && zombie.IsGrabbing())
             {
@@ -232,16 +233,17 @@ public class GameUIManager : MonoBehaviour
     }
 
     // Methode publique pour mettre a jour manuellement la liste des zombies
+    // CHANGÉ: ZombieGrabSystem en GrabAttack
     public void UpdateZombiesList()
     {
-        zombies = FindObjectsOfType<ZombieGrabSystem>();
+        zombies = FindObjectsOfType<GrabAttack>();
     }
 
     void OnDestroy()
     {
         if (playerHealth != null)
         {
-            playerHealth.OnHealthChanged -= UpdateHealthUI; // CHANGE
+            playerHealth.OnHealthChanged -= UpdateHealthUI;
         }
     }
 }

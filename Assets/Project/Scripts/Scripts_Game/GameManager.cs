@@ -119,12 +119,13 @@ public class GameManager : MonoBehaviour
         {
             if (alreadyShot.Contains(col.gameObject)) continue;
 
-            ZombieHealth zombieHealth = col.GetComponent<ZombieHealth>();
-            if (zombieHealth != null && zombieHealth.IsRecovering()) continue;
+            // CORRECTION BUG 1 : Utiliser EnemyHealth au lieu de ZombieHealth
+            EnemyHealth enemyHealth = col.GetComponent<EnemyHealth>();
+            if (enemyHealth != null && enemyHealth.IsRecovering()) continue;
 
-            ZombieGrabSystem grabSystem = col.GetComponent<ZombieGrabSystem>();
+            GrabAttack grabSystem = col.GetComponent<GrabAttack>();
             bool isGrabbing = grabSystem != null && grabSystem.IsGrabbing();
-            bool isInKnockbackGrace = grabSystem != null && grabSystem.IsInKnockbackGracePeriod();
+            bool isInKnockbackGrace = grabSystem != null && grabSystem.IsInBourrade();
 
             if (col.gameObject == player.gameObject && player != null)
             {
@@ -148,20 +149,15 @@ public class GameManager : MonoBehaviour
                 {
                     PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
-                    if (zombieHealth != null && !zombieHealth.IsDead())
+                    // CORRECTION BUG 1 : Utiliser enemyHealth au lieu de zombieHealth
+                    if (enemyHealth != null && !enemyHealth.IsDead())
                     {
                         alreadyShot.Add(col.gameObject);
                         string reason = "MOUVEMENT";
                         if (isGrabbing) reason = "GRAB ACTIF";
                         else if (isAttacking) reason = "ATTAQUE";
-                        /*
-                        if (isGrabbing && sentinelSettings.shootGrabbingZombiesInRedlight)
-                        {
-                            grabSystem.ForceRelease();
-                            Debug.Log("Zombie " + col.gameObject.name + " tire pendant un grab - liberation du joueur!");
-                        }
-                        */
-                        StartCoroutine(ShootZombieWithDelay(col.gameObject, zombieHealth, reason));
+
+                        StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason));
                     }
                     else if (humanHealth != null && !humanHealth.IsDead())
                     {
@@ -196,7 +192,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    IEnumerator ShootZombieWithDelay(GameObject zombie, ZombieHealth zombieHealth, string reason)
+    // CORRECTION BUG 1 : Renommer et utiliser EnemyHealth
+    IEnumerator ShootEnemyWithDelay(GameObject enemy, EnemyHealth enemyHealth, string reason)
     {
         float delay = sentinelSettings.shootDelay;
         yield return new WaitForSeconds(delay);
@@ -204,29 +201,31 @@ public class GameManager : MonoBehaviour
         while (Time.time - lastShotTime < 0.15f)
             yield return new WaitForSeconds(0.05f);
 
-        if (zombieHealth != null && !zombieHealth.IsDead())
+        if (enemyHealth != null && !enemyHealth.IsDead())
         {
-            ShootZombie(zombie, zombieHealth, reason);
+            ShootEnemy(enemy, enemyHealth, reason);
             lastShotTime = Time.time;
         }
     }
 
-    void ShootZombie(GameObject zombie, ZombieHealth zombieHealth, string reason)
+    // CORRECTION BUG 1 : Renommer et utiliser EnemyHealth
+    void ShootEnemy(GameObject enemy, EnemyHealth enemyHealth, string reason)
     {
-        Debug.Log("BANG! " + zombie.name + " (" + reason + ")");
+        Debug.Log("BANG! " + enemy.name + " (" + reason + ")");
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
 
         bool isHeadshot = UnityEngine.Random.value < 0.1f;
-        zombieHealth.TakeSentinelShot(isHeadshot);
+        enemyHealth.TakeSentinelShot(isHeadshot);
 
-        if (zombieHealth.IsDead())
-            Debug.Log(zombie.name + " MORT!");
+        if (enemyHealth.IsDead())
+            Debug.Log(enemy.name + " MORT!");
 
-        StartCoroutine(ZombieStunBySentinel());
+        StartCoroutine(EnemyStunBySentinel());
     }
 
-    private IEnumerator ZombieStunBySentinel()
+    // CORRECTION : Renommer pour clarté
+    private IEnumerator EnemyStunBySentinel()
     {
         zombieStunBySentinel = true;
         yield return new WaitForSeconds(sentinel.stunZombieDuration);
@@ -239,18 +238,27 @@ public class GameManager : MonoBehaviour
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
 
-        StartCoroutine(StunBySentinel());
+        StartCoroutine(PlayerStunBySentinel());
         humanHealth.TakeSentinelShot();
 
         if (humanHealth.IsDead())
             Debug.Log(human.name + " MORT!");
     }
 
-    private IEnumerator StunBySentinel()
+    // CORRECTION BUG 2 : Retirer le joueur de alreadyShot après recovery
+    private IEnumerator PlayerStunBySentinel()
     {
         stunBySentinel = true;
         yield return new WaitForSeconds(sentinel.stunDuration);
         stunBySentinel = false;
+
+        // BUG FIX : Retirer le joueur de la liste pour qu'il puisse se faire tirer dessus à nouveau
+        if (player != null)
+        {
+            alreadyShot.Remove(player.gameObject);
+            playerAlarmTriggered = false;
+            Debug.Log("Player recovery complete - can be shot again if moves");
+        }
     }
 
     void StartNewCycle(GameState newState)

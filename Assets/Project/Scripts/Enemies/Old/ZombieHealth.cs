@@ -4,26 +4,26 @@ using System;
 public class ZombieHealth : MonoBehaviour
 {
     [Header("Zombie Stats")]
-    public ZombieStats stats; // Reference au ScriptableObject
+    public EnemyStats stats; // Reference au ScriptableObject
 
-    
+
     [Header("Effets Visuels")]
     public GameObject leftArmVisual;
     public GameObject rightArmVisual;
     public GameObject leftLegVisual;
     public GameObject rightLegVisual;
-    
+
 
     [Header("Prefabs")]
     public GameObject limbPrefab;
 
-    
+
     // Etat des membres
     private bool hasLeftArm = true;
     private bool hasRightArm = true;
     private bool hasLeftLeg = true;
     private bool hasRightLeg = true;
-    
+
 
     // Sante
     private float currentHealth;
@@ -34,10 +34,10 @@ public class ZombieHealth : MonoBehaviour
     private float recoverUntilTime = 0f;
 
     // Events
-    
+
     public event Action<string> OnLimbLost;
-    
-    
+
+
     public event Action OnHeadshot;
     public event Action OnDeath;
     public event Action<float, float> OnHealthChanged; // current, max
@@ -46,7 +46,7 @@ public class ZombieHealth : MonoBehaviour
     {
         if (stats == null)
         {
-            Debug.LogError("ZombieStats non assigne sur " + gameObject.name);
+            Debug.LogError("EnemyStats non assigne sur " + gameObject.name);
             return;
         }
 
@@ -85,10 +85,10 @@ public class ZombieHealth : MonoBehaviour
 
         OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
 
-        
+
         // Check perte de membres
         CheckLimbLoss();
-        
+
 
         // Check mort
         if (currentHealth <= 0f)
@@ -122,10 +122,10 @@ public class ZombieHealth : MonoBehaviour
 
         // Recovery stun
         StartRecovery();
-        
+
         // Check perte de membres
         CheckLimbLoss();
-        
+
 
         // Check mort
         if (currentHealth <= 0f)
@@ -141,7 +141,7 @@ public class ZombieHealth : MonoBehaviour
         isRecovering = true;
         recoverUntilTime = Time.time + 2f; // Tu peux mettre ca dans stats si tu veux
 
-        ZombieAI zombieAI = GetComponent<ZombieAI>();
+        EnemyAI zombieAI = GetComponent<EnemyAI>();
         /*
          * if (zombieAI != null)
         {
@@ -150,16 +150,16 @@ public class ZombieHealth : MonoBehaviour
         */
 
         // Liberer la cible si grab
-        ZombieGrabSystem grabSystem = GetComponent<ZombieGrabSystem>();
+        GrabAttack grabSystem = GetComponent<GrabAttack>();
         if (grabSystem != null && grabSystem.IsGrabbing())
         {
-            grabSystem.ForceRelease();
+            grabSystem.ForceStop();
         }
 
         Debug.Log($"{gameObject.name} starts recovery");
     }
 
-    
+
     // ===============================================
     // SYSTEME DE PERTE DE MEMBRES
     // ===============================================
@@ -293,7 +293,7 @@ public class ZombieHealth : MonoBehaviour
             }
         }
     }
-    
+
 
     // ===============================================
     // MORT
@@ -317,7 +317,7 @@ public class ZombieHealth : MonoBehaviour
 
         OnDeath?.Invoke();
 
-        ZombieAI ai = GetComponent<ZombieAI>();
+        EnemyAI ai = GetComponent<EnemyAI>();
         if (ai != null) ai.enabled = false;
 
         Destroy(gameObject, 3f);
@@ -347,7 +347,7 @@ public class ZombieHealth : MonoBehaviour
 
     void UpdateSpeed()
     {
-        ZombieAI ai = GetComponent<ZombieAI>();
+        EnemyAI ai = GetComponent<EnemyAI>();
         if (ai != null)
         {
             ai.UpdateSpeed(currentHealth, IsCrawling());

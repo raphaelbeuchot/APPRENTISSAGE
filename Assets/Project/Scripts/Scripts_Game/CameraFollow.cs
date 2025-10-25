@@ -6,6 +6,7 @@ public class CameraFollow : MonoBehaviour
     public float distance = 12f;
     public float sensibiliteSouris = 500f;
     public float hauteurMinSol = 0.2f;
+    public float offsetVertical = 5f;
 
     private float rotationX = 0f;  // yaw (horizontal)
     private float rotationY = 0f;  // pitch (vertical)
@@ -38,7 +39,7 @@ public class CameraFollow : MonoBehaviour
         Vector3 offset = rotation * new Vector3(0f, 0f, -distance);
 
         // On garde la hauteur (Y) de la camera fixe
-        Vector3 positionCible = new Vector3(target.position.x, target.position.y, target.position.z) + offset;
+        Vector3 positionCible = new Vector3(target.position.x, target.position.y + offsetVertical, target.position.z) + offset;
 
         // Ne pas passer sous le sol
         if (positionCible.y < hauteurMinSol)

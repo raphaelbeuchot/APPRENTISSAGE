@@ -9,47 +9,57 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d8b57929b96da94caf38c63491699cf, type: 3}
-  m_Name: Zombie_Basic
-  m_EditorClassIdentifier: Assembly-CSharp::ZombieStats
-  zombieName: Basic Zombie
-  zombieModel: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: c4810535072c26b49a2ac7d4c794a03c, type: 3}
+  m_Name: Zombie_01
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
+  enemyName: Zombie_01
+  enemyModel: {fileID: 0}
   skinVariants: []
+  attackType: 0
   maxHealth: 100
   limbLossThreshold: 0.5
-  walkSpeed: 0.7
-  chaseSpeed: 1.2
-  rotationSpeed: 30
-  crawlSpeed: 0.7
+  walkSpeed: 0.5
+  chaseSpeed: 1
+  rotationSpeed: 15
+  crawlSpeed: 1
   speedReductionPerHealthPercent: 0.3
-  detectionRadius: 5
+  detectionRadius: 8
   detectionAngle: 90
   detectionCheckInterval: 0.5
   targetLayer:
     serializedVersion: 2
     m_Bits: 128
   stealthDetectionMultiplier: 1
-  idleWanderChance: 0.728
-  wanderInterval: 4
+  idleWanderChance: 0.8
+  wanderInterval: 5
   wanderDuration: 3
-  grabRange: 1
+  attackRange: 1
+  attackCooldown: 1
   grabDuration: 5
   biteDamage: 10
-  knockbackForce: 5
-  knockbackDuration: 4
-  knockbackGracePeriod: 3.5
+  mashesToEscape: 10
+  oneArmMashReduction: 0.5
+  meleeDamage: 20
+  meleeKnockbackForce: 8
+  meleeAttackDuration: 0.8
+  spitDamage: 15
+  spitSpeed: 10
+  spitRange: 15
+  spitProjectilePrefab: {fileID: 0}
+  bourradeDuration: 2
+  bourradeCooldown: 2
+  bourradeForce: 10
   startingArmCount: 2
   startingLegCount: 2
-  oneArmMashReduction: 0.5
-  canBecomeCrawler: 0
+  canBecomeCrawler: 1
   meleeHitsForFinisher: 3
   forceMultiplier: 1
   hasWeapon: 0
   weaponPrefab: {fileID: 0}
   meleeDamageTaken: 25
-  sentinelDamageTaken: 25
+  sentinelDamageTaken: 60
   idleSounds: []
   chaseSounds: []
-  grabSound: {fileID: 0}
-  biteSound: {fileID: 0}
+  attackSound: {fileID: 0}
+  hurtSound: {fileID: 0}
   deathSound: {fileID: 0}
