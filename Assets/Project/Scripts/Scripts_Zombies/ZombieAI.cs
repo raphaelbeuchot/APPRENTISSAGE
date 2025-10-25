@@ -1,159 +1,53 @@
 using UnityEngine;
 using System.Collections;
-using NUnit.Framework.Constraints;
 
 [RequireComponent(typeof(Rigidbody))]
-public class ZombieAI : MonoBehaviour
+public class ZombieAI : EnemyAI
 {
-    [Header("Zombie Stats")]
-    public ZombieStats stats;
-
-    [Header("References")]
-    private Rigidbody rb;
+    [Header("References Zombie")]
     private ZombieHealth health;
     private ZombieGrabSystem grabSystem;
 
-    private Transform targetHuman;
-
-    private Vector3 wanderDirection;
-    private float lastWanderTime = 0f;
-    private float wanderTimer = 0f;
-
-    private float lastAttackTime = 0f;
-
     private bool isStunnedByShot = false;
 
-    private enum State { Idle, Wandering, Chasing, Attacking }
-    private State currentState = State.Idle;
-
-    private float currentSpeed;
-
-    [Header("Références")]
-    public GameManager gameManager;
-
-    void Start()
+    protected override void Start()
     {
-        if (stats == null)
-        {
-            Debug.LogError("ZombieStats non assigne sur " + gameObject.name);
-            return;
-        }
+        base.Start(); // appelle EnemyAI.Start()
 
-        rb = GetComponent<Rigidbody>();
         health = GetComponent<ZombieHealth>();
         grabSystem = GetComponent<ZombieGrabSystem>();
 
-        currentSpeed = stats.walkSpeed;
-
-        StartCoroutine(DetectionLoop());
-    }
-
-    void Update()
-    {
-        if (stats == null) return;
-        if (health != null && health.IsDead()) { StopMovement(); return; }
-        if (gameManager.zombieStunBySentinel == true) { StopMovement(); return; }
-        if (grabSystem != null && grabSystem.IsGrabbing()) { StopMovement(); return; }
-
-        switch (currentState)
+        if (stats == null)
         {
-            case State.Idle: HandleIdleState(); break;
-            case State.Wandering: HandleWanderingState(); break;
-            case State.Chasing: HandleChasingState(); break;
-            case State.Attacking: HandleAttackingState(); break;
-        }
-    }
-
-    IEnumerator DetectionLoop()
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(stats.detectionCheckInterval);
-            if (health != null && health.IsDead()) continue;
-            if (isStunnedByShot) continue;
-            if (grabSystem != null && grabSystem.IsGrabbing()) continue;
-            DetectHumans();
-        }
-    }
-
-    void DetectHumans()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, stats.detectionRadius, stats.targetLayer);
-        Transform closestHuman = null;
-        float closestDistance = Mathf.Infinity;
-
-        foreach (Collider hit in hits)
-        {
-            PlayerHealth humanHealth = hit.GetComponent<PlayerHealth>();
-            if (humanHealth != null && !humanHealth.IsDead())
-            {
-                float distance = Vector3.Distance(transform.position, hit.transform.position);
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestHuman = hit.transform;
-                }
-            }
-        }
-
-        if (closestHuman != null)
-        {
-            targetHuman = closestHuman;
-            if (closestDistance <= stats.grabRange)
-                currentState = State.Attacking;
-            else
-                currentState = State.Chasing;
-        }
-        else
-        {
-            targetHuman = null;
-            if (currentState == State.Chasing || currentState == State.Attacking)
-                currentState = State.Idle;
-        }
-    }
-
-    void HandleIdleState()
-    {
-        StopMovement();
-        if (Time.time - lastWanderTime >= stats.wanderInterval)
-        {
-            lastWanderTime = Time.time;
-            if (UnityEngine.Random.value < stats.idleWanderChance)
-                StartWandering();
-        }
-    }
-
-    void HandleWanderingState()
-    {
-        wanderTimer += Time.deltaTime;
-        if (wanderTimer >= stats.wanderDuration)
-        {
-            currentState = State.Idle;
-            wanderTimer = 0f;
-            StopMovement();
+            Debug.LogError("ZombieStats non assigné sur " + gameObject.name);
             return;
         }
-        MoveInDirection(wanderDirection, currentSpeed);
+
+        currentSpeed = stats.walkSpeed;
     }
 
-    void HandleChasingState()
+    protected override void Update()
+    {
+        if (stats == null) return;
+        if (health != null && health.IsDead()) { StopMovement(); currentState = State.Dead; return; }
+        if (gameManager != null && gameManager.zombieStunBySentinel == true) { StopMovement(); return; }
+        if (grabSystem != null && grabSystem.IsGrabbing()) { StopMovement(); return; }
+
+        base.Update(); // conserve Idle, Wander, Chase du parent
+    }
+
+    protected override void HandleAttackingState()
     {
         if (targetHuman == null) { currentState = State.Idle; return; }
 
         float distance = Vector3.Distance(transform.position, targetHuman.position);
-        if (distance <= stats.grabRange) { currentState = State.Attacking; return; }
+        if (distance > stats.grabRange * 1.5f)
+        {
+            currentState = State.Chasing;
+            return;
+        }
 
-        Vector3 direction = (targetHuman.position - transform.position).normalized;
-        MoveInDirection(direction, currentSpeed);
-    }
-
-    void HandleAttackingState()
-    {
-        if (targetHuman == null) { currentState = State.Idle; return; }
-
-        float distance = Vector3.Distance(transform.position, targetHuman.position);
-        if (distance > stats.grabRange * 1.5f) { currentState = State.Chasing; return; }
-
+        // Oriente le zombie vers sa cible
         Vector3 direction = (targetHuman.position - transform.position).normalized;
         direction.y = 0;
         if (direction.magnitude > 0.1f)
@@ -162,6 +56,7 @@ public class ZombieAI : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
         }
 
+        // Tentative d’attaque (Grab)
         if (Time.time - lastAttackTime >= stats.knockbackGracePeriod)
         {
             if (grabSystem != null && grabSystem.CanGrab())
@@ -173,7 +68,7 @@ public class ZombieAI : MonoBehaviour
         }
     }
 
-    void AttemptAttack()
+    private void AttemptAttack()
     {
         if (targetHuman == null) return;
 
@@ -185,6 +80,7 @@ public class ZombieAI : MonoBehaviour
         }
         else if (grabSystem == null)
         {
+            // fallback : morsure directe
             PlayerHealth humanHealth = targetHuman.GetComponent<PlayerHealth>();
             if (humanHealth != null && !humanHealth.IsDead())
             {
@@ -192,31 +88,6 @@ public class ZombieAI : MonoBehaviour
                 Debug.Log(gameObject.name + " attacked " + targetHuman.name + "!");
             }
         }
-    }
-
-    void StartWandering()
-    {
-        currentState = State.Wandering;
-        wanderTimer = 0f;
-        wanderDirection = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f)).normalized;
-    }
-
-    void MoveInDirection(Vector3 direction, float speed)
-    {
-        direction.y = 0;
-        direction.Normalize();
-        if (direction.magnitude > 0.1f)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
-            Vector3 velocity = direction * speed;
-            rb.linearVelocity = new Vector3(velocity.x, rb.linearVelocity.y, velocity.z);
-        }
-    }
-
-    void StopMovement()
-    {
-        rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
     }
 
     public void UpdateSpeed(float currentHealth, bool isCrawler)
@@ -228,15 +99,9 @@ public class ZombieAI : MonoBehaviour
         Debug.Log(gameObject.name + " speed updated: " + currentSpeed);
     }
 
-    void OnDrawGizmosSelected()
+    protected override void OnDrawGizmosSelected()
     {
-        if (stats == null) return;
-
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, stats.detectionRadius);
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, stats.grabRange);
+        base.OnDrawGizmosSelected();
 
         if (targetHuman != null)
         {

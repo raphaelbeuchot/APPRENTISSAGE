@@ -166,9 +166,21 @@ public class MeleeAttackSystem : MonoBehaviour
                     Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
                     knockbackDir.y = 0;
 
+                    // vitesse actuelle du zombie
+                    Vector3 currentVel = targetRb.linearVelocity;
+                    // vitesse souhaitée après le knockback (constante)
+                    Vector3 desiredVel = knockbackDir * stats.knockbackForce;
+                    // delta à appliquer
+                    Vector3 velocityChange = desiredVel - currentVel;
+
+                    // appliquer le knockback
+                    targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
+
+                    /*
                     // Knockback depuis stats (avec force multiplier)
                     //float knockbackForce = stats.GetAdjustedKnockback();
                     targetRb.AddForce(knockbackDir * stats.knockbackForce, ForceMode.Impulse);
+                    */
                 }
 
                 // Appliquer damage
