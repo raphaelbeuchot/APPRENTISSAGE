@@ -49,7 +49,7 @@ public class ZombieGrabSystem : MonoBehaviour
     public void AttemptGrab(GameObject target)
     {
         if (stats == null) return;
-        if (isGrabbing || !canGrab || gameManager.stunBySentinel) return;
+        if (isGrabbing || !canGrab || gameManager.stunBySentinel || isInKnockbackGrace) return;
 
         float distance = Vector3.Distance(transform.position, target.transform.position);
 
@@ -150,16 +150,18 @@ public class ZombieGrabSystem : MonoBehaviour
 
     public void ForceRelease()
     {
+        /*
         if (isGrabbing)
         {
             Debug.Log(gameObject.name + " was forced to release (probably shot)!");
             StopAllCoroutines();
             ReleaseTarget(true);
-        }
+        }*/
     }
 
     void ReleaseTarget(bool applyKnockback = false)
     {
+        targetMovement.ForceStop();
         ApplyKnockback();
 
         if (grabbedTarget != null)
@@ -172,8 +174,7 @@ public class ZombieGrabSystem : MonoBehaviour
             targetMovement.enabled = true;
         }
 
-        if (zombieAI != null)
-            zombieAI.enabled = true;
+        
 
         isGrabbing = false;
         grabbedTarget = null;
@@ -190,7 +191,7 @@ public class ZombieGrabSystem : MonoBehaviour
             Vector3 knockbackDirection = (transform.position - grabbedTarget.transform.position).normalized;
             knockbackDirection.y = 0;
 
-            Vector3 knockbackVelocity = knockbackDirection * 10f + Vector3.up * stats.upwardForce;
+            Vector3 knockbackVelocity = knockbackDirection * stats.knockbackForce;
             zombieRigidbody.linearVelocity = knockbackVelocity;
 
             Debug.Log(gameObject.name + " knocked back!");

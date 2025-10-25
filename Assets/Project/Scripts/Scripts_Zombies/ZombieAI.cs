@@ -8,11 +8,16 @@ public class ZombieAI : EnemyAI
     private ZombieHealth health;
     private ZombieGrabSystem grabSystem;
 
+    [HideInInspector] public bool IsInKnockbackDuration = false;
+    [HideInInspector] public bool IsInKnockbackCooldown = false;
+
+    public bool IsInKnockback => IsInKnockbackDuration || IsInKnockbackCooldown;
+
     private bool isStunnedByShot = false;
 
     protected override void Start()
     {
-        base.Start(); // appelle EnemyAI.Start()
+        base.Start();
 
         health = GetComponent<ZombieHealth>();
         grabSystem = GetComponent<ZombieGrabSystem>();
@@ -57,15 +62,8 @@ public class ZombieAI : EnemyAI
         }
 
         // Tentative d’attaque (Grab)
-        if (Time.time - lastAttackTime >= stats.knockbackGracePeriod)
-        {
-            if (grabSystem != null && grabSystem.CanGrab())
-                AttemptAttack();
-        }
-        else
-        {
-            StopMovement();
-        }
+        if (grabSystem != null && grabSystem.CanGrab())
+            AttemptAttack();
     }
 
     private void AttemptAttack()
@@ -78,16 +76,6 @@ public class ZombieAI : EnemyAI
         {
             grabSystem.AttemptGrab(targetHuman.gameObject);
         }
-        else if (grabSystem == null)
-        {
-            // fallback : morsure directe
-            PlayerHealth humanHealth = targetHuman.GetComponent<PlayerHealth>();
-            if (humanHealth != null && !humanHealth.IsDead())
-            {
-                humanHealth.TakeDamage(stats.biteDamage);
-                Debug.Log(gameObject.name + " attacked " + targetHuman.name + "!");
-            }
-        }
     }
 
     public void UpdateSpeed(float currentHealth, bool isCrawler)
@@ -96,23 +84,5 @@ public class ZombieAI : EnemyAI
 
         bool isChasing = (currentState == State.Chasing || currentState == State.Attacking);
         currentSpeed = stats.GetAdjustedSpeed(currentHealth, isChasing, isCrawler);
-        Debug.Log(gameObject.name + " speed updated: " + currentSpeed);
-    }
-
-    protected override void OnDrawGizmosSelected()
-    {
-        base.OnDrawGizmosSelected();
-
-        if (targetHuman != null)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawLine(transform.position, targetHuman.position);
-        }
-
-        if (grabSystem != null && !grabSystem.CanGrab())
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawCube(transform.position + Vector3.up * 2.5f, Vector3.one * 0.3f);
-        }
     }
 }

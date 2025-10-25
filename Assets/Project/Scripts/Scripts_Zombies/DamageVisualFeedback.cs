@@ -36,16 +36,18 @@ public class DamageVisualFeedback : MonoBehaviour
             }
         }
 
-        // S'abonner aux événements de dégâts
+        /*
+         // S'abonner aux événements de dégâts
         if (health != null)
         {
             health.OnLimbLost += OnLimbLost;
             health.OnHeadshot += OnHeadshot;
         }
 
-        UpdateColor(0);
+        UpdateColor(0);*/
     }
 
+    /*
     void OnDestroy()
     {
         if (health != null)
@@ -66,6 +68,7 @@ public class DamageVisualFeedback : MonoBehaviour
 
         UpdateColor(damageLevel);
     }
+        */
 
     void OnHeadshot()
     {

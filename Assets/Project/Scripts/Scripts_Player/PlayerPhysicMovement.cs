@@ -111,7 +111,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
     }
 
-    void HandleMovement()
+    public void HandleMovement()
     {
         if (moveInput.magnitude < 0.1f)
         {

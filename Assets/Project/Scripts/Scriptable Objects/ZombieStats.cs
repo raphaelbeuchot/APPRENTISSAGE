@@ -42,16 +42,17 @@ public class ZombieStats : ScriptableObject
     public float biteDamage = 15f;
 
     [Header("KNOCKBACK")]
-    //public float knockbackResistance = 0.8f;
-    public float upwardForce = 2f;
-    public float knockbackDuration = 0.5f;
-    public float knockbackGracePeriod = 1f;
+    public float knockbackForce = 10f;
+    public float knockbackDuration = 3f;
+    public float knockbackGracePeriod = 2f;
 
+    
     [Header("SYSTEME DE MEMBRES")]
     public int startingArmCount = 2;
     public int startingLegCount = 2;
     [Range(0f, 1f)]
     public float oneArmMashReduction = 0.5f;
+    
 
     [Header("RAMPANT (Crawler)")]
     public bool canBecomeCrawler = true;

@@ -154,13 +154,13 @@ public class GameManager : MonoBehaviour
                         string reason = "MOUVEMENT";
                         if (isGrabbing) reason = "GRAB ACTIF";
                         else if (isAttacking) reason = "ATTAQUE";
-
+                        /*
                         if (isGrabbing && sentinelSettings.shootGrabbingZombiesInRedlight)
                         {
                             grabSystem.ForceRelease();
                             Debug.Log("Zombie " + col.gameObject.name + " tire pendant un grab - liberation du joueur!");
                         }
-
+                        */
                         StartCoroutine(ShootZombieWithDelay(col.gameObject, zombieHealth, reason));
                     }
                     else if (humanHealth != null && !humanHealth.IsDead())

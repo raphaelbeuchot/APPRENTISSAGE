@@ -145,7 +145,7 @@ public class MeleeAttackSystem : MonoBehaviour
     {
         Collider[] hits = Physics.OverlapSphere(
             transform.position,
-            stats.attackRange, // Depuis stats !
+            stats.attackRange, // portée depuis PlayerStats
             LayerMask.GetMask("Zombie")
         );
 
@@ -153,59 +153,43 @@ public class MeleeAttackSystem : MonoBehaviour
         {
             if (hit.gameObject == gameObject) continue;
 
-            // Verifier l'angle (90 degres devant)
-            Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
-            float angleToTarget = Vector3.Angle(transform.forward, directionToTarget);
+            ZombieHealth zombieHealth = hit.GetComponent<ZombieHealth>();
+            if (zombieHealth != null && zombieHealth.IsDead()) continue; // ignorer les morts
 
-            if (angleToTarget <= 90f)
+            // Knockback constant, direction zombie → player
+            Rigidbody targetRb = hit.GetComponent<Rigidbody>();
+            if (targetRb != null)
             {
-                // Appliquer knockback
-                Rigidbody targetRb = hit.GetComponent<Rigidbody>();
-                if (targetRb != null)
-                {
-                    Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
-                    knockbackDir.y = 0;
+                Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
+                knockbackDir.y = 0;
 
-                    // vitesse actuelle du zombie
-                    Vector3 currentVel = targetRb.linearVelocity;
-                    // vitesse souhaitée après le knockback (constante)
-                    Vector3 desiredVel = knockbackDir * stats.knockbackForce;
-                    // delta à appliquer
-                    Vector3 velocityChange = desiredVel - currentVel;
+                // vitesse actuelle du zombie
+                Vector3 currentVel = targetRb.linearVelocity;
 
-                    // appliquer le knockback
-                    targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
+                // vitesse souhaitée après le knockback (constante)
+                Vector3 desiredVel = knockbackDir * stats.knockbackForce;
 
-                    /*
-                    // Knockback depuis stats (avec force multiplier)
-                    //float knockbackForce = stats.GetAdjustedKnockback();
-                    targetRb.AddForce(knockbackDir * stats.knockbackForce, ForceMode.Impulse);
-                    */
-                }
+                // delta à appliquer
+                Vector3 velocityChange = desiredVel - currentVel;
 
-                // Appliquer damage
-                ZombieHealth zombieHealth = hit.GetComponent<ZombieHealth>();
-                if (zombieHealth != null)
-                {
-                    float damage = stats.GetAdjustedDamage();
-                    zombieHealth.TakeMeleeDamage(damage);
-                }
-
-                // Si le zombie etait en grab, le forcer a relacher
-                ZombieGrabSystem grabSystem = hit.GetComponent<ZombieGrabSystem>();
-                if (grabSystem != null && grabSystem.IsGrabbing())
-                {
-                    grabSystem.ForceRelease();
-                    Debug.Log($"Force {hit.gameObject.name} a relacher!");
-                }
-
-                // Knockdown temporaire
-                StartCoroutine(KnockdownTarget(hit.gameObject));
-
-                Debug.Log($"{gameObject.name} hit {hit.gameObject.name} for {stats.GetAdjustedDamage()} damage!");
+                // appliquer le knockback
+                targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
             }
+
+            // Appliquer dégâts
+            if (zombieHealth != null)
+            {
+                float damage = stats.GetAdjustedDamage();
+                zombieHealth.TakeMeleeDamage(damage);
+            }
+
+            // Knockdown temporaire (facultatif)
+            StartCoroutine(KnockdownTarget(hit.gameObject));
+
+            Debug.Log($"{gameObject.name} hit {hit.gameObject.name} for {stats.GetAdjustedDamage()} damage!");
         }
     }
+
 
     IEnumerator KnockdownTarget(GameObject target)
     {

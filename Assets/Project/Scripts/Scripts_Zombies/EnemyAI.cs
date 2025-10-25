@@ -23,7 +23,7 @@ public class EnemyAI : MonoBehaviour
     protected Vector3 wanderDirection;
     protected float currentSpeed;
 
-    protected enum State { Idle, Wandering, Chasing, Attacking, Dead }
+    protected enum State { Idle, Wandering, Chasing, Attacking, StunbySentinel, Dead }
     protected State currentState = State.Idle;
 
     protected virtual void Start()
@@ -53,6 +53,7 @@ public class EnemyAI : MonoBehaviour
             case State.Wandering: HandleWanderingState(); break;
             case State.Chasing: HandleChasingState(); break;
             case State.Attacking: HandleAttackingState(); break;
+            case State.StunbySentinel: HandleStunbySentinelState(); break; //état de stun après s'e^tre fait tirer dessus par la sentinelle
             case State.Dead: StopMovement(); break;
         }
     }
@@ -104,6 +105,12 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    protected virtual void HandleStunbySentinelState()
+    { 
+     
+       
+    }
+    
     protected virtual void HandleIdleState()
     {
         StopMovement();
@@ -141,7 +148,7 @@ public class EnemyAI : MonoBehaviour
 
     protected virtual void HandleAttackingState()
     {
-        // Par d�faut, comportement d'attaque vide (surcharg� dans ZombieAI)
+        // Par d�faut, comportement d'attaque vide (surcharge dans ZombieAI)
         StopMovement();
     }
 

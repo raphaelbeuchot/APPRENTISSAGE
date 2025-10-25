@@ -6,20 +6,24 @@ public class ZombieHealth : MonoBehaviour
     [Header("Zombie Stats")]
     public ZombieStats stats; // Reference au ScriptableObject
 
+    
     [Header("Effets Visuels")]
     public GameObject leftArmVisual;
     public GameObject rightArmVisual;
     public GameObject leftLegVisual;
     public GameObject rightLegVisual;
+    
 
     [Header("Prefabs")]
     public GameObject limbPrefab;
 
+    
     // Etat des membres
     private bool hasLeftArm = true;
     private bool hasRightArm = true;
     private bool hasLeftLeg = true;
     private bool hasRightLeg = true;
+    
 
     // Sante
     private float currentHealth;
@@ -30,7 +34,10 @@ public class ZombieHealth : MonoBehaviour
     private float recoverUntilTime = 0f;
 
     // Events
+    
     public event Action<string> OnLimbLost;
+    
+    
     public event Action OnHeadshot;
     public event Action OnDeath;
     public event Action<float, float> OnHealthChanged; // current, max
@@ -78,8 +85,10 @@ public class ZombieHealth : MonoBehaviour
 
         OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
 
+        
         // Check perte de membres
         CheckLimbLoss();
+        
 
         // Check mort
         if (currentHealth <= 0f)
@@ -113,9 +122,10 @@ public class ZombieHealth : MonoBehaviour
 
         // Recovery stun
         StartRecovery();
-
+        
         // Check perte de membres
         CheckLimbLoss();
+        
 
         // Check mort
         if (currentHealth <= 0f)
@@ -149,6 +159,7 @@ public class ZombieHealth : MonoBehaviour
         Debug.Log($"{gameObject.name} starts recovery");
     }
 
+    
     // ===============================================
     // SYSTEME DE PERTE DE MEMBRES
     // ===============================================
@@ -282,6 +293,7 @@ public class ZombieHealth : MonoBehaviour
             }
         }
     }
+    
 
     // ===============================================
     // MORT
