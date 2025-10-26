@@ -48,8 +48,8 @@ public class SentinelSettings : ScriptableObject
     public LayerMask obstacleLayers;
     [Tooltip("Offset en hauteur pour l'origine des raycasts")]
     public Vector3 raycastOffset = new Vector3(0, 3, 0);
-    [Tooltip("Délai avant de pouvoir tirer après réacquisition de cible")]
-    public float reacquisitionDelay = 0.3f;
+    //[Tooltip("Délai avant de pouvoir tirer après réacquisition de cible")]
+    //public float reacquisitionDelay = 0.3f;
     [Tooltip("Afficher les lasers de visée (debug)")]
     public bool showLasers = true;
     [Tooltip("Épaisseur des lasers")]

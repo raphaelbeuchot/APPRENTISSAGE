@@ -188,12 +188,15 @@ public class GameManager : MonoBehaviour
             {
                 // Afficher le cercle rouge
                 SentinelTarget sentinelTarget = col.GetComponent<SentinelTarget>();
-                if (sentinelTarget != null && currentState == GameState.RedLight)
+                /*if (sentinelTarget != null && currentState == GameState.RedLight)
                 {
                     sentinelTarget.ShowCircle();
                 }
+                */
 
-                if (!trackData.wasInLOS)
+                trackData.canShoot = true;
+                
+                /*if (!trackData.wasInLOS)
                 {
                     trackData.reacquiredTime = Time.time;
                     trackData.canShoot = false;
@@ -204,7 +207,7 @@ public class GameManager : MonoBehaviour
                     {
                         trackData.canShoot = true;
                     }
-                }
+                }*/
 
                 trackData.wasInLOS = true;
             }
@@ -233,6 +236,8 @@ public class GameManager : MonoBehaviour
                 if (rb != null)
                 {
                     Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+                    Debug.Log($"[SENTINEL CHECK] {col.name} velocity: {horizontalVelocity.magnitude} (threshold: {sentinelSettings.movementThreshold})"); // AJOUTE
+
                     bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
                     bool isMoving = horizontalVelocity.magnitude > sentinelSettings.movementThreshold;
 

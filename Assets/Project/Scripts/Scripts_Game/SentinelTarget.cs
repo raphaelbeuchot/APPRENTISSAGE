@@ -17,11 +17,11 @@ public class SentinelTarget : MonoBehaviour
         }
     }
 
-    public void ShowCircle()
+    /*public void ShowCircle()
     {
         if (targetCircle != null)
             targetCircle.ShowRedCircle();
-    }
+    }*/
 
     public void HideCircle()
     {

@@ -65,7 +65,7 @@ public class TargetCircle : MonoBehaviour
         }
     }
 
-    public void ShowRedCircle()
+    /*public void ShowRedCircle()
     {
         Debug.Log($"ShowRedCircle called on {gameObject.name}");
 
@@ -76,7 +76,7 @@ public class TargetCircle : MonoBehaviour
         isVisible = true;
 
         Debug.Log($"Circle position: {circleObject.transform.position}");
-    }
+    }*/
 
     public void HideCircle()
     {
