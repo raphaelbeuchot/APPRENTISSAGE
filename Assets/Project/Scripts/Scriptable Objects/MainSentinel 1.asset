@@ -42,6 +42,21 @@ MonoBehaviour:
   redlightParticlesPrefab: {fileID: 0}
   redlightScanInterval: 0.2
   shootDelay: 0.1
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 200
+  raycastOffset: {x: 0, y: 3, z: 0}
+  reacquisitionDelay: 0.3
+  showLasers: 1
+  laserWidth: 0.02
+  laserColor: {r: 1, g: 0, b: 0, a: 0.6862745}
+  laserFadeInDuration: 0.5
+  laserFadeOutDuration: 1
+  flashStartDelay: 1
+  flashDuration: 0.5
+  flashInterval: 0.2
+  detectionSound: {fileID: 8300000, guid: cd8210b2603e22f4990442b8d7f39341, type: 3}
+  laserFadeDuration: 1
   releaseDuration: 2
   releaseAnimation: {fileID: 0}
   releaseSound: {fileID: 8300000, guid: 19d85f214084cf04d9e15f7132a77aa7, type: 3}

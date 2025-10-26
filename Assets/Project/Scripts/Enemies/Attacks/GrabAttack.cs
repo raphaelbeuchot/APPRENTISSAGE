@@ -25,6 +25,10 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     private bool isInBourradeDuration = false;
     private bool isInBourradeCooldown = false;
 
+    // Player Recoil
+    [Header("Player Recoil")]
+    [SerializeField] private float playerEscapeRecoilForce = 50f;
+
     // ============================================
     // INTERFACE IAttackBehavior
     // ============================================
@@ -234,16 +238,29 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             targetMovement.ForceStop();
         }
 
-        // 2. Appliquer la bourrade À L'ENNEMI (pas au joueur !)
+        // 2. Appliquer la bourrade À L'ENNEMI
         ApplyBourradeToEnemy();
 
-        // 3. Réactiver le mouvement du joueur
+        // 3. Si escape (pas de morsure), appliquer recoil au joueur
+        if (!dealBiteDamage && grabbedTarget != null)
+        {
+            Rigidbody playerRb = grabbedTarget.GetComponent<Rigidbody>();
+            if (playerRb != null)
+            {
+                Vector3 recoilDirection = (grabbedTarget.transform.position - enemyTransform.position).normalized;
+                recoilDirection.y = 0;
+                playerRb.AddForce(recoilDirection * playerEscapeRecoilForce, ForceMode.Impulse);
+                Debug.Log($"Player recoil applied! Force: {playerEscapeRecoilForce}");
+            }
+        }
+
+        // 4. Réactiver le mouvement du joueur
         if (targetMovement != null)
         {
             targetMovement.enabled = true;
         }
 
-        // 4. Informer le système d'attaque que le joueur n'est plus grabbed
+        // 5. Informer le système d'attaque que le joueur n'est plus grabbed
         if (grabbedTarget != null)
         {
             MeleeAttackSystem meleeSystem = grabbedTarget.GetComponent<MeleeAttackSystem>();
@@ -251,7 +268,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 meleeSystem.OnGrabEnd();
         }
 
-        // 5. Reset des variables
+        // 6. Reset des variables
         isGrabbing = false;
         grabbedTarget = null;
         targetMovement = null;

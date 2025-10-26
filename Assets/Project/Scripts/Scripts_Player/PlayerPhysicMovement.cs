@@ -1,62 +1,79 @@
 using UnityEngine;
 
-/// <summary>
-/// Mouvement du joueur avec système HYBRIDE :
-/// - Responsive (pas d'inertie au démarrage)
-/// - Conserve la physique (bourrade fonctionne)
-/// - Arrêt net
-/// </summary>
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerPhysicsMovement : MonoBehaviour
 {
-    [Header("Movement Settings")]
-    public PlayerStats stats;
+    [Header("Player Stats")]
+    public PlayerStats stats; // ← LA SEULE RÉFÉRENCE NÉCESSAIRE !
 
-    [Header("Acceleration (NEW)")]
-    [Tooltip("Plus c'est élevé, plus le démarrage est rapide")]
-    [Range(5f, 100f)]
-    public float accelerationMultiplier = 15f;
+    [Header("Camera")]
+    public Transform cameraTransform;
 
-    [Tooltip("Plus c'est élevé, plus l'arrêt est net")]
-    [Range(5f, 100f)]
-    public float decelerationMultiplier = 20f;
-
-    [Header("Runtime Info")]
+    [Header("State")]
     public bool isRedLight = false;
+    public bool canMove;
 
+    // Variables runtime (état actuel)
     private Rigidbody rb;
-    private float currentStamina;
+    private Vector3 moveInput;
+    private Vector3 currentVelocity;
     private bool isSprinting = false;
-    private float currentMoveSpeed;
+    private float currentSpeed;
 
-    void Start()
+    // Stamina runtime
+    private float currentStamina;
+    private float lastSprintTime;
+
+    // Health (pour ajuster la vitesse)
+    private float currentHealth;
+    //réference
+    public GameManager gameManager;
+
+
+
+    void Awake()
     {
         rb = GetComponent<Rigidbody>();
 
-        if (stats == null)
+        // Caméra
+        if (cameraTransform == null)
         {
-            Debug.LogError("PlayerStats non assigné!");
-            return;
+            GameObject camObj = GameObject.Find("MainCamera");
+            if (camObj != null)
+                cameraTransform = camObj.transform;
         }
 
-        currentStamina = stats.maxStamina;
-        currentMoveSpeed = stats.moveSpeed;
+        // GameManager
+        if (gameManager == null)
+        {
+            gameManager = FindAnyObjectByType<GameManager>();
+        }
 
-        // Configuration Rigidbody optimale pour le système hybride
-        rb.linearDamping = 0f; // On gère la décélération manuellement
-        rb.mass = 50f;
-        rb.interpolation = RigidbodyInterpolation.Interpolate;
-        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        // Stats
+        if (stats != null)
+        {
+            currentHealth = stats.maxHealth;
+            currentStamina = stats.maxStamina;
+        }
+        else
+        {
+            Debug.LogError("PlayerStats non assigné sur " + gameObject.name);
+        }
+    }
 
-        // Freezer les rotations
-        rb.constraints = RigidbodyConstraints.FreezeRotationX |
-                        RigidbodyConstraints.FreezeRotationZ;
+    void Start()
+    {
+        if (gameManager == null)
+        {
+            gameManager = FindObjectOfType<GameManager>();
+        }
     }
 
     void Update()
     {
         if (stats == null) return;
 
+        HandleInput();
         HandleStamina();
     }
 
@@ -67,136 +84,158 @@ public class PlayerPhysicsMovement : MonoBehaviour
         HandleMovement();
     }
 
-    // ============================================
-    // MOUVEMENT HYBRIDE
-    // ============================================
-
-    void HandleMovement()
+    void HandleInput()
     {
-        // Input
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        Vector3 inputDirection = new Vector3(horizontal, 0f, vertical).normalized;
-
-        // Calcul de la vitesse cible
-        isSprinting = Input.GetKey(KeyCode.LeftShift) && currentStamina > 0f;
-
-        // Calcul de la vitesse en fonction du sprint
-        float targetSpeed = isSprinting
-            ? stats.moveSpeed * stats.sprintSpeedMultiplier
-            : stats.moveSpeed;
-
-        Vector3 targetVelocity = inputDirection * targetSpeed;
-
-        // Vélocité actuelle (horizontale seulement)
-        Vector3 currentVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-
-        // Calcul du changement de vélocité nécessaire
-        Vector3 velocityChange = targetVelocity - currentVelocity;
-
-        // === SYSTÈME HYBRIDE ===
-        float multiplier;
-
-        if (inputDirection.magnitude > 0.1f)
+        // Input de mouvement
+        if (!gameManager.stunBySentinel)
         {
-            // Accélération
-            multiplier = accelerationMultiplier;
+            float h = Input.GetAxisRaw("Horizontal");
+            float v = Input.GetAxisRaw("Vertical");
+            moveInput = new Vector3(h, 0f, v).normalized;
         }
         else
         {
-            // Décélération (freinage)
-            multiplier = decelerationMultiplier;
+            moveInput = Vector3.zero;
         }
 
-        // Application de la force
-        Vector3 force = velocityChange * multiplier;
-
-        // SÉCURITÉ : Limiter la force pour éviter la sur-correction
-        float maxForce = 1000f; // Force maximale en unités
-        if (force.magnitude > maxForce)
+        // Sprint (uniquement si stamina disponible)
+        if (Input.GetKey(KeyCode.LeftShift) && currentStamina > 0f && moveInput.magnitude > 0.1f)
         {
-            force = force.normalized * maxForce;
+            isSprinting = true;
+            lastSprintTime = Time.time;
         }
-
-        rb.AddForce(force, ForceMode.Acceleration);
-
-        // Rotation vers la direction du mouvement
-        if (inputDirection.magnitude > 0.1f)
+        else
         {
-            Quaternion targetRotation = Quaternion.LookRotation(inputDirection);
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRotation,
-                Time.fixedDeltaTime * 15f
-            );
+            isSprinting = false;
         }
-
-        currentMoveSpeed = currentVelocity.magnitude;
     }
-
-    // ============================================
-    // STAMINA
-    // ============================================
 
     void HandleStamina()
     {
-        if (isSprinting && currentStamina > 0f)
+        if (isSprinting)
         {
-            // Drain de la stamina
+            // Drain de stamina
             currentStamina -= stats.staminaDrainPerSecond * Time.deltaTime;
             currentStamina = Mathf.Max(0f, currentStamina);
+
+            // Arrêter le sprint si plus de stamina
+            if (currentStamina <= 0f)
+            {
+                isSprinting = false;
+            }
         }
-        else if (!isSprinting && currentStamina < stats.maxStamina)
+        else
         {
-            // Régénération de la stamina
-            currentStamina += stats.staminaRegenPerSecond * Time.deltaTime;
-            currentStamina = Mathf.Min(stats.maxStamina, currentStamina);
+            // Régénération avec délai
+            if (Time.time - lastSprintTime >= stats.staminaRegenDelay)
+            {
+                currentStamina += stats.staminaRegenPerSecond * Time.deltaTime;
+                currentStamina = Mathf.Min(stats.maxStamina, currentStamina);
+            }
         }
     }
 
-    // ============================================
-    // UTILITAIRES
-    // ============================================
+    public void HandleMovement()
+    {
+        Vector3 moveDirection = Vector3.zero; // ← AJOUTE CETTE LIGNE
+
+        if (moveInput.magnitude < 0.1f)
+        {
+            // Deceleration
+            currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, 5f * stats.moveSpeed * Time.fixedDeltaTime);
+        }
+        else
+        {
+            // Direction relative à la caméra
+            moveDirection = GetCameraRelativeMovement(moveInput);
+
+            // Calcul de la vitesse
+            float targetSpeed = CalculateSpeed();
+            Vector3 targetVelocity = moveDirection * targetSpeed;
+
+            // Acceleration
+            currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, stats.moveSpeed * Time.fixedDeltaTime);
+        }
+
+        // Rotation vers la direction du mouvement
+        if (moveInput.magnitude > 0.1f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.fixedDeltaTime);
+        }
+
+        // Application du mouvement
+        rb.linearVelocity = new Vector3(currentVelocity.x, rb.linearVelocity.y, currentVelocity.z);
+    }
+
+    float CalculateSpeed()
+    {
+        // 1. Vitesse de base ajustée selon la santé
+        float baseSpeed = stats.GetAdjustedSpeed(currentHealth);
+
+        // 2. Application du sprint si actif
+        if (isSprinting)
+        {
+            baseSpeed *= stats.sprintSpeedMultiplier;
+        }
+
+        return baseSpeed;
+    }
+
+    Vector3 GetCameraRelativeMovement(Vector3 input)
+    {
+        if (cameraTransform == null)
+            return input;
+
+        Vector3 forward = cameraTransform.forward;
+        Vector3 right = cameraTransform.right;
+
+        forward.y = 0f;
+        right.y = 0f;
+
+        forward.Normalize();
+        right.Normalize();
+
+        Debug.Log($"Input: {input}, Forward: {forward}, Right: {right}"); // ← ICI
+
+        return (forward * input.z + right * input.x).normalized;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // PUBLIC METHODS - Pour être appelés par d'autres scripts
+    // ═══════════════════════════════════════════════════════════
 
     /// <summary>
-    /// Arrête complètement le mouvement (pour grab, etc.)
+    /// Met à jour la santé actuelle (appelé par PlayerHealth)
+    /// </summary>
+    public void UpdateHealth(float newHealth)
+    {
+        currentHealth = newHealth;
+    }
+
+    /// <summary>
+    /// Force le joueur à s'arrêter (utilisé pour grab, etc.)
     /// </summary>
     public void ForceStop()
     {
-        rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+        moveInput = Vector3.zero;
+        currentVelocity = Vector3.zero;
+        rb.linearVelocity = Vector3.zero;
     }
 
     /// <summary>
-    /// Applique un knockback (bourrade, explosion, etc.)
+    /// Getter pour la stamina (pour l'UI)
     /// </summary>
-    public void ApplyKnockback(Vector3 direction, float force)
+    public float GetCurrentStamina()
     {
-        rb.AddForce(direction.normalized * force, ForceMode.Impulse);
+        return currentStamina;
     }
 
-    // ============================================
-    // GETTERS
-    // ============================================
-
-    public float GetCurrentStamina() => currentStamina;
-    public float GetMaxStamina() => stats.maxStamina;
-    public float GetStaminaPercentage() => currentStamina / stats.maxStamina;
-    public bool IsSprinting() => isSprinting;
-    public float GetCurrentSpeed() => currentMoveSpeed;
-
-    // ============================================
-    // MÉTHODE POUR PlayerHealth (COMPATIBILITÉ)
-    // ============================================
-
     /// <summary>
-    /// Appelée par PlayerHealth quand la santé change.
-    /// Permet d'ajuster la vitesse selon la santé (optionnel).
+    /// Getter pour la stamina max (pour l'UI)
     /// </summary>
-    public void UpdateHealth(float currentHealth)
+    public float GetMaxStamina()
     {
-        // Pour l'instant, on ne fait rien
-        // Tu peux réduire la vitesse si tu veux :
-        // float healthPercent = currentHealth / stats.maxHealth;
-        // currentMoveSpeed *= healthPercent;
+        return stats.maxStamina;
     }
 }

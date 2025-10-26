@@ -4,12 +4,13 @@ using System.Collections;
 public class MeleeAttackSystem : MonoBehaviour
 {
     [Header("Player Stats")]
-    public PlayerStats stats; // Reference au ScriptableObject
+    public PlayerStats stats;
 
     [Header("References")]
     private Rigidbody rb;
     private PlayerHealth health;
     private PlayerPhysicsMovement movement;
+
 
     // State runtime
     private bool isAttacking = false;
@@ -17,6 +18,9 @@ public class MeleeAttackSystem : MonoBehaviour
 
     // Grab state tracking
     private bool isGrabbed = false;
+
+    private Vector3 originalScale;
+
 
     // Visual
     private enum AttackArm { Left, Right }
@@ -33,6 +37,9 @@ public class MeleeAttackSystem : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         health = GetComponent<PlayerHealth>();
         movement = GetComponent<PlayerPhysicsMovement>();
+
+        // NOUVEAU : Sauvegarder le scale original
+        originalScale = transform.localScale;
     }
 
     void OnDisable()
@@ -48,7 +55,6 @@ public class MeleeAttackSystem : MonoBehaviour
     {
         if (stats == null) return;
 
-        // TOUJOURS avec clic gauche
         if (Input.GetMouseButtonDown(0) && CanAttack())
         {
             StartCoroutine(PerformAttack());
@@ -57,14 +63,12 @@ public class MeleeAttackSystem : MonoBehaviour
 
     bool CanAttack()
     {
-        // CRITIQUE : Ne pas pouvoir attaquer si grabbed
         if (isGrabbed)
         {
             Debug.Log("Cannot attack: player is grabbed!");
             return false;
         }
 
-        // Verifier le cooldown (depuis stats)
         if (Time.time - lastAttackTime < stats.attackCooldown)
         {
             return false;
@@ -82,8 +86,6 @@ public class MeleeAttackSystem : MonoBehaviour
             return false;
         }
 
-        // MODIFICATION : Ne pas réactiver automatiquement le movement s'il est désactivé
-        // Car ça pourrait interférer avec un grab en cours
         if (movement != null && !movement.enabled)
         {
             Debug.Log("Cannot attack: movement disabled (probably grabbed)");
@@ -102,10 +104,8 @@ public class MeleeAttackSystem : MonoBehaviour
         if (movement != null)
             movement.enabled = false;
 
-
-        // Animation visuelle
-        StartCoroutine(RotateArmVisual());
-
+        // Feedback visuel simple
+        StartCoroutine(PulseScale());
 
         // Delai avant le hit
         yield return new WaitForSeconds(0.1f);
@@ -124,40 +124,43 @@ public class MeleeAttackSystem : MonoBehaviour
             movement.enabled = true;
     }
 
-    IEnumerator RotateArmVisual()
+    IEnumerator PulseScale()
     {
+        Vector3 targetScale = originalScale * 1.2f;
+
+        // Agrandir
         float elapsed = 0f;
-        float rotationDirection = (currentArm == AttackArm.Left) ? -1f : 1f;
-        Quaternion startRotation = transform.rotation;
-        Quaternion targetRotation = startRotation * Quaternion.Euler(0, rotationDirection * 90f, 0);
+        float duration = stats.attackDuration / 2f;
 
-        // Rotation vers l'avant
-        while (elapsed < stats.attackDuration / 2f)
+        while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / (stats.attackDuration / 2f);
-            transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            float t = elapsed / duration;
+            transform.localScale = Vector3.Lerp(originalScale, targetScale, t);
             yield return null;
         }
 
-        // Rotation retour
+        // Rétrécir
         elapsed = 0f;
-        while (elapsed < stats.attackDuration / 2f)
+        while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / (stats.attackDuration / 2f);
-            transform.rotation = Quaternion.Slerp(targetRotation, startRotation, t);
+            float t = elapsed / duration;
+            transform.localScale = Vector3.Lerp(targetScale, originalScale, t);
             yield return null;
         }
 
-        transform.rotation = startRotation;
+        // Forcer le retour
+        transform.localScale = originalScale;
     }
 
     void DetectAndHitTargets()
     {
+        Debug.Log("MELEE ATTACK!"); // Feedback console
+
         Collider[] hits = Physics.OverlapSphere(
             transform.position,
-            stats.attackRange, // portée depuis PlayerStats
+            stats.attackRange,
             LayerMask.GetMask("Zombie")
         );
 
@@ -166,42 +169,35 @@ public class MeleeAttackSystem : MonoBehaviour
             if (hit.gameObject == gameObject) continue;
 
             ZombieHealth zombieHealth = hit.GetComponent<ZombieHealth>();
-            if (zombieHealth != null && zombieHealth.IsDead()) continue; // ignorer les morts
+            if (zombieHealth != null && zombieHealth.IsDead()) continue;
 
-            // Knockback constant, direction zombie → player
+            // Knockback
             Rigidbody targetRb = hit.GetComponent<Rigidbody>();
             if (targetRb != null)
             {
                 Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
                 knockbackDir.y = 0;
 
-                // vitesse actuelle du zombie
                 Vector3 currentVel = targetRb.linearVelocity;
-
-                // vitesse souhaitée après le knockback (constante)
                 Vector3 desiredVel = knockbackDir * stats.knockbackForce;
-
-                // delta à appliquer
                 Vector3 velocityChange = desiredVel - currentVel;
 
-                // appliquer le knockback
                 targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
             }
 
-            // Appliquer dégâts
+            // Degats
             if (zombieHealth != null)
             {
                 float damage = stats.GetAdjustedDamage();
                 zombieHealth.TakeMeleeDamage(damage);
             }
 
-            // Knockdown temporaire (facultatif)
+            // Knockdown
             StartCoroutine(KnockdownTarget(hit.gameObject));
 
             Debug.Log($"{gameObject.name} hit {hit.gameObject.name} for {stats.GetAdjustedDamage()} damage!");
         }
     }
-
 
     IEnumerator KnockdownTarget(GameObject target)
     {
@@ -211,7 +207,6 @@ public class MeleeAttackSystem : MonoBehaviour
             zombieAI.enabled = false;
         }
 
-        // Duree du knockdown (tu peux la mettre dans stats si tu veux)
         yield return new WaitForSeconds(2f);
 
         if (zombieAI != null && target != null)
@@ -221,29 +216,24 @@ public class MeleeAttackSystem : MonoBehaviour
     }
 
     // ============================================
-    // GESTION DU GRAB (appelé par ZombieGrabSystem)
+    // GESTION DU GRAB
     // ============================================
 
-    /// <summary>
-    /// Appelé par le ZombieGrabSystem quand le joueur se fait grab
-    /// </summary>
     public void OnGrabStart()
     {
         isGrabbed = true;
 
-        // Arrêter l'attaque en cours si il y en a une
         if (isAttacking)
         {
             StopAllCoroutines();
             isAttacking = false;
+            // NOUVEAU : Forcer le retour au scale original
+            transform.localScale = originalScale;
         }
 
         Debug.Log("MeleeAttackSystem: Player grabbed, attacks disabled");
     }
 
-    /// <summary>
-    /// Appelé par le ZombieGrabSystem quand le joueur est libéré
-    /// </summary>
     public void OnGrabEnd()
     {
         isGrabbed = false;

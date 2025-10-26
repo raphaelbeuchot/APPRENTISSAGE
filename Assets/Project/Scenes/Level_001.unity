@@ -763,6 +763,8 @@ GameObject:
   - component: {fileID: 263866067}
   - component: {fileID: 263866066}
   - component: {fileID: 263866065}
+  - component: {fileID: 263866071}
+  - component: {fileID: 263866072}
   m_Layer: 6
   m_Name: Zombie_01_1
   m_TagString: Untagged
@@ -779,7 +781,7 @@ Transform:
   m_GameObject: {fileID: 263866063}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.017439842, y: 0.163, z: -13.287621}
+  m_LocalPosition: {x: 0.017439842, y: 0.057, z: -13.287621}
   m_LocalScale: {x: 0.5, y: 1, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -915,6 +917,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 263866063}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &263866071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 263866063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f103e182fd4819545a6ea2512549ca39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelTarget
+  wasInLOS: 0
+  lostLOSTime: 0
+  isTracked: 0
+--- !u!114 &263866072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 263866063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 266be2cf256ee0a46980962df37fe9b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetCircle
+  redCircleMaterial: {fileID: 2100000, guid: 115ee7b186024a24681a0696a7cecba3, type: 2}
+  whiteCircleMaterial: {fileID: 2100000, guid: b24fddfd52ae1ac4785f4d15fe0cdaf6, type: 2}
+  circleSize: 1
+  whiteFlashDuration: 0.5
 --- !u!1 &321325914
 GameObject:
   m_ObjectHideFlags: 0
@@ -2891,6 +2924,8 @@ GameObject:
   - component: {fileID: 713696842}
   - component: {fileID: 713696841}
   - component: {fileID: 713696840}
+  - component: {fileID: 713696846}
+  - component: {fileID: 713696847}
   m_Layer: 6
   m_Name: Zombie_01_1 (1)
   m_TagString: Untagged
@@ -3043,6 +3078,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 713696838}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &713696846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 713696838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f103e182fd4819545a6ea2512549ca39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelTarget
+  wasInLOS: 0
+  lostLOSTime: 0
+  isTracked: 0
+--- !u!114 &713696847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 713696838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 266be2cf256ee0a46980962df37fe9b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetCircle
+  redCircleMaterial: {fileID: 2100000, guid: 115ee7b186024a24681a0696a7cecba3, type: 2}
+  whiteCircleMaterial: {fileID: 2100000, guid: b24fddfd52ae1ac4785f4d15fe0cdaf6, type: 2}
+  circleSize: 1
+  whiteFlashDuration: 0.5
 --- !u!1 &719044348
 GameObject:
   m_ObjectHideFlags: 0
@@ -3672,6 +3738,8 @@ GameObject:
   - component: {fileID: 828240064}
   - component: {fileID: 828240063}
   - component: {fileID: 828240062}
+  - component: {fileID: 828240068}
+  - component: {fileID: 828240069}
   m_Layer: 6
   m_Name: Zombie_01_1 (3)
   m_TagString: Untagged
@@ -3824,6 +3892,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 828240060}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &828240068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828240060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f103e182fd4819545a6ea2512549ca39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelTarget
+  wasInLOS: 0
+  lostLOSTime: 0
+  isTracked: 0
+--- !u!114 &828240069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828240060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 266be2cf256ee0a46980962df37fe9b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetCircle
+  redCircleMaterial: {fileID: 2100000, guid: 115ee7b186024a24681a0696a7cecba3, type: 2}
+  whiteCircleMaterial: {fileID: 2100000, guid: b24fddfd52ae1ac4785f4d15fe0cdaf6, type: 2}
+  circleSize: 1
+  whiteFlashDuration: 0.5
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -4095,6 +4194,8 @@ GameObject:
   - component: {fileID: 882987304}
   - component: {fileID: 882987303}
   - component: {fileID: 882987306}
+  - component: {fileID: 882987307}
+  - component: {fileID: 882987308}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -4236,7 +4337,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 882987291}
-  m_Material: {fileID: 13400000, guid: 4a46931cd2dc3ab4d92dddab425db589, type: 2}
+  m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -4264,9 +4365,41 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerPhysicsMovement
   stats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
-  accelerationMultiplier: 100
-  decelerationMultiplier: 100
+  cameraTransform: {fileID: 1361275057}
   isRedLight: 0
+  canMove: 1
+  gameManager: {fileID: 1801742136}
+--- !u!114 &882987307
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 882987291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f103e182fd4819545a6ea2512549ca39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelTarget
+  wasInLOS: 0
+  lostLOSTime: 0
+  isTracked: 0
+--- !u!114 &882987308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 882987291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 266be2cf256ee0a46980962df37fe9b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetCircle
+  redCircleMaterial: {fileID: 2100000, guid: 115ee7b186024a24681a0696a7cecba3, type: 2}
+  whiteCircleMaterial: {fileID: 2100000, guid: b24fddfd52ae1ac4785f4d15fe0cdaf6, type: 2}
+  circleSize: 1
+  whiteFlashDuration: 0.5
 --- !u!1 &887716752
 GameObject:
   m_ObjectHideFlags: 0
@@ -5328,6 +5461,117 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1203056329}
   m_CullTransparentMesh: 1
+--- !u!1 &1250154984
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1250154988}
+  - component: {fileID: 1250154987}
+  - component: {fileID: 1250154986}
+  - component: {fileID: 1250154985}
+  m_Layer: 3
+  m_Name: Obstacle_test
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &1250154985
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1250154984}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &1250154986
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1250154984}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1250154987
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1250154984}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1250154988
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1250154984}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.24, y: 1.016, z: 28.3}
+  m_LocalScale: {x: 3.5, y: 2, z: 0.2}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1283410090
 GameObject:
   m_ObjectHideFlags: 0
@@ -7130,6 +7374,8 @@ GameObject:
   - component: {fileID: 1633754834}
   - component: {fileID: 1633754833}
   - component: {fileID: 1633754832}
+  - component: {fileID: 1633754838}
+  - component: {fileID: 1633754839}
   m_Layer: 6
   m_Name: Zombie_01_1 (4)
   m_TagString: Untagged
@@ -7282,6 +7528,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1633754830}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1633754838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1633754830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f103e182fd4819545a6ea2512549ca39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelTarget
+  wasInLOS: 0
+  lostLOSTime: 0
+  isTracked: 0
+--- !u!114 &1633754839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1633754830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 266be2cf256ee0a46980962df37fe9b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetCircle
+  redCircleMaterial: {fileID: 2100000, guid: 115ee7b186024a24681a0696a7cecba3, type: 2}
+  whiteCircleMaterial: {fileID: 2100000, guid: b24fddfd52ae1ac4785f4d15fe0cdaf6, type: 2}
+  circleSize: 1
+  whiteFlashDuration: 0.5
 --- !u!1 &1777595319
 GameObject:
   m_ObjectHideFlags: 0
@@ -7506,6 +7783,7 @@ MonoBehaviour:
   greenMaterial: {fileID: 2100000, guid: 7d4919ec70114eb48a54864c2cc6636b, type: 2}
   redMaterial: {fileID: 2100000, guid: 23d8ea2022ab1654c87fc6d911610a35, type: 2}
   yellowMaterial: {fileID: 2100000, guid: 9c0666d93dcf41740ba7ff45298dcdcd, type: 2}
+  sentinelEye: {fileID: 887716756}
   waitForStart: 1
   stunBySentinel: 0
   zombieStunBySentinel: 0
@@ -8376,7 +8654,7 @@ GameObject:
   - component: {fileID: 1991821247}
   - component: {fileID: 1991821246}
   - component: {fileID: 1991821245}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9170,6 +9448,8 @@ GameObject:
   - component: {fileID: 2108339267}
   - component: {fileID: 2108339266}
   - component: {fileID: 2108339265}
+  - component: {fileID: 2108339271}
+  - component: {fileID: 2108339272}
   m_Layer: 6
   m_Name: Zombie_01_1 (2)
   m_TagString: Untagged
@@ -9322,6 +9602,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2108339263}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &2108339271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108339263}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f103e182fd4819545a6ea2512549ca39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelTarget
+  wasInLOS: 0
+  lostLOSTime: 0
+  isTracked: 0
+--- !u!114 &2108339272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108339263}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 266be2cf256ee0a46980962df37fe9b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetCircle
+  redCircleMaterial: {fileID: 2100000, guid: 115ee7b186024a24681a0696a7cecba3, type: 2}
+  whiteCircleMaterial: {fileID: 2100000, guid: b24fddfd52ae1ac4785f4d15fe0cdaf6, type: 2}
+  circleSize: 1
+  whiteFlashDuration: 0.5
 --- !u!1 &2144757954
 GameObject:
   m_ObjectHideFlags: 0
@@ -9596,3 +9907,4 @@ SceneRoots:
   - {fileID: 1551312464}
   - {fileID: 1317831820}
   - {fileID: 732358286}
+  - {fileID: 1250154988}
