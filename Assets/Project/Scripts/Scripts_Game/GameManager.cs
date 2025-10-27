@@ -145,13 +145,12 @@ public class GameManager : MonoBehaviour
 
             GrabAttack grabSystem = col.GetComponent<GrabAttack>();
             bool isGrabbing = grabSystem != null && grabSystem.IsGrabbing();
-            bool isInKnockbackGrace = grabSystem != null && grabSystem.IsInBourrade();
 
             if (col.gameObject == player.gameObject && player != null)
             {
                 PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
-                if (humanHealth != null)
-                    isInKnockbackGrace = humanHealth.IsInKnockbackGracePeriod();
+                if (humanHealth != null) { }
+                    
             }
 
             Vector3 targetPos = col.transform.position + Vector3.up * 1f;
@@ -232,16 +231,20 @@ public class GameManager : MonoBehaviour
             {
                 Rigidbody rb = col.GetComponent<Rigidbody>();
                 MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
-
                 if (rb != null)
+
                 {
                     Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
                     Debug.Log($"[SENTINEL CHECK] {col.name} velocity: {horizontalVelocity.magnitude} (threshold: {sentinelSettings.movementThreshold})"); // AJOUTE
 
                     bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
                     bool isMoving = horizontalVelocity.magnitude > sentinelSettings.movementThreshold;
+                    
+                    // IMMUNITÉ GRAB
+                    bool playerImmune = (col.gameObject == player.gameObject && (player.grabState == PlayerPhysicsMovement.GrabState.Grabbed));
+                    bool zombieImmune = (grabSystem != null && (grabSystem.isGrabbing || grabSystem.isInBourradeCooldown));
 
-                    bool shouldBeShot = isMoving || isAttacking;
+                    bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune;
 
                     if (shouldBeShot)
                     {
@@ -380,6 +383,8 @@ public class GameManager : MonoBehaviour
         zombieStunBySentinel = true;
         yield return new WaitForSeconds(sentinel.stunZombieDuration);
         zombieStunBySentinel = false;
+        // CLEANUP - permettre de retirer les zombies
+        alreadyShot.Clear();
     }
 
     void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 targetPos)
@@ -418,7 +423,35 @@ public class GameManager : MonoBehaviour
             Debug.Log("Player recovery complete - can be shot again if moves");
         }
     }
+    public IEnumerator ShootPlayerAtEndOfRecoil(GameObject playerObject, PlayerHealth humanHealth, Vector3 sentinelPos, Vector3 targetPos)
+    {
+        // Pas de délai, tir immédiat car on est déjà à la fin du recoil
+        if (humanHealth != null && !humanHealth.IsDead())
+        {
+            Debug.Log("BANG! Player shot at end of recoil");
 
+            if (audioSource != null && sentinelSettings.shootSound != null)
+                audioSource.PlayOneShot(sentinelSettings.shootSound);
+
+            // Flash blanc du cercle
+            SentinelTarget sentinelTarget = playerObject.GetComponent<SentinelTarget>();
+            if (sentinelTarget != null)
+            {
+                sentinelTarget.FlashWhite();
+            }
+
+            // Laser temporaire
+            StartCoroutine(ShowShootLaser(sentinelPos, targetPos, sentinelSettings.shootLaserFadeDuration));
+
+            StartCoroutine(PlayerStunBySentinel());
+            humanHealth.TakeSentinelShot();
+
+            if (humanHealth.IsDead())
+                Debug.Log(playerObject.name + " MORT!");
+        }
+
+        yield return null;
+    }
     // ============================================
     // GESTION DES CYCLES
     // ============================================

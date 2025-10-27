@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -12,6 +13,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
     [Header("State")]
     public bool isRedLight = false;
     public bool canMove;
+    // Grab States
+    public enum GrabState { None, Grabbed, Recoil }
+    public GrabState grabState = GrabState.None;
+    public float grabProgress = 0f;
+    public bool isBeingGrabbed => grabState == GrabState.Grabbed;
 
     // Variables runtime (état actuel)
     private Rigidbody rb;
@@ -86,19 +92,17 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void HandleInput()
     {
-        // Input de mouvement
-        if (!gameManager.stunBySentinel)
-        {
-            float h = Input.GetAxisRaw("Horizontal");
-            float v = Input.GetAxisRaw("Vertical");
-            moveInput = new Vector3(h, 0f, v).normalized;
-        }
-        else
+        // Bloquer inputs si grabbed ou en recoil
+        if (grabState != GrabState.None || gameManager.stunBySentinel)
         {
             moveInput = Vector3.zero;
+            return;
         }
 
-        // Sprint (uniquement si stamina disponible)
+        float h = Input.GetAxisRaw("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
+        moveInput = new Vector3(h, 0f, v).normalized;
+
         if (Input.GetKey(KeyCode.LeftShift) && currentStamina > 0f && moveInput.magnitude > 0.1f)
         {
             isSprinting = true;
@@ -109,6 +113,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             isSprinting = false;
         }
     }
+
 
     void HandleStamina()
     {

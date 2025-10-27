@@ -109,10 +109,16 @@ public class EnemyAI : MonoBehaviour
         }
 
         // Arrêter si en train d'attaquer ou dans un état spécial
-        if (attackBehavior != null && (attackBehavior.IsAttacking() || attackBehavior.IsInSpecialState()))
+        if (attackBehavior != null && attackBehavior.IsAttacking())
         {
             StopMovement();
             return;
+        }
+
+        // Ne pas toucher au mouvement si en bourrade (velocity contrôlée par la coroutine)
+        if (attackBehavior != null && attackBehavior.IsInSpecialState())
+        {
+            return; // Ne pas appeler StopMovement !
         }
 
         // États normaux
