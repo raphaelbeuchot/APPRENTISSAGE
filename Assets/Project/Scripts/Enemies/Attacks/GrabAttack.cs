@@ -15,6 +15,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     public bool isGrabbing = false;
     public bool isInBourradeDuration = false;
     public bool isInBourradeCooldown = false;
+    public bool isFakeGrabbing;
+    private System.Collections.Generic.List<EnemyAI> fakeGrabbers = new System.Collections.Generic.List<EnemyAI>();
     public bool IsInBourrade() => isInBourradeDuration || isInBourradeCooldown;
 
     public void Initialize(EnemyStats stats, Transform enemyTransform, Rigidbody enemyRigidbody)
@@ -27,9 +29,42 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         if (player) playerRb = player.GetComponent<Rigidbody>();
         gameManager = FindFirstObjectByType<GameManager>();
         if (player) playerMelee = player.GetComponent<MeleeAttackSystem>();
+
         isGrabbing = false;
         isInBourradeDuration = false;
         isInBourradeCooldown = false;
+        isFakeGrabbing = false;
+    }
+
+    void UpdateFakeGrabbers()
+    {
+        if (!player || player.grabState != PlayerPhysicsMovement.GrabState.Grabbed)
+        {
+            fakeGrabbers.Clear();
+            return;
+        }
+
+        Collider[] nearbyZombies = Physics.OverlapSphere(
+            player.transform.position,
+            stats.fakeGrabRange,
+            LayerMask.GetMask("Zombie")
+        );
+
+        fakeGrabbers.Clear();
+
+        foreach (Collider col in nearbyZombies)
+        {
+            if (col.gameObject == gameObject) continue;
+
+            EnemyAI zombie = col.GetComponent<EnemyAI>();
+            GrabAttack zombieGrab = col.GetComponent<GrabAttack>();
+
+            if (zombie != null && zombieGrab != null && !zombieGrab.isGrabbing)
+            {
+                fakeGrabbers.Add(zombie);
+                zombieGrab.isFakeGrabbing = true;
+            }
+        }
     }
 
     public bool CanAttack() => !isInBourradeDuration && !isInBourradeCooldown;
@@ -50,6 +85,32 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
     }
 
+    IEnumerator PlayerRecoilCoroutine(MeleeAttackSystem melee)
+    {
+        player.grabState = PlayerPhysicsMovement.GrabState.Recoil;
+        Vector3 recoilDir = (player.transform.position - transform.position).normalized;
+        recoilDir.y = 0;
+        playerRb.AddForce(recoilDir * player.stats.recoilForce, ForceMode.VelocityChange);
+        Debug.Log($"RECOIL applied: {recoilDir * stats.bourradeForce * player.stats.recoilForce}");
+
+        yield return new WaitForSeconds(0.3f);
+
+        if (gameManager.IsInRedLight() && player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
+        {
+            PlayerHealth ph = player.GetComponent<PlayerHealth>();
+            if (ph && !ph.IsDead())
+            {
+                Vector3 sentinelPos = gameManager.sentinelEye != null ? gameManager.sentinelEye.position : gameManager.transform.position;
+                gameManager.StartCoroutine(gameManager.ShootPlayerAtEndOfRecoil(player.gameObject, ph, sentinelPos, player.transform.position));
+            }
+        }
+
+        if (player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
+            player.grabState = PlayerPhysicsMovement.GrabState.None;
+
+        if (melee) melee.OnGrabEnd();
+    }
+
     IEnumerator GrabCoroutine()
     {
         // SETUP
@@ -57,8 +118,6 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
         player.ForceStop();
 
-
-        // Désactiver melee attack
         if (playerMelee) playerMelee.OnGrabStart();
 
         float elapsed = 0f;
@@ -69,6 +128,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         // GRAB LOOP
         while (elapsed < maxTime && mashCount < required)
         {
+            UpdateFakeGrabbers();
+
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 mashCount++;
@@ -86,22 +147,39 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         if (!escaped)
         {
-            // MORSURE
             PlayerHealth ph = player.GetComponent<PlayerHealth>();
             if (ph) ph.TakeDamage(stats.biteDamage);
         }
 
-        // RECOIL PLAYER
-        player.grabState = PlayerPhysicsMovement.GrabState.Recoil;
-        Vector3 recoilDir = (player.transform.position - transform.position).normalized;
-        recoilDir.y = 0;
-        playerRb.AddForce(recoilDir * stats.bourradeForce * 0.6f, ForceMode.VelocityChange);
-        Debug.Log($"RECOIL applied: {recoilDir * stats.bourradeForce * 0.6f}");
+        EndGrab();
 
-        isGrabbing = false;
+        void EndGrab()
+        {
+            MeleeAttackSystem melee = player.GetComponent<MeleeAttackSystem>();
 
-        // BOURRADE ZOMBIE
-        StartCoroutine(BourradeZombie());
+            // RECOIL PLAYER
+            StartCoroutine(PlayerRecoilCoroutine(melee));
+
+            // BOURRADE GRB (ce zombie)
+            isGrabbing = false;
+            StartCoroutine(BourradeZombie());
+
+            // BOURRADE FAKE GRABBERS
+            foreach (EnemyAI fakeZombie in fakeGrabbers)
+            {
+                if (fakeZombie != null)
+                {
+                    GrabAttack fakeGrab = fakeZombie.GetComponent<GrabAttack>();
+                    if (fakeGrab != null)
+                    {
+                        fakeGrab.isFakeGrabbing = false;
+                        fakeGrab.StartCoroutine(fakeGrab.BourradeZombie());
+                    }
+                }
+            }
+
+            fakeGrabbers.Clear();
+        }
 
         // CLEANUP PLAYER
         yield return new WaitForSeconds(0.3f);

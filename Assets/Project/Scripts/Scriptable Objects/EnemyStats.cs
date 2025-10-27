@@ -79,6 +79,8 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Réduction de mashes avec 1 seul bras")]
     [Range(0f, 1f)]
     public float oneArmMashReduction = 0.5f;
+    [Tooltip("Rayon pour fake grab autour du joueur")]
+    public float fakeGrabRange = 3f;
 
     [Header("ATTAQUE - HITTER (si attackType = Hitter)")]
     [Tooltip("Dégâts d'un coup de melee")]

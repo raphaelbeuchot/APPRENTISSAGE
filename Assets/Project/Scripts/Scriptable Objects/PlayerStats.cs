@@ -72,7 +72,9 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Nombre de pressions necessaires pour s'echapper d'un grab")]
     public int mashesToEscape = 10;
     [Tooltip("Temps maximum pour s'echapper avant de prendre des degats")]
-    public float grabEscapeTimeWindow = 3f;
+    public float grabEscapeTimeWindow = 5f;
+    [Tooltip("Force du recoil apres grab escape/release")]
+    public float recoilForce = 100f;
 
     [Header("ITEMS")]
     [Tooltip("Nombre de cerveaux de distraction au depart")]
