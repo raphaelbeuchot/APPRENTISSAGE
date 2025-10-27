@@ -15,12 +15,14 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     public bool isGrabbing = false;
     public bool isInBourradeDuration = false;
     public bool isInBourradeCooldown = false;
-    public bool isFakeGrabbing;
+    public bool isFakeGrabbing = false;
     private System.Collections.Generic.List<EnemyAI> fakeGrabbers = new System.Collections.Generic.List<EnemyAI>();
     public bool IsInBourrade() => isInBourradeDuration || isInBourradeCooldown;
 
     public void Initialize(EnemyStats stats, Transform enemyTransform, Rigidbody enemyRigidbody)
     {
+        fakeGrabbers = new System.Collections.Generic.List<EnemyAI>();
+        
         this.stats = stats;
         this.enemyTransform = enemyTransform;
         this.enemyRb = enemyRigidbody;

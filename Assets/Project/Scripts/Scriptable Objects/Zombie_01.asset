@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Zombie_01
   m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
   enemyName: Zombie_01
-  enemyModel: {fileID: 0}
+  enemyModel: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
   skinVariants: []
   attackType: 0
   maxHealth: 300
@@ -33,12 +33,13 @@ MonoBehaviour:
   idleWanderChance: 0.2
   wanderInterval: 5
   wanderDuration: 2
-  attackRange: 1
-  attackCooldown: 1
+  attackRange: 0.75
+  attackCooldown: 2
   grabDuration: 5
   biteDamage: 10
-  mashesToEscape: 10
+  mashesToEscape: 5
   oneArmMashReduction: 0.5
+  fakeGrabRange: 3
   meleeDamage: 20
   meleeKnockbackForce: 8
   meleeAttackDuration: 0.8
@@ -48,7 +49,7 @@ MonoBehaviour:
   spitProjectilePrefab: {fileID: 0}
   bourradeDuration: 2
   bourradeCooldown: 2
-  bourradeForce: 7
+  bourradeForce: 12
   startingArmCount: 2
   startingLegCount: 2
   canBecomeCrawler: 1

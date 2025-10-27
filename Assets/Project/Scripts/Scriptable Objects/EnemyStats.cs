@@ -74,9 +74,7 @@ public class EnemyStats : ScriptableObject
     public float grabDuration = 4f;
     [Tooltip("Dégâts de la morsure")]
     public float biteDamage = 15f;
-    [Tooltip("Nombre de pressions pour s'échapper (2 bras)")]
-    public int mashesToEscape = 10;
-    [Tooltip("Réduction de mashes avec 1 seul bras")]
+        [Tooltip("Réduction de mashes avec 1 seul bras")]
     [Range(0f, 1f)]
     public float oneArmMashReduction = 0.5f;
     [Tooltip("Rayon pour fake grab autour du joueur")]
