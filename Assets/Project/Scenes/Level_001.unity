@@ -5608,6 +5608,7 @@ GameObject:
   - component: {fileID: 1361275055}
   - component: {fileID: 1361275054}
   - component: {fileID: 1361275058}
+  - component: {fileID: 1361275059}
   m_Layer: 0
   m_Name: MainCamera
   m_TagString: Untagged
@@ -5750,6 +5751,25 @@ MonoBehaviour:
   sensibiliteSouris: 250
   hauteurMinSol: 0.2
   offsetVertical: 5
+--- !u!114 &1361275059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1361275052}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee9f2ef44f76dcd4daf17caf575e14b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NouvelleCamera
+  cibleCamera: {fileID: 887716756}
+  cibleArriere: {fileID: 1547379118}
+  player: {fileID: 882987295}
+  offset: {x: 0, y: 3, z: -7}
+  rotationX: 0
+  rotationY: 0
+  hauteurFixe: 0
 --- !u!1 &1373573981
 GameObject:
   m_ObjectHideFlags: 0

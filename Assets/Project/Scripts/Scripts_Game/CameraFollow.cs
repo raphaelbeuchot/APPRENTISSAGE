@@ -3,10 +3,11 @@ using UnityEngine;
 public class CameraFollow : MonoBehaviour
 {
     public Transform target;
-    public float distance = 12f;
+    public float distance = 9f;
     public float sensibiliteSouris = 500f;
     public float hauteurMinSol = 0.2f;
-    public float offsetVertical = 5f;
+    public float offsetVertical = 3f;
+
 
     private float rotationX = 0f;  // yaw (horizontal)
     private float rotationY = 0f;  // pitch (vertical)
