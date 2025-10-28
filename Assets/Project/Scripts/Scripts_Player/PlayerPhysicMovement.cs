@@ -13,6 +13,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     [Header("State")]
     public bool isRedLight = false;
     public bool canMove;
+
     public bool IsSprinting() => isSprinting;
 
     // Grab States

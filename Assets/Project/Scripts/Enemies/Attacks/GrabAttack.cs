@@ -100,9 +100,9 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
         player.ForceStop();
 
-        // Freeze positions ICI
-        playerRb.constraints = RigidbodyConstraints.FreezePosition;
-        enemyRb.constraints = RigidbodyConstraints.FreezePosition;
+        // Freeze TOUT
+        playerRb.constraints = RigidbodyConstraints.FreezeAll;
+        enemyRb.constraints = RigidbodyConstraints.FreezeAll;
 
         if (playerMelee) playerMelee.OnGrabStart();
 
@@ -147,7 +147,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         recoilDir.y = 0;
 
         // Unfreeze JUSTE la position (pas encore la rotation)
-        playerRb.constraints = RigidbodyConstraints.FreezeRotation;
+        // Unfreeze position, garde rotation XZ freeze
+        playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
         // Attendre 1 frame
         yield return null;
@@ -175,12 +176,16 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         if (player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
             player.grabState = PlayerPhysicsMovement.GrabState.None;
+        
+        player.grabState = PlayerPhysicsMovement.GrabState.None;
+
 
         if (playerMelee) playerMelee.OnGrabEnd();
     }
 
     void EndGrab()
     {
+
         // RECOIL PLAYER
         StartCoroutine(PlayerRecoilCoroutine());
 
@@ -207,7 +212,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     IEnumerator BourradeZombie()
     {
         // Unfreeze zombie
-        enemyRb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
+        enemyRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
         isInBourradeDuration = true;
         isInBourradeCooldown = false;

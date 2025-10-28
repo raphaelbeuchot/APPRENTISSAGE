@@ -6,10 +6,12 @@ public class MeleeAttackSystem : MonoBehaviour
     [Header("Player Stats")]
     public PlayerStats stats;
 
+
     [Header("References")]
     private Rigidbody rb;
     private PlayerHealth health;
     private PlayerPhysicsMovement movement;
+
 
 
     // State runtime
@@ -55,7 +57,9 @@ public class MeleeAttackSystem : MonoBehaviour
     {
         if (stats == null) return;
 
-        if (Input.GetMouseButtonDown(0) && CanAttack())
+        // Melee attack sur clic gauche OU espace (sauf si grabbed)
+
+        if (Input.GetKeyDown(KeyCode.Space) && CanAttack())
         {
             StartCoroutine(PerformAttack());
         }
@@ -63,9 +67,22 @@ public class MeleeAttackSystem : MonoBehaviour
 
     bool CanAttack()
     {
+        
         if (isGrabbed)
         {
             Debug.Log("Cannot attack: player is grabbed!");
+            return false;
+        }
+
+        // Empecher attaque pendant recoil
+        PlayerPhysicsMovement movement = GetComponent<PlayerPhysicsMovement>();
+        if (movement != null && movement.grabState == PlayerPhysicsMovement.GrabState.Recoil)
+        {
+            return false;
+        }
+
+        if (Time.time - lastAttackTime < stats.attackCooldown)
+        {
             return false;
         }
 
