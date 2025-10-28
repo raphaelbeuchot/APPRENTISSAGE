@@ -42,6 +42,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        // Freeze rotation X et Z
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
 
         // Caméra
         if (cameraTransform == null)
