@@ -1,6 +1,7 @@
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.AI;
 
 public class GameManager : MonoBehaviour
 {
@@ -231,15 +232,23 @@ public class GameManager : MonoBehaviour
             {
                 Rigidbody rb = col.GetComponent<Rigidbody>();
                 MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
+                bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking(); 
+                bool isMoving = false;
+
                 if (rb != null)
 
                 {
-                    Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-                    Debug.Log($"[SENTINEL CHECK] {col.name} velocity: {horizontalVelocity.magnitude} (threshold: {sentinelSettings.movementThreshold})"); // AJOUTE
+                    NavMeshAgent zombieAgent = col.GetComponent<NavMeshAgent>();
+                    if (zombieAgent != null && zombieAgent.isOnNavMesh)
+                    {
+                        isMoving = zombieAgent.velocity.magnitude > sentinelSettings.movementThreshold;
+                    }
+                    else
+                    {
+                        isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
+                    }
+                }
 
-                    bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
-                    bool isMoving = horizontalVelocity.magnitude > sentinelSettings.movementThreshold;
-                    
                     // IMMUNITÉ GRAB
                     bool playerImmune = (col.gameObject == player.gameObject && (player.grabState == PlayerPhysicsMovement.GrabState.Grabbed));
                     bool zombieImmune = (grabSystem != null && (grabSystem.isGrabbing || grabSystem.isInBourradeCooldown));
@@ -272,7 +281,7 @@ public class GameManager : MonoBehaviour
                             }
                         }
                     }
-                }
+                
             }
         }
     }

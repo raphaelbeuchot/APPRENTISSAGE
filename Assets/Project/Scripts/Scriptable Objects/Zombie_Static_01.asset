@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4810535072c26b49a2ac7d4c794a03c, type: 3}
+  m_Name: Zombie_Static_01
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
+  enemyName: Zombie_01
+  enemyModel: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+  skinVariants: []
+  attackType: 0
+  maxHealth: 300
+  limbLossThreshold: 0.5
+  walkSpeed: 0.2
+  chaseSpeed: 0.3
+  rotationSpeed: 1
+  crawlSpeed: 0.2
+  speedReductionPerHealthPercent: 0.3
+  detectionRadius: 4
+  detectionAngle: 200
+  detectionCheckInterval: 0.5
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  stealthDetectionMultiplier: 1
+  idleWanderChance: 0
+  wanderInterval: 5
+  wanderDuration: 1
+  attackRange: 0.75
+  attackCooldown: 2
+  grabDuration: 5
+  biteDamage: 10
+  oneArmMashReduction: 0.5
+  fakeGrabRange: 3
+  meleeDamage: 20
+  meleeKnockbackForce: 8
+  meleeAttackDuration: 0.8
+  spitDamage: 15
+  spitSpeed: 10
+  spitRange: 15
+  spitProjectilePrefab: {fileID: 0}
+  bourradeDuration: 2
+  bourradeCooldown: 2
+  bourradeForce: 12
+  startingArmCount: 2
+  startingLegCount: 2
+  canBecomeCrawler: 1
+  meleeHitsForFinisher: 3
+  forceMultiplier: 1
+  hasWeapon: 0
+  weaponPrefab: {fileID: 0}
+  meleeDamageTaken: 25
+  sentinelDamageTaken: 60
+  idleSounds: []
+  chaseSounds: []
+  attackSound: {fileID: 0}
+  hurtSound: {fileID: 0}
+  deathSound: {fileID: 0}

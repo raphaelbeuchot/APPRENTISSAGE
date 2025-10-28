@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.AI;
 
 /// <summary>
 /// AI générique pour tous les ennemis.
@@ -18,6 +19,7 @@ public class EnemyAI : MonoBehaviour
     protected GameManager gameManager;
     protected EnemyHealth health;
     protected IAttackBehavior attackBehavior;
+    protected NavMeshAgent agent;
 
     // État
     protected float lastWanderTime = 0f;
@@ -42,12 +44,21 @@ public class EnemyAI : MonoBehaviour
         gameManager = FindObjectOfType<GameManager>();
         health = GetComponent<EnemyHealth>();
 
-        currentSpeed = stats.walkSpeed;
+
 
         // Initialiser le comportement d'attaque selon le type
         InitializeAttackBehavior();
 
         StartCoroutine(DetectionLoop());
+
+        agent = GetComponent<NavMeshAgent>();
+        if (agent != null) {
+            agent.speed = stats.walkSpeed;
+            agent.angularSpeed = stats.rotationSpeed;
+            
+                }
+        
+
     }
 
     /// <summary>
@@ -169,6 +180,20 @@ public class EnemyAI : MonoBehaviour
             if (humanHealth != null && !humanHealth.IsDead())
             {
                 float distance = Vector3.Distance(transform.position, hit.transform.position);
+
+                // CHECK ANGLE
+                Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
+                float angle = Vector3.Angle(transform.forward, directionToTarget);
+
+                if (angle > stats.detectionAngle / 2f)
+                    continue; // Hors du cone, ignore
+
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestHuman = hit.transform;
+                }
+
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
@@ -210,6 +235,12 @@ public class EnemyAI : MonoBehaviour
 
     protected virtual void HandleWanderingState()
     {
+
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.speed = stats.walkSpeed;
+        }
+        
         wanderTimer += Time.deltaTime;
         if (wanderTimer >= stats.wanderDuration)
         {
@@ -218,11 +249,16 @@ public class EnemyAI : MonoBehaviour
             StopMovement();
             return;
         }
-        MoveInDirection(wanderDirection, currentSpeed);
+        MoveInDirection(wanderDirection, stats.walkSpeed);
     }
 
     protected virtual void HandleChasingState()
     {
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.speed = stats.chaseSpeed;
+        }
+        
         if (targetHuman == null)
         {
             currentState = State.Idle;
@@ -237,7 +273,7 @@ public class EnemyAI : MonoBehaviour
         }
 
         Vector3 direction = (targetHuman.position - transform.position).normalized;
-        MoveInDirection(direction, currentSpeed);
+        MoveInDirection(direction, stats.chaseSpeed);
     }
 
     protected virtual void HandleAttackingState()
@@ -289,6 +325,23 @@ public class EnemyAI : MonoBehaviour
 
     protected virtual void MoveInDirection(Vector3 direction, float speed)
     {
+
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.speed = speed;
+        
+        if (targetHuman != null)
+        {
+            agent.SetDestination(targetHuman.position);
+        }
+        else
+        {
+            agent.SetDestination(transform.position + direction * 3f);
+        }
+
+
+
+
         direction.y = 0;
         direction.Normalize();
 
@@ -300,10 +353,13 @@ public class EnemyAI : MonoBehaviour
             Vector3 velocity = direction * speed;
             rb.linearVelocity = new Vector3(velocity.x, rb.linearVelocity.y, velocity.z);
         }
+        }
     }
 
     protected void StopMovement()
     {
+        if (agent != null && agent.isOnNavMesh)
+            agent.ResetPath(); 
         rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
     }
 

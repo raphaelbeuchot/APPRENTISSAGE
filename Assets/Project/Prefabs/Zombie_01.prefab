@@ -38,7 +38,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
       propertyPath: m_Name
-      value: Zombie Variant 2
+      value: Zombie_01
       objectReference: {fileID: 0}
     - target: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
       propertyPath: m_Layer
@@ -330,6 +330,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8375666476404130286}
+    - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2435559506496242137}
   m_SourcePrefab: {fileID: 100100000, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
 --- !u!1 &7400521557073780375 stripped
 GameObject:
@@ -362,3 +365,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+--- !u!195 &2435559506496242137
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7400521557073780375}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4

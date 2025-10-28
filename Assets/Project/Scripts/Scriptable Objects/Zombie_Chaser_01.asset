@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4810535072c26b49a2ac7d4c794a03c, type: 3}
-  m_Name: Zombie_01
+  m_Name: Zombie_Chaser_01
   m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
   enemyName: Zombie_01
   enemyModel: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
@@ -18,13 +18,13 @@ MonoBehaviour:
   attackType: 0
   maxHealth: 300
   limbLossThreshold: 0.5
-  walkSpeed: 0.7
-  chaseSpeed: 1.2
-  rotationSpeed: 5
-  crawlSpeed: 0.7
+  walkSpeed: 0.2
+  chaseSpeed: 0.3
+  rotationSpeed: 1
+  crawlSpeed: 0.2
   speedReductionPerHealthPercent: 0.3
   detectionRadius: 4
-  detectionAngle: 90
+  detectionAngle: 200
   detectionCheckInterval: 0.5
   targetLayer:
     serializedVersion: 2
@@ -37,7 +37,6 @@ MonoBehaviour:
   attackCooldown: 2
   grabDuration: 5
   biteDamage: 10
-  mashesToEscape: 5
   oneArmMashReduction: 0.5
   fakeGrabRange: 3
   meleeDamage: 20

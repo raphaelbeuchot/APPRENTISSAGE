@@ -78,6 +78,10 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     {
         if (!player || IsInBourrade() || isGrabbing) return;
 
+        // Empecher grab si player sprinte
+        if (player != null && player.IsSprinting())
+            return;
+
         float dist = Vector3.Distance(transform.position, player.transform.position);
         if (dist > stats.attackRange) return;
 
@@ -87,31 +91,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
     }
 
-    IEnumerator PlayerRecoilCoroutine(MeleeAttackSystem melee)
-    {
-        player.grabState = PlayerPhysicsMovement.GrabState.Recoil;
-        Vector3 recoilDir = (player.transform.position - transform.position).normalized;
-        recoilDir.y = 0;
-        playerRb.AddForce(recoilDir * player.stats.recoilForce, ForceMode.VelocityChange);
-        Debug.Log($"RECOIL applied: {recoilDir * stats.bourradeForce * player.stats.recoilForce}");
-
-        yield return new WaitForSeconds(0.3f);
-
-        if (gameManager.IsInRedLight() && player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
-        {
-            PlayerHealth ph = player.GetComponent<PlayerHealth>();
-            if (ph && !ph.IsDead())
-            {
-                Vector3 sentinelPos = gameManager.sentinelEye != null ? gameManager.sentinelEye.position : gameManager.transform.position;
-                gameManager.StartCoroutine(gameManager.ShootPlayerAtEndOfRecoil(player.gameObject, ph, sentinelPos, player.transform.position));
-            }
-        }
-
-        if (player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
-            player.grabState = PlayerPhysicsMovement.GrabState.None;
-
-        if (melee) melee.OnGrabEnd();
-    }
+    
 
     IEnumerator GrabCoroutine()
     {
@@ -119,6 +99,10 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         isGrabbing = true;
         player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
         player.ForceStop();
+
+        // Freeze positions ICI
+        playerRb.constraints = RigidbodyConstraints.FreezePosition;
+        enemyRb.constraints = RigidbodyConstraints.FreezePosition;
 
         if (playerMelee) playerMelee.OnGrabStart();
 
@@ -131,13 +115,11 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         while (elapsed < maxTime && mashCount < required)
         {
             UpdateFakeGrabbers();
-
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 mashCount++;
                 Debug.Log($"MASH {mashCount}/{required}");
             }
-
             player.grabProgress = (float)mashCount / required;
             elapsed += Time.deltaTime;
             yield return null;
@@ -153,39 +135,34 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             if (ph) ph.TakeDamage(stats.biteDamage);
         }
 
+        
+
         EndGrab();
+    }
 
-        void EndGrab()
-        {
-            MeleeAttackSystem melee = player.GetComponent<MeleeAttackSystem>();
+    IEnumerator PlayerRecoilCoroutine()
+    {
+        player.grabState = PlayerPhysicsMovement.GrabState.Recoil;
+        Vector3 recoilDir = (player.transform.position - transform.position).normalized;
+        recoilDir.y = 0;
 
-            // RECOIL PLAYER
-            StartCoroutine(PlayerRecoilCoroutine(melee));
+        // Unfreeze JUSTE la position (pas encore la rotation)
+        playerRb.constraints = RigidbodyConstraints.FreezeRotation;
 
-            // BOURRADE GRB (ce zombie)
-            isGrabbing = false;
-            StartCoroutine(BourradeZombie());
+        // Attendre 1 frame
+        yield return null;
 
-            // BOURRADE FAKE GRABBERS
-            foreach (EnemyAI fakeZombie in fakeGrabbers)
-            {
-                if (fakeZombie != null)
-                {
-                    GrabAttack fakeGrab = fakeZombie.GetComponent<GrabAttack>();
-                    if (fakeGrab != null)
-                    {
-                        fakeGrab.isFakeGrabbing = false;
-                        fakeGrab.StartCoroutine(fakeGrab.BourradeZombie());
-                    }
-                }
-            }
+        // MAINTENANT appliquer la velocity
+        playerRb.linearVelocity = recoilDir * player.stats.recoilForce;
 
-            fakeGrabbers.Clear();
-        }
+        // Force Y a 0
+        Vector3 vel = playerRb.linearVelocity;
+        vel.y = 0f;
+        playerRb.linearVelocity = vel;
 
-        // CLEANUP PLAYER
         yield return new WaitForSeconds(0.3f);
-        // TIR SENTINEL À LA FIN DU RECOIL
+
+        // TIR SENTINEL
         if (gameManager.IsInRedLight() && player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
         {
             PlayerHealth ph = player.GetComponent<PlayerHealth>();
@@ -199,20 +176,52 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         if (player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
             player.grabState = PlayerPhysicsMovement.GrabState.None;
 
-        // Réactiver melee attack
         if (playerMelee) playerMelee.OnGrabEnd();
-
     }
 
+    void EndGrab()
+    {
+        // RECOIL PLAYER
+        StartCoroutine(PlayerRecoilCoroutine());
+
+        // BOURRADE GRB (ce zombie)
+        isGrabbing = false;
+        StartCoroutine(BourradeZombie());
+
+        // BOURRADE FAKE GRABBERS
+        foreach (EnemyAI fakeZombie in fakeGrabbers)
+        {
+            if (fakeZombie != null)
+            {
+                GrabAttack fakeGrab = fakeZombie.GetComponent<GrabAttack>();
+                if (fakeGrab != null)
+                {
+                    fakeGrab.isFakeGrabbing = false;
+                    fakeGrab.StartCoroutine(fakeGrab.BourradeZombie());
+                }
+            }
+        }
+
+        fakeGrabbers.Clear();
+    }
     IEnumerator BourradeZombie()
     {
+        // Unfreeze zombie
+        enemyRb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
+
         isInBourradeDuration = true;
         isInBourradeCooldown = false;
 
+        //BOURRADE DURATION
         Vector3 dir = (transform.position - player.transform.position).normalized;
-        dir.y = 0;
+        dir.y = 0f;
         enemyRb.linearVelocity = dir * stats.bourradeForce;
-        Debug.Log("BOURRADE DURATION - vulnerable au tir");
+
+        //Anti-décollage vertical
+        Vector3 vel = enemyRb.linearVelocity;
+        vel.y = 0f;
+        enemyRb.linearVelocity = vel;
+
 
         yield return new WaitForSeconds(stats.bourradeDuration);
 
