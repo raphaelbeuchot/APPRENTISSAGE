@@ -12,6 +12,8 @@ public class SentinelSettings : ScriptableObject
     public LayerMask targetLayers;
     public float movementThreshold = 0.1f;
 
+
+
     [Header("DEGATS")]
     public float playerDamage = 25f;
     public float zombieDamage = 60f;
@@ -41,7 +43,8 @@ public class SentinelSettings : ScriptableObject
     public Color redlightLightColor = Color.red;
     public GameObject redlightParticlesPrefab;
     public float redlightScanInterval = 0.2f;
-    public float shootDelay = 0.1f;
+    public float shootDelay = 0.2f;       // délai avant tir
+    public float shootCooldown = 2f;      // cooldown entre tirs pour une même cible
 
     [Header("LINE OF SIGHT & RAYCASTS")]
     [Tooltip("Layers qui bloquent la vision (murs, obstacles, ennemis)")]

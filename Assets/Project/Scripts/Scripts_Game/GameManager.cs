@@ -37,7 +37,6 @@ public class GameManager : MonoBehaviour
     private bool playerAlarmTriggered = false;
     private HashSet<GameObject> alreadyShot = new HashSet<GameObject>();
     private float detectionTimer = 0f;
-    private float lastShotTime = 0f;
 
     // Système de raycasts et LOS
     private Dictionary<GameObject, TargetTrackingData> trackedTargets = new Dictionary<GameObject, TargetTrackingData>();
@@ -48,6 +47,10 @@ public class GameManager : MonoBehaviour
         public float lostLOSTime;
         public float reacquiredTime;
         public bool canShoot;
+
+        // Nouvelles variables pour sécuriser les tirs
+        public bool isBeingShot = false;
+        public float lastShotTime = -999f;
     }
 
     void Start()
@@ -139,6 +142,11 @@ public class GameManager : MonoBehaviour
 
         foreach (Collider col in targets)
         {
+            if (!trackedTargets.ContainsKey(col.gameObject))
+                trackedTargets[col.gameObject] = new TargetTrackingData();
+
+            TargetTrackingData trackData = trackedTargets[col.gameObject];
+
             if (alreadyShot.Contains(col.gameObject)) continue;
 
             EnemyHealth enemyHealth = col.GetComponent<EnemyHealth>();
@@ -146,13 +154,6 @@ public class GameManager : MonoBehaviour
 
             GrabAttack grabSystem = col.GetComponent<GrabAttack>();
             bool isGrabbing = grabSystem != null && grabSystem.IsGrabbing();
-
-            if (col.gameObject == player.gameObject && player != null)
-            {
-                PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
-                if (humanHealth != null) { }
-                    
-            }
 
             Vector3 targetPos = col.transform.position + Vector3.up * 1f;
             Vector3 direction = (targetPos - sentinelPos).normalized;
@@ -162,139 +163,76 @@ public class GameManager : MonoBehaviour
             bool hasLOS = false;
 
             if (Physics.Raycast(sentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers))
-            {
-                if (hit.collider.gameObject == col.gameObject)
-                {
-                    hasLOS = true;
-                }
-                else
-                {
-                    hasLOS = false;
-                }
-            }
+                hasLOS = hit.collider.gameObject == col.gameObject;
             else
-            {
                 hasLOS = true;
-            }
 
-            if (!trackedTargets.ContainsKey(col.gameObject))
+            // Gestion LOS
+            trackData.canShoot = hasLOS;
+            trackData.wasInLOS = hasLOS;
+
+            // Affichage/cacher cercle
+            SentinelTarget sentinelTarget = col.GetComponent<SentinelTarget>();
+            if (sentinelTarget != null)
+            
+
+            // Vérifier si la cible doit être tirée
+            if (!hasLOS || !trackData.canShoot) continue;
+
+            Rigidbody rb = col.GetComponent<Rigidbody>();
+            MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
+            bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
+            bool isMoving = false;
+
+            if (rb != null)
             {
-                trackedTargets[col.gameObject] = new TargetTrackingData();
-            }
-
-            TargetTrackingData trackData = trackedTargets[col.gameObject];
-
-            if (hasLOS)
-            {
-                // Afficher le cercle rouge
-                SentinelTarget sentinelTarget = col.GetComponent<SentinelTarget>();
-                /*if (sentinelTarget != null && currentState == GameState.RedLight)
-                {
-                    sentinelTarget.ShowCircle();
-                }
-                */
-
-                trackData.canShoot = true;
-                
-                /*if (!trackData.wasInLOS)
-                {
-                    trackData.reacquiredTime = Time.time;
-                    trackData.canShoot = false;
-                }
+                NavMeshAgent agent = col.GetComponent<NavMeshAgent>();
+                if (agent != null && agent.isOnNavMesh)
+                    isMoving = agent.velocity.magnitude > sentinelSettings.movementThreshold;
                 else
-                {
-                    if (Time.time - trackData.reacquiredTime >= sentinelSettings.reacquisitionDelay)
-                    {
-                        trackData.canShoot = true;
-                    }
-                }*/
-
-                trackData.wasInLOS = true;
-            }
-            else
-            {
-                if (trackData.wasInLOS)
-                {
-                    trackData.lostLOSTime = Time.time;
-                }
-                trackData.wasInLOS = false;
-                trackData.canShoot = false;
-
-                // Cacher le cercle
-                SentinelTarget sentinelTarget = col.GetComponent<SentinelTarget>();
-                if (sentinelTarget != null)
-                {
-                    sentinelTarget.HideCircle();
-                }
+                    isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
             }
 
-            if (hasLOS && trackData.canShoot)
+            bool playerImmune = (col.gameObject == player.gameObject && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed);
+            bool zombieImmune = (grabSystem != null && (grabSystem.isGrabbing || grabSystem.isInBourradeCooldown));
+
+            bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune;
+
+            if (shouldBeShot && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
             {
-                Rigidbody rb = col.GetComponent<Rigidbody>();
-                MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
-                bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking(); 
-                bool isMoving = false;
+                trackData.isBeingShot = true;
+                trackData.lastShotTime = Time.time;
 
-                if (rb != null)
+                PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
+                if (enemyHealth != null && !enemyHealth.IsDead())
                 {
-                    NavMeshAgent zombieAgent = col.GetComponent<NavMeshAgent>();
-                    if (zombieAgent != null && zombieAgent.isOnNavMesh)
+                    alreadyShot.Add(col.gameObject);
+                    string reason = isGrabbing ? "GRAB ACTIF" : isAttacking ? "ATTAQUE" : "MOUVEMENT";
+                    StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, targetPos, trackData));
+                }
+                else if (humanHealth != null && !humanHealth.IsDead())
+                {
+                    alreadyShot.Add(col.gameObject);
+                    string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
+                    if (col.gameObject == player.gameObject && !playerAlarmTriggered)
                     {
-                        isMoving = zombieAgent.velocity.magnitude > sentinelSettings.movementThreshold;
-                    }
-                    else
-                    {
-                        isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
+                        playerAlarmTriggered = true;
+                        StartCoroutine(ShootPlayerWithAlarm(col.gameObject, humanHealth, reason, sentinelPos, targetPos, trackData));
                     }
                 }
-
-                    // IMMUNITÉ GRAB
-                    bool playerImmune = (col.gameObject == player.gameObject && (player.grabState == PlayerPhysicsMovement.GrabState.Grabbed));
-                    bool zombieImmune = (grabSystem != null && (grabSystem.isGrabbing || grabSystem.isInBourradeCooldown));
-
-                    bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune;
-
-                    if (shouldBeShot)
-                    {
-                        PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
-
-                        if (enemyHealth != null && !enemyHealth.IsDead())
-                        {
-                            alreadyShot.Add(col.gameObject);
-                            string reason = "MOUVEMENT";
-                            if (isGrabbing) reason = "GRAB ACTIF";
-                            else if (isAttacking) reason = "ATTAQUE";
-
-                            StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, targetPos));
-                        }
-                        else if (humanHealth != null && !humanHealth.IsDead())
-                        {
-                            alreadyShot.Add(col.gameObject);
-                            string reason = "MOUVEMENT";
-                            if (isAttacking) reason = "ATTAQUE";
-
-                            if (col.gameObject == player.gameObject && !playerAlarmTriggered)
-                            {
-                                playerAlarmTriggered = true;
-                                StartCoroutine(ShootPlayerWithAlarm(col.gameObject, humanHealth, reason, sentinelPos, targetPos));
-                            }
-                        }
-                    }
-                
             }
         }
     }
 
     // ============================================
-    // LASER DE TIR TEMPORAIRE
+    // LASER TEMPORAIRE
     // ============================================
 
     IEnumerator ShowShootLaser(Vector3 from, Vector3 to, float duration)
     {
         if (!sentinelSettings.showLasers) yield break;
 
-        // Créer le laser temporaire
         GameObject laserObj = new GameObject("ShootLaser_Temp");
         laserObj.transform.SetParent(transform);
 
@@ -308,57 +246,46 @@ public class GameManager : MonoBehaviour
         lr.SetPosition(0, from);
         lr.SetPosition(1, to);
 
-        // Fade out
         float elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             float alpha = 1f - (elapsed / duration);
-
             Color col = sentinelSettings.laserColor;
             col.a = alpha;
             lr.startColor = col;
             lr.endColor = col;
-
             yield return null;
         }
 
-        // Détruire
         Destroy(laserObj);
     }
 
     // ============================================
-    // SYSTÈME DE TIR
+    // COROUTINES DE TIR SÉCURISÉES
     // ============================================
 
-    IEnumerator ShootPlayerWithAlarm(GameObject playerObject, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 targetPos)
+    IEnumerator ShootEnemyWithDelay(GameObject enemy, EnemyHealth enemyHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, TargetTrackingData trackData)
     {
-        if (audioSource != null && sentinelSettings.shootSound != null)
-            /* audioSource.PlayOneShot(sentinelSettings.shootSound); */
+        yield return new WaitForSeconds(sentinelSettings.shootDelay);
 
-            Debug.Log("ALARME! Joueur detecte! (" + reason + ")");
+        if (enemyHealth != null && !enemyHealth.IsDead())
+        {
+            ShootEnemy(enemy, enemyHealth, reason, sentinelPos, targetPos);
+            trackData.isBeingShot = false;
+            trackData.lastShotTime = Time.time;
+        }
+    }
+
+    IEnumerator ShootPlayerWithAlarm(GameObject playerObject, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, TargetTrackingData trackData)
+    {
         yield return new WaitForSeconds(sentinelSettings.shootDelay);
 
         if (humanHealth != null && !humanHealth.IsDead())
         {
             ShootPlayer(playerObject, humanHealth, reason, sentinelPos, targetPos);
-            if (humanHealth.IsDead())
-                Debug.Log("GAME OVER!");
-        }
-    }
-
-    IEnumerator ShootEnemyWithDelay(GameObject enemy, EnemyHealth enemyHealth, string reason, Vector3 sentinelPos, Vector3 targetPos)
-    {
-        float delay = sentinelSettings.shootDelay;
-        yield return new WaitForSeconds(delay);
-
-        while (Time.time - lastShotTime < 0.15f)
-            yield return new WaitForSeconds(0.05f);
-
-        if (enemyHealth != null && !enemyHealth.IsDead())
-        {
-            ShootEnemy(enemy, enemyHealth, reason, sentinelPos, targetPos);
-            lastShotTime = Time.time;
+            trackData.isBeingShot = false;
+            trackData.lastShotTime = Time.time;
         }
     }
 
@@ -368,17 +295,12 @@ public class GameManager : MonoBehaviour
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
 
-        // Flash blanc du cercle
         SentinelTarget sentinelTarget = enemy.GetComponent<SentinelTarget>();
-        if (sentinelTarget != null)
-        {
-            sentinelTarget.FlashWhite();
-        }
+        if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
-        // Laser temporaire
         StartCoroutine(ShowShootLaser(sentinelPos, targetPos, sentinelSettings.shootLaserFadeDuration));
 
-        bool isHeadshot = UnityEngine.Random.value < 0.1f;
+        bool isHeadshot = Random.value < 0.1f;
         enemyHealth.TakeSentinelShot(isHeadshot);
 
         if (enemyHealth.IsDead())
@@ -387,12 +309,11 @@ public class GameManager : MonoBehaviour
         StartCoroutine(EnemyStunBySentinel());
     }
 
-    private IEnumerator EnemyStunBySentinel()
+    IEnumerator EnemyStunBySentinel()
     {
         zombieStunBySentinel = true;
         yield return new WaitForSeconds(sentinel.stunZombieDuration);
         zombieStunBySentinel = false;
-        // CLEANUP - permettre de retirer les zombies
         alreadyShot.Clear();
     }
 
@@ -402,24 +323,16 @@ public class GameManager : MonoBehaviour
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
 
-        // Flash blanc du cercle
         SentinelTarget sentinelTarget = human.GetComponent<SentinelTarget>();
-        if (sentinelTarget != null)
-        {
-            sentinelTarget.FlashWhite();
-        }
+        if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
-        // Laser temporaire
         StartCoroutine(ShowShootLaser(sentinelPos, targetPos, sentinelSettings.shootLaserFadeDuration));
 
         StartCoroutine(PlayerStunBySentinel());
         humanHealth.TakeSentinelShot();
-
-        if (humanHealth.IsDead())
-            Debug.Log(human.name + " MORT!");
     }
 
-    private IEnumerator PlayerStunBySentinel()
+    IEnumerator PlayerStunBySentinel()
     {
         stunBySentinel = true;
         yield return new WaitForSeconds(sentinel.stunDuration);
@@ -432,9 +345,9 @@ public class GameManager : MonoBehaviour
             Debug.Log("Player recovery complete - can be shot again if moves");
         }
     }
+
     public IEnumerator ShootPlayerAtEndOfRecoil(GameObject playerObject, PlayerHealth humanHealth, Vector3 sentinelPos, Vector3 targetPos)
     {
-        // Pas de délai, tir immédiat car on est déjà à la fin du recoil
         if (humanHealth != null && !humanHealth.IsDead())
         {
             Debug.Log("BANG! Player shot at end of recoil");
@@ -442,27 +355,20 @@ public class GameManager : MonoBehaviour
             if (audioSource != null && sentinelSettings.shootSound != null)
                 audioSource.PlayOneShot(sentinelSettings.shootSound);
 
-            // Flash blanc du cercle
             SentinelTarget sentinelTarget = playerObject.GetComponent<SentinelTarget>();
-            if (sentinelTarget != null)
-            {
-                sentinelTarget.FlashWhite();
-            }
+            if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
-            // Laser temporaire
             StartCoroutine(ShowShootLaser(sentinelPos, targetPos, sentinelSettings.shootLaserFadeDuration));
 
             StartCoroutine(PlayerStunBySentinel());
             humanHealth.TakeSentinelShot();
-
-            if (humanHealth.IsDead())
-                Debug.Log(playerObject.name + " MORT!");
         }
 
         yield return null;
     }
+
     // ============================================
-    // GESTION DES CYCLES
+    // CYCLES DE JEU
     // ============================================
 
     void StartNewCycle(GameState newState)
@@ -478,8 +384,6 @@ public class GameManager : MonoBehaviour
             alreadyShot.Clear();
             detectionTimer = 0f;
             trackedTargets.Clear();
-
-            // Cacher tous les cercles
             HideAllCircles();
         }
         else if (newState == GameState.Alert)
@@ -501,36 +405,27 @@ public class GameManager : MonoBehaviour
             targetDuration = sentinelSettings.releaseDuration;
             if (audioSource != null && sentinelSettings.releaseSound != null)
                 audioSource.PlayOneShot(sentinelSettings.releaseSound);
-
-            // Fade out des cercles
             FadeOutAllCircles();
         }
     }
 
     void HideAllCircles()
     {
-        SentinelTarget[] allTargets = FindObjectsOfType<SentinelTarget>();
-        foreach (SentinelTarget target in allTargets)
-        {
+        foreach (SentinelTarget target in FindObjectsOfType<SentinelTarget>())
             target.HideCircle();
-        }
     }
 
     void FadeOutAllCircles()
     {
-        SentinelTarget[] allTargets = FindObjectsOfType<SentinelTarget>();
-        foreach (SentinelTarget target in allTargets)
-        {
+        foreach (SentinelTarget target in FindObjectsOfType<SentinelTarget>())
             target.FadeOutCircle(sentinelSettings.laserFadeOutDuration);
-        }
     }
 
     void SetState(GameState newState)
     {
         currentState = newState;
-        if (player == null) return;
-
-        player.isRedLight = (newState == GameState.RedLight);
+        if (player != null)
+            player.isRedLight = (newState == GameState.RedLight);
 
         if (sentinelLightRenderer != null)
         {
