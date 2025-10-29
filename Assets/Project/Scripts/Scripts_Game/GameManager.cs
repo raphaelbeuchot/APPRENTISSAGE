@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
     private float detectionTimer = 0f;
     private float lastShotTime = 0f;
 
-    // Systï¿½me de raycasts et LOS
+    // Système de raycasts et LOS
     private Dictionary<GameObject, TargetTrackingData> trackedTargets = new Dictionary<GameObject, TargetTrackingData>();
 
     private class TargetTrackingData
@@ -127,7 +127,7 @@ public class GameManager : MonoBehaviour
     }
 
     // ============================================
-    // SYSTï¿½ME DE Dï¿½TECTION AVEC RAYCASTS
+    // SYSTÈME DE DÉTECTION AVEC RAYCASTS
     // ============================================
 
     void CheckForMovingTargetsWithRaycast()
@@ -249,7 +249,7 @@ public class GameManager : MonoBehaviour
                     }
                 }
 
-                    // IMMUNITE GRAB
+                    // IMMUNITÉ GRAB
                     bool playerImmune = (col.gameObject == player.gameObject && (player.grabState == PlayerPhysicsMovement.GrabState.Grabbed));
                     bool zombieImmune = (grabSystem != null && (grabSystem.isGrabbing || grabSystem.isInBourradeCooldown));
 
@@ -294,7 +294,7 @@ public class GameManager : MonoBehaviour
     {
         if (!sentinelSettings.showLasers) yield break;
 
-        // Crï¿½er le laser temporaire
+        // Créer le laser temporaire
         GameObject laserObj = new GameObject("ShootLaser_Temp");
         laserObj.transform.SetParent(transform);
 
@@ -323,12 +323,12 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
 
-        // Dï¿½truire
+        // Détruire
         Destroy(laserObj);
     }
 
     // ============================================
-    // SYSTï¿½ME DE TIR
+    // SYSTÈME DE TIR
     // ============================================
 
     IEnumerator ShootPlayerWithAlarm(GameObject playerObject, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 targetPos)
@@ -434,7 +434,7 @@ public class GameManager : MonoBehaviour
     }
     public IEnumerator ShootPlayerAtEndOfRecoil(GameObject playerObject, PlayerHealth humanHealth, Vector3 sentinelPos, Vector3 targetPos)
     {
-        // Pas de dï¿½lai, tir immï¿½diat car on est dï¿½jï¿½ ï¿½ la fin du recoil
+        // Pas de délai, tir immédiat car on est déjà à la fin du recoil
         if (humanHealth != null && !humanHealth.IsDead())
         {
             Debug.Log("BANG! Player shot at end of recoil");
