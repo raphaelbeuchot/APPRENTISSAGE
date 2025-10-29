@@ -34,7 +34,7 @@ public interface IAttackBehavior
     /// <param name="stats">Stats de l'ennemi</param>
     /// <param name="enemyTransform">Transform de l'ennemi</param>
     /// <param name="enemyRigidbody">Rigidbody de l'ennemi</param>
-    void Initialize(EnemyStats stats, Transform enemyTransform, Rigidbody enemyRigidbody);
+    void Initialize(EnemyStats stats, PlayerStats playerStats, Transform enemyTransform, Rigidbody enemyRigidbody);
 
     /// <summary>
     /// Force l'arrêt de l'attaque (par exemple si l'ennemi se fait tirer dessus)

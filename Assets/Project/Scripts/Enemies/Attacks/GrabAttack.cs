@@ -8,6 +8,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     private Rigidbody playerRb;
     private Rigidbody enemyRb;
     private EnemyStats stats;
+    public PlayerStats playerStats;
     private Transform enemyTransform;
     private GameManager gameManager;
     private MeleeAttackSystem playerMelee;
@@ -19,11 +20,12 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     private System.Collections.Generic.List<EnemyAI> fakeGrabbers = new System.Collections.Generic.List<EnemyAI>();
     public bool IsInBourrade() => isInBourradeDuration || isInBourradeCooldown;
 
-    public void Initialize(EnemyStats stats, Transform enemyTransform, Rigidbody enemyRigidbody)
+    public void Initialize(EnemyStats stats, PlayerStats playerStats, Transform enemyTransform, Rigidbody enemyRigidbody)
     {
         fakeGrabbers = new System.Collections.Generic.List<EnemyAI>();
         
         this.stats = stats;
+        this.playerStats = playerStats;
         this.enemyTransform = enemyTransform;
         this.enemyRb = enemyRigidbody;
         enemy = GetComponent<EnemyAI>();
@@ -220,7 +222,11 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         //BOURRADE DURATION
         Vector3 dir = (transform.position - player.transform.position).normalized;
         dir.y = 0f;
-        enemyRb.linearVelocity = dir * stats.bourradeForce;
+
+        if (enemyRb == null) Debug.LogError("enemyRb est null !");
+        if (player == null) Debug.LogError("player est null !");
+        if (playerStats == null) Debug.LogError("playerStats est null !");
+        enemyRb.linearVelocity = dir * playerStats.bourradeForce;
 
         //Anti-décollage vertical
         Vector3 vel = enemyRb.linearVelocity;

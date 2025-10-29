@@ -14,6 +14,7 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Modele 3D du personnage")]
     public GameObject characterModel;
 
+
     [Header("SANTE")]
     [Tooltip("Points de vie maximum")]
     public float maxHealth = 100f;
@@ -49,6 +50,10 @@ public class PlayerStats : ScriptableObject
     public float attackDuration = 0.5f;
     [Tooltip("Cooldown entre deux attaques (en secondes)")]
     public float attackCooldown = 0.5f;
+
+    [Header("BOURRADE")]
+    [Tooltip("Force de la bourrade")]
+    public float bourradeForce = 12f;
 
     [Header("FORCE")]
     [Tooltip("Force globale du personnage (influe damage)")]

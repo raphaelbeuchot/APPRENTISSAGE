@@ -98,13 +98,12 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Prefab du projectile")]
     public GameObject spitProjectilePrefab;
 
-    [Header("BOURRADE (Knockback après attaque)")]
+    [Header("BOURRADE")]
     [Tooltip("Durée de la projection en arrière")]
     public float bourradeDuration = 1.5f;
     [Tooltip("Durée du cooldown après bourrade")]
     public float bourradeCooldown = 2f;
-    [Tooltip("Force de la bourrade")]
-    public float bourradeForce = 10f;
+    
 
     [Header("SYSTÈME DE MEMBRES")]
     [Tooltip("Nombre de bras au départ")]

@@ -12,6 +12,8 @@ public class EnemyAI : MonoBehaviour
 {
     [Header("Enemy Stats")]
     public EnemyStats stats;
+    public PlayerStats playerStats;
+
 
     [Header("References")]
     protected Rigidbody rb;
@@ -94,7 +96,7 @@ public class EnemyAI : MonoBehaviour
         // Initialiser le comportement d'attaque
         if (attackBehavior != null)
         {
-            attackBehavior.Initialize(stats, transform, rb);
+            attackBehavior.Initialize(stats, playerStats, transform, rb);
             Debug.Log($"{gameObject.name} initialized with {stats.attackType} attack behavior");
         }
     }
