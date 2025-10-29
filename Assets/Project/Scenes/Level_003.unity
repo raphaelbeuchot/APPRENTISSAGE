@@ -290,6 +290,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &21215468
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -846,6 +847,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &70570330
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1445,6 +1447,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2435559506496242137, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
       propertyPath: m_AngularSpeed
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3242663608269756582, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+      propertyPath: playerStats
+      value: 
+      objectReference: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+    - target: {fileID: 4258174740479172183, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+      propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5655205089844768330, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
@@ -11575,6 +11585,14 @@ PrefabInstance:
       propertyPath: m_Acceleration
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 6964313163739886700, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8556390614110237341, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: playerStats
+      value: 
+      objectReference: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -11721,6 +11739,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &713696842
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -12523,6 +12542,14 @@ PrefabInstance:
       propertyPath: m_Acceleration
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 6964313163739886700, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8556390614110237341, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: playerStats
+      value: 
+      objectReference: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -14178,6 +14205,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &828240064
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -18588,6 +18616,10 @@ PrefabInstance:
       propertyPath: m_AngularSpeed
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3242663608269756582, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+      propertyPath: playerStats
+      value: 
+      objectReference: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
     - target: {fileID: 5655205089844768330, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
       propertyPath: m_Mass
       value: 50
@@ -19339,6 +19371,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &1105757413
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -19802,6 +19835,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &1161428172
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -31850,6 +31884,14 @@ PrefabInstance:
       propertyPath: m_Acceleration
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 6964313163739886700, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8556390614110237341, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: playerStats
+      value: 
+      objectReference: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -32506,6 +32548,14 @@ PrefabInstance:
       propertyPath: m_Acceleration
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 6964313163739886700, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8556390614110237341, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: playerStats
+      value: 
+      objectReference: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -33138,6 +33188,14 @@ PrefabInstance:
       propertyPath: m_Acceleration
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 6964313163739886700, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8556390614110237341, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: playerStats
+      value: 
+      objectReference: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -33474,6 +33532,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &1633754834
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -33665,6 +33724,14 @@ PrefabInstance:
       propertyPath: m_Acceleration
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 6964313163739886700, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8556390614110237341, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: playerStats
+      value: 
+      objectReference: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -33688,6 +33755,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2435559506496242137, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
       propertyPath: m_AngularSpeed
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3242663608269756582, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+      propertyPath: playerStats
+      value: 
+      objectReference: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+    - target: {fileID: 4258174740479172183, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+      propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5655205089844768330, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
@@ -36640,6 +36715,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &1756076771
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -38837,6 +38913,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &1808661140
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -40519,6 +40596,14 @@ PrefabInstance:
       propertyPath: m_Acceleration
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 6964313163739886700, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8556390614110237341, guid: 948423b4801c1644192b99808a5ad698, type: 3}
+      propertyPath: playerStats
+      value: 
+      objectReference: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -42605,6 +42690,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &1998862523
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -43058,6 +43144,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &2021797418
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -45224,6 +45311,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 0}
 --- !u!54 &2108339267
 Rigidbody:
   m_ObjectHideFlags: 0
