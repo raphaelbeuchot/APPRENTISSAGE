@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using UnityEngine.AI;
 
 /// <summary>
 /// Système de santé SIMPLIFIÉ pour tous les ennemis.
@@ -39,6 +40,8 @@ public class EnemyHealth : MonoBehaviour
 
     void Update()
     {
+        if (isDead) return; // stop tout
+
         // Fin du recovery après tir
         if (isRecovering && Time.time >= recoverUntilTime)
         {
@@ -83,7 +86,6 @@ public class EnemyHealth : MonoBehaviour
     {
         if (isDead) return;
 
-        // Headshot = mort instantanée
         if (isHeadshot)
         {
             Debug.Log($"{gameObject.name} HEADSHOT! Instant death!");
@@ -92,27 +94,27 @@ public class EnemyHealth : MonoBehaviour
             return;
         }
 
-        // Dégâts normaux
+        // Appliquer les dégâts
         currentHealth -= stats.sentinelDamageTaken;
         currentHealth = Mathf.Max(0f, currentHealth);
 
         Debug.Log($"{gameObject.name} shot by sentinel! Health: {currentHealth}/{stats.maxHealth}");
-
-        // Event
         OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
 
-        // Recovery stun
+        // Vérifie la mort AVANT recovery
+        if (currentHealth <= 0f)
+        {
+            Die();
+            return;
+        }
+
+        // Recovery stun uniquement si vivant
         StartRecovery();
 
         // Mettre à jour la vitesse
         UpdateSpeed();
-
-        // Check mort
-        if (currentHealth <= 0f)
-        {
-            Die();
-        }
     }
+
 
     /// <summary>
     /// Démarre le recovery après un tir (stun temporaire)
@@ -143,28 +145,42 @@ public class EnemyHealth : MonoBehaviour
         isDead = true;
         Debug.Log($"{gameObject.name} is dead!");
 
-        // Event
         OnDeath?.Invoke();
 
-        // Désactiver l'AI
+        // Désactiver l'IA
         EnemyAI ai = GetComponent<EnemyAI>();
         if (ai != null)
-        {
             ai.enabled = false;
-        }
 
-        // Désactiver l'attaque
+        // Désactiver le grab
         GrabAttack grabAttack = GetComponent<GrabAttack>();
         if (grabAttack != null)
-        {
             grabAttack.enabled = false;
+
+        // Désactiver le NavMeshAgent
+        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        if (agent != null)
+        {
+            agent.isStopped = true;
+            agent.enabled = false;
         }
 
-        // TODO: Animation de mort, ragdoll, etc.
+        // Stopper la physique
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+                rb.useGravity = true;
+                rb.constraints = RigidbodyConstraints.None;
+                rb.AddForce(Vector3.back * 2f, ForceMode.VelocityChange); // petit recul
+            }
 
-        // Détruire après un délai
+        // TODO: animation de mort, ragdoll, etc.
+
         Destroy(gameObject, 3f);
     }
+
 
     // ============================================
     // MISE À JOUR DE LA VITESSE

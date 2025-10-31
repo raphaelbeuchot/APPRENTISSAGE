@@ -213,47 +213,69 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     }
     IEnumerator BourradeZombie()
     {
-        // Unfreeze zombie
+        // --- SETUP ---
         enemyRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-
         isInBourradeDuration = true;
         isInBourradeCooldown = false;
 
-        //BOURRADE DURATION
-        Vector3 dir = (transform.position - player.transform.position).normalized;
-        dir.y = 0f;
+        try
+        {
+            // === PHASE BOURRADE ===
+            Vector3 dir = (transform.position - player.transform.position).normalized;
+            dir.y = 0f;
 
-        if (enemyRb == null) Debug.LogError("enemyRb est null !");
-        if (player == null) Debug.LogError("player est null !");
-        if (playerStats == null) Debug.LogError("playerStats est null !");
-        enemyRb.linearVelocity = dir * playerStats.bourradeForce;
+            enemyRb.linearVelocity = dir * playerStats.bourradeForce;
 
-        //Anti-décollage vertical
-        Vector3 vel = enemyRb.linearVelocity;
-        vel.y = 0f;
-        enemyRb.linearVelocity = vel;
+            Vector3 vel = enemyRb.linearVelocity;
+            vel.y = 0f;
+            enemyRb.linearVelocity = vel;
 
+            yield return new WaitForSeconds(stats.bourradeDuration);
 
-        yield return new WaitForSeconds(stats.bourradeDuration);
+            // === PHASE COOLDOWN ===
+            isInBourradeDuration = false;
+            isInBourradeCooldown = true;
+            enemyRb.linearVelocity = Vector3.zero;
 
-        // FIN DURATION, DÉBUT COOLDOWN
-        isInBourradeDuration = false;
-        isInBourradeCooldown = true;
-        enemyRb.linearVelocity = Vector3.zero;
-        Debug.Log("BOURRADE COOLDOWN - immunisé au tir");
+            yield return new WaitForSeconds(stats.bourradeCooldown);
+        }
+        finally
+        {
+            // --- CLEANUP --- (toujours exécuté, même si la coroutine est stoppée)
+            isInBourradeDuration = false;
+            isInBourradeCooldown = false;
+            enemyRb.linearVelocity = Vector3.zero;
+            enemyRb.constraints = RigidbodyConstraints.FreezeRotation;
 
-        yield return new WaitForSeconds(stats.bourradeCooldown);
+            // Réactiver le zombie
+            EnemyAI ai = GetComponent<EnemyAI>();
+            if (ai != null)
+                ai.ResetAfterBourrade();
 
-        isInBourradeDuration = false;
-        isInBourradeCooldown = false;
-        Debug.Log("BOURRADE ended");
+            Debug.Log($"{gameObject.name} > Bourrade terminé proprement");
+        }
     }
+
 
     public void ForceStop()
     {
         StopAllCoroutines();
+
         isGrabbing = false;
         isInBourradeDuration = false;
         isInBourradeCooldown = false;
+
+        if (enemyRb != null)
+        {
+            enemyRb.linearVelocity = Vector3.zero;
+            enemyRb.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+
+        EnemyAI ai = GetComponent<EnemyAI>();
+        if (ai != null)
+            ai.ResetAfterBourrade();
+
+        Debug.Log($"{gameObject.name} > ForceStop exécuté, retour à état normal");
     }
+
 }

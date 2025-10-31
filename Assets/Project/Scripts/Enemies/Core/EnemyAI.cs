@@ -377,6 +377,19 @@ public class EnemyAI : MonoBehaviour
         currentSpeed = stats.GetAdjustedSpeed(currentHealth, isChasing, isCrawler);
     }
 
+    public void ResetAfterBourrade()
+    {
+        if (!isDead)
+        {
+            currentState = State.Chasing;
+            if (agent != null)
+            {
+                agent.isStopped = false;
+                agent.speed = stats.walkSpeed;
+            }
+        }
+    }
+
     public void SetDead(bool value)
     {
         isDead = value;
