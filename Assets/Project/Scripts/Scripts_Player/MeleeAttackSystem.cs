@@ -117,9 +117,11 @@ public class MeleeAttackSystem : MonoBehaviour
         isAttacking = true;
         lastAttackTime = Time.time;
 
+        /*
         // Desactiver le mouvement pendant l'attaque
         if (movement != null)
             movement.enabled = false;
+        */
 
         // Feedback visuel simple
         StartCoroutine(PulseScale());
@@ -135,10 +137,11 @@ public class MeleeAttackSystem : MonoBehaviour
         currentArm = (currentArm == AttackArm.Left) ? AttackArm.Right : AttackArm.Left;
 
         isAttacking = false;
-
+        /*
         // Reactiver le mouvement
         if (movement != null)
             movement.enabled = true;
+        */
     }
 
     IEnumerator PulseScale()
