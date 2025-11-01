@@ -333,23 +333,25 @@ public class GameManager : MonoBehaviour
         alreadyShot.Clear();
     }
 
-    void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 targetPos)
+    void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 oldTargetPos)
     {
         Debug.Log("BANG! " + human.name + " (" + reason + ")");
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
 
+        // On reprend la position actuelle du joueur (corrige le décalage)
         Vector3 currentTargetPos = human.transform.position + Vector3.up * 1f;
-
 
         SentinelTarget sentinelTarget = human.GetComponent<SentinelTarget>();
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
-        StartCoroutine(ShowShootLaser(sentinelPos, targetPos, sentinelSettings.shootLaserFadeDuration));
+        // Le laser tire là où le joueur est vraiment, pas là où il a été vu
+        StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
 
         StartCoroutine(PlayerStunBySentinel());
         humanHealth.TakeSentinelShot();
     }
+
 
     IEnumerator PlayerStunBySentinel()
     {
@@ -392,6 +394,9 @@ public class GameManager : MonoBehaviour
     {
         if (humanHealth != null && !humanHealth.IsDead())
         {
+            Vector3 currentPos = playerObject.transform.position + Vector3.up * 1f;
+            StartCoroutine(ShowShootLaser(sentinelPos, currentPos, sentinelSettings.shootLaserFadeDuration));
+            
             Debug.Log("BANG! Player shot at end of recoil");
 
             if (audioSource != null && sentinelSettings.shootSound != null)
