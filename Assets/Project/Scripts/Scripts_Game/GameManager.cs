@@ -215,7 +215,9 @@ public class GameManager : MonoBehaviour
                     {
                         alreadyShot.Add(col.gameObject);
                         string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
-                        StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, targetPos, trackData));
+                        float randomOffset = Random.Range(0.1f, 0.4f);
+                        StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, targetPos, trackData, randomOffset));
+
                     }
                     else if (humanHealth != null && !humanHealth.IsDead())
                     {
@@ -273,9 +275,9 @@ public class GameManager : MonoBehaviour
     // COROUTINES DE TIR SÉCURISÉES
     // ============================================
 
-    IEnumerator ShootEnemyWithDelay(GameObject enemy, EnemyHealth enemyHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, TargetTrackingData trackData)
+    IEnumerator ShootEnemyWithDelay(GameObject enemy, EnemyHealth enemyHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, TargetTrackingData trackData, float extraDelay = 0f)
     {
-        yield return new WaitForSeconds(sentinelSettings.shootDelay);
+        yield return new WaitForSeconds(sentinelSettings.shootDelay + extraDelay);
 
         if (enemyHealth != null && !enemyHealth.IsDead())
         {
@@ -284,6 +286,7 @@ public class GameManager : MonoBehaviour
             trackData.lastShotTime = Time.time;
         }
     }
+
 
     IEnumerator ShootPlayerWithAlarm(GameObject playerObject, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, TargetTrackingData trackData)
     {
@@ -294,6 +297,8 @@ public class GameManager : MonoBehaviour
             ShootPlayer(playerObject, humanHealth, reason, sentinelPos, targetPos);
             trackData.isBeingShot = false;
             trackData.lastShotTime = Time.time;
+
+
         }
     }
 
@@ -303,10 +308,13 @@ public class GameManager : MonoBehaviour
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
 
+        Vector3 currentTargetPos = enemy.transform.position + Vector3.up * 1f;
+
+
         SentinelTarget sentinelTarget = enemy.GetComponent<SentinelTarget>();
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
-        StartCoroutine(ShowShootLaser(sentinelPos, targetPos, sentinelSettings.shootLaserFadeDuration));
+        StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
 
         bool isHeadshot = Random.value < 0.1f;
         enemyHealth.TakeSentinelShot(isHeadshot);
@@ -330,6 +338,9 @@ public class GameManager : MonoBehaviour
         Debug.Log("BANG! " + human.name + " (" + reason + ")");
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
+
+        Vector3 currentTargetPos = human.transform.position + Vector3.up * 1f;
+
 
         SentinelTarget sentinelTarget = human.GetComponent<SentinelTarget>();
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
