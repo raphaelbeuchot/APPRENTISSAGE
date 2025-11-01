@@ -114,14 +114,17 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        // Arrêter si stun par sentinelle
+        // Bloquer mouvement si stun par sentinelle, sauf si en bourrade
         if (gameManager != null && gameManager.zombieStunBySentinel)
         {
-            StopMovement();
-            return;
+            if (attackBehavior == null || !attackBehavior.IsInSpecialState())
+            {
+                StopMovement();
+                return;
+            }
         }
 
-        // Arrêter si en train d'attaquer ou dans un état spécial
+        // Arrêter si en train d'attaquer
         if (attackBehavior != null && attackBehavior.IsAttacking())
         {
             StopMovement();
@@ -131,7 +134,7 @@ public class EnemyAI : MonoBehaviour
         // Ne pas toucher au mouvement si en bourrade (velocity contrôlée par la coroutine)
         if (attackBehavior != null && attackBehavior.IsInSpecialState())
         {
-            return; // Ne pas appeler StopMovement !
+            return;
         }
 
         // États normaux
@@ -154,6 +157,7 @@ public class EnemyAI : MonoBehaviour
                 break;
         }
     }
+
 
     // ============================================
     // DÉTECTION

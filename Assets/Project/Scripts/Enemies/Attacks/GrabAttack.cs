@@ -166,7 +166,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         yield return new WaitForSeconds(0.3f);
 
         // TIR SENTINEL
-        if (gameManager.IsInRedLight() && player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
+        /*if (gameManager.IsInRedLight() && player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
         {
             PlayerHealth ph = player.GetComponent<PlayerHealth>();
             if (ph && !ph.IsDead())
@@ -175,11 +175,12 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 gameManager.StartCoroutine(gameManager.ShootPlayerAtEndOfRecoil(player.gameObject, ph, sentinelPos, player.transform.position));
             }
         }
-
+        */
         if (player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
+        {
             player.grabState = PlayerPhysicsMovement.GrabState.None;
+        }
         
-        player.grabState = PlayerPhysicsMovement.GrabState.None;
 
 
         if (playerMelee) playerMelee.OnGrabEnd();
