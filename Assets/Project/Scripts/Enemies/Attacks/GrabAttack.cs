@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class GrabAttack : MonoBehaviour, IAttackBehavior
 {
+    public Material redMaterial;
+    
     private EnemyAI enemy;
     private PlayerPhysicsMovement player;
     private Rigidbody playerRb;
@@ -23,7 +25,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     public void Initialize(EnemyStats stats, PlayerStats playerStats, Transform enemyTransform, Rigidbody enemyRigidbody)
     {
         fakeGrabbers = new System.Collections.Generic.List<EnemyAI>();
-        
+
         this.stats = stats;
         this.playerStats = playerStats;
         this.enemyTransform = enemyTransform;
@@ -93,7 +95,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
     }
 
-    
+
 
     IEnumerator GrabCoroutine()
     {
@@ -137,7 +139,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             if (ph) ph.TakeDamage(stats.biteDamage);
         }
 
-        
+
 
         EndGrab();
     }
@@ -180,7 +182,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         {
             player.grabState = PlayerPhysicsMovement.GrabState.None;
         }
-        
+
 
 
         if (playerMelee) playerMelee.OnGrabEnd();
@@ -278,5 +280,23 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         Debug.Log($"{gameObject.name} > ForceStop exécuté, retour à état normal");
     }
+    IEnumerator FlashRedMaterialCoroutine(Renderer renderer, Material redMat, float duration)
+    {
+        if (renderer == null || redMat == null) yield break;
 
+        Material originalMat = renderer.material;
+        float elapsed = 0f;
+        bool toggle = false;
+
+        while (elapsed < duration)
+        {
+            renderer.material = toggle ? redMat : originalMat;
+            toggle = !toggle;
+            elapsed += 0.1f;
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        renderer.material = originalMat;
+
+    }
 }

@@ -1,6 +1,8 @@
 using UnityEngine;
 using System;
 using UnityEngine.AI;
+using System.Collections;
+
 
 /// <summary>
 /// Système de santé SIMPLIFIÉ pour tous les ennemis.
@@ -51,6 +53,42 @@ public class EnemyHealth : MonoBehaviour
     }
 
     // ============================================
+    // PULSATION
+    // ============================================
+    private Coroutine pulseCoroutine;
+    public float pulseScaleMultiplier = 1.2f; // combien la taille augmente
+    public float pulseDuration = 0.3f; // durée de la pulsation
+
+    private IEnumerator PulseCoroutine()
+    {
+        Vector3 originalScale = transform.localScale;
+        Vector3 targetScale = originalScale * pulseScaleMultiplier;
+        float elapsed = 0f;
+
+        // Phase d'expansion
+        while (elapsed < pulseDuration / 2f)
+        {
+            transform.localScale = Vector3.Lerp(originalScale, targetScale, elapsed / (pulseDuration / 2f));
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // Phase de retour
+        elapsed = 0f;
+        while (elapsed < pulseDuration / 2f)
+        {
+            transform.localScale = Vector3.Lerp(targetScale, originalScale, elapsed / (pulseDuration / 2f));
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.localScale = originalScale;
+    }
+
+
+
+
+    // ============================================
     // SYSTÈME DE DÉGÂTS
     // ============================================
 
@@ -85,6 +123,11 @@ public class EnemyHealth : MonoBehaviour
     public void TakeSentinelShot(bool isHeadshot = false)
     {
         if (isDead) return;
+
+        // Lancer la pulsation
+        if (pulseCoroutine != null)
+            StopCoroutine(pulseCoroutine);
+        pulseCoroutine = StartCoroutine(PulseCoroutine());
 
         if (isHeadshot)
         {

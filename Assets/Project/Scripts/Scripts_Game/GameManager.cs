@@ -153,7 +153,7 @@ public class GameManager : MonoBehaviour
             if (enemyHealth != null && enemyHealth.IsRecovering()) continue;
 
             GrabAttack grabSystem = col.GetComponent<GrabAttack>();
-            bool isGrabbing = grabSystem != null && grabSystem.IsGrabbing();
+            bool isInBourrade = grabSystem != null && grabSystem.IsInBourrade();
 
             Vector3 targetPos = col.transform.position + Vector3.up * 1f;
             Vector3 direction = (targetPos - sentinelPos).normalized;
@@ -167,63 +167,71 @@ public class GameManager : MonoBehaviour
             else
                 hasLOS = true;
 
-            // Gestion LOS
             trackData.canShoot = hasLOS;
             trackData.wasInLOS = hasLOS;
 
-            // Affichage/cacher cercle
             SentinelTarget sentinelTarget = col.GetComponent<SentinelTarget>();
             if (sentinelTarget != null)
-            
+                ; // tu peux gérer les cercles ici si nécessaire
 
-            // Vérifier si la cible doit être tirée
-            if (!hasLOS || !trackData.canShoot) continue;
-
-            Rigidbody rb = col.GetComponent<Rigidbody>();
-            MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
-            bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
-            bool isMoving = false;
-
-            if (rb != null)
+            // Gestion des zombies en bourrade
+            if (isInBourrade)
             {
-                NavMeshAgent agent = col.GetComponent<NavMeshAgent>();
-                if (agent != null && agent.isOnNavMesh)
-                    isMoving = agent.velocity.magnitude > sentinelSettings.movementThreshold;
-                else
-                    isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
-            }
-
-            bool playerImmune = (col.gameObject == player.gameObject && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed);
-            bool zombieImmune = (grabSystem != null && (grabSystem.isGrabbing || grabSystem.isInBourradeCooldown));
-
-            bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune;
-
-            if (shouldBeShot && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
-            {
-                trackData.isBeingShot = true;
-                trackData.lastShotTime = Time.time;
-
-                PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
-
-                if (enemyHealth != null && !enemyHealth.IsDead())
+                if (!trackData.isBeingShot)
                 {
-                    alreadyShot.Add(col.gameObject);
-                    string reason = isGrabbing ? "GRAB ACTIF" : isAttacking ? "ATTAQUE" : "MOUVEMENT";
-                    StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, targetPos, trackData));
+                    trackData.isBeingShot = true;
+                    StartCoroutine(ShootZombieInBourradeDelayed(grabSystem, enemyHealth, sentinelPos, targetPos));
                 }
-                else if (humanHealth != null && !humanHealth.IsDead())
+            }
+            else
+            {
+                bool playerImmune = (col.gameObject == player.gameObject && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed);
+                bool zombieImmune = grabSystem != null && (grabSystem.isGrabbing || grabSystem.isInBourradeCooldown);
+
+                Rigidbody rb = col.GetComponent<Rigidbody>();
+                MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
+                bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
+                bool isMoving = false;
+
+                if (rb != null)
                 {
-                    alreadyShot.Add(col.gameObject);
-                    string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
-                    if (col.gameObject == player.gameObject && !playerAlarmTriggered)
+                    NavMeshAgent agent = col.GetComponent<NavMeshAgent>();
+                    if (agent != null && agent.isOnNavMesh)
+                        isMoving = agent.velocity.magnitude > sentinelSettings.movementThreshold;
+                    else
+                        isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
+                }
+
+                bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune;
+
+                if (shouldBeShot && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
+                {
+                    trackData.isBeingShot = true;
+                    trackData.lastShotTime = Time.time;
+
+                    PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
+
+                    if (enemyHealth != null && !enemyHealth.IsDead())
                     {
-                        playerAlarmTriggered = true;
-                        StartCoroutine(ShootPlayerWithAlarm(col.gameObject, humanHealth, reason, sentinelPos, targetPos, trackData));
+                        alreadyShot.Add(col.gameObject);
+                        string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
+                        StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, targetPos, trackData));
+                    }
+                    else if (humanHealth != null && !humanHealth.IsDead())
+                    {
+                        alreadyShot.Add(col.gameObject);
+                        string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
+                        if (col.gameObject == player.gameObject && !playerAlarmTriggered)
+                        {
+                            playerAlarmTriggered = true;
+                            StartCoroutine(ShootPlayerWithAlarm(col.gameObject, humanHealth, reason, sentinelPos, targetPos, trackData));
+                        }
                     }
                 }
             }
         }
     }
+
 
     // ============================================
     // LASER TEMPORAIRE
@@ -343,6 +351,29 @@ public class GameManager : MonoBehaviour
             alreadyShot.Remove(player.gameObject);
             playerAlarmTriggered = false;
             Debug.Log("Player recovery complete - can be shot again if moves");
+        }
+    }
+
+    IEnumerator ShootZombieInBourradeDelayed(GrabAttack grabSystem, EnemyHealth enemyHealth, Vector3 sentinelPos, Vector3 targetPos)
+    {
+        // Attendre 0.8 secondes
+        yield return new WaitForSeconds(0.5f);
+
+        // Interrompre la bourrade
+        grabSystem?.ForceStop();
+
+        // Tir par la sentinelle
+        if (enemyHealth != null && !enemyHealth.IsDead())
+        {
+            ShootEnemy(grabSystem.gameObject, enemyHealth, "BOURRADE INTERRUPTED", sentinelPos, targetPos);
+        }
+
+        // Libérer la cible pour que ça puisse se faire tirer de nouveau si besoin
+        if (grabSystem != null)
+        {
+            GrabAttack grab = grabSystem.GetComponent<GrabAttack>();
+            if (grab != null)
+                grab.isFakeGrabbing = false;
         }
     }
 
