@@ -30,6 +30,8 @@ public class EnemyAI : MonoBehaviour
     protected Vector3 wanderDirection;
     protected float currentSpeed;
     protected bool isDead = false;
+    [HideInInspector] public bool isDetectedBySentinel = false;
+
 
     protected enum State { Idle, Wandering, Chasing, Attacking, Dead }
     protected State currentState = State.Idle;

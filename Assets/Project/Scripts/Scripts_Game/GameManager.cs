@@ -140,13 +140,21 @@ public class GameManager : MonoBehaviour
 
         Collider[] targets = Physics.OverlapSphere(sentinelPos, sentinelSettings.detectionRadius, sentinelSettings.targetLayers);
 
+        // --- Étape 1 : marquer tous les ennemis comme "non détectés" par défaut ---
+        foreach (var kvp in trackedTargets)
+        {
+            EnemyAI ai = kvp.Key != null ? kvp.Key.GetComponent<EnemyAI>() : null;
+            if (ai != null)
+                ai.isDetectedBySentinel = false;
+        }
+
+        // --- Étape 2 : traiter les cibles dans la sphère ---
         foreach (Collider col in targets)
         {
             if (!trackedTargets.ContainsKey(col.gameObject))
                 trackedTargets[col.gameObject] = new TargetTrackingData();
 
             TargetTrackingData trackData = trackedTargets[col.gameObject];
-
             if (alreadyShot.Contains(col.gameObject)) continue;
 
             EnemyHealth enemyHealth = col.GetComponent<EnemyHealth>();
@@ -159,22 +167,17 @@ public class GameManager : MonoBehaviour
             Vector3 direction = (targetPos - sentinelPos).normalized;
             float distance = Vector3.Distance(sentinelPos, targetPos);
 
-            RaycastHit hit;
-            bool hasLOS = false;
-
-            if (Physics.Raycast(sentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers))
-                hasLOS = hit.collider.gameObject == col.gameObject;
-            else
-                hasLOS = true;
+            bool hasLOS = !Physics.Raycast(sentinelPos, direction, distance, sentinelSettings.obstacleLayers);
 
             trackData.canShoot = hasLOS;
             trackData.wasInLOS = hasLOS;
 
-            SentinelTarget sentinelTarget = col.GetComponent<SentinelTarget>();
-            if (sentinelTarget != null)
-                ; // tu peux gérer les cercles ici si nécessaire
+            // --- Marquage "détecté" pour tous les ennemis visibles ---
+            EnemyAI ai = col.GetComponent<EnemyAI>();
+            if (ai != null && hasLOS)
+                ai.isDetectedBySentinel = true; //  flag mis à jour ici
 
-            // Gestion des zombies en bourrade
+            // --- Cas particulier : bourrade ---
             if (isInBourrade)
             {
                 if (!trackData.isBeingShot)
@@ -182,57 +185,56 @@ public class GameManager : MonoBehaviour
                     trackData.isBeingShot = true;
                     StartCoroutine(ShootZombieInBourradeDelayed(grabSystem, enemyHealth, sentinelPos, targetPos));
                 }
+                continue;
             }
-            else
+
+            bool playerImmune = (col.gameObject == player.gameObject && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed);
+            bool zombieImmune = grabSystem != null && (grabSystem.isGrabbing || grabSystem.isInBourradeCooldown);
+
+            Rigidbody rb = col.GetComponent<Rigidbody>();
+            MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
+            bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
+
+            bool isMoving = false;
+            if (rb != null)
             {
-                bool playerImmune = (col.gameObject == player.gameObject && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed);
-                bool zombieImmune = grabSystem != null && (grabSystem.isGrabbing || grabSystem.isInBourradeCooldown);
+                NavMeshAgent agent = col.GetComponent<NavMeshAgent>();
+                if (agent != null && agent.isOnNavMesh)
+                    isMoving = agent.velocity.magnitude > sentinelSettings.movementThreshold;
+                else
+                    isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
+            }
 
-                Rigidbody rb = col.GetComponent<Rigidbody>();
-                MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
-                bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
-                bool isMoving = false;
+            bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune;
 
-                if (rb != null)
+            if (shouldBeShot && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
+            {
+                trackData.isBeingShot = true;
+                trackData.lastShotTime = Time.time;
+
+                PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
+
+                if (enemyHealth != null && !enemyHealth.IsDead())
                 {
-                    NavMeshAgent agent = col.GetComponent<NavMeshAgent>();
-                    if (agent != null && agent.isOnNavMesh)
-                        isMoving = agent.velocity.magnitude > sentinelSettings.movementThreshold;
-                    else
-                        isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
+                    alreadyShot.Add(col.gameObject);
+                    string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
+                    float randomOffset = Random.Range(0.1f, 0.4f);
+                    StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, targetPos, trackData, randomOffset));
                 }
-
-                bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune;
-
-                if (shouldBeShot && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
+                else if (humanHealth != null && !humanHealth.IsDead())
                 {
-                    trackData.isBeingShot = true;
-                    trackData.lastShotTime = Time.time;
-
-                    PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
-
-                    if (enemyHealth != null && !enemyHealth.IsDead())
+                    alreadyShot.Add(col.gameObject);
+                    string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
+                    if (col.gameObject == player.gameObject && !playerAlarmTriggered)
                     {
-                        alreadyShot.Add(col.gameObject);
-                        string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
-                        float randomOffset = Random.Range(0.1f, 0.4f);
-                        StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, targetPos, trackData, randomOffset));
-
-                    }
-                    else if (humanHealth != null && !humanHealth.IsDead())
-                    {
-                        alreadyShot.Add(col.gameObject);
-                        string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
-                        if (col.gameObject == player.gameObject && !playerAlarmTriggered)
-                        {
-                            playerAlarmTriggered = true;
-                            StartCoroutine(ShootPlayerWithAlarm(col.gameObject, humanHealth, reason, sentinelPos, targetPos, trackData));
-                        }
+                        playerAlarmTriggered = true;
+                        StartCoroutine(ShootPlayerWithAlarm(col.gameObject, humanHealth, reason, sentinelPos, targetPos, trackData));
                     }
                 }
             }
         }
     }
+
 
 
     // ============================================

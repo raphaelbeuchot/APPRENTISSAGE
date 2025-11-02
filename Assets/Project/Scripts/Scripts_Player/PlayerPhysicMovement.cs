@@ -87,6 +87,10 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         HandleInput();
         HandleStamina();
+
+        // Sécurité anti-freeze : si on n'est plus grab et pas stun, on redonne le mouvement
+        if (!canMove && grabState == GrabState.None && !gameManager.stunBySentinel)
+            canMove = true;
     }
 
     void FixedUpdate()

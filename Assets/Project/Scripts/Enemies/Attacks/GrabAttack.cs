@@ -82,6 +82,14 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     {
         if (!player || IsInBourrade() || isGrabbing) return;
 
+        EnemyAI ai = GetComponent<EnemyAI>();
+        if (ai != null && ai.isDetectedBySentinel)
+        {
+            // La sentinelle te vise >> impossible de tenter un grab
+            // On stoppe net la tentative (le zombie peut continuer à se déplacer)
+            return;
+        }
+
         // Empecher grab si player sprinte
         if (player != null && player.IsSprinting())
             return;
