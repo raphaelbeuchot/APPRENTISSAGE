@@ -79,6 +79,8 @@ public class EnemyStats : ScriptableObject
     public float oneArmMashReduction = 0.5f;
     [Tooltip("Rayon pour fake grab autour du joueur")]
     public float fakeGrabRange = 3f;
+    [Tooltip("Dégat morsure par seconde")]
+    public float biteTickDamage = 5f;
 
     [Header("ATTAQUE - HITTER (si attackType = Hitter)")]
     [Tooltip("Dégâts d'un coup de melee")]
