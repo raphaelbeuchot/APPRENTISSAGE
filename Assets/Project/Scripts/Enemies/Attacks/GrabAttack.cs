@@ -113,72 +113,50 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         if (playerMelee) playerMelee.OnGrabStart();
 
-        float mashProgress = 0f;
+        float elapsed = 0f;
+        int mashCount = 0;
         int required = player.stats.mashesToEscape;
-        float lastMashTime = Time.time;
-        float lastBiteTime = Time.time; // Timer pour dégâts
+        float maxTime = player.stats.grabEscapeTimeWindow;
 
         try
         {
-            while (true)
+            while (elapsed < maxTime && mashCount < required)
             {
                 // Safety: if enemy dies, release immediately
                 if (enemyHealth == null || enemyHealth.IsDead())
                 {
                     Debug.Log("Grab interrupted: enemy dead - NO RECOIL");
-                    EndGrab(false);
+                    EndGrab(false); // PAS de recoil player
                     yield break;
                 }
 
                 UpdateFakeGrabbers();
 
-                // INPUT: Appui espace ajoute 1 cran
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
-                    mashProgress = Mathf.Min(mashProgress + 1f, required);
-                    lastMashTime = Time.time;
-                    Debug.Log($"MASH {Mathf.FloorToInt(mashProgress)}/{required}");
+                    mashCount++;
+                    Debug.Log($"MASH {mashCount}/{required}");
                 }
 
-                // DECAY: Si délai écoulé, la jauge descend
-                if (Time.time - lastMashTime >= player.stats.mashDecayDelay)
-                {
-                    mashProgress -= player.stats.mashDecayRate * Time.deltaTime;
-                    mashProgress = Mathf.Max(mashProgress, 0f);
-                }
-
-                // BITE DAMAGE: Chaque seconde
-                if (Time.time - lastBiteTime >= 1f)
-                {
-                    PlayerHealth ph = player.GetComponent<PlayerHealth>();
-                    if (ph && !ph.IsDead())
-                    {
-                        ph.TakeDamage(stats.biteTickDamage); // Dégât de morsure
-                        Debug.Log("BITE! -5 HP");
-                    }
-                    lastBiteTime = Time.time;
-                }
-
-                // Update UI progress (0 à 1)
-                player.grabProgress = mashProgress / required;
-
-                // ESCAPE: Si jauge pleine
-                if (mashProgress >= required)
-                {
-                    Debug.Log("GRAB ESCAPE!");
-                    // TODO: Jouer animation UI "GRAB ESCAPE!"
-                    EndGrab(true);
-                    yield break;
-                }
-
+                player.grabProgress = (float)mashCount / required;
+                elapsed += Time.deltaTime;
                 yield return null;
             }
+
+            bool escaped = mashCount >= required;
+            Debug.Log(escaped ? "GRAB ESCAPE" : "GRAB RELEASE");
+
+            if (!escaped)
+            {
+                PlayerHealth ph = player.GetComponent<PlayerHealth>();
+                if (ph) ph.TakeDamage(stats.biteDamage);
+            }
+
+            EndGrab(true); // Recoil normal
         }
         finally
         {
-            // Reset jauge
-            player.grabProgress = 0f;
-
+            // TOUJOURS executer meme si StopAllCoroutines
             if (player != null && playerRb != null)
             {
                 playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;

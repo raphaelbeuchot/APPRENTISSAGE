@@ -76,8 +76,6 @@ public class PlayerStats : ScriptableObject
     [Header("GRAB")]
     [Header("Grab Escape System")]
     public int mashesToEscape = 5; // Nombre de crans
-    public float mashDecayDelay = 2f; // Délai avant que la jauge redescende
-    public float mashDecayRate = 1f; // Vitesse de descente (crans par seconde)
     [Tooltip("Temps maximum pour s'echapper avant de prendre des degats")]
     public float grabEscapeTimeWindow = 5f;
     [Tooltip("Force du recoil apres grab escape/release")]

@@ -332,6 +332,9 @@ public class GameManager : MonoBehaviour
         zombieStunBySentinel = true;
         yield return new WaitForSeconds(sentinel.stunZombieDuration);
         zombieStunBySentinel = false;
+
+        // Attendre 0.5s de plus pour que les bourrades finissent
+        yield return new WaitForSeconds(0.5f);
         alreadyShot.Clear();
     }
 
