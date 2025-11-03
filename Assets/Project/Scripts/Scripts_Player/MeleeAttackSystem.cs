@@ -115,33 +115,19 @@ public class MeleeAttackSystem : MonoBehaviour
     IEnumerator PerformAttack()
     {
         isAttacking = true;
-        lastAttackTime = Time.time;
-
-        /*
-        // Desactiver le mouvement pendant l'attaque
-        if (movement != null)
-            movement.enabled = false;
-        */
-
-        // Feedback visuel simple
-        StartCoroutine(PulseScale());
-
-        // Delai avant le hit
-        yield return new WaitForSeconds(0.1f);
-        DetectAndHitTargets();
-
-        // Attendre la fin de l'animation
-        yield return new WaitForSeconds(stats.attackDuration - 0.1f);
-
-        // Alterner le bras
-        currentArm = (currentArm == AttackArm.Left) ? AttackArm.Right : AttackArm.Left;
-
-        isAttacking = false;
-        /*
-        // Reactiver le mouvement
-        if (movement != null)
-            movement.enabled = true;
-        */
+        try
+        {
+            lastAttackTime = Time.time;
+            StartCoroutine(PulseScale());
+            yield return new WaitForSeconds(0.1f);
+            DetectAndHitTargets();
+            yield return new WaitForSeconds(stats.attackDuration - 0.1f);
+            currentArm = (currentArm == AttackArm.Left) ? AttackArm.Right : AttackArm.Left;
+        }
+        finally
+        {
+            isAttacking = false; // Toujours libérer
+        }
     }
 
     IEnumerator PulseScale()

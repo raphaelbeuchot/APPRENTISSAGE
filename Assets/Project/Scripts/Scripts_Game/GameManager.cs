@@ -488,7 +488,10 @@ public class GameManager : MonoBehaviour
                 sentinelLightRenderer.material = greenMaterial;
         }
     }
-
+    public void RemoveFromAlreadyShot(GameObject target)
+    {
+        alreadyShot.Remove(target);
+    }
     public void StartGameCycle()
     {
         if (gameStarted) return;
