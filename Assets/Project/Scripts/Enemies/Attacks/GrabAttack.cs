@@ -152,7 +152,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 if (ph) ph.TakeDamage(stats.biteDamage);
             }
 
-            EndGrab(true); // Recoil normal
+            EndGrab(escaped);
         }
         finally
         {

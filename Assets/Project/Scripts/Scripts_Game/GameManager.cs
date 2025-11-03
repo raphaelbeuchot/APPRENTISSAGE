@@ -318,8 +318,8 @@ public class GameManager : MonoBehaviour
 
         StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
 
-        bool isHeadshot = Random.value < 0.1f;
-        enemyHealth.TakeSentinelShot(isHeadshot);
+        bool isHeadshot = sentinelSettings.headshotInstakill &&
+                  Random.value < sentinelSettings.headshotChance;
 
         if (enemyHealth.IsDead())
             Debug.Log(enemy.name + " MORT!");

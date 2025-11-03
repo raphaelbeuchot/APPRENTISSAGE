@@ -18,6 +18,8 @@ public class SentinelSettings : ScriptableObject
     public float playerDamage = 25f;
     public float zombieDamage = 60f;
     public bool headshotInstakill = true;
+    [Range(0f, 1f)]
+    public float headshotChance = 0.1f;
     public float stunDuration = 2f;
     public float stunZombieDuration = 3f;
 

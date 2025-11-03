@@ -32,6 +32,9 @@ public class GameUIManager : MonoBehaviour
 
     void Start()
     {
+        zombies = FindObjectsOfType<GrabAttack>();
+
+
         // Setup initial
         if (damageVignette != null)
         {
@@ -164,18 +167,32 @@ public class GameUIManager : MonoBehaviour
     {
         if (mashText == null) yield break;
 
+        Debug.Log("MASH PROMPT STARTED");
         mashText.gameObject.SetActive(true);
 
-        while (isGrabbed)
+        while (true)
         {
-            // Effet de clignotement
-            float alpha = Mathf.PingPong(Time.time * mashBlinkSpeed, 1f);
-            Color c = mashText.color;
-            c.a = alpha;
-            mashText.color = c;
+            // Vérifier si encore grabbed
+            bool stillGrabbed = false;
+            foreach (GrabAttack zombie in zombies)
+            {
+                if (zombie != null && zombie.IsGrabbing())
+                {
+                    stillGrabbed = true;
+                    break;
+                }
+            }
+
+            if (!stillGrabbed) break;
+
+            float cycleTime = 1f / mashBlinkSpeed;  // 3 blinks/sec = 0.33s
+            mashText.enabled = (Time.time % cycleTime) < (cycleTime * 0.5f);
 
             yield return null;
         }
+
+        Debug.Log("MASH PROMPT STOPPED");
+        HideMashPrompt();
     }
 
     void HideMashPrompt()
