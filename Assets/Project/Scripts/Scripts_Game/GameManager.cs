@@ -312,14 +312,16 @@ public class GameManager : MonoBehaviour
 
         Vector3 currentTargetPos = enemy.transform.position + Vector3.up * 1f;
 
-
         SentinelTarget sentinelTarget = enemy.GetComponent<SentinelTarget>();
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
         StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
 
+        // AJOUTER CES LIGNES :
         bool isHeadshot = sentinelSettings.headshotInstakill &&
                   Random.value < sentinelSettings.headshotChance;
+
+        enemyHealth.TakeSentinelShot(isHeadshot);  
 
         if (enemyHealth.IsDead())
             Debug.Log(enemy.name + " MORT!");

@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerPhysicsMovement : MonoBehaviour
 {
     [Header("Player Stats")]
-    public PlayerStats stats; // ← LA SEULE RÉFÉRENCE NÉCESSAIRE !
+    public PlayerStats stats;
 
     [Header("Camera")]
     public Transform cameraTransform;
@@ -13,6 +13,10 @@ public class PlayerPhysicsMovement : MonoBehaviour
     [Header("State")]
     public bool isRedLight = false;
     public bool canMove;
+
+    // === SWARM EFFECTS (sans grab) ===
+    private float swarmSlowdownMultiplier = 1f;
+    private bool isInSwarmVision = false;
 
     public bool IsSprinting() => isSprinting;
 
@@ -22,7 +26,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     public float grabProgress = 0f;
     public bool isBeingGrabbed => grabState == GrabState.Grabbed;
 
-    // Variables runtime (état actuel)
+    // Variables runtime
     private Rigidbody rb;
     private Vector3 moveInput;
     private Vector3 currentVelocity;
@@ -33,21 +37,18 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private float currentStamina;
     private float lastSprintTime;
 
-    // Health (pour ajuster la vitesse)
+    // Health
     private float currentHealth;
-    //réference
+
+    // Reference
     public GameManager gameManager;
-
-
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        // Freeze rotation X et Z
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
-
-        // Caméra
+        // Camera
         if (cameraTransform == null)
         {
             GameObject camObj = GameObject.Find("MainCamera");
@@ -69,7 +70,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
         else
         {
-            Debug.LogError("PlayerStats non assigné sur " + gameObject.name);
+            Debug.LogError("PlayerStats non assigne sur " + gameObject.name);
         }
     }
 
@@ -88,7 +89,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         HandleInput();
         HandleStamina();
 
-        // Sécurité anti-freeze : si on n'est plus grab et pas stun, on redonne le mouvement
+        // Securite anti-freeze
         if (!canMove && grabState == GrabState.None && !gameManager.stunBySentinel)
             canMove = true;
     }
@@ -99,7 +100,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         // Ne pas bouger si en recoil
         if (grabState == GrabState.Recoil) return;
-
 
         HandleMovement();
     }
@@ -128,16 +128,13 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
     }
 
-
     void HandleStamina()
     {
         if (isSprinting)
         {
-            // Drain de stamina
             currentStamina -= stats.staminaDrainPerSecond * Time.deltaTime;
             currentStamina = Mathf.Max(0f, currentStamina);
 
-            // Arrêter le sprint si plus de stamina
             if (currentStamina <= 0f)
             {
                 isSprinting = false;
@@ -145,7 +142,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
         else
         {
-            // Régénération avec délai
             if (Time.time - lastSprintTime >= stats.staminaRegenDelay)
             {
                 currentStamina += stats.staminaRegenPerSecond * Time.deltaTime;
@@ -156,47 +152,40 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     public void HandleMovement()
     {
-        Vector3 moveDirection = Vector3.zero; // ← AJOUTE CETTE LIGNE
+        Vector3 moveDirection = Vector3.zero;
 
         if (moveInput.magnitude < 0.1f)
         {
-            // Deceleration
             currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, 5f * stats.moveSpeed * Time.fixedDeltaTime);
         }
         else
         {
-            // Direction relative à la caméra
             moveDirection = GetCameraRelativeMovement(moveInput);
-
-            // Calcul de la vitesse
             float targetSpeed = CalculateSpeed();
             Vector3 targetVelocity = moveDirection * targetSpeed;
-
-            // Acceleration
             currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, stats.moveSpeed * Time.fixedDeltaTime);
         }
 
-        // Rotation vers la direction du mouvement
         if (moveInput.magnitude > 0.1f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.fixedDeltaTime);
         }
 
-        // Application du mouvement
         rb.linearVelocity = new Vector3(currentVelocity.x, rb.linearVelocity.y, currentVelocity.z);
     }
 
     float CalculateSpeed()
     {
-        // 1. Vitesse de base ajustée selon la santé
         float baseSpeed = stats.GetAdjustedSpeed(currentHealth);
 
-        // 2. Application du sprint si actif
         if (isSprinting)
         {
             baseSpeed *= stats.sprintSpeedMultiplier;
         }
+
+        // Slowdown nuees
+        baseSpeed *= swarmSlowdownMultiplier;
 
         return baseSpeed;
     }
@@ -215,26 +204,18 @@ public class PlayerPhysicsMovement : MonoBehaviour
         forward.Normalize();
         right.Normalize();
 
-        Debug.Log($"Input: {input}, Forward: {forward}, Right: {right}"); // ← ICI
-
         return (forward * input.z + right * input.x).normalized;
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // PUBLIC METHODS - Pour être appelés par d'autres scripts
-    // ═══════════════════════════════════════════════════════════
+    // ============================================
+    // PUBLIC METHODS
+    // ============================================
 
-    /// <summary>
-    /// Met à jour la santé actuelle (appelé par PlayerHealth)
-    /// </summary>
     public void UpdateHealth(float newHealth)
     {
         currentHealth = newHealth;
     }
 
-    /// <summary>
-    /// Force le joueur à s'arrêter (utilisé pour grab, etc.)
-    /// </summary>
     public void ForceStop()
     {
         moveInput = Vector3.zero;
@@ -242,19 +223,33 @@ public class PlayerPhysicsMovement : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
     }
 
-    /// <summary>
-    /// Getter pour la stamina (pour l'UI)
-    /// </summary>
     public float GetCurrentStamina()
     {
         return currentStamina;
     }
 
-    /// <summary>
-    /// Getter pour la stamina max (pour l'UI)
-    /// </summary>
     public float GetMaxStamina()
     {
         return stats.maxStamina;
+    }
+
+    // ============================================
+    // SWARM EFFECTS (simples, pas de grab)
+    // ============================================
+
+    public void ApplySwarmSlowdown(float multiplier)
+    {
+        swarmSlowdownMultiplier = multiplier;
+    }
+
+    public void RemoveSwarmSlowdown()
+    {
+        swarmSlowdownMultiplier = 1f;
+    }
+
+    public void ApplySwarmVision(bool active)
+    {
+        isInSwarmVision = active;
+        Debug.Log($"Swarm vision effect: {active}");
     }
 }

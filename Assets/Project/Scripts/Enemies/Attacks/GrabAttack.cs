@@ -212,6 +212,15 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         {
             StartCoroutine(PlayerRecoilCoroutine());
         }
+        else
+        {
+            // AJOUTE CES LIGNES :
+            // Si pas de recoil, il faut quand meme appeler OnGrabEnd !
+            if (playerMelee)
+            {
+                playerMelee.OnGrabEnd();
+            }
+        }
 
         isGrabbing = false;
         StartCoroutine(BourradeZombie());

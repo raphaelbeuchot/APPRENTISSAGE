@@ -6,13 +6,10 @@ public class MeleeAttackSystem : MonoBehaviour
     [Header("Player Stats")]
     public PlayerStats stats;
 
-
     [Header("References")]
     private Rigidbody rb;
     private PlayerHealth health;
     private PlayerPhysicsMovement movement;
-
-
 
     // State runtime
     private bool isAttacking = false;
@@ -22,7 +19,6 @@ public class MeleeAttackSystem : MonoBehaviour
     private bool isGrabbed = false;
 
     private Vector3 originalScale;
-
 
     // Visual
     private enum AttackArm { Left, Right }
@@ -40,7 +36,6 @@ public class MeleeAttackSystem : MonoBehaviour
         health = GetComponent<PlayerHealth>();
         movement = GetComponent<PlayerPhysicsMovement>();
 
-        // NOUVEAU : Sauvegarder le scale original
         originalScale = transform.localScale;
     }
 
@@ -57,8 +52,6 @@ public class MeleeAttackSystem : MonoBehaviour
     {
         if (stats == null) return;
 
-        // Melee attack sur clic gauche OU espace (sauf si grabbed)
-
         if (Input.GetKeyDown(KeyCode.Space) && CanAttack())
         {
             StartCoroutine(PerformAttack());
@@ -67,7 +60,6 @@ public class MeleeAttackSystem : MonoBehaviour
 
     bool CanAttack()
     {
-        
         if (isGrabbed)
         {
             Debug.Log("Cannot attack: player is grabbed!");
@@ -81,10 +73,7 @@ public class MeleeAttackSystem : MonoBehaviour
             return false;
         }
 
-        if (Time.time - lastAttackTime < stats.attackCooldown)
-        {
-            return false;
-        }
+        
 
         if (Time.time - lastAttackTime < stats.attackCooldown)
         {
@@ -126,7 +115,7 @@ public class MeleeAttackSystem : MonoBehaviour
         }
         finally
         {
-            isAttacking = false; // Toujours libérer
+            isAttacking = false;
         }
     }
 
@@ -146,7 +135,7 @@ public class MeleeAttackSystem : MonoBehaviour
             yield return null;
         }
 
-        // Rétrécir
+        // Retrecir
         elapsed = 0f;
         while (elapsed < duration)
         {
@@ -162,46 +151,60 @@ public class MeleeAttackSystem : MonoBehaviour
 
     void DetectAndHitTargets()
     {
-        Debug.Log("MELEE ATTACK!"); // Feedback console
+        Debug.Log("MELEE ATTACK!");
 
+        // Detection zombies ET nuees
         Collider[] hits = Physics.OverlapSphere(
-            transform.position,
+            transform.position + Vector3.up * 1f,
             stats.attackRange,
-            LayerMask.GetMask("Zombie")
+            LayerMask.GetMask("Zombie", "Swarm")  // Ajouter layer Swarm
         );
 
         foreach (Collider hit in hits)
         {
             if (hit.gameObject == gameObject) continue;
 
-            ZombieHealth zombieHealth = hit.GetComponent<ZombieHealth>();
-            if (zombieHealth != null && zombieHealth.IsDead()) continue;
-
-            // Knockback
-            Rigidbody targetRb = hit.GetComponent<Rigidbody>();
-            if (targetRb != null)
+            // === GESTION ZOMBIES (existant) ===
+            EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
+            if (enemyHealth != null)
             {
-                Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
-                knockbackDir.y = 0;
+                if (enemyHealth.IsDead()) continue;
 
-                Vector3 currentVel = targetRb.linearVelocity;
-                Vector3 desiredVel = knockbackDir * stats.knockbackForce;
-                Vector3 velocityChange = desiredVel - currentVel;
+                // Knockback
+                Rigidbody targetRb = hit.GetComponent<Rigidbody>();
+                if (targetRb != null)
+                {
+                    Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
+                    knockbackDir.y = 0;
 
-                targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
+                    Vector3 currentVel = targetRb.linearVelocity;
+                    Vector3 desiredVel = knockbackDir * stats.knockbackForce;
+                    Vector3 velocityChange = desiredVel - currentVel;
+
+                    targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
+                }
+
+                // Degats
+                float damage = stats.GetAdjustedDamage();
+                enemyHealth.TakeMeleeDamage(damage);
+
+                // Knockdown
+                StartCoroutine(KnockdownTarget(hit.gameObject));
+
+                Debug.Log($"{gameObject.name} hit {hit.gameObject.name} for {damage} damage!");
             }
 
-            // Degats
-            if (zombieHealth != null)
+            // === NOUVEAU : GESTION NUEES ===
+            SwarmController swarm = hit.GetComponent<SwarmController>();
+            if (swarm != null)
             {
                 float damage = stats.GetAdjustedDamage();
-                zombieHealth.TakeMeleeDamage(damage);
+                swarm.TakeDamage(damage);
+                Debug.Log($"{gameObject.name} hit swarm for {damage} damage!");
+
+                // Pas de knockback ni knockdown sur les nuees
+                // Juste les degats pour les tuer
             }
-
-            // Knockdown
-            StartCoroutine(KnockdownTarget(hit.gameObject));
-
-            Debug.Log($"{gameObject.name} hit {hit.gameObject.name} for {stats.GetAdjustedDamage()} damage!");
         }
     }
 
@@ -233,7 +236,6 @@ public class MeleeAttackSystem : MonoBehaviour
         {
             StopAllCoroutines();
             isAttacking = false;
-            // NOUVEAU : Forcer le retour au scale original
             transform.localScale = originalScale;
         }
 

@@ -211,17 +211,26 @@ public class EnemyHealth : MonoBehaviour
         // Stopper la physique
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
-            if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            rb.constraints = RigidbodyConstraints.None;
+            rb.AddForce(Vector3.back * 2f, ForceMode.VelocityChange);
+        }
+
+        // Gestion de ce qui se passe à la mort (spawn swarm, etc.)
+        IOnDeathBehavior[] deathBehaviors = GetComponents<IOnDeathBehavior>();
+        if (deathBehaviors != null && deathBehaviors.Length > 0)
+        {
+            foreach (IOnDeathBehavior behavior in deathBehaviors)
             {
-                rb.isKinematic = false;
-                rb.useGravity = true;
-                rb.constraints = RigidbodyConstraints.None;
-                rb.AddForce(Vector3.back * 2f, ForceMode.VelocityChange); // petit recul
+                behavior.OnEnemyDeath(transform.position);
             }
+        }
 
         // TODO: animation de mort, ragdoll, etc.
 
-        Destroy(gameObject, 3f);
+        Destroy(gameObject, 1f);
     }
 
 
