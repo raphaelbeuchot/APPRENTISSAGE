@@ -4,7 +4,7 @@ using UnityEngine;
 public class GrabAttack : MonoBehaviour, IAttackBehavior
 {
     public Material redMaterial;
-    
+
     private EnemyAI enemy;
     private PlayerPhysicsMovement player;
     private Rigidbody playerRb;
@@ -14,6 +14,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     private Transform enemyTransform;
     private GameManager gameManager;
     private MeleeAttackSystem playerMelee;
+    private EnemyHealth enemyHealth;
 
     public bool isGrabbing = false;
     public bool isInBourradeDuration = false;
@@ -31,6 +32,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         this.enemyTransform = enemyTransform;
         this.enemyRb = enemyRigidbody;
         enemy = GetComponent<EnemyAI>();
+        enemyHealth = GetComponent<EnemyHealth>();
         player = FindFirstObjectByType<PlayerPhysicsMovement>();
         if (player) playerRb = player.GetComponent<Rigidbody>();
         gameManager = FindFirstObjectByType<GameManager>();
@@ -85,12 +87,9 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         EnemyAI ai = GetComponent<EnemyAI>();
         if (ai != null && ai.isDetectedBySentinel)
         {
-            // La sentinelle te vise >> impossible de tenter un grab
-            // On stoppe net la tentative (le zombie peut continuer à se déplacer)
-            return;
+            return; // Sentinelle targeting: cancel grab
         }
 
-        // Empecher grab si player sprinte
         if (player != null && player.IsSprinting())
             return;
 
@@ -103,53 +102,100 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
     }
 
-
-
     IEnumerator GrabCoroutine()
     {
-        // SETUP
         isGrabbing = true;
         player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
         player.ForceStop();
 
-        // Freeze TOUT
         playerRb.constraints = RigidbodyConstraints.FreezeAll;
         enemyRb.constraints = RigidbodyConstraints.FreezeAll;
 
         if (playerMelee) playerMelee.OnGrabStart();
 
-        float elapsed = 0f;
-        int mashCount = 0;
+        float mashProgress = 0f;
         int required = player.stats.mashesToEscape;
-        float maxTime = player.stats.grabEscapeTimeWindow;
+        float lastMashTime = Time.time;
+        float lastBiteTime = Time.time; // Timer pour dégâts
 
-        // GRAB LOOP
-        while (elapsed < maxTime && mashCount < required)
+        try
         {
-            UpdateFakeGrabbers();
-            if (Input.GetKeyDown(KeyCode.Space))
+            while (true)
             {
-                mashCount++;
-                Debug.Log($"MASH {mashCount}/{required}");
+                // Safety: if enemy dies, release immediately
+                if (enemyHealth == null || enemyHealth.IsDead())
+                {
+                    Debug.Log("Grab interrupted: enemy dead - NO RECOIL");
+                    EndGrab(false);
+                    yield break;
+                }
+
+                UpdateFakeGrabbers();
+
+                // INPUT: Appui espace ajoute 1 cran
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    mashProgress = Mathf.Min(mashProgress + 1f, required);
+                    lastMashTime = Time.time;
+                    Debug.Log($"MASH {Mathf.FloorToInt(mashProgress)}/{required}");
+                }
+
+                // DECAY: Si délai écoulé, la jauge descend
+                if (Time.time - lastMashTime >= player.stats.mashDecayDelay)
+                {
+                    mashProgress -= player.stats.mashDecayRate * Time.deltaTime;
+                    mashProgress = Mathf.Max(mashProgress, 0f);
+                }
+
+                // BITE DAMAGE: Chaque seconde
+                if (Time.time - lastBiteTime >= 1f)
+                {
+                    PlayerHealth ph = player.GetComponent<PlayerHealth>();
+                    if (ph && !ph.IsDead())
+                    {
+                        ph.TakeDamage(stats.biteTickDamage); // Dégât de morsure
+                        Debug.Log("BITE! -5 HP");
+                    }
+                    lastBiteTime = Time.time;
+                }
+
+                // Update UI progress (0 à 1)
+                player.grabProgress = mashProgress / required;
+
+                // ESCAPE: Si jauge pleine
+                if (mashProgress >= required)
+                {
+                    Debug.Log("GRAB ESCAPE!");
+                    // TODO: Jouer animation UI "GRAB ESCAPE!"
+                    EndGrab(true);
+                    yield break;
+                }
+
+                yield return null;
             }
-            player.grabProgress = (float)mashCount / required;
-            elapsed += Time.deltaTime;
-            yield return null;
         }
-
-        // ESCAPE ou RELEASE ?
-        bool escaped = mashCount >= required;
-        Debug.Log(escaped ? "GRAB ESCAPE" : "GRAB RELEASE");
-
-        if (!escaped)
+        finally
         {
-            PlayerHealth ph = player.GetComponent<PlayerHealth>();
-            if (ph) ph.TakeDamage(stats.biteDamage);
+            // Reset jauge
+            player.grabProgress = 0f;
+
+            if (player != null && playerRb != null)
+            {
+                playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            }
+
+            if (enemyRb != null)
+            {
+                enemyRb.constraints = RigidbodyConstraints.FreezeRotation;
+            }
+
+            if (player != null && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed)
+            {
+                player.grabState = PlayerPhysicsMovement.GrabState.None;
+            }
+
+            isGrabbing = false;
         }
-
-
-
-        EndGrab();
     }
 
     IEnumerator PlayerRecoilCoroutine()
@@ -158,55 +204,40 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         Vector3 recoilDir = (player.transform.position - transform.position).normalized;
         recoilDir.y = 0;
 
-        // Unfreeze JUSTE la position (pas encore la rotation)
-        // Unfreeze position, garde rotation XZ freeze
         playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
-        // Attendre 1 frame
-        yield return null;
-
-        // MAINTENANT appliquer la velocity
-        playerRb.linearVelocity = recoilDir * player.stats.recoilForce;
-
-        // Force Y a 0
-        Vector3 vel = playerRb.linearVelocity;
-        vel.y = 0f;
-        playerRb.linearVelocity = vel;
-
-        yield return new WaitForSeconds(0.3f);
-
-        // TIR SENTINEL
-        /*if (gameManager.IsInRedLight() && player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
+        try
         {
-            PlayerHealth ph = player.GetComponent<PlayerHealth>();
-            if (ph && !ph.IsDead())
+            yield return null;
+
+            playerRb.linearVelocity = recoilDir * player.stats.recoilForce;
+            Vector3 vel = playerRb.linearVelocity;
+            vel.y = 0f;
+            playerRb.linearVelocity = vel;
+
+            yield return new WaitForSeconds(0.3f);
+        }
+        finally
+        {
+            if (player != null && player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
             {
-                Vector3 sentinelPos = gameManager.sentinelEye != null ? gameManager.sentinelEye.position : gameManager.transform.position;
-                gameManager.StartCoroutine(gameManager.ShootPlayerAtEndOfRecoil(player.gameObject, ph, sentinelPos, player.transform.position));
+                player.grabState = PlayerPhysicsMovement.GrabState.None;
             }
+
+            if (playerMelee) playerMelee.OnGrabEnd();
         }
-        */
-        if (player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
-        {
-            player.grabState = PlayerPhysicsMovement.GrabState.None;
-        }
-
-
-
-        if (playerMelee) playerMelee.OnGrabEnd();
     }
 
-    void EndGrab()
+    void EndGrab(bool givePlayerRecoil = true)
     {
+        if (isGrabbing && givePlayerRecoil)
+        {
+            StartCoroutine(PlayerRecoilCoroutine());
+        }
 
-        // RECOIL PLAYER
-        StartCoroutine(PlayerRecoilCoroutine());
-
-        // BOURRADE GRB (ce zombie)
         isGrabbing = false;
         StartCoroutine(BourradeZombie());
 
-        // BOURRADE FAKE GRABBERS
         foreach (EnemyAI fakeZombie in fakeGrabbers)
         {
             if (fakeZombie != null)
@@ -222,16 +253,15 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         fakeGrabbers.Clear();
     }
+
     IEnumerator BourradeZombie()
     {
-        // --- SETUP ---
         enemyRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         isInBourradeDuration = true;
         isInBourradeCooldown = false;
 
         try
         {
-            // === PHASE BOURRADE ===
             Vector3 dir = (transform.position - player.transform.position).normalized;
             dir.y = 0f;
 
@@ -243,7 +273,6 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
             yield return new WaitForSeconds(stats.bourradeDuration);
 
-            // === PHASE COOLDOWN ===
             isInBourradeDuration = false;
             isInBourradeCooldown = true;
             enemyRb.linearVelocity = Vector3.zero;
@@ -252,21 +281,22 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
         finally
         {
-            // --- CLEANUP --- (toujours exécuté, même si la coroutine est stoppée)
             isInBourradeDuration = false;
             isInBourradeCooldown = false;
             enemyRb.linearVelocity = Vector3.zero;
             enemyRb.constraints = RigidbodyConstraints.FreezeRotation;
 
-            // Réactiver le zombie
             EnemyAI ai = GetComponent<EnemyAI>();
             if (ai != null)
                 ai.ResetAfterBourrade();
 
-            Debug.Log($"{gameObject.name} > Bourrade terminé proprement");
+            // Retirer de alreadyShot pour pouvoir etre tire a nouveau
+            if (gameManager != null)
+                gameManager.RemoveFromAlreadyShot(gameObject);
+
+            Debug.Log($"{gameObject.name} > Bourrade ended cleanly");
         }
     }
-
 
     public void ForceStop()
     {
@@ -286,8 +316,14 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         if (ai != null)
             ai.ResetAfterBourrade();
 
-        Debug.Log($"{gameObject.name} > ForceStop exécuté, retour à état normal");
+        if (player != null && player.grabState != PlayerPhysicsMovement.GrabState.None)
+            player.grabState = PlayerPhysicsMovement.GrabState.None;
+
+        if (playerMelee) playerMelee.OnGrabEnd();
+
+        Debug.Log($"{gameObject.name} > ForceStop executed, back to normal");
     }
+
     IEnumerator FlashRedMaterialCoroutine(Renderer renderer, Material redMat, float duration)
     {
         if (renderer == null || redMat == null) yield break;
@@ -305,6 +341,5 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
 
         renderer.material = originalMat;
-
     }
 }
