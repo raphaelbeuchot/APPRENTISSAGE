@@ -13,6 +13,11 @@ public class EnemyHealth : MonoBehaviour
     [Header("Enemy Stats")]
     public EnemyStats stats;
 
+    // Death context tracking
+    private DeathContext.DeathType lastDeathType = DeathContext.DeathType.Other;
+    private Vector3 lastImpactDirection = Vector3.forward;
+    private float lastImpactForce = 1f;
+
     // Santé
     private float currentHealth;
     private bool isDead = false;
@@ -33,11 +38,44 @@ public class EnemyHealth : MonoBehaviour
     {
         if (stats == null)
         {
-            Debug.LogError("EnemyStats non assigné sur " + gameObject.name);
+            Debug.LogError("EnemyStats non assigne sur " + gameObject.name);
             return;
         }
 
         currentHealth = stats.maxHealth;
+
+        // AJOUTE CA A LA FIN DE START :
+        SetupDeathEffect();
+    }
+
+    void SetupDeathEffect()
+    {
+        if (stats == null) return;
+
+        switch (stats.deathEffectType)
+        {
+            case EnemyStats.DeathEffectType.Ragdoll:
+                var ragdoll = gameObject.AddComponent<RagdollDeathEffect>();
+                ragdoll.baseRagdollForce = stats.ragdollForce;
+                ragdoll.ragdollTorque = stats.ragdollTorque;
+                ragdoll.meleeMultiplier = stats.meleeForceMultiplier;
+                ragdoll.sentinelMultiplier = stats.sentinelForceMultiplier;
+                Debug.Log($"Added RagdollDeathEffect to {gameObject.name}");
+                break;
+
+            case EnemyStats.DeathEffectType.Explosion:
+                var explosion = gameObject.AddComponent<ExplosionDeathEffect>();
+                explosion.explosionVFX = stats.explosionVFX;
+                explosion.explosionSound = stats.explosionSound;
+                explosion.soundVolume = stats.explosionSoundVolume;
+                explosion.vfxScale = stats.explosionVFXScale;
+                Debug.Log($"Added ExplosionDeathEffect to {gameObject.name}");
+                break;
+
+            case EnemyStats.DeathEffectType.None:
+                Debug.Log($"No death effect for {gameObject.name}");
+                break;
+        }
     }
 
     void Update()
@@ -99,18 +137,23 @@ public class EnemyHealth : MonoBehaviour
     {
         if (isDead) return;
 
+        // Track death context
+        lastDeathType = DeathContext.DeathType.Melee;
+        PlayerPhysicsMovement player = FindObjectOfType<PlayerPhysicsMovement>();
+        if (player != null)
+        {
+            lastImpactDirection = (transform.position - player.transform.position).normalized;
+        }
+        lastImpactForce = damage;
+
         currentHealth -= damage;
         currentHealth = Mathf.Max(0f, currentHealth);
 
         Debug.Log($"{gameObject.name} took {damage} melee damage! Health: {currentHealth}/{stats.maxHealth}");
 
-        // Event pour l'UI ou effets visuels
         OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
-
-        // Mettre à jour la vitesse selon la santé
         UpdateSpeed();
 
-        // Check mort
         if (currentHealth <= 0f)
         {
             Die();
@@ -124,7 +167,15 @@ public class EnemyHealth : MonoBehaviour
     {
         if (isDead) return;
 
-        // Lancer la pulsation
+        // Track death context
+        lastDeathType = DeathContext.DeathType.Sentinel;
+        GameManager gm = FindObjectOfType<GameManager>();
+        if (gm != null && gm.sentinelEye != null)
+        {
+            lastImpactDirection = (transform.position - gm.sentinelEye.position).normalized;
+        }
+        lastImpactForce = stats.sentinelDamageTaken;
+
         if (pulseCoroutine != null)
             StopCoroutine(pulseCoroutine);
         pulseCoroutine = StartCoroutine(PulseCoroutine());
@@ -137,27 +188,21 @@ public class EnemyHealth : MonoBehaviour
             return;
         }
 
-        // Appliquer les dégâts
         currentHealth -= stats.sentinelDamageTaken;
         currentHealth = Mathf.Max(0f, currentHealth);
 
         Debug.Log($"{gameObject.name} shot by sentinel! Health: {currentHealth}/{stats.maxHealth}");
         OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
 
-        // Vérifie la mort AVANT recovery
         if (currentHealth <= 0f)
         {
             Die();
             return;
         }
 
-        // Recovery stun uniquement si vivant
         StartRecovery();
-
-        // Mettre à jour la vitesse
         UpdateSpeed();
     }
-
 
     /// <summary>
     /// Démarre le recovery après un tir (stun temporaire)
@@ -190,17 +235,14 @@ public class EnemyHealth : MonoBehaviour
 
         OnDeath?.Invoke();
 
-        // Désactiver l'IA
         EnemyAI ai = GetComponent<EnemyAI>();
         if (ai != null)
             ai.enabled = false;
 
-        // Désactiver le grab
         GrabAttack grabAttack = GetComponent<GrabAttack>();
         if (grabAttack != null)
             grabAttack.enabled = false;
 
-        // Désactiver le NavMeshAgent
         NavMeshAgent agent = GetComponent<NavMeshAgent>();
         if (agent != null)
         {
@@ -208,17 +250,25 @@ public class EnemyHealth : MonoBehaviour
             agent.enabled = false;
         }
 
-        // Stopper la physique
-        Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null)
+        // Preparer contexte de mort
+        DeathContext context = new DeathContext
         {
-            rb.isKinematic = false;
-            rb.useGravity = true;
-            rb.constraints = RigidbodyConstraints.None;
-            rb.AddForce(Vector3.back * 2f, ForceMode.VelocityChange);
+            deathType = lastDeathType,
+            impactDirection = lastImpactDirection,
+            impactForce = lastImpactForce
+        };
+
+        // Appeler death effects
+        IDeathEffect[] deathEffects = GetComponents<IDeathEffect>();
+        if (deathEffects != null && deathEffects.Length > 0)
+        {
+            foreach (IDeathEffect effect in deathEffects)
+            {
+                effect.OnDeath(transform.position, context);
+            }
         }
 
-        // Gestion de ce qui se passe à la mort (spawn swarm, etc.)
+        // Appeler death behaviors (spawn swarm)
         IOnDeathBehavior[] deathBehaviors = GetComponents<IOnDeathBehavior>();
         if (deathBehaviors != null && deathBehaviors.Length > 0)
         {
@@ -228,9 +278,7 @@ public class EnemyHealth : MonoBehaviour
             }
         }
 
-        // TODO: animation de mort, ragdoll, etc.
-
-        Destroy(gameObject, 1f);
+        Destroy(gameObject, 3f);
     }
 
 

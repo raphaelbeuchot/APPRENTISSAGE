@@ -213,4 +213,23 @@ public class EnemyStats : ScriptableObject
                 return 0f;
         }
     }
+
+    // AJOUTE CA A LA FIN DE LA CLASSE ENEMYSTATS :
+
+    public enum DeathEffectType { None, Ragdoll, Explosion }
+    public DeathEffectType deathEffectType = DeathEffectType.Ragdoll;
+    [Header("Death Effect")]
+
+
+    [Header("Ragdoll Settings (si Ragdoll)")]
+    public float ragdollForce = 5f;
+    public float ragdollTorque = 10f;
+    public float meleeForceMultiplier = 1f;
+    public float sentinelForceMultiplier = 1.5f;
+
+    [Header("Explosion Settings (si Explosion)")]
+    public GameObject explosionVFX;
+    public AudioClip explosionSound;
+    public float explosionSoundVolume = 1f;
+    public float explosionVFXScale = 1f;
 }
