@@ -65,12 +65,25 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             if (col.gameObject == gameObject) continue;
 
             EnemyAI zombie = col.GetComponent<EnemyAI>();
-            GrabAttack zombieGrab = col.GetComponent<GrabAttack>();
 
-            if (zombie != null && zombieGrab != null && !zombieGrab.isGrabbing)
+            // NOUVEAU : Accepter zombies avec GrabAttack OU ChargeAttack
+            GrabAttack zombieGrab = col.GetComponent<GrabAttack>();
+            ChargeAttack chargeAttack = col.GetComponent<ChargeAttack>();
+
+            if (zombie != null)
             {
-                fakeGrabbers.Add(zombie);
-                zombieGrab.isFakeGrabbing = true;
+                // Zombie normal avec grab
+                if (zombieGrab != null && !zombieGrab.isGrabbing)
+                {
+                    fakeGrabbers.Add(zombie);
+                    zombieGrab.isFakeGrabbing = true;
+                }
+                // Blinder
+                else if (chargeAttack != null && chargeAttack.CanAttack())
+                {
+                    fakeGrabbers.Add(zombie);
+                    // Note: Blinder n'a pas de flag isFakeGrabbing, pas grave
+                }
             }
         }
     }
@@ -234,6 +247,15 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 {
                     fakeGrab.isFakeGrabbing = false;
                     fakeGrab.StartCoroutine(fakeGrab.BourradeZombie());
+                }
+
+                // NOUVEAU : Check si c'est un Blinder
+                ChargeAttack chargeAttack = fakeZombie.GetComponent<ChargeAttack>();
+                if (chargeAttack != null)
+                {
+                    Vector3 dir = (fakeZombie.transform.position - player.transform.position).normalized;
+                    dir.y = 0f;
+                    chargeAttack.ApplyBourrade(dir, playerStats.bourradeForce, stats.bourradeDuration);
                 }
             }
         }

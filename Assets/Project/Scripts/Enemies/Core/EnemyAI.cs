@@ -3,9 +3,9 @@ using System.Collections;
 using UnityEngine.AI;
 
 /// <summary>
-/// AI générique pour tous les ennemis.
-/// Gère: Idle, Wander, Chase, et délègue l'attaque à IAttackBehavior.
-/// Compatible avec tous les types d'ennemis (Grabber, Hitter, Spitter, etc.)
+/// Generic AI for all enemies.
+/// Handles: Idle, Wander, Chase, and delegates attacks to IAttackBehavior.
+/// Works with all enemy types (Grabber, Hitter, Spitter, Blinder, etc.)
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 public class EnemyAI : MonoBehaviour
@@ -14,7 +14,6 @@ public class EnemyAI : MonoBehaviour
     public EnemyStats stats;
     public PlayerStats playerStats;
 
-
     [Header("References")]
     protected Rigidbody rb;
     protected Transform targetHuman;
@@ -22,8 +21,9 @@ public class EnemyAI : MonoBehaviour
     protected EnemyHealth health;
     protected IAttackBehavior attackBehavior;
     protected NavMeshAgent agent;
+    private BlinderWanderBehavior wanderBehavior; // Added reference for Blinder
 
-    // État
+    // State variables
     protected float lastWanderTime = 0f;
     protected float wanderTimer = 0f;
     protected float lastAttackTime = 0f;
@@ -32,7 +32,6 @@ public class EnemyAI : MonoBehaviour
     protected bool isDead = false;
     [HideInInspector] public bool isDetectedBySentinel = false;
 
-
     protected enum State { Idle, Wandering, Chasing, Attacking, Dead }
     protected State currentState = State.Idle;
 
@@ -40,54 +39,44 @@ public class EnemyAI : MonoBehaviour
     {
         if (stats == null)
         {
-            Debug.LogError("EnemyStats non assigné sur " + gameObject.name);
+            Debug.LogError("EnemyStats not assigned on " + gameObject.name);
             return;
         }
 
         rb = GetComponent<Rigidbody>();
         gameManager = FindObjectOfType<GameManager>();
         health = GetComponent<EnemyHealth>();
-
-
-
-        // Initialiser le comportement d'attaque selon le type
-        InitializeAttackBehavior();
-
-        StartCoroutine(DetectionLoop());
-
         agent = GetComponent<NavMeshAgent>();
-        if (agent != null) {
+        wanderBehavior = GetComponent<BlinderWanderBehavior>(); // Initialize wander behavior
+
+        if (agent != null)
+        {
             agent.speed = stats.walkSpeed;
             agent.angularSpeed = stats.rotationSpeed;
-            
-                }
-        
+        }
 
+        InitializeAttackBehavior();
+        StartCoroutine(DetectionLoop());
     }
 
-    /// <summary>
-    /// Initialise le comportement d'attaque selon le type défini dans EnemyStats
-    /// </summary>
     void InitializeAttackBehavior()
     {
         switch (stats.attackType)
         {
             case EnemyStats.AttackType.Grabber:
-                attackBehavior = gameObject.GetComponent<GrabAttack>();
-                if (attackBehavior == null)
-                {
-                    attackBehavior = gameObject.AddComponent<GrabAttack>();
-                }
+                attackBehavior = GetComponent<GrabAttack>() ?? gameObject.AddComponent<GrabAttack>();
                 break;
 
             case EnemyStats.AttackType.Hitter:
-                // TODO: Implémenter MeleeHitAttack
                 Debug.LogWarning($"{gameObject.name}: Hitter attack not yet implemented!");
                 break;
 
             case EnemyStats.AttackType.Spitter:
-                // TODO: Implémenter RangedAttack
                 Debug.LogWarning($"{gameObject.name}: Spitter attack not yet implemented!");
+                break;
+
+            case EnemyStats.AttackType.Blinder:
+                attackBehavior = GetComponent<ChargeAttack>() ?? gameObject.AddComponent<ChargeAttack>();
                 break;
 
             default:
@@ -95,7 +84,6 @@ public class EnemyAI : MonoBehaviour
                 break;
         }
 
-        // Initialiser le comportement d'attaque
         if (attackBehavior != null)
         {
             attackBehavior.Initialize(stats, playerStats, transform, rb);
@@ -107,7 +95,6 @@ public class EnemyAI : MonoBehaviour
     {
         if (stats == null || isDead) return;
 
-        // Vérifier si mort
         if (health != null && health.IsDead())
         {
             StopMovement();
@@ -116,7 +103,6 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        // Bloquer mouvement si stun par sentinelle, sauf si en bourrade
         if (gameManager != null && gameManager.zombieStunBySentinel)
         {
             if (attackBehavior == null || !attackBehavior.IsInSpecialState())
@@ -126,20 +112,17 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        // Arrêter si en train d'attaquer
         if (attackBehavior != null && attackBehavior.IsAttacking())
         {
             StopMovement();
             return;
         }
 
-        // Ne pas toucher au mouvement si en bourrade (velocity contrôlée par la coroutine)
         if (attackBehavior != null && attackBehavior.IsInSpecialState())
         {
             return;
         }
 
-        // États normaux
         switch (currentState)
         {
             case State.Idle:
@@ -160,9 +143,8 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     // ============================================
-    // DÉTECTION
+    // DETECTION
     // ============================================
 
     protected IEnumerator DetectionLoop()
@@ -189,18 +171,10 @@ public class EnemyAI : MonoBehaviour
             {
                 float distance = Vector3.Distance(transform.position, hit.transform.position);
 
-                // CHECK ANGLE
                 Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
                 float angle = Vector3.Angle(transform.forward, directionToTarget);
-
                 if (angle > stats.detectionAngle / 2f)
-                    continue; // Hors du cone, ignore
-
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestHuman = hit.transform;
-                }
+                    continue;
 
                 if (distance < closestDistance)
                 {
@@ -227,46 +201,46 @@ public class EnemyAI : MonoBehaviour
     }
 
     // ============================================
-    // ÉTATS
+    // STATES
     // ============================================
 
     protected virtual void HandleIdleState()
     {
         StopMovement();
-        if (Time.time - lastWanderTime >= stats.wanderInterval)
+
+        if (wanderBehavior != null && !wanderBehavior.IsWandering())
         {
-            lastWanderTime = Time.time;
-            if (Random.value < stats.idleWanderChance)
-                StartWandering();
+            if (Time.time - lastWanderTime >= stats.wanderInterval)
+            {
+                lastWanderTime = Time.time;
+                if (Random.value < stats.idleWanderChance)
+                {
+                    wanderBehavior.StartWandering();
+                    currentState = State.Wandering;
+                }
+            }
         }
     }
 
     protected virtual void HandleWanderingState()
     {
+        if (wanderBehavior == null) return;
 
-        if (agent != null && agent.isOnNavMesh)
-        {
-            agent.speed = stats.walkSpeed;
-        }
-        
-        wanderTimer += Time.deltaTime;
-        if (wanderTimer >= stats.wanderDuration)
+        if (!wanderBehavior.IsWandering())
         {
             currentState = State.Idle;
-            wanderTimer = 0f;
-            StopMovement();
-            return;
         }
-        MoveInDirection(wanderDirection, stats.walkSpeed);
     }
 
     protected virtual void HandleChasingState()
     {
+        if (wanderBehavior != null) wanderBehavior.StopWandering();
+
         if (agent != null && agent.isOnNavMesh)
         {
             agent.speed = stats.chaseSpeed;
         }
-        
+
         if (targetHuman == null)
         {
             currentState = State.Idle;
@@ -286,6 +260,8 @@ public class EnemyAI : MonoBehaviour
 
     protected virtual void HandleAttackingState()
     {
+        if (wanderBehavior != null) wanderBehavior.StopWandering();
+
         if (targetHuman == null)
         {
             currentState = State.Idle;
@@ -299,7 +275,6 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        // Orienter l'ennemi vers sa cible
         Vector3 direction = (targetHuman.position - transform.position).normalized;
         direction.y = 0;
 
@@ -309,7 +284,6 @@ public class EnemyAI : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
         }
 
-        // Tentative d'attaque via le comportement modulaire
         if (attackBehavior != null && attackBehavior.CanAttack())
         {
             if (Time.time - lastAttackTime >= stats.attackCooldown)
@@ -321,23 +295,15 @@ public class EnemyAI : MonoBehaviour
     }
 
     // ============================================
-    // MOUVEMENT
+    // MOVEMENT
     // ============================================
-
-    protected virtual void StartWandering()
-    {
-        currentState = State.Wandering;
-        wanderTimer = 0f;
-        wanderDirection = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
-    }
 
     protected virtual void MoveInDirection(Vector3 direction, float speed)
     {
+        if (agent == null || !agent.isOnNavMesh) return;
 
-        if (agent != null && agent.isOnNavMesh)
-        {
-            agent.speed = speed;
-        
+        agent.speed = speed;
+
         if (targetHuman != null)
         {
             agent.SetDestination(targetHuman.position);
@@ -346,9 +312,6 @@ public class EnemyAI : MonoBehaviour
         {
             agent.SetDestination(transform.position + direction * 3f);
         }
-
-
-
 
         direction.y = 0;
         direction.Normalize();
@@ -361,13 +324,13 @@ public class EnemyAI : MonoBehaviour
             Vector3 velocity = direction * speed;
             rb.linearVelocity = new Vector3(velocity.x, rb.linearVelocity.y, velocity.z);
         }
-        }
     }
 
     protected void StopMovement()
     {
         if (agent != null && agent.isOnNavMesh)
-            agent.ResetPath(); 
+            agent.ResetPath();
+
         rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
     }
 
@@ -402,19 +365,13 @@ public class EnemyAI : MonoBehaviour
         if (value) currentState = State.Dead;
     }
 
-    // ============================================
-    // GIZMOS
-    // ============================================
-
     protected virtual void OnDrawGizmosSelected()
     {
         if (stats == null) return;
 
-        // Rayon de détection
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, stats.detectionRadius);
 
-        // Portée d'attaque
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, stats.attackRange);
     }

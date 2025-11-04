@@ -19,6 +19,7 @@ public class MeleeAttackSystem : MonoBehaviour
     private bool isGrabbed = false;
 
     private Vector3 originalScale;
+    private AudioSource audioSource;
 
     // Visual
     private enum AttackArm { Left, Right }
@@ -35,6 +36,10 @@ public class MeleeAttackSystem : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         health = GetComponent<PlayerHealth>();
         movement = GetComponent<PlayerPhysicsMovement>();
+        
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
 
         originalScale = transform.localScale;
     }
@@ -153,22 +158,25 @@ public class MeleeAttackSystem : MonoBehaviour
     {
         Debug.Log("MELEE ATTACK!");
 
-        // Detection zombies ET nuees
         Collider[] hits = Physics.OverlapSphere(
             transform.position + Vector3.up * 1f,
             stats.attackRange,
-            LayerMask.GetMask("Zombie", "Swarm")  // Ajouter layer Swarm
+            LayerMask.GetMask("Zombie", "Swarm")
         );
+
+        bool hitSomething = false;
 
         foreach (Collider hit in hits)
         {
             if (hit.gameObject == gameObject) continue;
 
-            // === GESTION ZOMBIES (existant) ===
+            // === GESTION ZOMBIES ===
             EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
             if (enemyHealth != null)
             {
                 if (enemyHealth.IsDead()) continue;
+
+                hitSomething = true;
 
                 // Knockback
                 Rigidbody targetRb = hit.GetComponent<Rigidbody>();
@@ -188,28 +196,59 @@ public class MeleeAttackSystem : MonoBehaviour
                 float damage = stats.GetAdjustedDamage();
                 enemyHealth.TakeMeleeDamage(damage);
 
-                // Knockdown
-                StartCoroutine(KnockdownTarget(hit.gameObject));
+                // Notifier les Blinders (audio global)
+                MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
+
+                // NOUVEAU : Check si c'est un Blinder qui se fait taper directement
+                ChargeAttack chargeAttack = hit.GetComponent<ChargeAttack>();
+                if (chargeAttack != null)
+                {
+                    // Blinder frappe : il charge vers le player
+                    chargeAttack.OnDirectHit(transform.position);
+                }
+                else
+                {
+                    // Zombie normal : knockdown
+                    StartCoroutine(KnockdownTarget(hit.gameObject));
+                }
 
                 Debug.Log($"{gameObject.name} hit {hit.gameObject.name} for {damage} damage!");
             }
 
-            // === NOUVEAU : GESTION NUEES ===
+            // === GESTION NUEES ===
             SwarmController swarm = hit.GetComponent<SwarmController>();
             if (swarm != null)
             {
+                hitSomething = true;
                 float damage = stats.GetAdjustedDamage();
                 swarm.TakeDamage(damage);
                 Debug.Log($"{gameObject.name} hit swarm for {damage} damage!");
+            }
+        }
 
-                // Pas de knockback ni knockdown sur les nuees
-                // Juste les degats pour les tuer
+        // Jouer le bon son
+        if (audioSource != null)
+        {
+            if (hitSomething && stats.attackHitSound != null)
+            {
+                audioSource.PlayOneShot(stats.attackHitSound);
+            }
+            else if (stats.attackSound != null)
+            {
+                audioSource.PlayOneShot(stats.attackSound);
             }
         }
     }
 
     IEnumerator KnockdownTarget(GameObject target)
     {
+        // NOUVEAU : Skip knockdown si Blinder
+        ChargeAttack chargeAttack = target.GetComponent<ChargeAttack>();
+        if (chargeAttack != null)
+        {
+            yield break; // Pas de knockdown pour Blinder
+        }
+
         EnemyAI zombieAI = target.GetComponent<EnemyAI>();
         if (zombieAI != null)
         {

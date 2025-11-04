@@ -88,8 +88,8 @@ public class PlayerStats : ScriptableObject
     [Header("SONS")]
     [Tooltip("Son des pas")]
     public AudioClip footstepSound;
-    [Tooltip("Son de l'attaque")]
-    public AudioClip attackSound;
+    public AudioClip attackSound;        // Swing à vide (existant)
+    public AudioClip attackHitSound;     // Impact sur ennemi (nouveau)
     [Tooltip("Son de douleur")]
     public AudioClip hurtSound;
     [Tooltip("Son de mort")]

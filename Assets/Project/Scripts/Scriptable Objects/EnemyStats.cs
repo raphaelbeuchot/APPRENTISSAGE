@@ -151,7 +151,8 @@ public class EnemyStats : ScriptableObject
         Hitter,     // Coup de poing/griffe
         Spitter,    // Projectile à distance
         Exploder,   // Explose au contact
-        Screamer    // Alerte les autres ennemis
+        Screamer,    // Alerte les autres ennemis
+        Blinder   //Réagit aux sons de mleeattack
     }
 
     // ============================================

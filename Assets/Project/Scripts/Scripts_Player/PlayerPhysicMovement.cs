@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,7 +22,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     public bool IsSprinting() => isSprinting;
 
     // Grab States
-    public enum GrabState { None, Grabbed, Recoil }
+    public enum GrabState { None, Grabbed, Recoil, Knockdown }
     public GrabState grabState = GrabState.None;
     public float grabProgress = 0f;
     public bool isBeingGrabbed => grabState == GrabState.Grabbed;
@@ -99,7 +100,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (stats == null) return;
 
         // Ne pas bouger si en recoil
-        if (grabState == GrabState.Recoil) return;
+        if (grabState == GrabState.Recoil || grabState == GrabState.Knockdown) return;
+
 
         HandleMovement();
     }
@@ -150,6 +152,64 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
     }
 
+    public void ApplyKnockdown(Vector3 knockbackDirection, float force, float duration)
+    {
+        if (grabState == GrabState.Grabbed)
+        {
+            // Interrompre le grab en cours
+            GrabAttack[] allGrabs = FindObjectsByType<GrabAttack>(FindObjectsSortMode.None);
+            foreach (GrabAttack grab in allGrabs)
+            {
+                if (grab.isGrabbing)
+                {
+                    grab.ForceStop();
+                }
+            }
+        }
+
+        StartCoroutine(KnockdownCoroutine(knockbackDirection, force, duration));
+    }
+    public void ApplyKnockback(Vector3 knockbackVelocity, float stunDuration = 0.3f)
+    {
+        StartCoroutine(KnockbackCoroutine(knockbackVelocity, stunDuration));
+    }
+
+    IEnumerator KnockbackCoroutine(Vector3 knockbackVel, float duration)
+    {
+        // Desactiver le script temporairement
+        enabled = false;
+
+        // Appliquer knockback
+        knockbackVel.y = rb.linearVelocity.y; // Garder Y
+        rb.linearVelocity = knockbackVel;
+
+        yield return new WaitForSeconds(duration);
+
+        // Reactiver
+        enabled = true;
+    }
+    IEnumerator KnockdownCoroutine(Vector3 direction, float force, float duration)
+    {
+        grabState = GrabState.Knockdown;
+
+        // Projection
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        rb.linearVelocity = direction * force;
+
+        Debug.Log("Player KNOCKDOWN!");
+
+        // TODO: Trigger animation "fall down"
+
+        yield return new WaitForSeconds(duration);
+
+        // Relevé
+        if (grabState == GrabState.Knockdown)
+        {
+            grabState = GrabState.None;
+        }
+
+        Debug.Log("Player getting up!");
+    }
     public void HandleMovement()
     {
         Vector3 moveDirection = Vector3.zero;
