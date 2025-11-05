@@ -24,6 +24,10 @@ public class EnemyAI : MonoBehaviour
     private BlinderWanderBehavior wanderBehavior; // Added reference for Blinder
 
     // State variables
+    
+    private EnemyHealthBarUI healthBarUI;
+
+    private bool isPlayerInRange = false;
     protected float lastWanderTime = 0f;
     protected float wanderTimer = 0f;
     protected float lastAttackTime = 0f;
@@ -170,9 +174,9 @@ public class EnemyAI : MonoBehaviour
             if (humanHealth != null && !humanHealth.IsDead())
             {
                 float distance = Vector3.Distance(transform.position, hit.transform.position);
-
                 Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
                 float angle = Vector3.Angle(transform.forward, directionToTarget);
+
                 if (angle > stats.detectionAngle / 2f)
                     continue;
 
@@ -197,6 +201,29 @@ public class EnemyAI : MonoBehaviour
             targetHuman = null;
             if (currentState == State.Chasing || currentState == State.Attacking)
                 currentState = State.Idle;
+        }
+
+        // Update health bar visibility (separate 6m range, 360 degrees)
+        PlayerHealth player = FindObjectOfType<PlayerHealth>();
+        bool wasInRange = isPlayerInRange;
+
+        if (player != null && !player.IsDead())
+        {
+            float distToPlayer = Vector3.Distance(transform.position, player.transform.position);
+            isPlayerInRange = (distToPlayer <= 5f);
+        }
+        else
+        {
+            isPlayerInRange = false;
+        }
+
+        if (isPlayerInRange && !wasInRange)
+        {
+            health?.healthBarUI?.Show();
+        }
+        else if (!isPlayerInRange && wasInRange)
+        {
+            health?.healthBarUI?.Hide();
         }
     }
 

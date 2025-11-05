@@ -7,6 +7,8 @@ public class SwarmController : MonoBehaviour
 {
     [Header("References")]
     public SwarmStats stats;
+    private EnemyHealthBarUI healthBarUI;
+    private bool isPlayerInRange = false;
 
     [Header("Runtime State")]
     public float currentHealth;
@@ -93,8 +95,23 @@ public class SwarmController : MonoBehaviour
             playerMovement = playerObject.GetComponent<PlayerPhysicsMovement>();
         }
 
+        SetupHealthBar();
+
         isInitialized = true;
         Debug.Log($"SwarmController initialized: {stats.swarmType}, Health: {currentHealth}");
+    }
+
+    void SetupHealthBar()
+    {
+        EnemyHealthBarManager manager = FindObjectOfType<EnemyHealthBarManager>();
+        if (manager != null)
+        {
+            GameObject barGO = Instantiate(manager.healthBarPrefab, manager.transform);
+            healthBarUI = barGO.GetComponent<EnemyHealthBarUI>();
+            manager.RegisterEnemy(transform, healthBarUI);
+            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
+            healthBarUI.gameObject.SetActive(false);
+        }
     }
 
     void Update()
@@ -125,6 +142,19 @@ public class SwarmController : MonoBehaviour
         else
         {
             StopMovement();
+        }
+
+        // Health bar visibility
+        bool wasInRange = isPlayerInRange;
+        isPlayerInRange = (distanceToPlayer <= 6f);
+
+        if (isPlayerInRange && !wasInRange)
+        {
+            healthBarUI?.Show();
+        }
+        else if (!isPlayerInRange && wasInRange)
+        {
+            healthBarUI?.Hide();
         }
     }
 
@@ -270,6 +300,9 @@ public class SwarmController : MonoBehaviour
         damage *= 1f;
 
         currentHealth -= damage;
+
+        healthBarUI?.UpdateHealth(currentHealth, stats.maxHealth);
+
         Debug.Log($"Swarm took {damage} damage. Health: {currentHealth}/{stats.maxHealth}");
 
         // Bourrade on hit
@@ -325,6 +358,8 @@ public class SwarmController : MonoBehaviour
     void Die()
     {
         Debug.Log($"Swarm died!");
+        EnemyHealthBarManager manager = FindObjectOfType<EnemyHealthBarManager>();
+        manager?.UnregisterEnemy(transform);
 
         // Remove effects if in contact
         if (isInContact)

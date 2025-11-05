@@ -3,36 +3,27 @@ using System;
 using UnityEngine.AI;
 using System.Collections;
 
-
-/// <summary>
-/// Système de santé SIMPLIFIÉ pour tous les ennemis.
-/// Pas de système de membres - juste santé, dégâts et mort.
-/// </summary>
 public class EnemyHealth : MonoBehaviour
 {
     [Header("Enemy Stats")]
     public EnemyStats stats;
 
-    // Death context tracking
     private DeathContext.DeathType lastDeathType = DeathContext.DeathType.Other;
     private Vector3 lastImpactDirection = Vector3.forward;
     private float lastImpactForce = 1f;
 
-    // Santé
     private float currentHealth;
     private bool isDead = false;
 
-    // Recovery après tir de sentinelle
     private bool isRecovering = false;
     private float recoverUntilTime = 0f;
 
-    // Events (pour l'UI, les effets visuels, etc.)
     public event Action OnDeath;
-    public event Action<float, float> OnHealthChanged; // current, max
+    public event Action<float, float> OnHealthChanged;
 
-    // ============================================
-    // INITIALISATION
-    // ============================================
+    // Health bar
+    public EnemyHealthBarUI healthBarUI;
+    private EnemyHealthBarManager healthBarManager;
 
     void Start()
     {
@@ -43,9 +34,21 @@ public class EnemyHealth : MonoBehaviour
         }
 
         currentHealth = stats.maxHealth;
-
-        // AJOUTE CA A LA FIN DE START :
         SetupDeathEffect();
+        SetupHealthBar();
+    }
+
+    void SetupHealthBar()
+    {
+        healthBarManager = FindObjectOfType<EnemyHealthBarManager>();
+        if (healthBarManager != null)
+        {
+            GameObject barGO = Instantiate(healthBarManager.healthBarPrefab, healthBarManager.transform);
+            healthBarUI = barGO.GetComponent<EnemyHealthBarUI>();
+            healthBarManager.RegisterEnemy(transform, healthBarUI);
+            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
+            healthBarUI.gameObject.SetActive(false);
+        }
     }
 
     void SetupDeathEffect()
@@ -80,9 +83,8 @@ public class EnemyHealth : MonoBehaviour
 
     void Update()
     {
-        if (isDead) return; // stop tout
+        if (isDead) return;
 
-        // Fin du recovery après tir
         if (isRecovering && Time.time >= recoverUntilTime)
         {
             isRecovering = false;
@@ -90,12 +92,9 @@ public class EnemyHealth : MonoBehaviour
         }
     }
 
-    // ============================================
-    // PULSATION
-    // ============================================
     private Coroutine pulseCoroutine;
-    public float pulseScaleMultiplier = 1.2f; // combien la taille augmente
-    public float pulseDuration = 0.3f; // durée de la pulsation
+    public float pulseScaleMultiplier = 1.2f;
+    public float pulseDuration = 0.3f;
 
     private IEnumerator PulseCoroutine()
     {
@@ -103,7 +102,6 @@ public class EnemyHealth : MonoBehaviour
         Vector3 targetScale = originalScale * pulseScaleMultiplier;
         float elapsed = 0f;
 
-        // Phase d'expansion
         while (elapsed < pulseDuration / 2f)
         {
             transform.localScale = Vector3.Lerp(originalScale, targetScale, elapsed / (pulseDuration / 2f));
@@ -111,7 +109,6 @@ public class EnemyHealth : MonoBehaviour
             yield return null;
         }
 
-        // Phase de retour
         elapsed = 0f;
         while (elapsed < pulseDuration / 2f)
         {
@@ -123,21 +120,10 @@ public class EnemyHealth : MonoBehaviour
         transform.localScale = originalScale;
     }
 
-
-
-
-    // ============================================
-    // SYSTÈME DE DÉGÂTS
-    // ============================================
-
-    /// <summary>
-    /// Dégâts par melee attack du joueur
-    /// </summary>
     public void TakeMeleeDamage(float damage)
     {
         if (isDead) return;
 
-        // Track death context
         lastDeathType = DeathContext.DeathType.Melee;
         PlayerPhysicsMovement player = FindObjectOfType<PlayerPhysicsMovement>();
         if (player != null)
@@ -152,6 +138,10 @@ public class EnemyHealth : MonoBehaviour
         Debug.Log($"{gameObject.name} took {damage} melee damage! Health: {currentHealth}/{stats.maxHealth}");
 
         OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
+        if (healthBarUI != null)
+        {
+            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
+        }
         UpdateSpeed();
 
         if (currentHealth <= 0f)
@@ -160,14 +150,10 @@ public class EnemyHealth : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Dégâts par tir de sentinelle
-    /// </summary>
     public void TakeSentinelShot(bool isHeadshot = false)
     {
         if (isDead) return;
 
-        // Track death context
         lastDeathType = DeathContext.DeathType.Sentinel;
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null && gm.sentinelEye != null)
@@ -193,6 +179,10 @@ public class EnemyHealth : MonoBehaviour
 
         Debug.Log($"{gameObject.name} shot by sentinel! Health: {currentHealth}/{stats.maxHealth}");
         OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
+        if (healthBarUI != null)
+        {
+            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
+        }
 
         if (currentHealth <= 0f)
         {
@@ -204,15 +194,11 @@ public class EnemyHealth : MonoBehaviour
         UpdateSpeed();
     }
 
-    /// <summary>
-    /// Démarre le recovery après un tir (stun temporaire)
-    /// </summary>
     void StartRecovery()
     {
         isRecovering = true;
         recoverUntilTime = Time.time + 2f;
 
-        // Libérer la cible si grab en cours
         GrabAttack grabAttack = GetComponent<GrabAttack>();
         if (grabAttack != null && grabAttack.IsGrabbing())
         {
@@ -222,10 +208,6 @@ public class EnemyHealth : MonoBehaviour
         Debug.Log($"{gameObject.name} starts recovery (stunned for 2s)");
     }
 
-    // ============================================
-    // MORT
-    // ============================================
-
     void Die()
     {
         if (isDead) return;
@@ -234,6 +216,11 @@ public class EnemyHealth : MonoBehaviour
         Debug.Log($"{gameObject.name} is dead!");
 
         OnDeath?.Invoke();
+
+        if (healthBarManager != null)
+        {
+            healthBarManager.UnregisterEnemy(transform);
+        }
 
         EnemyAI ai = GetComponent<EnemyAI>();
         if (ai != null)
@@ -250,7 +237,6 @@ public class EnemyHealth : MonoBehaviour
             agent.enabled = false;
         }
 
-        // Preparer contexte de mort
         DeathContext context = new DeathContext
         {
             deathType = lastDeathType,
@@ -258,7 +244,6 @@ public class EnemyHealth : MonoBehaviour
             impactForce = lastImpactForce
         };
 
-        // Appeler death effects
         IDeathEffect[] deathEffects = GetComponents<IDeathEffect>();
         if (deathEffects != null && deathEffects.Length > 0)
         {
@@ -268,7 +253,6 @@ public class EnemyHealth : MonoBehaviour
             }
         }
 
-        // Appeler death behaviors (spawn swarm)
         IOnDeathBehavior[] deathBehaviors = GetComponents<IOnDeathBehavior>();
         if (deathBehaviors != null && deathBehaviors.Length > 0)
         {
@@ -281,37 +265,19 @@ public class EnemyHealth : MonoBehaviour
         Destroy(gameObject, 3f);
     }
 
-
-    // ============================================
-    // MISE À JOUR DE LA VITESSE
-    // ============================================
-
-    /// <summary>
-    /// Met à jour la vitesse de l'ennemi selon sa santé actuelle
-    /// </summary>
     void UpdateSpeed()
     {
         EnemyAI ai = GetComponent<EnemyAI>();
         if (ai != null)
         {
-            ai.UpdateSpeed(currentHealth, false); // false = pas crawler
+            ai.UpdateSpeed(currentHealth, false);
         }
     }
-
-    // ============================================
-    // GETTERS
-    // ============================================
 
     public bool IsDead() => isDead;
     public bool IsRecovering() => isRecovering;
     public float GetCurrentHealth() => currentHealth;
     public float GetMaxHealth() => stats.maxHealth;
     public float GetHealthPercentage() => currentHealth / stats.maxHealth;
-
-    /// <summary>
-    /// Pour la compatibilité avec l'ancien système de grab
-    /// (nombre de bras pour calculer les mashes requis)
-    /// Par défaut : 2 bras
-    /// </summary>
     public int GetArmCount() => 2;
 }
