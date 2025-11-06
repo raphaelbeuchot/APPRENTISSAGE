@@ -205,7 +205,7 @@ public class GameManager : MonoBehaviour
                     isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
             }
 
-            bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune; // && hasLOS;
+            bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune && hasLOS;
 
             if (shouldBeShot && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
             {
@@ -335,11 +335,9 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(sentinel.stunZombieDuration);
         zombieStunBySentinel = false;
 
-        alreadyShot.Clear();
-
-
         // Attendre 0.5s de plus pour que les bourrades finissent
         yield return new WaitForSeconds(0.5f);
+        alreadyShot.Clear();
     }
 
     void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 oldTargetPos)
