@@ -170,6 +170,17 @@ public class MeleeAttackSystem : MonoBehaviour
         {
             if (hit.gameObject == gameObject) continue;
 
+            // === NOUVEAU : VERIFIER L'ANGLE ===
+            Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
+            float angleToTarget = Vector3.Angle(transform.forward, directionToTarget);
+
+            // Si l'angle est trop grand, skip cette cible
+            if (angleToTarget > stats.attackAngle / 2f)
+            {
+                continue;
+            }
+            // ===================================
+
             // === GESTION ZOMBIES ===
             EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
             if (enemyHealth != null)
@@ -294,7 +305,37 @@ public class MeleeAttackSystem : MonoBehaviour
     {
         if (stats == null) return;
 
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, stats.attackRange);
+        Vector3 position = transform.position + Vector3.up * 1f;
+
+        // Sphere de portée
+        Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
+        Gizmos.DrawWireSphere(position, stats.attackRange);
+
+        // Cône d'attaque
+        Gizmos.color = Color.red;
+        Vector3 forward = transform.forward;
+
+        // Ligne centrale
+        Gizmos.DrawRay(position, forward * stats.attackRange);
+
+        // Bords du cône
+        float halfAngle = stats.attackAngle / 2f;
+        Vector3 leftBoundary = Quaternion.Euler(0, -halfAngle, 0) * forward;
+        Vector3 rightBoundary = Quaternion.Euler(0, halfAngle, 0) * forward;
+
+        Gizmos.DrawRay(position, leftBoundary * stats.attackRange);
+        Gizmos.DrawRay(position, rightBoundary * stats.attackRange);
+
+        // Arc pour visualiser le cône
+        int segments = 20;
+        Vector3 previousPoint = position + leftBoundary * stats.attackRange;
+        for (int i = 1; i <= segments; i++)
+        {
+            float angle = Mathf.Lerp(-halfAngle, halfAngle, i / (float)segments);
+            Vector3 direction = Quaternion.Euler(0, angle, 0) * forward;
+            Vector3 point = position + direction * stats.attackRange;
+            Gizmos.DrawLine(previousPoint, point);
+            previousPoint = point;
+        }
     }
 }

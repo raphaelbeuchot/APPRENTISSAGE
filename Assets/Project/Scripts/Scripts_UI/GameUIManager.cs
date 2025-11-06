@@ -5,12 +5,6 @@ using TMPro;
 
 public class GameUIManager : MonoBehaviour
 {
-    [Header("Health UI")]
-    [SerializeField] private Image healthBarFill; // Remplacer les segments par une barre
-    [SerializeField] private Color healthyColor = Color.green;
-    [SerializeField] private Color lowHealthColor = Color.yellow;
-    [SerializeField] private Color criticalHealthColor = Color.red;
-
     [Header("Damage Vignette")]
     [SerializeField] private Image damageVignette;
     [SerializeField] private float damageFlashDuration = 0.3f;
@@ -26,14 +20,13 @@ public class GameUIManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private PlayerHealth playerHealth;
-    [SerializeField] private GrabAttack[] zombies; // CHANGÉ: ZombieGrabSystem en GrabAttack
+    [SerializeField] private GrabAttack[] zombies;
 
     private bool isGrabbed = false;
 
     void Start()
     {
         zombies = FindObjectsOfType<GrabAttack>();
-
 
         // Setup initial
         if (damageVignette != null)
@@ -53,13 +46,10 @@ public class GameUIManager : MonoBehaviour
             countdownText.gameObject.SetActive(false);
         }
 
-        // S'abonner aux evenements
+        // S'abonner UNIQUEMENT au damage flash
         if (playerHealth != null)
         {
-            playerHealth.OnHealthChanged += UpdateHealthUI;
-
-            // Initialiser l'affichage
-            UpdateHealthDisplay(playerHealth.GetCurrentHealth(), playerHealth.GetMaxHealth());
+            playerHealth.OnHealthChanged += OnPlayerDamaged;
         }
     }
 
@@ -68,36 +58,10 @@ public class GameUIManager : MonoBehaviour
         CheckGrabStatus();
     }
 
-    void UpdateHealthUI(float currentHealth, float maxHealth)
+    void OnPlayerDamaged(float currentHealth, float maxHealth)
     {
-        UpdateHealthDisplay(currentHealth, maxHealth);
-
-        // Flash de degats
+        // Flash de degats seulement
         StartCoroutine(DamageFlash());
-    }
-
-    void UpdateHealthDisplay(float currentHealth, float maxHealth)
-    {
-        // Mettre a jour la barre de vie
-        if (healthBarFill != null)
-        {
-            float healthPercent = currentHealth / maxHealth;
-            healthBarFill.fillAmount = healthPercent;
-
-            // Changer la couleur selon le pourcentage
-            if (healthPercent > 0.5f)
-            {
-                healthBarFill.color = healthyColor;
-            }
-            else if (healthPercent > 0.25f)
-            {
-                healthBarFill.color = lowHealthColor;
-            }
-            else
-            {
-                healthBarFill.color = criticalHealthColor;
-            }
-        }
     }
 
     IEnumerator DamageFlash()
@@ -128,7 +92,6 @@ public class GameUIManager : MonoBehaviour
             yield return null;
         }
 
-        // S'assurer que c'est transparent a la fin
         Color finalColor = damageVignette.color;
         finalColor.a = 0f;
         damageVignette.color = finalColor;
@@ -140,7 +103,6 @@ public class GameUIManager : MonoBehaviour
 
         bool currentlyGrabbed = false;
 
-        // CHANGÉ: ZombieGrabSystem en GrabAttack
         foreach (GrabAttack zombie in zombies)
         {
             if (zombie != null && zombie.IsGrabbing())
@@ -150,7 +112,6 @@ public class GameUIManager : MonoBehaviour
             }
         }
 
-        // Afficher/cacher le texte de mashing
         if (currentlyGrabbed && !isGrabbed)
         {
             StartCoroutine(ShowMashPrompt());
@@ -172,7 +133,6 @@ public class GameUIManager : MonoBehaviour
 
         while (true)
         {
-            // Vérifier si encore grabbed
             bool stillGrabbed = false;
             foreach (GrabAttack zombie in zombies)
             {
@@ -185,7 +145,7 @@ public class GameUIManager : MonoBehaviour
 
             if (!stillGrabbed) break;
 
-            float cycleTime = 1f / mashBlinkSpeed;  // 3 blinks/sec = 0.33s
+            float cycleTime = 1f / mashBlinkSpeed;
             mashText.enabled = (Time.time % cycleTime) < (cycleTime * 0.5f);
 
             yield return null;
@@ -221,7 +181,6 @@ public class GameUIManager : MonoBehaviour
         {
             countdownText.text = number;
 
-            // Animation de scale
             float elapsed = 0f;
             float duration = number == "GO!" ? 0.5f : 1f;
 
@@ -239,7 +198,6 @@ public class GameUIManager : MonoBehaviour
                 yield return null;
             }
 
-            // Reset pour le prochain nombre
             Color resetColor = countdownText.color;
             resetColor.a = 1f;
             countdownText.color = resetColor;
@@ -249,8 +207,6 @@ public class GameUIManager : MonoBehaviour
         countdownText.gameObject.SetActive(false);
     }
 
-    // Methode publique pour mettre a jour manuellement la liste des zombies
-    // CHANGÉ: ZombieGrabSystem en GrabAttack
     public void UpdateZombiesList()
     {
         zombies = FindObjectsOfType<GrabAttack>();
@@ -260,7 +216,7 @@ public class GameUIManager : MonoBehaviour
     {
         if (playerHealth != null)
         {
-            playerHealth.OnHealthChanged -= UpdateHealthUI;
+            playerHealth.OnHealthChanged -= OnPlayerDamaged;
         }
     }
 }

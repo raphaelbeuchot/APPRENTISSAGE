@@ -42,6 +42,9 @@ public class PlayerStats : ScriptableObject
     [Header("ATTAQUE MELEE")]
     [Tooltip("Portee de l'attaque")]
     public float attackRange = 2f;
+    [Tooltip("Angle de detection de l'attaque (en degres, 360 = tout autour)")]
+    [Range(30f, 360f)]
+    public float attackAngle = 120f;  // NOUVEAU
     [Tooltip("Degats infliges")]
     public float attackDamage = 25f;
     [Tooltip("Force du knockback")]
