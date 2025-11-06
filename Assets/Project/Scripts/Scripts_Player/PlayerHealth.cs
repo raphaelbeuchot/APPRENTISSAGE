@@ -22,7 +22,7 @@ public class PlayerHealth : MonoBehaviour
     public event Action OnDeath;
     public event Action OnCriticalHealth; // < 25%
 
-    void Start()
+    void Awake()
     {
         if (stats == null)
         {
