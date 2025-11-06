@@ -205,7 +205,7 @@ public class GameManager : MonoBehaviour
                     isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
             }
 
-            bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune && hasLOS;
+            bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune;
 
             if (shouldBeShot && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
             {
