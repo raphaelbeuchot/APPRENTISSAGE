@@ -52,12 +52,28 @@ public class LevelManager : MonoBehaviour
 
         if (victoryUI == null)
         {
-            victoryUI = FindObjectOfType<VictoryUI>();
+            VictoryUI[] allVictoryUI = Resources.FindObjectsOfTypeAll<VictoryUI>();
+            foreach (VictoryUI ui in allVictoryUI)
+            {
+                if (ui.gameObject.scene.name != null)
+                {
+                    victoryUI = ui;
+                    break;
+                }
+            }
         }
 
         if (gameOverUI == null)
         {
-            gameOverUI = FindObjectOfType<GameOverUI>();
+            GameOverUI[] allGameOverUI = Resources.FindObjectsOfTypeAll<GameOverUI>();
+            foreach (GameOverUI ui in allGameOverUI)
+            {
+                if (ui.gameObject.scene.name != null)
+                {
+                    gameOverUI = ui;
+                    break;
+                }
+            }
         }
 
         // S'abonner aux événements
