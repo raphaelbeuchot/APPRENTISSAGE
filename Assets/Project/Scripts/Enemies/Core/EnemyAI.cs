@@ -109,6 +109,14 @@ public class EnemyAI : MonoBehaviour
 
         if (gameManager != null && gameManager.zombieStunBySentinel)
         {
+            // Si ce zombie a été shot, il doit rester immobile pendant TOUT le stun
+            if (gameManager.WasShot(gameObject))
+            {
+                StopMovement();
+                return;
+            }
+
+            // Pour les autres zombies (pas shot), on check IsInSpecialState
             if (attackBehavior == null || !attackBehavior.IsInSpecialState())
             {
                 StopMovement();
@@ -311,12 +319,22 @@ public class EnemyAI : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
         }
 
-        if (attackBehavior != null && attackBehavior.CanAttack())
+        if (attackBehavior != null)
         {
-            if (Time.time - lastAttackTime >= stats.attackCooldown)
+            Debug.Log($"[{gameObject.name}] CanAttack = {attackBehavior.CanAttack()}, InSpecialState = {attackBehavior.IsInSpecialState()}");
+
+            if (attackBehavior.CanAttack())
             {
-                lastAttackTime = Time.time;
-                attackBehavior.AttemptAttack(targetHuman.gameObject);
+                if (Time.time - lastAttackTime >= stats.attackCooldown)
+                {
+                    lastAttackTime = Time.time;
+                    Debug.Log($"[{gameObject.name}] Calling AttemptAttack!");
+                    attackBehavior.AttemptAttack(targetHuman.gameObject);
+                }
+            }
+            else
+            {
+                Debug.Log($"[{gameObject.name}] Cannot attack - CanAttack() returned false");
             }
         }
     }

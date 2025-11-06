@@ -95,23 +95,45 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
     public void AttemptAttack(GameObject target)
     {
-        if (!player || IsInBourrade() || isGrabbing) return;
+        Debug.Log($"[{gameObject.name}] === AttemptAttack called === isFakeGrabbing={isFakeGrabbing}");
+
+        if (!player || IsInBourrade() || isGrabbing)
+        {
+            Debug.Log($"[{gameObject.name}] BLOCKED - player={player != null}, IsInBourrade={IsInBourrade()}, isGrabbing={isGrabbing}");
+            return;
+        }
 
         EnemyAI ai = GetComponent<EnemyAI>();
         if (ai != null && ai.isDetectedBySentinel)
         {
-            return; // Sentinelle targeting: cancel grab
+            Debug.Log($"[{gameObject.name}] BLOCKED - Detected by sentinel");
+            return;
         }
 
         if (player != null && player.IsSprinting())
+        {
+            Debug.Log($"[{gameObject.name}] BLOCKED - Player is sprinting");
             return;
+        }
 
         float dist = Vector3.Distance(transform.position, player.transform.position);
-        if (dist > stats.attackRange) return;
+        Debug.Log($"[{gameObject.name}] Distance check: {dist:F2}m (max: {stats.attackRange}m)");
+        if (dist > stats.attackRange)
+        {
+            Debug.Log($"[{gameObject.name}] BLOCKED - Too far");
+            return;
+        }
+
+        Debug.Log($"[{gameObject.name}] Player grabState = {player.grabState}");
 
         if (player.grabState == PlayerPhysicsMovement.GrabState.None)
         {
+            Debug.Log($"[{gameObject.name}] STARTING GRAB!");
             StartCoroutine(GrabCoroutine());
+        }
+        else
+        {
+            Debug.Log($"[{gameObject.name}] BLOCKED - grabState is {player.grabState}, not None");
         }
     }
 
