@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
     private HashSet<GameObject> alreadyShot = new HashSet<GameObject>();
     private float detectionTimer = 0f;
 
-    // Systeme de raycasts et LOS
+    // Système de raycasts et LOS
     private Dictionary<GameObject, TargetTrackingData> trackedTargets = new Dictionary<GameObject, TargetTrackingData>();
 
     private class TargetTrackingData
@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
         public float reacquiredTime;
         public bool canShoot;
 
-        // Nouvelles variables pour securiser les tirs
+        // Nouvelles variables pour sécuriser les tirs
         public bool isBeingShot = false;
         public float lastShotTime = -999f;
     }
@@ -130,7 +130,7 @@ public class GameManager : MonoBehaviour
     }
 
     // ============================================
-    // SYSTEME DE DETECTION AVEC RAYCASTS
+    // SYSTÈME DE DÉTECTION AVEC RAYCASTS
     // ============================================
 
     void CheckForMovingTargetsWithRaycast()
@@ -140,7 +140,7 @@ public class GameManager : MonoBehaviour
 
         Collider[] targets = Physics.OverlapSphere(sentinelPos, sentinelSettings.detectionRadius, sentinelSettings.targetLayers);
 
-        // --- Etape 1 : marquer tous les ennemis comme "non detectes" par defaut ---
+        // --- Étape 1 : marquer tous les ennemis comme "non détectés" par défaut ---
         foreach (var kvp in trackedTargets)
         {
             EnemyAI ai = kvp.Key != null ? kvp.Key.GetComponent<EnemyAI>() : null;
@@ -148,28 +148,7 @@ public class GameManager : MonoBehaviour
                 ai.isDetectedBySentinel = false;
         }
 
-        // NOUVEAU : Reset AUSSI pour les targets dans alreadyShot !
-        foreach (GameObject shotTarget in alreadyShot)
-        {
-            if (shotTarget != null)
-            {
-                EnemyAI ai = shotTarget.GetComponent<EnemyAI>();
-                if (ai != null)
-                    ai.isDetectedBySentinel = false;
-            }
-        }
-
-        foreach (GameObject shotTarget in alreadyShot)
-        {
-            if (shotTarget != null)
-            {
-                EnemyAI ai = shotTarget.GetComponent<EnemyAI>();
-                if (ai != null)
-                    ai.isDetectedBySentinel = false;
-            }
-        }
-
-        // --- Etape 2 : traiter les cibles dans la sphere ---
+        // --- Étape 2 : traiter les cibles dans la sphère ---
         foreach (Collider col in targets)
         {
             if (!trackedTargets.ContainsKey(col.gameObject))
@@ -193,10 +172,10 @@ public class GameManager : MonoBehaviour
             trackData.canShoot = hasLOS;
             trackData.wasInLOS = hasLOS;
 
-            // --- Marquage "detecte" pour tous les ennemis visibles ---
+            // --- Marquage "détecté" pour tous les ennemis visibles ---
             EnemyAI ai = col.GetComponent<EnemyAI>();
             if (ai != null && hasLOS)
-                ai.isDetectedBySentinel = true;
+                ai.isDetectedBySentinel = true; //  flag mis à jour ici
 
             // --- Cas particulier : bourrade ---
             if (isInBourrade)
@@ -226,7 +205,7 @@ public class GameManager : MonoBehaviour
                     isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
             }
 
-            bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune && hasLOS;
+            bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune; // && hasLOS;
 
             if (shouldBeShot && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
             {
@@ -295,7 +274,7 @@ public class GameManager : MonoBehaviour
     }
 
     // ============================================
-    // COROUTINES DE TIR SECURISEES
+    // COROUTINES DE TIR SÉCURISÉES
     // ============================================
 
     IEnumerator ShootEnemyWithDelay(GameObject enemy, EnemyHealth enemyHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, TargetTrackingData trackData, float extraDelay = 0f)
@@ -338,10 +317,11 @@ public class GameManager : MonoBehaviour
 
         StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
 
+        // AJOUTER CES LIGNES :
         bool isHeadshot = sentinelSettings.headshotInstakill &&
                   Random.value < sentinelSettings.headshotChance;
 
-        enemyHealth.TakeSentinelShot(isHeadshot);
+        enemyHealth.TakeSentinelShot(isHeadshot);  
 
         if (enemyHealth.IsDead())
             Debug.Log(enemy.name + " MORT!");
@@ -357,6 +337,7 @@ public class GameManager : MonoBehaviour
 
         alreadyShot.Clear();
 
+
         // Attendre 0.5s de plus pour que les bourrades finissent
         yield return new WaitForSeconds(0.5f);
     }
@@ -367,13 +348,13 @@ public class GameManager : MonoBehaviour
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
 
-        // On reprend la position actuelle du joueur (corrige le decalage)
+        // On reprend la position actuelle du joueur (corrige le décalage)
         Vector3 currentTargetPos = human.transform.position + Vector3.up * 1f;
 
         SentinelTarget sentinelTarget = human.GetComponent<SentinelTarget>();
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
-        // Le laser tire la ou le joueur est vraiment, pas la ou il a ete vu
+        // Le laser tire là où le joueur est vraiment, pas là où il a été vu
         StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
 
         StartCoroutine(PlayerStunBySentinel());
@@ -397,35 +378,24 @@ public class GameManager : MonoBehaviour
 
     IEnumerator ShootZombieInBourradeDelayed(GrabAttack grabSystem, EnemyHealth enemyHealth, Vector3 sentinelPos, Vector3 targetPos)
     {
+        // Attendre 0.8 secondes
         yield return new WaitForSeconds(0.5f);
 
-        // Ne PAS appeler ForceStop, juste stopper la bourrade proprement
-        if (grabSystem != null)
-        {
-            grabSystem.StopCoroutine("BourradeZombie");  // Stop juste cette coroutine
-
-            // Reset manuel des flags
-            grabSystem.isInBourradeDuration = false;
-            grabSystem.isInBourradeCooldown = false;
-
-            // Reset physique
-            Rigidbody rb = grabSystem.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.linearVelocity = Vector3.zero;
-                rb.constraints = RigidbodyConstraints.FreezeRotation;
-            }
-
-            // Reset AI
-            EnemyAI ai = grabSystem.GetComponent<EnemyAI>();
-            if (ai != null)
-                ai.ResetAfterBourrade();
-        }
+        // Interrompre la bourrade
+        grabSystem?.ForceStop();
 
         // Tir par la sentinelle
         if (enemyHealth != null && !enemyHealth.IsDead())
         {
             ShootEnemy(grabSystem.gameObject, enemyHealth, "BOURRADE INTERRUPTED", sentinelPos, targetPos);
+        }
+
+        // Libérer la cible pour que ça puisse se faire tirer de nouveau si besoin
+        if (grabSystem != null)
+        {
+            GrabAttack grab = grabSystem.GetComponent<GrabAttack>();
+            if (grab != null)
+                grab.isFakeGrabbing = false;
         }
     }
 
@@ -435,7 +405,7 @@ public class GameManager : MonoBehaviour
         {
             Vector3 currentPos = playerObject.transform.position + Vector3.up * 1f;
             StartCoroutine(ShowShootLaser(sentinelPos, currentPos, sentinelSettings.shootLaserFadeDuration));
-
+            
             Debug.Log("BANG! Player shot at end of recoil");
 
             if (audioSource != null && sentinelSettings.shootSound != null)
@@ -525,16 +495,10 @@ public class GameManager : MonoBehaviour
                 sentinelLightRenderer.material = greenMaterial;
         }
     }
-
-    public bool WasShot(GameObject target)
-    {
-        return alreadyShot.Contains(target);
-    }
     public void RemoveFromAlreadyShot(GameObject target)
     {
         alreadyShot.Remove(target);
     }
-
     public void StartGameCycle()
     {
         if (gameStarted) return;
