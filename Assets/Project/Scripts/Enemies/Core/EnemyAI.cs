@@ -27,6 +27,8 @@ public class EnemyAI : MonoBehaviour
     
     private EnemyHealthBarUI healthBarUI;
     public bool canMove = true;
+    [HideInInspector] public bool isStunnedBySentinel = false;
+
 
     private bool isPlayerInRange = false;
     protected float lastWanderTime = 0f;
@@ -99,6 +101,12 @@ public class EnemyAI : MonoBehaviour
     protected virtual void Update()
     {
         if (stats == null || isDead) return;
+
+        if (isStunnedBySentinel)
+        {
+            StopMovement();
+            return;
+        }
 
         if (!canMove)
         {

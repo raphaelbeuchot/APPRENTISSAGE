@@ -309,10 +309,18 @@ public class GameManager : MonoBehaviour
     void ShootEnemy(GameObject enemy, EnemyHealth enemyHealth, string reason, Vector3 sentinelPos, Vector3 targetPos)
     {
         Debug.Log("BANG! " + enemy.name + " (" + reason + ")");
+        
+        
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
 
         Vector3 currentTargetPos = enemy.transform.position + Vector3.up * 1f;
+
+        EnemyAI ai = enemy.GetComponent<EnemyAI>();
+        if (ai != null)
+        {
+            StartCoroutine(StunSpecificZombie(ai));
+        }
 
         SentinelTarget sentinelTarget = enemy.GetComponent<SentinelTarget>();
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
@@ -328,17 +336,19 @@ public class GameManager : MonoBehaviour
         if (enemyHealth.IsDead())
             Debug.Log(enemy.name + " MORT!");
 
-        StartCoroutine(EnemyStunBySentinel());
     }
 
-    IEnumerator EnemyStunBySentinel()
+
+    IEnumerator StunSpecificZombie(EnemyAI ai)
     {
-        zombieStunBySentinel = true;
+        ai.isStunnedBySentinel = true;
         yield return new WaitForSeconds(sentinel.stunZombieDuration);
-        zombieStunBySentinel = false;
+        ai.isStunnedBySentinel = false;
 
-        alreadyShot.Clear();
+        alreadyShot.Remove(ai.gameObject);
     }
+
+    
 
     void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 oldTargetPos)
     {
