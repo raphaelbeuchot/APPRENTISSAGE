@@ -112,6 +112,13 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
     }
 
+    void StartGrab()
+    {
+        GameUIManager ui = FindObjectOfType<GameUIManager>();
+        if (ui != null)
+            ui.RegisterGrab(this);
+    }
+
     IEnumerator GrabCoroutine()
     {
         isGrabbing = true;

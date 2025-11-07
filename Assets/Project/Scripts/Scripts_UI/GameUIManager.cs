@@ -1,7 +1,8 @@
+using System.Collections;
+using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
-using TMPro;
 
 public class GameUIManager : MonoBehaviour
 {
@@ -210,6 +211,16 @@ public class GameUIManager : MonoBehaviour
     public void UpdateZombiesList()
     {
         zombies = FindObjectsOfType<GrabAttack>();
+    }
+
+    public void RegisterGrab(GrabAttack grab)
+    {
+        if (!zombies.Contains(grab))
+        {
+            var newList = zombies.ToList();
+            newList.Add(grab);
+            zombies = newList.ToArray();
+        }
     }
 
     void OnDestroy()
