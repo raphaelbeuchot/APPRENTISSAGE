@@ -163,6 +163,10 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             {
                 PlayerHealth ph = player.GetComponent<PlayerHealth>();
                 if (ph) ph.TakeDamage(stats.biteDamage);
+                if (stats.attackSound != null)
+                {
+                    AudioSource.PlayClipAtPoint(stats.attackSound, transform.position);
+                }
             }
 
             EndGrab(escaped);
