@@ -140,6 +140,7 @@ public class GameManager : MonoBehaviour
 
         Collider[] targets = Physics.OverlapSphere(sentinelPos, sentinelSettings.detectionRadius, sentinelSettings.targetLayers);
 
+        // Réinitialiser la détection
         foreach (var kvp in trackedTargets)
         {
             EnemyAI ai = kvp.Key != null ? kvp.Key.GetComponent<EnemyAI>() : null;
@@ -159,15 +160,26 @@ public class GameManager : MonoBehaviour
 
             GrabAttack grabSystem = col.GetComponent<GrabAttack>();
             bool isInBourrade = grabSystem != null && grabSystem.isInBourradeDuration;
-
-            // Vérifier si c'est un fake grabber
             bool isFakeGrabber = grabSystem != null && grabSystem.isFakeGrabbing;
 
             Vector3 targetPos = col.transform.position + Vector3.up * 1f;
             Vector3 direction = (targetPos - sentinelPos).normalized;
             float distance = Vector3.Distance(sentinelPos, targetPos);
 
-            bool hasLOS = !Physics.Raycast(sentinelPos, direction, distance, sentinelSettings.obstacleLayers);
+            // NOUVEAU SYSTÈME DE LOS (ligne de vue)
+            RaycastHit hit;
+            bool hasLOS = true;
+
+            if (Physics.Raycast(sentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers))
+            {
+                // Si le raycast touche un obstacle avant la cible : vision bloquée
+                hasLOS = false;
+                Debug.DrawLine(sentinelPos, hit.point, Color.red, 0.2f);
+            }
+            else
+            {
+                Debug.DrawLine(sentinelPos, targetPos, Color.green, 0.2f);
+            }
 
             trackData.canShoot = hasLOS;
             trackData.wasInLOS = hasLOS;
@@ -192,10 +204,10 @@ public class GameManager : MonoBehaviour
                     isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
             }
 
-            // Inclure les FGRB et la bourrade comme mouvement punissable
             bool shouldBeShot = (isMoving || isAttacking || isInBourrade || isFakeGrabber) && !playerImmune;
 
-            if (shouldBeShot && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
+            // TIR SUR LA CIBLE SI ELLE EST EN MOUVEMENT ET VISIBLE
+            if (shouldBeShot && hasLOS && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
             {
                 trackData.isBeingShot = true;
                 trackData.lastShotTime = Time.time;
