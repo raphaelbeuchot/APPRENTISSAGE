@@ -140,7 +140,6 @@ public class GameManager : MonoBehaviour
 
         Collider[] targets = Physics.OverlapSphere(sentinelPos, sentinelSettings.detectionRadius, sentinelSettings.targetLayers);
 
-        // --- Étape 1 : marquer tous les ennemis comme "non détectés" par défaut ---
         foreach (var kvp in trackedTargets)
         {
             EnemyAI ai = kvp.Key != null ? kvp.Key.GetComponent<EnemyAI>() : null;
@@ -148,20 +147,21 @@ public class GameManager : MonoBehaviour
                 ai.isDetectedBySentinel = false;
         }
 
-        // --- Étape 2 : traiter les cibles dans la sphère ---
         foreach (Collider col in targets)
         {
             if (!trackedTargets.ContainsKey(col.gameObject))
                 trackedTargets[col.gameObject] = new TargetTrackingData();
 
             TargetTrackingData trackData = trackedTargets[col.gameObject];
-            if (alreadyShot.Contains(col.gameObject)) continue;
 
             EnemyHealth enemyHealth = col.GetComponent<EnemyHealth>();
             if (enemyHealth != null && enemyHealth.IsRecovering()) continue;
 
             GrabAttack grabSystem = col.GetComponent<GrabAttack>();
-            bool isInBourrade = grabSystem != null && grabSystem.IsInBourrade();
+            bool isInBourrade = grabSystem != null && grabSystem.isInBourradeDuration;
+
+            // Vérifier si c'est un fake grabber
+            bool isFakeGrabber = grabSystem != null && grabSystem.isFakeGrabbing;
 
             Vector3 targetPos = col.transform.position + Vector3.up * 1f;
             Vector3 direction = (targetPos - sentinelPos).normalized;
@@ -172,24 +172,11 @@ public class GameManager : MonoBehaviour
             trackData.canShoot = hasLOS;
             trackData.wasInLOS = hasLOS;
 
-            // --- Marquage "détecté" pour tous les ennemis visibles ---
             EnemyAI ai = col.GetComponent<EnemyAI>();
             if (ai != null && hasLOS)
-                ai.isDetectedBySentinel = true; //  flag mis à jour ici
-
-            // --- Cas particulier : bourrade ---
-            if (isInBourrade)
-            {
-                if (!trackData.isBeingShot)
-                {
-                    trackData.isBeingShot = true;
-                    StartCoroutine(ShootZombieInBourradeDelayed(grabSystem, enemyHealth, sentinelPos, targetPos));
-                }
-                continue;
-            }
+                ai.isDetectedBySentinel = true;
 
             bool playerImmune = (col.gameObject == player.gameObject && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed);
-            bool zombieImmune = grabSystem != null && (grabSystem.isGrabbing || grabSystem.isInBourradeCooldown);
 
             Rigidbody rb = col.GetComponent<Rigidbody>();
             MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
@@ -205,7 +192,8 @@ public class GameManager : MonoBehaviour
                     isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
             }
 
-            bool shouldBeShot = (isMoving || isAttacking) && !playerImmune && !zombieImmune;
+            // Inclure les FGRB et la bourrade comme mouvement punissable
+            bool shouldBeShot = (isMoving || isAttacking || isInBourrade || isFakeGrabber) && !playerImmune;
 
             if (shouldBeShot && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
             {
@@ -217,7 +205,7 @@ public class GameManager : MonoBehaviour
                 if (enemyHealth != null && !enemyHealth.IsDead())
                 {
                     alreadyShot.Add(col.gameObject);
-                    string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
+                    string reason = isAttacking ? "ATTAQUE" : (isInBourrade ? "BOURRADE" : "MOUVEMENT");
                     float randomOffset = Random.Range(0.1f, 0.4f);
                     StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, targetPos, trackData, randomOffset));
                 }
@@ -234,6 +222,8 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
+
 
 
 
@@ -335,8 +325,6 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(sentinel.stunZombieDuration);
         zombieStunBySentinel = false;
 
-        // Attendre 0.5s de plus pour que les bourrades finissent
-        yield return new WaitForSeconds(0.5f);
         alreadyShot.Clear();
     }
 
@@ -374,29 +362,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    IEnumerator ShootZombieInBourradeDelayed(GrabAttack grabSystem, EnemyHealth enemyHealth, Vector3 sentinelPos, Vector3 targetPos)
-    {
-        // Attendre 0.8 secondes
-        yield return new WaitForSeconds(0.5f);
-
-        // Interrompre la bourrade
-        grabSystem?.ForceStop();
-
-        // Tir par la sentinelle
-        if (enemyHealth != null && !enemyHealth.IsDead())
-        {
-            ShootEnemy(grabSystem.gameObject, enemyHealth, "BOURRADE INTERRUPTED", sentinelPos, targetPos);
-        }
-
-        // Libérer la cible pour que ça puisse se faire tirer de nouveau si besoin
-        if (grabSystem != null)
-        {
-            GrabAttack grab = grabSystem.GetComponent<GrabAttack>();
-            if (grab != null)
-                grab.isFakeGrabbing = false;
-        }
-    }
-
+    
     public IEnumerator ShootPlayerAtEndOfRecoil(GameObject playerObject, PlayerHealth humanHealth, Vector3 sentinelPos, Vector3 targetPos)
     {
         if (humanHealth != null && !humanHealth.IsDead())

@@ -26,6 +26,7 @@ public class EnemyAI : MonoBehaviour
     // State variables
     
     private EnemyHealthBarUI healthBarUI;
+    public bool canMove = true;
 
     private bool isPlayerInRange = false;
     protected float lastWanderTime = 0f;
@@ -98,6 +99,12 @@ public class EnemyAI : MonoBehaviour
     protected virtual void Update()
     {
         if (stats == null || isDead) return;
+
+        if (!canMove)
+        {
+            agent.isStopped = true;
+            return; // Bloque toutes les actions pendant le stun
+        }
 
         if (health != null && health.IsDead())
         {

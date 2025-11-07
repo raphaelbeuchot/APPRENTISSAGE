@@ -155,17 +155,20 @@ public class EnemyHealth : MonoBehaviour
         if (isDead) return;
 
         lastDeathType = DeathContext.DeathType.Sentinel;
+
+        // Direction d'impact pour effets physiques
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null && gm.sentinelEye != null)
-        {
             lastImpactDirection = (transform.position - gm.sentinelEye.position).normalized;
-        }
+
         lastImpactForce = stats.sentinelDamageTaken;
 
+        // Pulse visuel
         if (pulseCoroutine != null)
             StopCoroutine(pulseCoroutine);
         pulseCoroutine = StartCoroutine(PulseCoroutine());
 
+        // Headshot instant kill
         if (isHeadshot)
         {
             Debug.Log($"{gameObject.name} HEADSHOT! Instant death!");
@@ -174,15 +177,14 @@ public class EnemyHealth : MonoBehaviour
             return;
         }
 
+        // Appliquer les dégâts
         currentHealth -= stats.sentinelDamageTaken;
         currentHealth = Mathf.Max(0f, currentHealth);
 
         Debug.Log($"{gameObject.name} shot by sentinel! Health: {currentHealth}/{stats.maxHealth}");
         OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
         if (healthBarUI != null)
-        {
             healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
-        }
 
         if (currentHealth <= 0f)
         {
@@ -190,9 +192,47 @@ public class EnemyHealth : MonoBehaviour
             return;
         }
 
-        StartRecovery();
+        // Déclencher le stun de 2s pour TOUS les zombies, indépendamment du grab
+        StartCoroutine(StunCoroutine());
+
         UpdateSpeed();
     }
+
+    private IEnumerator StunCoroutine()
+    {
+        if (isDead) yield break;
+
+        isRecovering = true;
+
+        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        EnemyAI ai = GetComponent<EnemyAI>();
+
+        float originalSpeed = 0f;
+        if (agent != null)
+        {
+            originalSpeed = agent.speed;
+            agent.isStopped = true;   // Stop la navigation
+        }
+
+        if (ai != null)
+            ai.canMove = false;       // Booléen à ajouter dans EnemyAI pour stopper les actions
+
+        Debug.Log($"{gameObject.name} stunned for 2 seconds");
+
+        yield return new WaitForSeconds(2f);
+
+        // Restauration après stun
+        if (agent != null)
+            agent.isStopped = false;
+
+        if (ai != null)
+            ai.canMove = true;
+
+        isRecovering = false;
+        Debug.Log($"{gameObject.name} stun ended");
+    }
+
+
 
     void StartRecovery()
     {

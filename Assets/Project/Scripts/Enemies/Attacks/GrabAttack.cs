@@ -105,7 +105,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         if (player != null && player.IsSprinting())
             return;
-
+        
         float dist = Vector3.Distance(transform.position, player.transform.position);
         if (dist > stats.attackRange) return;
 
@@ -265,6 +265,9 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
     IEnumerator BourradeZombie()
     {
+        if(gameManager != null)
+        gameManager.RemoveFromAlreadyShot(gameObject); 
+        
         enemyRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         isInBourradeDuration = true;
         isInBourradeCooldown = false;
@@ -299,9 +302,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             if (ai != null)
                 ai.ResetAfterBourrade();
 
-            // Retirer de alreadyShot pour pouvoir etre tire a nouveau
-            if (gameManager != null)
-                gameManager.RemoveFromAlreadyShot(gameObject);
+            
 
             Debug.Log($"{gameObject.name} > Bourrade ended cleanly");
         }
