@@ -98,10 +98,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         if (!player || IsInBourrade() || isGrabbing) return;
 
         EnemyAI ai = GetComponent<EnemyAI>();
-        if (ai != null && ai.isDetectedBySentinel)
-        {
-            return; // Sentinelle targeting: cancel grab
-        }
+        
 
         if (player != null && player.IsSprinting())
             return;
@@ -302,11 +299,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             enemyRb.linearVelocity = Vector3.zero;
             enemyRb.constraints = RigidbodyConstraints.FreezeRotation;
 
-            EnemyAI ai = GetComponent<EnemyAI>();
-            if (ai != null)
-                ai.ResetAfterBourrade();
-
-            
+                       
 
             Debug.Log($"{gameObject.name} > Bourrade ended cleanly");
         }
@@ -326,9 +319,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             enemyRb.constraints = RigidbodyConstraints.FreezeRotation;
         }
 
-        EnemyAI ai = GetComponent<EnemyAI>();
-        if (ai != null)
-            ai.ResetAfterBourrade();
+        
 
         if (player != null && player.grabState != PlayerPhysicsMovement.GrabState.None)
             player.grabState = PlayerPhysicsMovement.GrabState.None;
