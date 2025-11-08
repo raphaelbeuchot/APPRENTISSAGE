@@ -19,6 +19,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private float swarmSlowdownMultiplier = 1f;
     private bool isInSwarmVision = false;
 
+    private Material originalMaterial;
+
+
     public bool IsSprinting() => isSprinting;
 
     // Grab States
@@ -43,6 +46,15 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     // Reference
     public GameManager gameManager;
+
+    // === FREEZE SYSTEM ===
+    public bool isFrozen = false;
+    private float freezeHoldTime = 0f;
+
+    [Header("Freeze Feedback")]
+    [SerializeField] private Renderer playerRenderer;
+    [SerializeField] private Material normalMaterial;
+    [SerializeField] private Material freezeMaterial;
 
     void Awake()
     {
@@ -73,6 +85,15 @@ public class PlayerPhysicsMovement : MonoBehaviour
         {
             Debug.LogError("PlayerStats non assigne sur " + gameObject.name);
         }
+
+        // Renderer auto si non assigné
+        if (playerRenderer == null)
+            playerRenderer = GetComponentInChildren<Renderer>();
+
+        if (playerRenderer != null)
+        {
+            originalMaterial = playerRenderer.material;
+        }
     }
 
     void Start()
@@ -80,6 +101,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (gameManager == null)
         {
             gameManager = FindObjectOfType<GameManager>();
+        }
+
+        if (playerRenderer != null && normalMaterial == null)
+        {
+            normalMaterial = playerRenderer.sharedMaterial;
         }
     }
 
@@ -102,14 +128,41 @@ public class PlayerPhysicsMovement : MonoBehaviour
         // Ne pas bouger si en recoil
         if (grabState == GrabState.Recoil || grabState == GrabState.Knockdown) return;
 
+        // Bloquer le mouvement pendant le freeze
+        if (isFrozen) return;
 
         HandleMovement();
     }
 
     void HandleInput()
     {
+        // --- FREEZE ---
+        if (Input.GetKey(KeyCode.C))
+        {
+            freezeHoldTime += Time.deltaTime;
+
+            if (freezeHoldTime >= 0.5f && !isFrozen && grabState == GrabState.None)
+            {
+                StartFreeze();
+            }
+        }
+        else
+        {
+            if (isFrozen)
+                EndFreeze();
+
+            freezeHoldTime = 0f;
+        }
+
         // Bloquer inputs si grabbed ou en recoil
         if (grabState != GrabState.None || gameManager.stunBySentinel)
+        {
+            moveInput = Vector3.zero;
+            return;
+        }
+
+        // Bloquer mouvement si freeze actif
+        if (isFrozen)
         {
             moveInput = Vector3.zero;
             return;
@@ -156,7 +209,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         if (grabState == GrabState.Grabbed)
         {
-            // Interrompre le grab en cours
             GrabAttack[] allGrabs = FindObjectsByType<GrabAttack>(FindObjectsSortMode.None);
             foreach (GrabAttack grab in allGrabs)
             {
@@ -169,6 +221,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         StartCoroutine(KnockdownCoroutine(knockbackDirection, force, duration));
     }
+
     public void ApplyKnockback(Vector3 knockbackVelocity, float stunDuration = 0.3f)
     {
         StartCoroutine(KnockbackCoroutine(knockbackVelocity, stunDuration));
@@ -176,40 +229,27 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     IEnumerator KnockbackCoroutine(Vector3 knockbackVel, float duration)
     {
-        // Desactiver le script temporairement
         enabled = false;
-
-        // Appliquer knockback
-        knockbackVel.y = rb.linearVelocity.y; // Garder Y
+        knockbackVel.y = rb.linearVelocity.y;
         rb.linearVelocity = knockbackVel;
-
         yield return new WaitForSeconds(duration);
-
-        // Reactiver
         enabled = true;
     }
+
     IEnumerator KnockdownCoroutine(Vector3 direction, float force, float duration)
     {
         grabState = GrabState.Knockdown;
-
-        // Projection
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         rb.linearVelocity = direction * force;
-
         Debug.Log("Player KNOCKDOWN!");
-
-        // TODO: Trigger animation "fall down"
-
         yield return new WaitForSeconds(duration);
-
-        // Relevé
         if (grabState == GrabState.Knockdown)
         {
             grabState = GrabState.None;
         }
-
         Debug.Log("Player getting up!");
     }
+
     public void HandleMovement()
     {
         Vector3 moveDirection = Vector3.zero;
@@ -238,15 +278,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
     float CalculateSpeed()
     {
         float baseSpeed = stats.GetAdjustedSpeed(currentHealth);
-
         if (isSprinting)
         {
             baseSpeed *= stats.sprintSpeedMultiplier;
         }
-
-        // Slowdown nuees
         baseSpeed *= swarmSlowdownMultiplier;
-
         return baseSpeed;
     }
 
@@ -260,16 +296,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         forward.y = 0f;
         right.y = 0f;
-
         forward.Normalize();
         right.Normalize();
 
         return (forward * input.z + right * input.x).normalized;
     }
-
-    // ============================================
-    // PUBLIC METHODS
-    // ============================================
 
     public void UpdateHealth(float newHealth)
     {
@@ -293,10 +324,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
         return stats.maxStamina;
     }
 
-    // ============================================
-    // SWARM EFFECTS (simples, pas de grab)
-    // ============================================
-
     public void ApplySwarmSlowdown(float multiplier)
     {
         swarmSlowdownMultiplier = multiplier;
@@ -312,4 +339,43 @@ public class PlayerPhysicsMovement : MonoBehaviour
         isInSwarmVision = active;
         Debug.Log($"Swarm vision effect: {active}");
     }
+
+    // === FREEZE FUNCTIONS ===
+    private Color originalColor; // <--- ajoute cette ligne dans tes variables privées
+
+    void StartFreeze()
+    {
+        isFrozen = true;
+        canMove = false;
+        isSprinting = false;
+        rb.linearVelocity = Vector3.zero;
+
+        if (playerRenderer != null)
+        {
+            // On sauvegarde la couleur du matériau (pas le matériau lui-même)
+            originalColor = playerRenderer.material.color;
+
+            // Et on le rend bleu
+            playerRenderer.material.color = Color.blue;
+        }
+
+        Debug.Log("Player is now FROZEN");
+    }
+
+    void EndFreeze()
+    {
+        isFrozen = false;
+        canMove = true;
+
+        if (playerRenderer != null)
+        {
+            // On restaure simplement la couleur sauvegardée
+            playerRenderer.material.color = originalColor;
+        }
+
+        Debug.Log("Player UNFROZEN");
+    }
+
+
+
 }

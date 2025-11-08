@@ -5,6 +5,7 @@ public class PlayerHealth : MonoBehaviour
 {
     [Header("Player Stats")]
     public PlayerStats stats; // Référence au ScriptableObject
+    public SentinelSettings settings;
 
     [Header("References")]
     [SerializeField] private PlayerPhysicsMovement movement;
@@ -90,7 +91,7 @@ public class PlayerHealth : MonoBehaviour
     {
         // Tu peux ajuster les dégâts sentinelle dans SentinelSettings
         // Pour l'instant on utilise une valeur par défaut
-        TakeDamage(25f);
+        TakeDamage(settings.playerDamage);
     }
 
     /// <summary>
