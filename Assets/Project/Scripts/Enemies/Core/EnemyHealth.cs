@@ -257,18 +257,18 @@ public class EnemyHealth : MonoBehaviour
 
         OnDeath?.Invoke();
 
+        // Désinscrire la barre de vie
         if (healthBarManager != null)
         {
             healthBarManager.UnregisterEnemy(transform);
         }
 
+        // Désactiver l'IA et les scripts de contrôle
         EnemyAI ai = GetComponent<EnemyAI>();
-        if (ai != null)
-            ai.enabled = false;
+        if (ai != null) ai.enabled = false;
 
         GrabAttack grabAttack = GetComponent<GrabAttack>();
-        if (grabAttack != null)
-            grabAttack.enabled = false;
+        if (grabAttack != null) grabAttack.enabled = false;
 
         NavMeshAgent agent = GetComponent<NavMeshAgent>();
         if (agent != null)
@@ -277,14 +277,28 @@ public class EnemyHealth : MonoBehaviour
             agent.enabled = false;
         }
 
+        // Activer la physique pour que le corps soit poussable
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;  // laisse la physique agir
+            rb.detectCollisions = true;
+        }
+
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.isTrigger = false;  // le corps devient solide
+        }
+
+        // Activer ragdoll si présent
+        IDeathEffect[] deathEffects = GetComponents<IDeathEffect>();
         DeathContext context = new DeathContext
         {
             deathType = lastDeathType,
             impactDirection = lastImpactDirection,
             impactForce = lastImpactForce
         };
-
-        IDeathEffect[] deathEffects = GetComponents<IDeathEffect>();
         if (deathEffects != null && deathEffects.Length > 0)
         {
             foreach (IDeathEffect effect in deathEffects)
@@ -293,6 +307,7 @@ public class EnemyHealth : MonoBehaviour
             }
         }
 
+        // Event pour autres comportements à la mort
         IOnDeathBehavior[] deathBehaviors = GetComponents<IOnDeathBehavior>();
         if (deathBehaviors != null && deathBehaviors.Length > 0)
         {
@@ -302,8 +317,9 @@ public class EnemyHealth : MonoBehaviour
             }
         }
 
-        Destroy(gameObject, 3f);
+        // Le corps reste dans la scène, prêt à être poussé
     }
+
 
     void UpdateSpeed()
     {

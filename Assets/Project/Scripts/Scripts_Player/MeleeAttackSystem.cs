@@ -170,12 +170,22 @@ public class MeleeAttackSystem : MonoBehaviour
         {
             if (hit.gameObject == gameObject) continue;
 
-            // === GESTION ZOMBIES ===
-            EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
-            if (enemyHealth != null)
-            {
-                if (enemyHealth.IsDead()) continue;
+            // Calculer la direction vers la cible
+            Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
+            directionToTarget.y = 0f; // ignorer la hauteur
 
+            float angleToTarget = Vector3.Angle(transform.forward, directionToTarget);
+
+            if (angleToTarget > stats.meleeConeAngle / 2f)
+            {
+                // En dehors du cone => ignorer
+                continue;
+            }
+
+            // GESTION ZOMBIES
+            EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
+            if (enemyHealth != null && !enemyHealth.IsDead())
+            {
                 hitSomething = true;
 
                 // Knockback
@@ -199,30 +209,28 @@ public class MeleeAttackSystem : MonoBehaviour
                 // Notifier les Blinders (audio global)
                 MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
 
-                // NOUVEAU : Check si c'est un Blinder qui se fait taper directement
+                // Check si c'est un Blinder
                 ChargeAttack chargeAttack = hit.GetComponent<ChargeAttack>();
                 if (chargeAttack != null)
                 {
-                    // Blinder frappe : il charge vers le player
                     chargeAttack.OnDirectHit(transform.position);
                 }
                 else
                 {
-                    // Zombie normal : knockdown
                     StartCoroutine(KnockdownTarget(hit.gameObject));
                 }
 
-                Debug.Log($"{gameObject.name} hit {hit.gameObject.name} for {damage} damage!");
+                Debug.Log(gameObject.name + " hit " + hit.gameObject.name + " for " + damage + " damage!");
             }
 
-            // === GESTION NUEES ===
+            // GESTION NU�ES
             SwarmController swarm = hit.GetComponent<SwarmController>();
             if (swarm != null)
             {
                 hitSomething = true;
                 float damage = stats.GetAdjustedDamage();
                 swarm.TakeDamage(damage);
-                Debug.Log($"{gameObject.name} hit swarm for {damage} damage!");
+                Debug.Log(gameObject.name + " hit swarm for " + damage + " damage!");
             }
         }
 
@@ -239,6 +247,7 @@ public class MeleeAttackSystem : MonoBehaviour
             }
         }
     }
+
 
     IEnumerator KnockdownTarget(GameObject target)
     {

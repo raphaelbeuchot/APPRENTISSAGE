@@ -40,6 +40,9 @@ public class PlayerStats : ScriptableObject
     public float staminaRegenDelay = 1f;
 
     [Header("ATTAQUE MELEE")]
+    [Tooltip("Angle du cône de l'attaque melee (en degrés)")]
+    [Range(0f, 360f)]
+    public float meleeConeAngle = 180f;
     [Tooltip("Portee de l'attaque")]
     public float attackRange = 2f;
     [Tooltip("Degats infliges")]
