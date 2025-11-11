@@ -259,4 +259,31 @@ public class PitZone : MonoBehaviour
 
         contentInstance.transform.localScale = new Vector3(sizeX, sizeY, sizeZ);
     }
+
+    /// <summary>
+    /// Configure le systeme de damage de la fosse
+    /// </summary>
+    public void SetupDamageSystem()
+    {
+        // Cherche ou cree le damage controller
+        PitDamageController damageController = GetComponentInChildren<PitDamageController>();
+
+        if (damageController == null)
+        {
+            GameObject damageObj = new GameObject("DamageController");
+            damageObj.transform.SetParent(transform);
+            damageObj.transform.localPosition = Vector3.zero;
+            damageObj.transform.localRotation = Quaternion.identity;
+
+            damageController = damageObj.AddComponent<PitDamageController>();
+            damageController.pitZone = this;
+
+            Debug.Log("PitZone: Created PitDamageController");
+        }
+
+        // Met a jour les bounds du trigger
+        damageController.UpdateTriggerBounds();
+
+        Debug.Log("PitZone: Damage system setup complete");
+    }
 }

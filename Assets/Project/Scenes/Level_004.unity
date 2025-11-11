@@ -3097,7 +3097,10 @@ PrefabInstance:
     - {fileID: 6475371984408732246, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1041072715850459556, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 795059977}
   m_SourcePrefab: {fileID: 100100000, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
 --- !u!1 &410087039
 GameObject:
@@ -6629,6 +6632,25 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0f5092a6ce6d6cd49a0e7d7af8c0bcab, type: 3}
+--- !u!1 &795059968 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1041072715850459556, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
+  m_PrefabInstance: {fileID: 397099806}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &795059977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 795059968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d36065851de262743ac229c33d0e77b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPitInteractable
+  pitDamageMultiplier: 1
+  characterCenterHeight: 1
 --- !u!1001 &810673524
 PrefabInstance:
   m_ObjectHideFlags: 0

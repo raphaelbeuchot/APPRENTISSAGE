@@ -21,6 +21,10 @@ public class PitZoneEditor : Editor
 
         DrawFillContentSection(pitZone);
 
+        GUILayout.Space(10);
+
+        DrawDamageSystemSection(pitZone); // NOUVEAU
+
         GUILayout.Space(5);
 
         DrawInfoSection(pitZone);
@@ -124,6 +128,43 @@ public class PitZoneEditor : Editor
             GUI.backgroundColor = Color.white;
 
             GUILayout.EndHorizontal();
+        }
+
+        GUILayout.EndVertical();
+    }
+
+    // NOUVELLE SECTION - DAMAGE SYSTEM
+    private void DrawDamageSystemSection(PitZone pitZone)
+    {
+        GUILayout.BeginVertical(EditorStyles.helpBox);
+        GUILayout.Label("Damage System", EditorStyles.boldLabel);
+
+        PitDamageController damageController = pitZone.GetComponentInChildren<PitDamageController>();
+
+        if (damageController == null)
+        {
+            GUI.backgroundColor = Color.red;
+            if (GUILayout.Button("Setup Damage System", GUILayout.Height(40)))
+            {
+                Undo.RecordObject(pitZone, "Setup Damage System");
+                pitZone.SetupDamageSystem();
+                EditorUtility.SetDirty(pitZone);
+                SceneView.RepaintAll();
+            }
+            GUI.backgroundColor = Color.white;
+        }
+        else
+        {
+            GUILayout.Label("Damage system active", EditorStyles.miniLabel);
+
+            GUI.backgroundColor = Color.yellow;
+            if (GUILayout.Button("Update Trigger Bounds", GUILayout.Height(25)))
+            {
+                damageController.UpdateTriggerBounds();
+                EditorUtility.SetDirty(damageController);
+                SceneView.RepaintAll();
+            }
+            GUI.backgroundColor = Color.white;
         }
 
         GUILayout.EndVertical();
