@@ -77,6 +77,9 @@ public class EnemyHealthBarUI : MonoBehaviour
 
     public void Show()
     {
+
+        if (this == null || gameObject == null) return;
+
         if (fadeCoroutine != null)
             StopCoroutine(fadeCoroutine);
         gameObject.SetActive(true);
@@ -86,6 +89,8 @@ public class EnemyHealthBarUI : MonoBehaviour
 
     public void Hide()
     {
+        if (this == null || gameObject == null) return;
+
         if (fadeCoroutine != null)
             StopCoroutine(fadeCoroutine);
         fadeCoroutine = StartCoroutine(FadeOutCoroutine());

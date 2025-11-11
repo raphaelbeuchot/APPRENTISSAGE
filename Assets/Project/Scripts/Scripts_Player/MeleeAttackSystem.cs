@@ -244,6 +244,18 @@ public class MeleeAttackSystem : MonoBehaviour
                 swarm.TakeDamage(damage);
                 Debug.Log(gameObject.name + " hit swarm for " + damage + " damage!");
             }
+
+            // GESTION BRIGHT EYES
+            BrightEyesController brightEyes = hit.GetComponent<BrightEyesController>();
+            if (brightEyes != null && brightEyes.IsAlive() && !brightEyes.IsFlameExtinguished())
+            {
+                hitSomething = true;
+
+                // Eteindre la flamme
+                brightEyes.ExtinguishFlame();
+
+                Debug.Log(gameObject.name + " extinguished " + hit.gameObject.name + "'s flame!");
+            }
         }
 
         // Jouer le bon son

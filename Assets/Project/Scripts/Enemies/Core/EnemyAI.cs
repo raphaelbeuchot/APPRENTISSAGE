@@ -234,11 +234,13 @@ public class EnemyAI : MonoBehaviour
 
         if (isPlayerInRange && !wasInRange)
         {
-            health?.healthBarUI?.Show();
+            if (health?.healthBarUI != null) // AJOUTE CE CHECK
+                health.healthBarUI.Show();
         }
         else if (!isPlayerInRange && wasInRange)
         {
-            health?.healthBarUI?.Hide();
+            if (health?.healthBarUI != null) // AJOUTE CE CHECK
+                health.healthBarUI.Hide();
         }
     }
 

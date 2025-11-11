@@ -16,6 +16,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
     public bool isRedLight = false;
     public bool canMove;
 
+    // === BRIGHT EYES ATTRACTION ===
+    private Transform brightEyesAttractor;
+    private float brightEyesForce;
+    private float brightEyesSlowdown = 1f;
+
     // === SWARM EFFECTS (sans grab) ===
     private float swarmSlowdownMultiplier = 1f;
     private bool isInSwarmVision = false;
@@ -285,7 +290,18 @@ public class PlayerPhysicsMovement : MonoBehaviour
             }
         }
 
-        rb.linearVelocity = new Vector3(currentVelocity.x, rb.linearVelocity.y, currentVelocity.z);
+        // Appliquer velocity de base
+        Vector3 finalVelocity = new Vector3(currentVelocity.x, rb.linearVelocity.y, currentVelocity.z);
+
+        // === BRIGHT EYES ATTRACTION (force radiale continue) ===
+        if (brightEyesAttractor != null)
+        {
+            Vector3 directionToAttractor = (brightEyesAttractor.position - transform.position).normalized;
+            directionToAttractor.y = 0f;
+            finalVelocity += directionToAttractor * brightEyesForce;
+        }
+
+        rb.linearVelocity = finalVelocity;
     }
 
     float CalculateSpeed()
@@ -296,6 +312,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             baseSpeed *= stats.sprintSpeedMultiplier;
         }
         baseSpeed *= swarmSlowdownMultiplier;
+        baseSpeed *= brightEyesSlowdown;
         return baseSpeed;
     }
 
@@ -315,7 +332,19 @@ public class PlayerPhysicsMovement : MonoBehaviour
         return (forward * input.z + right * input.x).normalized;
     }
 
+    public void ApplyBrightEyesAttraction(Transform attractor, float force, float slowdown)
+    {
+        brightEyesAttractor = attractor;
+        brightEyesForce = force;
+        brightEyesSlowdown = slowdown;
+    }
 
+    public void RemoveBrightEyesAttraction()
+    {
+        brightEyesAttractor = null;
+        brightEyesForce = 0f;
+        brightEyesSlowdown = 1f;
+    }
     public void UpdateStamina(float newStamina)
     {
         currentStamina = Mathf.Clamp(newStamina, 0f, stats.maxStamina);
