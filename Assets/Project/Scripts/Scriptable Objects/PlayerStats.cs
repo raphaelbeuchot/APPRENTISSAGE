@@ -29,6 +29,10 @@ public class PlayerStats : ScriptableObject
     [Range(1f, 3f)]
     public float sprintSpeedMultiplier = 1.5f;
 
+    [Header("Lock-On System")]
+    public float lockOnRange = 10f;
+    public float lockOnAngle = 90f; // angle devant la camera
+
     [Header("STAMINA")]
     [Tooltip("Stamina maximum")]
     public float maxStamina = 100f;
@@ -40,6 +44,8 @@ public class PlayerStats : ScriptableObject
     public float staminaRegenDelay = 1f;
 
     [Header("ATTAQUE MELEE")]
+    [Header("Melee Attack")]
+    public float meleeStaminaCost = 15f;
     [Tooltip("Angle du cône de l'attaque melee (en degrés)")]
     [Range(0f, 360f)]
     public float meleeConeAngle = 180f;

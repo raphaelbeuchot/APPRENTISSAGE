@@ -10,6 +10,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     [Header("Camera")]
     public Transform cameraTransform;
+    public TargetLockSystem lockSystem;
 
     [Header("State")]
     public bool isRedLight = false;
@@ -266,10 +267,22 @@ public class PlayerPhysicsMovement : MonoBehaviour
             currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, stats.moveSpeed * Time.fixedDeltaTime);
         }
 
-        if (moveInput.magnitude > 0.1f)
+        if (lockSystem != null && lockSystem.IsLocked)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.fixedDeltaTime);
+            Vector3 targetDirection = lockSystem.GetTargetDirection();
+            if (targetDirection != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 15f * Time.fixedDeltaTime);
+            }
+        }
+        else
+        {
+            if (moveInput.magnitude > 0.1f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.fixedDeltaTime);
+            }
         }
 
         rb.linearVelocity = new Vector3(currentVelocity.x, rb.linearVelocity.y, currentVelocity.z);
@@ -300,6 +313,12 @@ public class PlayerPhysicsMovement : MonoBehaviour
         right.Normalize();
 
         return (forward * input.z + right * input.x).normalized;
+    }
+
+
+    public void UpdateStamina(float newStamina)
+    {
+        currentStamina = Mathf.Clamp(newStamina, 0f, stats.maxStamina);
     }
 
     public void UpdateHealth(float newHealth)

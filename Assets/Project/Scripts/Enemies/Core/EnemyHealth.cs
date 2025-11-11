@@ -331,6 +331,11 @@ public class EnemyHealth : MonoBehaviour
     }
 
     public bool IsDead() => isDead;
+
+    public bool IsAlive()
+    {
+        return currentHealth > 0f;
+    }
     public bool IsRecovering() => isRecovering;
     public float GetCurrentHealth() => currentHealth;
     public float GetMaxHealth() => stats.maxHealth;

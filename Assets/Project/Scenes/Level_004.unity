@@ -5108,6 +5108,7 @@ GameObject:
   - component: {fileID: 882987306}
   - component: {fileID: 882987307}
   - component: {fileID: 882987308}
+  - component: {fileID: 882987309}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -5278,6 +5279,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerPhysicsMovement
   stats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
   cameraTransform: {fileID: 1361275057}
+  lockSystem: {fileID: 0}
   isRedLight: 0
   canMove: 1
   grabState: 0
@@ -5318,6 +5320,23 @@ MonoBehaviour:
   whiteCircleMaterial: {fileID: 2100000, guid: 115ee7b186024a24681a0696a7cecba3, type: 2}
   circleSize: 1
   whiteFlashDuration: 0.5
+--- !u!114 &882987309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 882987291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27edd9240cf9ac34bb9e0d67da593161, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetLockSystem
+  stats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  mainCamera: {fileID: 1361275056}
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 576
 --- !u!1 &887716752
 GameObject:
   m_ObjectHideFlags: 0
@@ -8072,10 +8091,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraFollow
   target: {fileID: 882987295}
+  lockSystem: {fileID: 0}
   distance: 8
   sensibiliteSouris: 250
   hauteurMinSol: 0.2
   offsetVertical: 5
+  lockBlendSpeed: 5
+  lockMouseInfluence: 0.3
 --- !u!1001 &1380539525
 PrefabInstance:
   m_ObjectHideFlags: 0

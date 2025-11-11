@@ -5,17 +5,32 @@ using System.Collections;
 public class EnemyHealthBarUI : MonoBehaviour
 {
     [Header("Health Bar")]
-    [SerializeField] private Image healthFill;        // Barre principale
-    [SerializeField] private Image damagePreviewFill; // Barre rouge pour l'effet damage preview
+    [SerializeField] private Image healthFill;
+    [SerializeField] private Image damagePreviewFill;
+    [SerializeField] private Image background; // Pour le lock-on outline
+
+    [Header("Lock-On")]
+    [SerializeField] private Color lockedColor = Color.white;
+    private Color originalBackgroundColor;
 
     [Header("Damage Preview Settings")]
     [SerializeField] private float damagePreviewDelay = 0.2f;
     [SerializeField] private float damagePreviewSpeed = 2f;
 
+
     private float targetFillAmount;
     private Coroutine damagePreviewCoroutine;
 
-    // Mise à jour de la barre
+
+    private void Start()
+    {
+        if (background != null)
+        {
+            originalBackgroundColor = background.color;
+        }
+    }
+
+
     public void UpdateHealth(float currentHealth, float maxHealth)
     {
         if (healthFill == null) return;
@@ -23,10 +38,8 @@ public class EnemyHealthBarUI : MonoBehaviour
         float healthPercent = currentHealth / maxHealth;
         targetFillAmount = healthPercent;
 
-        // Mise à jour instantanée de la barre principale
         healthFill.fillAmount = healthPercent;
 
-        // Lancer le damage preview si activé
         if (damagePreviewFill != null)
         {
             if (damagePreviewCoroutine != null)
@@ -35,7 +48,6 @@ public class EnemyHealthBarUI : MonoBehaviour
         }
     }
 
-    // Coroutine pour faire descendre la barre rouge progressivement
     private IEnumerator DamagePreviewCoroutine()
     {
         yield return new WaitForSeconds(damagePreviewDelay);
@@ -61,8 +73,8 @@ public class EnemyHealthBarUI : MonoBehaviour
         }
     }
 
-    // Affichage de la barre
     private Coroutine fadeCoroutine;
+
     public void Show()
     {
         if (fadeCoroutine != null)
@@ -82,7 +94,6 @@ public class EnemyHealthBarUI : MonoBehaviour
     private IEnumerator FadeOutCoroutine()
     {
         yield return new WaitForSeconds(2f);
-
         CanvasGroup cg = GetComponent<CanvasGroup>();
         if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
 
@@ -97,5 +108,14 @@ public class EnemyHealthBarUI : MonoBehaviour
         }
 
         gameObject.SetActive(false);
+    }
+
+    // === LOCK-ON OUTLINE ===
+    public void SetLockedOutline(bool locked)
+    {
+        if (background != null)
+        {
+            background.color = locked ? lockedColor : originalBackgroundColor;
+        }
     }
 }

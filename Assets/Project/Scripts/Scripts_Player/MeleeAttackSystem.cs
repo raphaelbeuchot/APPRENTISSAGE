@@ -78,7 +78,12 @@ public class MeleeAttackSystem : MonoBehaviour
             return false;
         }
 
-        
+        // CHECK STAMINA
+        if (movement != null && movement.GetCurrentStamina() < stats.meleeStaminaCost)
+        {
+            Debug.Log("Cannot attack: not enough stamina!");
+            return false;
+        }
 
         if (Time.time - lastAttackTime < stats.attackCooldown)
         {
@@ -111,6 +116,13 @@ public class MeleeAttackSystem : MonoBehaviour
         isAttacking = true;
         try
         {
+            // CONSOMMER LA STAMINA
+            if (movement != null)
+            {
+                float currentStamina = movement.GetCurrentStamina();
+                movement.UpdateStamina(currentStamina - stats.meleeStaminaCost);
+            }
+
             lastAttackTime = Time.time;
             StartCoroutine(PulseScale());
             yield return new WaitForSeconds(0.1f);
@@ -276,7 +288,8 @@ public class MeleeAttackSystem : MonoBehaviour
     // GESTION DU GRAB
     // ============================================
 
-    public void OnGrabStart()
+
+        public void OnGrabStart()
     {
         isGrabbed = true;
 
@@ -306,4 +319,6 @@ public class MeleeAttackSystem : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, stats.attackRange);
     }
+
+ 
 }

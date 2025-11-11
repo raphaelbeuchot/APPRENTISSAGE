@@ -48,6 +48,20 @@ public class SwarmController : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
     }
 
+    public void SetHealthBarUI(EnemyHealthBarUI bar)
+    {
+        healthBarUI = bar;
+    }
+
+    public EnemyHealthBarUI GetHealthBarUI()
+    {
+        return healthBarUI;
+    }
+
+    public bool IsAlive()
+    {
+        return currentHealth > 0f;
+    }
     public void Initialize(SwarmStats swarmStats)
     {
         stats = swarmStats;
