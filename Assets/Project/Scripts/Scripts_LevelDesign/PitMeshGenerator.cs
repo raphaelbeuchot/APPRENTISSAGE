@@ -117,30 +117,30 @@ public static class PitMeshGenerator
     {
         int startIndex = vertices.Count;
 
-        Vector3 right = Vector3.Cross(direction, Vector3.up).normalized * cellSize;
-        Vector3 up = Vector3.up;
-
         // Position de base du mur (coin de la cellule)
         Vector3 basePos = cellWorldPos;
+        Vector3 right = Vector3.zero; // DECLARE ICI
 
         // Ajuste la position selon le cote
         if (side == 0) // Nord (Z+)
         {
             basePos += new Vector3(0, 0, cellSize);
+            right = Vector3.right * cellSize;
         }
         else if (side == 1) // Sud (Z-)
         {
             basePos += new Vector3(cellSize, 0, 0);
-            right = -right;
+            right = Vector3.left * cellSize;
         }
         else if (side == 2) // Est (X+)
         {
             basePos += new Vector3(cellSize, 0, 0);
+            right = Vector3.forward * cellSize;
         }
         else if (side == 3) // Ouest (X-)
         {
-            basePos += new Vector3(0, 0, cellSize);
-            right = -right;
+            basePos += new Vector3(0, 0, 0); // DEJA BON
+            right = Vector3.forward * cellSize; // INVERSE LA DIRECTION
         }
 
         float wallHeight = Mathf.Abs(cellDepth - neighborDepth);
