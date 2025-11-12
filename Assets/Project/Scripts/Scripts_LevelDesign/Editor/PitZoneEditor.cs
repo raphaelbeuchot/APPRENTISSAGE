@@ -186,7 +186,13 @@ public class PitZoneEditor : Editor
     {
         if (pitZone.gridData != null)
         {
-            int cellCount = pitZone.gridData.GetAllCells().Count;
+            // MODIFICATION : Utilise GetCellsForZone au lieu de GetAllCells
+            int cellCount = 0;
+            if (pitZone.zoneID != -1)
+            {
+                cellCount = pitZone.gridData.GetCellsForZone(pitZone.zoneID).Count;
+            }
+
             float maxDepth = pitZone.GetMaxDepth();
             GUILayout.Label("Active cells: " + cellCount + " | Max depth: " + maxDepth.ToString("F1") + "m", EditorStyles.miniLabel);
         }
@@ -214,11 +220,15 @@ public class PitZoneEditor : Editor
         float fillHeight = maxDepth * previewFillHeight;
         Vector3 fillPosition = pitZone.GetFillPosition(fillHeight);
 
-        var allCells = pitZone.gridData.GetAllCells();
+        // MODIFICATION : Utilise GetCellsForZone au lieu de GetAllCells
+        var ownedCells = pitZone.gridData.GetCellsForZone(pitZone.zoneID);
+
+        if (ownedCells.Count == 0) return;
+
         Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
         Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
 
-        foreach (var kvp in allCells)
+        foreach (var kvp in ownedCells)
         {
             if (kvp.Key.x < min.x) min.x = kvp.Key.x;
             if (kvp.Key.y < min.y) min.y = kvp.Key.y;

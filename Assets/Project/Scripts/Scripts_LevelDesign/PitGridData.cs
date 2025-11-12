@@ -9,11 +9,13 @@ public class PitGridData : ScriptableObject
     {
         public Vector2Int position;
         public float depth;
+        public int ownerZoneID = -1; // NOUVEAU : -1 = pas de proprietaire
 
         public CellData(Vector2Int pos, float d)
         {
             position = pos;
             depth = d;
+            ownerZoneID = -1;
         }
     }
 
@@ -21,10 +23,11 @@ public class PitGridData : ScriptableObject
     private List<CellData> serializedCells = new List<CellData>();
 
     private Dictionary<Vector2Int, float> cells = new Dictionary<Vector2Int, float>();
+    private Dictionary<Vector2Int, int> cellOwnership = new Dictionary<Vector2Int, int>(); // NOUVEAU
 
     public float gridCellSize = 0.5f;
 
-    public void OnEnable()
+    public void OnEnable()  // Change de "private void" à "public void"
     {
         LoadFromSerialized();
     }
@@ -32,10 +35,19 @@ public class PitGridData : ScriptableObject
     private void LoadFromSerialized()
     {
         cells.Clear();
+        cellOwnership.Clear();
+
+        Debug.Log("=== LOADING GRID DATA ==="); // DEBUG
+        Debug.Log("Serialized cells count: " + serializedCells.Count); // DEBUG
+
         foreach (CellData data in serializedCells)
         {
             cells[data.position] = data.depth;
+            cellOwnership[data.position] = data.ownerZoneID;
+            Debug.Log("Loaded cell " + data.position + " owner: " + data.ownerZoneID); // DEBUG
         }
+
+        Debug.Log("Total ownership entries: " + cellOwnership.Count); // DEBUG
     }
 
     private void SaveToSerialized()
@@ -43,9 +55,66 @@ public class PitGridData : ScriptableObject
         serializedCells.Clear();
         foreach (var kvp in cells)
         {
-            serializedCells.Add(new CellData(kvp.Key, kvp.Value));
+            CellData data = new CellData(kvp.Key, kvp.Value);
+
+            // NOUVEAU : sauvegarde l'owner
+            if (cellOwnership.ContainsKey(kvp.Key))
+            {
+                data.ownerZoneID = cellOwnership[kvp.Key];
+            }
+
+            serializedCells.Add(data);
         }
     }
+
+    // NOUVELLES METHODES
+    public void AssignCellToZone(Vector2Int cellPos, int zoneID)
+    {
+        if (cells.ContainsKey(cellPos))
+        {
+            cellOwnership[cellPos] = zoneID;
+            Debug.Log("ASSIGNED cell " + cellPos + " to zone " + zoneID); // DEBUG
+            SaveToSerialized();
+        }
+        else
+        {
+            Debug.LogWarning("Cannot assign cell " + cellPos + " - cell doesn't exist in grid!"); // DEBUG
+        }
+    }
+
+    public int GetCellOwner(Vector2Int cellPos)
+    {
+        if (cellOwnership.ContainsKey(cellPos))
+        {
+            return cellOwnership[cellPos];
+        }
+        return -1; // Pas de proprietaire
+    }
+
+    public Dictionary<Vector2Int, float> GetCellsForZone(int zoneID)
+    {
+        Dictionary<Vector2Int, float> zoneCells = new Dictionary<Vector2Int, float>();
+
+        foreach (var kvp in cells)
+        {
+            if (cellOwnership.ContainsKey(kvp.Key) && cellOwnership[kvp.Key] == zoneID)
+            {
+                zoneCells[kvp.Key] = kvp.Value;
+            }
+        }
+
+        return zoneCells;
+    }
+
+    public void RemoveCellOwnership(Vector2Int cellPos)
+    {
+        if (cellOwnership.ContainsKey(cellPos))
+        {
+            cellOwnership[cellPos] = -1;
+            SaveToSerialized();
+        }
+    }
+    // FIN NOUVELLES METHODES
 
     public float GetDepth(Vector2Int cellPos)
     {
@@ -61,10 +130,12 @@ public class PitGridData : ScriptableObject
         if (depth == 0f)
         {
             cells.Remove(cellPos);
+            cellOwnership.Remove(cellPos); // NOUVEAU : enleve aussi l'ownership
         }
         else
         {
             cells[cellPos] = depth;
+            // L'ownership sera assigne par AssignCellToZone separement
         }
         SaveToSerialized();
     }
@@ -82,6 +153,7 @@ public class PitGridData : ScriptableObject
     public void ClearAll()
     {
         cells.Clear();
+        cellOwnership.Clear(); // NOUVEAU
         serializedCells.Clear();
     }
 

@@ -79,12 +79,19 @@ public class PitDamageController : MonoBehaviour
         }
         Debug.Log("gridData OK: " + pitZone.gridData.name);
 
-        Dictionary<Vector2Int, float> allCells = pitZone.gridData.GetAllCells();
-        Debug.Log("Cell count: " + allCells.Count);
-
-        if (allCells.Count == 0)
+        // MODIFICATION : Utilise GetCellsForZone au lieu de GetAllCells
+        if (pitZone.zoneID == -1)
         {
-            Debug.LogError("No cells in gridData!");
+            Debug.LogError("pitZone has invalid zoneID!");
+            return;
+        }
+
+        Dictionary<Vector2Int, float> ownedCells = pitZone.gridData.GetCellsForZone(pitZone.zoneID);
+        Debug.Log("Owned cells count: " + ownedCells.Count);
+
+        if (ownedCells.Count == 0)
+        {
+            Debug.LogError("No owned cells in this zone!");
             return;
         }
 
@@ -94,7 +101,8 @@ public class PitDamageController : MonoBehaviour
 
         Debug.Log("maxDepth: " + maxDepth);
 
-        foreach (var kvp in allCells)
+        // MODIFICATION : Boucle sur ownedCells
+        foreach (var kvp in ownedCells)
         {
             if (kvp.Key.x < min.x) min.x = kvp.Key.x;
             if (kvp.Key.y < min.y) min.y = kvp.Key.y;

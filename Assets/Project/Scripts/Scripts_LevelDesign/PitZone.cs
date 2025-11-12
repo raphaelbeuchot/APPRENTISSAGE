@@ -5,8 +5,14 @@ using Unity.AI.Navigation;
 [ExecuteInEditMode]
 public class PitZone : MonoBehaviour
 {
+    [Header("Zone Identity")]
+    public int zoneID = -1; // NOUVEAU : ID unique de cette zone
+
     [Header("Grid Data")]
     public PitGridData gridData;
+
+    [Header("Mesh Settings")]
+    public float floorThickness = 0.2f;
 
     [Header("Mesh References")]
     public MeshFilter wallsMeshFilter;
@@ -24,6 +30,35 @@ public class PitZone : MonoBehaviour
     public float fillHeightPercent = 0.5f;
     public GameObject contentInstance;
 
+    // NOUVELLE METHODE : Initialise le zoneID
+    public void Initialize(int id, PitGridData data)
+    {
+        zoneID = id;
+        gridData = data;
+        gameObject.name = "PitZone_" + id;
+    }
+
+    // NOUVELLE METHODE : Retourne uniquement les cellules de CETTE zone
+    private Dictionary<Vector2Int, float> GetOwnedCells()
+    {
+        if (gridData == null || zoneID == -1)
+        {
+            return new Dictionary<Vector2Int, float>();
+        }
+
+        // FORCE le reload du gridData si necessaire (fix pour l'ordre de chargement)
+        Dictionary<Vector2Int, float> cells = gridData.GetCellsForZone(zoneID);
+
+        if (cells.Count == 0 && gridData.GetAllCells().Count > 0)
+        {
+            Debug.LogWarning("GridData seems not loaded properly, forcing OnEnable...");
+            gridData.OnEnable();
+            cells = gridData.GetCellsForZone(zoneID);
+        }
+
+        return cells;
+    }
+
     private void OnValidate()
     {
         if (wallsMeshFilter == null)
@@ -40,10 +75,25 @@ public class PitZone : MonoBehaviour
             return;
         }
 
+        if (zoneID == -1)
+        {
+            Debug.LogWarning("PitZone: No zone ID assigned!");
+            return;
+        }
+
         SetupMeshObjects();
 
-        Mesh wallsMesh = PitMeshGenerator.GenerateWallsMesh(gridData);
-        Mesh floorMesh = PitMeshGenerator.GenerateFloorMesh(gridData);
+        // MODIFICATION : on passe les cellules de cette zone uniquement
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells();
+
+        if (ownedCells.Count == 0)
+        {
+            Debug.LogWarning("PitZone " + zoneID + ": No cells owned, cannot generate meshes!");
+            return;
+        }
+
+        Mesh wallsMesh = PitMeshGenerator.GenerateWallsMesh(gridData, floorThickness, ownedCells);
+        Mesh floorMesh = PitMeshGenerator.GenerateFloorMesh(gridData, ownedCells);
 
         if (wallsMesh != null && wallsMeshFilter != null)
         {
@@ -55,7 +105,7 @@ public class PitZone : MonoBehaviour
             floorMeshFilter.sharedMesh = floorMesh;
         }
 
-        Debug.Log("PitZone: Meshes generated successfully!");
+        Debug.Log("PitZone " + zoneID + ": Meshes generated successfully with " + ownedCells.Count + " cells!");
     }
 
     private void SetupMeshObjects()
@@ -145,7 +195,21 @@ public class PitZone : MonoBehaviour
 
         ClearFillContent();
 
+        // DEBUG
+        Debug.Log("=== SPAWN FILL CONTENT DEBUG ===");
+        Debug.Log("Zone ID: " + zoneID);
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells();
+        Debug.Log("Owned cells count: " + ownedCells.Count);
+
+        foreach (var cell in ownedCells)
+        {
+            Debug.Log("  Cell: " + cell.Key + " depth: " + cell.Value);
+        }
+        // FIN DEBUG
+
         float maxDepth = GetMaxDepth();
+        Debug.Log("Max depth: " + maxDepth); // DEBUG
+
         if (maxDepth >= 0)
         {
             Debug.LogWarning("PitZone: No depth found in grid data!");
@@ -155,15 +219,16 @@ public class PitZone : MonoBehaviour
         float fillHeight = maxDepth * fillHeightPercent;
         Vector3 fillPosition = GetFillPosition(fillHeight);
 
-        contentInstance = Instantiate(fillType.contentPrefab, transform); // Parent au PitZone
+        Debug.Log("Fill position: " + fillPosition); // DEBUG
+
+        contentInstance = Instantiate(fillType.contentPrefab, transform);
         contentInstance.name = "Content_" + fillType.contentName;
-        contentInstance.transform.position = fillPosition; // PUIS on positionne
+        contentInstance.transform.position = fillPosition;
 
         ScaleFillContent(fillHeight);
 
         Debug.Log("PitZone: Spawned fill content: " + fillType.contentName + " at height " + fillHeight);
     }
-
     public void ClearFillContent()
     {
         if (contentInstance != null)
@@ -185,9 +250,9 @@ public class PitZone : MonoBehaviour
         if (gridData == null) return 0f;
 
         float maxDepth = 0f;
-        Dictionary<Vector2Int, float> allCells = gridData.GetAllCells();
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells(); // MODIFICATION
 
-        foreach (var kvp in allCells)
+        foreach (var kvp in ownedCells)
         {
             if (kvp.Value < maxDepth)
             {
@@ -202,15 +267,14 @@ public class PitZone : MonoBehaviour
     {
         if (gridData == null) return Vector3.zero;
 
-        Dictionary<Vector2Int, float> allCells = gridData.GetAllCells();
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells(); // MODIFICATION
 
-        if (allCells.Count == 0) return Vector3.zero;
+        if (ownedCells.Count == 0) return Vector3.zero;
 
         Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
         Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
 
-        // Trouve les bounds en grid coordinates
-        foreach (var kvp in allCells)
+        foreach (var kvp in ownedCells)
         {
             if (kvp.Key.x < min.x) min.x = kvp.Key.x;
             if (kvp.Key.y < min.y) min.y = kvp.Key.y;
@@ -218,14 +282,11 @@ public class PitZone : MonoBehaviour
             if (kvp.Key.y > max.y) max.y = kvp.Key.y;
         }
 
-        // Calcul du centre en world space
         float cellSize = gridData.gridCellSize;
 
-        // CORRECTION : On ajoute cellSize/2 pour centrer dans les cellules
         float centerWorldX = ((min.x + max.x) * 0.5f * cellSize) + (cellSize * 0.5f);
         float centerWorldZ = ((min.y + max.y) * 0.5f * cellSize) + (cellSize * 0.5f);
 
-        // Position Y : depuis le fond
         float maxDepth = GetMaxDepth();
         float fillHeightAbsolute = Mathf.Abs(maxDepth * fillHeightPercent);
         float centerWorldY = maxDepth + (fillHeightAbsolute * 0.5f);
@@ -237,12 +298,12 @@ public class PitZone : MonoBehaviour
     {
         if (contentInstance == null || gridData == null) return;
 
-        Dictionary<Vector2Int, float> allCells = gridData.GetAllCells();
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells(); // MODIFICATION
 
         Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
         Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
 
-        foreach (var kvp in allCells)
+        foreach (var kvp in ownedCells)
         {
             if (kvp.Key.x < min.x) min.x = kvp.Key.x;
             if (kvp.Key.y < min.y) min.y = kvp.Key.y;
@@ -259,12 +320,8 @@ public class PitZone : MonoBehaviour
         contentInstance.transform.localScale = new Vector3(sizeX, sizeY, sizeZ);
     }
 
-    /// <summary>
-    /// Configure le systeme de damage de la fosse
-    /// </summary>
     public void SetupDamageSystem()
     {
-        // Cherche ou cree le damage controller
         PitDamageController damageController = GetComponentInChildren<PitDamageController>();
 
         if (damageController == null)
@@ -280,11 +337,11 @@ public class PitZone : MonoBehaviour
             Debug.Log("PitZone: Created PitDamageController");
         }
 
-        // Met a jour les bounds du trigger
         damageController.UpdateTriggerBounds();
 
         Debug.Log("PitZone: Damage system setup complete");
-        }
+    }
+
     public void CreateNavMeshMargin(float marginWidth = 0.5f)
     {
         if (gridData == null)
@@ -293,24 +350,28 @@ public class PitZone : MonoBehaviour
             return;
         }
 
-        // Supprime l'ancien
         Transform existingMargin = transform.Find("NavMeshMargin");
         if (existingMargin != null)
         {
             DestroyImmediate(existingMargin.gameObject);
         }
 
-        // Parent
         GameObject marginParent = new GameObject("NavMeshMargin");
         marginParent.transform.SetParent(transform);
         marginParent.transform.localPosition = Vector3.zero;
 
-        // Calcule bounds du pit
-        Dictionary<Vector2Int, float> allCells = gridData.GetAllCells();
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells(); // MODIFICATION
+
+        if (ownedCells.Count == 0)
+        {
+            Debug.LogWarning("PitZone: No owned cells, cannot create NavMesh margin");
+            return;
+        }
+
         Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
         Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
 
-        foreach (var kvp in allCells)
+        foreach (var kvp in ownedCells)
         {
             if (kvp.Key.x < min.x) min.x = kvp.Key.x;
             if (kvp.Key.y < min.y) min.y = kvp.Key.y;
@@ -324,25 +385,20 @@ public class PitZone : MonoBehaviour
         float centerX = ((min.x + max.x) * 0.5f * cellSize) + (cellSize * 0.5f);
         float centerZ = ((min.y + max.y) * 0.5f * cellSize) + (cellSize * 0.5f);
 
-        float thickness = 0.01f; // Epaisseur verticale
+        float thickness = 0.01f;
 
-        // Cree 4 cotes du cadre
-        // Nord (top)
         CreateMarginSide(marginParent, "North",
             new Vector3(centerX, 0f, centerZ + pitSizeZ / 2f - marginWidth / 2f),
             new Vector3(pitSizeX, thickness, marginWidth));
 
-        // Sud (bottom)
         CreateMarginSide(marginParent, "South",
             new Vector3(centerX, 0f, centerZ - pitSizeZ / 2f + marginWidth / 2f),
             new Vector3(pitSizeX, thickness, marginWidth));
 
-        // Est (right)
         CreateMarginSide(marginParent, "East",
             new Vector3(centerX + pitSizeX / 2f - marginWidth / 2f, 0f, centerZ),
             new Vector3(marginWidth, thickness, pitSizeZ - 2f * marginWidth));
 
-        // Ouest (left)
         CreateMarginSide(marginParent, "West",
             new Vector3(centerX - pitSizeX / 2f + marginWidth / 2f, 0f, centerZ),
             new Vector3(marginWidth, thickness, pitSizeZ - 2f * marginWidth));
@@ -360,12 +416,10 @@ public class PitZone : MonoBehaviour
         side.transform.localPosition = position;
         side.transform.localScale = size;
 
-        // Enleve collider
         Collider col = side.GetComponent<Collider>();
         if (col != null)
         {
             DestroyImmediate(col);
         }
     }
-
 }

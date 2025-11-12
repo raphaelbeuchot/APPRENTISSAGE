@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 public static class PitMeshGenerator
 {
-    public static Mesh GenerateWallsMesh(PitGridData gridData)
+    // NOUVELLE SIGNATURE - accepte ownedCells optionnel
+    public static Mesh GenerateWallsMesh(PitGridData gridData, float floorThickness = 0.2f, Dictionary<Vector2Int, float> ownedCells = null)
     {
         if (gridData == null) return null;
 
@@ -11,17 +12,17 @@ public static class PitMeshGenerator
         List<int> triangles = new List<int>();
         List<Vector2> uvs = new List<Vector2>();
 
-        Dictionary<Vector2Int, float> allCells = gridData.GetAllCells();
+        // Si ownedCells n'est pas fourni, utilise toutes les cellules
+        Dictionary<Vector2Int, float> cellsToProcess = ownedCells ?? gridData.GetAllCells();
         float cellSize = gridData.gridCellSize;
 
-        foreach (var kvp in allCells)
+        foreach (var kvp in cellsToProcess)
         {
             Vector2Int cellPos = kvp.Key;
             float cellDepth = kvp.Value;
 
             Vector3 cellWorldPos = gridData.CellToWorld(cellPos);
 
-            // Check les 4 voisins (Nord, Sud, Est, Ouest)
             Vector2Int[] neighbors = new Vector2Int[]
             {
                 cellPos + new Vector2Int(0, 1),  // Nord (Z+)
@@ -32,19 +33,21 @@ public static class PitMeshGenerator
 
             Vector3[] wallDirections = new Vector3[]
             {
-                Vector3.forward,  // Nord
-                Vector3.back,     // Sud
-                Vector3.right,    // Est
-                Vector3.left      // Ouest
+                Vector3.forward,
+                Vector3.back,
+                Vector3.right,
+                Vector3.left
             };
 
             for (int i = 0; i < 4; i++)
             {
                 Vector2Int neighbor = neighbors[i];
-                float neighborDepth = gridData.GetDepth(neighbor);
 
-                // Si pas de voisin ou voisin moins profond, on met un mur
-                if (neighborDepth == 0f || neighborDepth > cellDepth)
+                // MODIFICATION - verifie si le voisin est dans ownedCells aussi
+                bool neighborInZone = ownedCells != null ? ownedCells.ContainsKey(neighbor) : gridData.HasCell(neighbor);
+                float neighborDepth = neighborInZone ? gridData.GetDepth(neighbor) : 0f;
+
+                if (!neighborInZone || neighborDepth > cellDepth)
                 {
                     AddWallQuad(
                         vertices,
@@ -55,7 +58,8 @@ public static class PitMeshGenerator
                         neighborDepth,
                         cellSize,
                         wallDirections[i],
-                        i
+                        i,
+                        floorThickness
                     );
                 }
             }
@@ -72,7 +76,8 @@ public static class PitMeshGenerator
         return mesh;
     }
 
-    public static Mesh GenerateFloorMesh(PitGridData gridData)
+    // NOUVELLE SIGNATURE - accepte ownedCells optionnel
+    public static Mesh GenerateFloorMesh(PitGridData gridData, Dictionary<Vector2Int, float> ownedCells = null)
     {
         if (gridData == null) return null;
 
@@ -80,10 +85,11 @@ public static class PitMeshGenerator
         List<int> triangles = new List<int>();
         List<Vector2> uvs = new List<Vector2>();
 
-        Dictionary<Vector2Int, float> allCells = gridData.GetAllCells();
+        // Si ownedCells n'est pas fourni, utilise toutes les cellules
+        Dictionary<Vector2Int, float> cellsToProcess = ownedCells ?? gridData.GetAllCells();
         float cellSize = gridData.gridCellSize;
 
-        foreach (var kvp in allCells)
+        foreach (var kvp in cellsToProcess)
         {
             Vector2Int cellPos = kvp.Key;
             float cellDepth = kvp.Value;
@@ -113,15 +119,14 @@ public static class PitMeshGenerator
         float neighborDepth,
         float cellSize,
         Vector3 direction,
-        int side)
+        int side,
+        float floorThickness = 0.2f)
     {
         int startIndex = vertices.Count;
 
-        // Position de base du mur (coin de la cellule)
         Vector3 basePos = cellWorldPos;
-        Vector3 right = Vector3.zero; // DECLARE ICI
+        Vector3 right = Vector3.zero;
 
-        // Ajuste la position selon le cote
         if (side == 0) // Nord (Z+)
         {
             basePos += new Vector3(0, 0, cellSize);
@@ -139,26 +144,23 @@ public static class PitMeshGenerator
         }
         else if (side == 3) // Ouest (X-)
         {
-            basePos += new Vector3(0, 0, 0); // DEJA BON
-            right = Vector3.forward * cellSize; // INVERSE LA DIRECTION
+            basePos += new Vector3(0, 0, 0);
+            right = Vector3.forward * cellSize;
         }
 
-        float wallHeight = Mathf.Abs(cellDepth - neighborDepth);
+        float wallTop = -floorThickness;
         float wallBottom = cellDepth;
 
-        // 4 vertices du quad
-        vertices.Add(basePos + new Vector3(0, wallBottom, 0));           // Bottom left
-        vertices.Add(basePos + right + new Vector3(0, wallBottom, 0));   // Bottom right
-        vertices.Add(basePos + right + new Vector3(0, wallBottom + wallHeight, 0)); // Top right
-        vertices.Add(basePos + new Vector3(0, wallBottom + wallHeight, 0));         // Top left
+        vertices.Add(basePos + new Vector3(0, wallBottom, 0));
+        vertices.Add(basePos + right + new Vector3(0, wallBottom, 0));
+        vertices.Add(basePos + right + new Vector3(0, wallTop, 0));
+        vertices.Add(basePos + new Vector3(0, wallTop, 0));
 
-        // UVs
         uvs.Add(new Vector2(0, 0));
         uvs.Add(new Vector2(1, 0));
         uvs.Add(new Vector2(1, 1));
         uvs.Add(new Vector2(0, 1));
 
-        // Triangles (2 triangles pour le quad)
         triangles.Add(startIndex);
         triangles.Add(startIndex + 2);
         triangles.Add(startIndex + 1);

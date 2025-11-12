@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.Linq;
 
 public class PitBrushWindow : EditorWindow
 {
@@ -10,11 +12,16 @@ public class PitBrushWindow : EditorWindow
 
     private Vector2 scrollPosition;
 
+    // NOUVEAU : Pour le dropdown de selection de PitZone
+    private PitZone[] availablePitZones;
+    private string[] pitZoneNames;
+    private int selectedPitZoneIndex = -1;
+
     [MenuItem("Tools/Pit Brush")]
     public static void ShowWindow()
     {
         PitBrushWindow window = GetWindow<PitBrushWindow>("Pit Brush");
-        window.minSize = new Vector2(300, 400);
+        window.minSize = new Vector2(300, 500); // AUGMENTE la hauteur
         window.Show();
     }
 
@@ -28,6 +35,9 @@ public class PitBrushWindow : EditorWindow
         DrawGridDataSection();
         GUILayout.Space(10);
 
+        DrawPitZoneSection(); // NOUVEAU
+        GUILayout.Space(10);
+
         DrawBrushSettings();
         GUILayout.Space(10);
 
@@ -37,6 +47,116 @@ public class PitBrushWindow : EditorWindow
         DrawInfoSection();
 
         GUILayout.EndScrollView();
+    }
+
+    // NOUVELLE SECTION : Gestion des PitZones
+    private void DrawPitZoneSection()
+    {
+        GUILayout.BeginVertical(EditorStyles.helpBox);
+        GUILayout.Label("Pit Zones", EditorStyles.boldLabel);
+
+        // Rafraichit la liste des PitZones
+        RefreshPitZoneList();
+
+        // Bouton pour creer un nouveau PitZone
+        GUI.enabled = activeGridData != null;
+        GUI.backgroundColor = Color.green;
+        if (GUILayout.Button("Create New Pit Zone", GUILayout.Height(35)))
+        {
+            PitZone newZone = PitBrushSystem.CreateNewPitZone();
+            if (newZone != null)
+            {
+                RefreshPitZoneList();
+                SelectPitZone(newZone);
+            }
+        }
+        GUI.backgroundColor = Color.white;
+        GUI.enabled = true;
+
+        GUILayout.Space(5);
+
+        // Dropdown pour selectionner un PitZone existant
+        if (availablePitZones != null && availablePitZones.Length > 0)
+        {
+            GUILayout.Label("Select Active Zone:", EditorStyles.miniLabel);
+
+            int newIndex = EditorGUILayout.Popup(selectedPitZoneIndex, pitZoneNames);
+
+            if (newIndex != selectedPitZoneIndex && newIndex >= 0 && newIndex < availablePitZones.Length)
+            {
+                selectedPitZoneIndex = newIndex;
+                SelectPitZone(availablePitZones[selectedPitZoneIndex]);
+            }
+
+            // Affiche les infos du PitZone actif
+            PitZone activeZone = PitBrushSystem.GetActivePitZone();
+            if (activeZone != null)
+            {
+                GUILayout.Space(5);
+                GUI.backgroundColor = new Color(0.2f, 0.8f, 0.2f);
+                GUILayout.BeginVertical(EditorStyles.helpBox);
+                GUILayout.Label("Active: " + activeZone.name, EditorStyles.boldLabel);
+
+                if (activeGridData != null)
+                {
+                    int ownedCells = activeGridData.GetCellsForZone(activeZone.zoneID).Count;
+                    GUILayout.Label("Cells: " + ownedCells, EditorStyles.miniLabel);
+                }
+
+                GUILayout.EndVertical();
+                GUI.backgroundColor = Color.white;
+            }
+        }
+        else
+        {
+            GUILayout.Label("No PitZones in scene", EditorStyles.miniLabel);
+        }
+
+        GUILayout.EndVertical();
+    }
+
+    // NOUVELLE METHODE : Rafraichit la liste des PitZones disponibles
+    private void RefreshPitZoneList()
+    {
+        availablePitZones = FindObjectsOfType<PitZone>();
+
+        if (activeGridData != null)
+        {
+            // Filtre pour ne garder que les PitZones du gridData actif
+            availablePitZones = availablePitZones.Where(z => z.gridData == activeGridData).ToArray();
+        }
+
+        // Trie par ID
+        availablePitZones = availablePitZones.OrderBy(z => z.zoneID).ToArray();
+
+        // Cree les noms pour le dropdown
+        pitZoneNames = new string[availablePitZones.Length];
+        for (int i = 0; i < availablePitZones.Length; i++)
+        {
+            pitZoneNames[i] = availablePitZones[i].name + " (ID: " + availablePitZones[i].zoneID + ")";
+        }
+
+        // Met a jour l'index selectionne
+        PitZone currentActive = PitBrushSystem.GetActivePitZone();
+        if (currentActive != null)
+        {
+            for (int i = 0; i < availablePitZones.Length; i++)
+            {
+                if (availablePitZones[i] == currentActive)
+                {
+                    selectedPitZoneIndex = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    // NOUVELLE METHODE : Selectionne un PitZone comme actif
+    private void SelectPitZone(PitZone zone)
+    {
+        PitBrushSystem.SetActivePitZone(zone);
+        Selection.activeGameObject = zone.gameObject;
+        SceneView.RepaintAll();
     }
 
     private void DrawGridDataSection()
@@ -55,6 +175,7 @@ public class PitBrushWindow : EditorWindow
         {
             activeGridData = newGridData;
             PitBrushSystem.SetActiveGridData(activeGridData);
+            RefreshPitZoneList(); // NOUVEAU : rafraichit la liste quand on change de grid
         }
 
         GUILayout.BeginHorizontal();
@@ -160,6 +281,14 @@ public class PitBrushWindow : EditorWindow
             GUILayout.Label("Press [P] to toggle Pit Brush mode", EditorStyles.miniLabel);
             GUILayout.Label("Press [B] to cycle brush size", EditorStyles.miniLabel);
             GUILayout.Label("Click and drag in Scene view to paint", EditorStyles.miniLabel);
+
+            // NOUVEAU : Legende des couleurs
+            GUILayout.Space(5);
+            GUILayout.Label("Color Legend:", EditorStyles.boldLabel);
+            GUILayout.Label("- Green cells: Active zone", EditorStyles.miniLabel);
+            GUILayout.Label("- Blue cells: Other zones", EditorStyles.miniLabel);
+            GUILayout.Label("- Yellow cells: Orphan (no owner)", EditorStyles.miniLabel);
+            GUILayout.Label("- Red preview: Blocked cells", EditorStyles.miniLabel);
         }
 
         GUILayout.EndVertical();
@@ -194,5 +323,11 @@ public class PitBrushWindow : EditorWindow
     private void OnDestroy()
     {
         PitBrushSystem.SetActiveGridData(null);
+    }
+
+    // NOUVEAU : Rafraichit la fenetre automatiquement
+    private void OnInspectorUpdate()
+    {
+        Repaint();
     }
 }

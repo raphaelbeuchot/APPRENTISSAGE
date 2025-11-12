@@ -5,7 +5,7 @@ using System.Collections.Generic;
 [InitializeOnLoad]
 public class PitBrushSystem
 {
-    private static PitZone activePitZone;
+    private static PitZone activePitZone; // RESTE : le pit zone actuellement actif
     private static PitGridData activeGridData;
     private static int brushSize = 1;
     private static float paintDepth = 1f;
@@ -16,18 +16,58 @@ public class PitBrushSystem
     private static bool isPainting = false;
     private static HashSet<Vector2Int> paintedCellsThisStroke = new HashSet<Vector2Int>();
 
+    private static int nextZoneID = 0; // NOUVEAU : compteur pour les IDs
+
     private const string BRUSH_ENABLED_KEY = "PitBrush_Enabled";
+    private const string NEXT_ZONE_ID_KEY = "PitBrush_NextZoneID"; // NOUVEAU
 
     static PitBrushSystem()
     {
         brushEnabled = EditorPrefs.GetBool(BRUSH_ENABLED_KEY, false);
+        nextZoneID = EditorPrefs.GetInt(NEXT_ZONE_ID_KEY, 0); // NOUVEAU
         SceneView.duringSceneGui += OnSceneGUI;
     }
 
     public static void SetActiveGridData(PitGridData data)
     {
         activeGridData = data;
-        activePitZone = null; // Reset le pit zone pour forcer la recherche
+    }
+
+    // NOUVELLE METHODE : Definir le PitZone actif
+    public static void SetActivePitZone(PitZone zone)
+    {
+        activePitZone = zone;
+        Debug.Log("Active PitZone set to: " + (zone != null ? zone.name : "NULL"));
+    }
+
+    // NOUVELLE METHODE : Recuperer le PitZone actif
+    public static PitZone GetActivePitZone()
+    {
+        return activePitZone;
+    }
+
+    // NOUVELLE METHODE : Creer un nouveau PitZone
+    public static PitZone CreateNewPitZone()
+    {
+        if (activeGridData == null)
+        {
+            Debug.LogError("Cannot create PitZone: No active grid data!");
+            return null;
+        }
+
+        GameObject pitZoneObj = new GameObject("PitZone_" + nextZoneID);
+        PitZone newZone = pitZoneObj.AddComponent<PitZone>();
+        newZone.Initialize(nextZoneID, activeGridData);
+
+        Undo.RegisterCreatedObjectUndo(pitZoneObj, "Create Pit Zone");
+
+        activePitZone = newZone;
+        nextZoneID++;
+        EditorPrefs.SetInt(NEXT_ZONE_ID_KEY, nextZoneID);
+
+        Debug.Log("Created new PitZone with ID: " + newZone.zoneID);
+
+        return newZone;
     }
 
     public static void SetBrushSize(int size)
@@ -53,7 +93,7 @@ public class PitBrushSystem
 
         if (brushEnabled && activeGridData != null)
         {
-            DrawPaintedCells(); // AJOUTE CETTE LIGNE EN PREMIER
+            DrawPaintedCells();
             UpdateHoverCell(e);
             HandleMouseInput(e);
             DrawBrushPreview();
@@ -65,7 +105,6 @@ public class PitBrushSystem
             }
         }
     }
-
 
     private static void DrawPaintedCells()
     {
@@ -82,46 +121,33 @@ public class PitBrushSystem
             Vector3 worldPos = activeGridData.CellToWorld(cellPos);
             Vector3 cubeCenter = worldPos + new Vector3(cellSize * 0.5f, 0f, cellSize * 0.5f);
 
-            // Couleur selon profondeur (plus fonce = plus profond)
-            float normalizedDepth = Mathf.Clamp01(-depth / 10f);
-            Color cellColor = Color.Lerp(new Color(0, 0.5f, 1f, 0.4f), new Color(0, 0, 0.5f, 0.6f), normalizedDepth);
+            // MODIFICATION : colorie differemment selon la zone proprietaire
+            int ownerID = activeGridData.GetCellOwner(cellPos);
+            Color cellColor;
 
-            // Cube semi-transparent
+            if (ownerID == -1)
+            {
+                // Cellule sans proprietaire (orpheline) - jaune
+                cellColor = new Color(1f, 1f, 0f, 0.5f);
+            }
+            else if (activePitZone != null && ownerID == activePitZone.zoneID)
+            {
+                // Cellule de la zone active - vert
+                float normalizedDepth = Mathf.Clamp01(-depth / 10f);
+                cellColor = Color.Lerp(new Color(0, 1f, 0f, 0.4f), new Color(0, 0.5f, 0f, 0.6f), normalizedDepth);
+            }
+            else
+            {
+                // Cellule d'une autre zone - bleu
+                float normalizedDepth = Mathf.Clamp01(-depth / 10f);
+                cellColor = Color.Lerp(new Color(0, 0.5f, 1f, 0.4f), new Color(0, 0, 0.5f, 0.6f), normalizedDepth);
+            }
+
             Handles.color = cellColor;
             DrawSolidCube(cubeCenter, new Vector3(cellSize, 0.1f, cellSize));
 
-            // Wireframe blanc pour voir les limites
             Handles.color = new Color(1, 1, 1, 0.5f);
             Handles.DrawWireCube(cubeCenter, new Vector3(cellSize, 0.1f, cellSize));
-        }
-    }
-
-    private static void EnsurePitZoneExists()
-    {
-        if (activeGridData == null) return;
-
-        // Cherche si un PitZone existe deja pour ce gridData
-        if (activePitZone == null || activePitZone.gridData != activeGridData)
-        {
-            PitZone[] allPitZones = Object.FindObjectsOfType<PitZone>();
-
-            foreach (PitZone zone in allPitZones)
-            {
-                if (zone.gridData == activeGridData)
-                {
-                    activePitZone = zone;
-                    return;
-                }
-            }
-
-            // Si pas trouve, on en cree un nouveau
-            GameObject pitZoneObj = new GameObject("PitZone_" + activeGridData.name);
-            activePitZone = pitZoneObj.AddComponent<PitZone>();
-            activePitZone.gridData = activeGridData;
-
-            Undo.RegisterCreatedObjectUndo(pitZoneObj, "Create Pit Zone");
-
-            Debug.Log("Created new PitZone for grid: " + activeGridData.name);
         }
     }
 
@@ -163,7 +189,6 @@ public class PitBrushSystem
 
     private static void HandleMouseInput(Event e)
     {
-        // Force le repaint pendant le drag
         if (isPainting)
         {
             SceneView.RepaintAll();
@@ -185,37 +210,27 @@ public class PitBrushSystem
         {
             if (isPainting)
             {
-                Debug.Log("=== MOUSE UP DETECTED ===");
-
                 isPainting = false;
                 paintedCellsThisStroke.Clear();
                 EditorUtility.SetDirty(activeGridData);
 
-                Debug.Log("Active grid data: " + (activeGridData != null ? activeGridData.name : "NULL"));
-
-                // NOUVEAU : Genere les meshes automatiquement
-                EnsurePitZoneExists();
-
-                Debug.Log("Active pit zone after ensure: " + (activePitZone != null ? activePitZone.name : "NULL"));
-
+                // MODIFICATION : Genere les meshes du PitZone actif uniquement
                 if (activePitZone != null)
                 {
-                    Debug.Log("Calling GenerateMeshes...");
                     activePitZone.GenerateMeshes();
                     EditorUtility.SetDirty(activePitZone);
+                    Debug.Log("Meshes regenerated for PitZone " + activePitZone.zoneID);
                 }
                 else
                 {
-                    Debug.LogError("PitZone is NULL after EnsurePitZoneExists!");
+                    Debug.LogWarning("No active PitZone! Create one first.");
                 }
 
                 SceneView.RepaintAll();
-                Debug.Log("=== PAINT STROKE COMPLETED ===");
             }
             e.Use();
         }
 
-        // Empeche la selection d'objets pendant le painting
         if (isPainting && (e.type == EventType.Layout || e.type == EventType.MouseDrag))
         {
             HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
@@ -224,6 +239,13 @@ public class PitBrushSystem
 
     private static void PaintAtCurrentCell()
     {
+        // VERIFICATION : Il faut un PitZone actif pour peindre
+        if (activePitZone == null)
+        {
+            Debug.LogWarning("No active PitZone selected! Create or select one first.");
+            return;
+        }
+
         int halfSize = brushSize / 2;
 
         for (int x = 0; x < brushSize; x++)
@@ -237,11 +259,25 @@ public class PitBrushSystem
                 {
                     if (paintMode)
                     {
+                        // VERIFICATION : La cellule est-elle deja possedee par une autre zone?
+                        int currentOwner = activeGridData.GetCellOwner(targetCell);
+
+                        if (currentOwner != -1 && currentOwner != activePitZone.zoneID)
+                        {
+                            // Cellule deja possedee par une autre zone - BLOQUE
+                            Debug.LogWarning("Cell " + targetCell + " is already owned by PitZone " + currentOwner);
+                            continue;
+                        }
+
+                        // Peint la cellule
                         activeGridData.SetDepth(targetCell, -paintDepth);
+                        activeGridData.AssignCellToZone(targetCell, activePitZone.zoneID);
                     }
                     else
                     {
+                        // Mode erase - enleve la cellule
                         activeGridData.SetDepth(targetCell, 0f);
+                        activeGridData.RemoveCellOwnership(targetCell);
                     }
 
                     paintedCellsThisStroke.Add(targetCell);
@@ -273,11 +309,24 @@ public class PitBrushSystem
                 Vector3 cubeCenter = worldPos + new Vector3(cellSize * 0.5f, 0f, cellSize * 0.5f);
                 Vector3 cubeSize = new Vector3(cellSize, 0.1f, cellSize);
 
-                // Preview semi-transparent
+                // MODIFICATION : Preview rouge si cellule bloquee
+                int cellOwner = activeGridData.GetCellOwner(targetCell);
+                bool isBlocked = paintMode && cellOwner != -1 && activePitZone != null && cellOwner != activePitZone.zoneID;
+
+                if (isBlocked)
+                {
+                    previewColor = new Color(1, 0, 0, 0.5f);
+                    wireColor = Color.red;
+                }
+                else
+                {
+                    previewColor = paintMode ? new Color(0, 1, 0, 0.3f) : new Color(1, 0, 0, 0.3f);
+                    wireColor = paintMode ? Color.green : Color.red;
+                }
+
                 Handles.color = previewColor;
                 DrawSolidCube(cubeCenter, cubeSize);
 
-                // Wireframe pour bien voir les limites
                 Handles.color = wireColor;
                 Handles.DrawWireCube(cubeCenter, cubeSize);
             }
@@ -298,7 +347,6 @@ public class PitBrushSystem
         vertices[6] = center + new Vector3(halfSize.x, halfSize.y, halfSize.z);
         vertices[7] = center + new Vector3(-halfSize.x, halfSize.y, halfSize.z);
 
-        // Face du dessus (la seule visible pour un cube plat au sol)
         Handles.DrawAAConvexPolygon(vertices[4], vertices[5], vertices[6], vertices[7]);
     }
 
@@ -306,7 +354,7 @@ public class PitBrushSystem
     {
         Handles.BeginGUI();
 
-        GUILayout.BeginArea(new Rect(10, 150, 300, 180));
+        GUILayout.BeginArea(new Rect(10, 150, 300, 220)); // AUGMENTE la hauteur
 
         GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
         boxStyle.normal.background = MakeTex(2, 2, new Color(0, 0, 0, 0.8f));
@@ -331,6 +379,18 @@ public class PitBrushSystem
 
             int cellCount = activeGridData.GetAllCells().Count;
             GUILayout.Label("Active cells: " + cellCount, labelStyle);
+        }
+
+        // NOUVEAU : Affiche le PitZone actif
+        if (activePitZone != null)
+        {
+            labelStyle.normal.textColor = Color.green;
+            GUILayout.Label("Active Zone: " + activePitZone.name + " (ID: " + activePitZone.zoneID + ")", labelStyle);
+        }
+        else
+        {
+            labelStyle.normal.textColor = Color.red;
+            GUILayout.Label("No active PitZone!", labelStyle);
         }
 
         Color modeColor = paintMode ? Color.green : Color.red;
