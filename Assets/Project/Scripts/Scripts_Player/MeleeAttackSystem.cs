@@ -275,20 +275,35 @@ public class MeleeAttackSystem : MonoBehaviour
 
     IEnumerator KnockdownTarget(GameObject target)
     {
-        // NOUVEAU : Skip knockdown si Blinder
+        // Skip knockdown si Blinder
         ChargeAttack chargeAttack = target.GetComponent<ChargeAttack>();
         if (chargeAttack != null)
         {
-            yield break; // Pas de knockdown pour Blinder
+            yield break;
         }
 
         EnemyAI zombieAI = target.GetComponent<EnemyAI>();
+
+        // NOUVEAU : Désactive NavMesh pendant le knockdown
+        UnityEngine.AI.NavMeshAgent agent = target.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        bool hadAgent = agent != null;
+        if (hadAgent && agent.isOnNavMesh)
+        {
+            agent.enabled = false;
+        }
+
         if (zombieAI != null)
         {
             zombieAI.enabled = false;
         }
 
         yield return new WaitForSeconds(2f);
+
+        // NOUVEAU : Réactive NavMesh
+        if (hadAgent && agent != null)
+        {
+            agent.enabled = true;
+        }
 
         if (zombieAI != null && target != null)
         {
@@ -301,7 +316,7 @@ public class MeleeAttackSystem : MonoBehaviour
     // ============================================
 
 
-        public void OnGrabStart()
+    public void OnGrabStart()
     {
         isGrabbed = true;
 

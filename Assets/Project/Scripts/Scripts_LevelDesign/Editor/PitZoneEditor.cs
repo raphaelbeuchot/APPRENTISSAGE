@@ -167,6 +167,18 @@ public class PitZoneEditor : Editor
             GUI.backgroundColor = Color.white;
         }
 
+        // AJOUTE ICI (nouveau bouton)
+        GUILayout.Space(5);
+        GUI.backgroundColor = Color.cyan;
+        if (GUILayout.Button("Create NavMesh Margin", GUILayout.Height(25)))
+        {
+            Undo.RecordObject(pitZone, "Create NavMesh Margin");
+            pitZone.CreateNavMeshMargin(0.5f);
+            EditorUtility.SetDirty(pitZone);
+            SceneView.RepaintAll();
+        }
+        GUI.backgroundColor = Color.white;
+
         GUILayout.EndVertical();
     }
 

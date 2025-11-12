@@ -273,9 +273,17 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
     IEnumerator BourradeZombie()
     {
-        if(gameManager != null)
-        gameManager.RemoveFromAlreadyShot(gameObject); 
-        
+        if (gameManager != null)
+            gameManager.RemoveFromAlreadyShot(gameObject);
+
+        // NOUVEAU : Désactive NavMesh pendant la bourrade
+        UnityEngine.AI.NavMeshAgent agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        bool hadAgent = agent != null;
+        if (hadAgent && agent.isOnNavMesh)
+        {
+            agent.enabled = false;
+        }
+
         enemyRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         isInBourradeDuration = true;
         isInBourradeCooldown = false;
@@ -306,7 +314,11 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             enemyRb.linearVelocity = Vector3.zero;
             enemyRb.constraints = RigidbodyConstraints.FreezeRotation;
 
-                       
+            // NOUVEAU : Réactive NavMesh
+            if (hadAgent && agent != null)
+            {
+                agent.enabled = true;
+            }
 
             Debug.Log($"{gameObject.name} > Bourrade ended cleanly");
         }

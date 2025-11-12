@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.AI.Navigation;
 
 [ExecuteInEditMode]
 public class PitZone : MonoBehaviour
@@ -283,5 +284,88 @@ public class PitZone : MonoBehaviour
         damageController.UpdateTriggerBounds();
 
         Debug.Log("PitZone: Damage system setup complete");
+        }
+    public void CreateNavMeshMargin(float marginWidth = 0.5f)
+    {
+        if (gridData == null)
+        {
+            Debug.LogError("PitZone: No grid data assigned!");
+            return;
+        }
+
+        // Supprime l'ancien
+        Transform existingMargin = transform.Find("NavMeshMargin");
+        if (existingMargin != null)
+        {
+            DestroyImmediate(existingMargin.gameObject);
+        }
+
+        // Parent
+        GameObject marginParent = new GameObject("NavMeshMargin");
+        marginParent.transform.SetParent(transform);
+        marginParent.transform.localPosition = Vector3.zero;
+
+        // Calcule bounds du pit
+        Dictionary<Vector2Int, float> allCells = gridData.GetAllCells();
+        Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
+        Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
+
+        foreach (var kvp in allCells)
+        {
+            if (kvp.Key.x < min.x) min.x = kvp.Key.x;
+            if (kvp.Key.y < min.y) min.y = kvp.Key.y;
+            if (kvp.Key.x > max.x) max.x = kvp.Key.x;
+            if (kvp.Key.y > max.y) max.y = kvp.Key.y;
+        }
+
+        float cellSize = gridData.gridCellSize;
+        float pitSizeX = (max.x - min.x + 1) * cellSize;
+        float pitSizeZ = (max.y - min.y + 1) * cellSize;
+        float centerX = ((min.x + max.x) * 0.5f * cellSize) + (cellSize * 0.5f);
+        float centerZ = ((min.y + max.y) * 0.5f * cellSize) + (cellSize * 0.5f);
+
+        float thickness = 0.01f; // Epaisseur verticale
+
+        // Cree 4 cotes du cadre
+        // Nord (top)
+        CreateMarginSide(marginParent, "North",
+            new Vector3(centerX, 0f, centerZ + pitSizeZ / 2f - marginWidth / 2f),
+            new Vector3(pitSizeX, thickness, marginWidth));
+
+        // Sud (bottom)
+        CreateMarginSide(marginParent, "South",
+            new Vector3(centerX, 0f, centerZ - pitSizeZ / 2f + marginWidth / 2f),
+            new Vector3(pitSizeX, thickness, marginWidth));
+
+        // Est (right)
+        CreateMarginSide(marginParent, "East",
+            new Vector3(centerX + pitSizeX / 2f - marginWidth / 2f, 0f, centerZ),
+            new Vector3(marginWidth, thickness, pitSizeZ - 2f * marginWidth));
+
+        // Ouest (left)
+        CreateMarginSide(marginParent, "West",
+            new Vector3(centerX - pitSizeX / 2f + marginWidth / 2f, 0f, centerZ),
+            new Vector3(marginWidth, thickness, pitSizeZ - 2f * marginWidth));
+
+        Debug.Log("NavMeshMargin created: frame around pit with " + marginWidth + "m width");
     }
+
+    private void CreateMarginSide(GameObject parent, string name, Vector3 position, Vector3 size)
+    {
+        GameObject side = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        side.name = "Margin_" + name;
+        side.transform.SetParent(parent.transform);
+        side.layer = LayerMask.NameToLayer("Ground");
+
+        side.transform.localPosition = position;
+        side.transform.localScale = size;
+
+        // Enleve collider
+        Collider col = side.GetComponent<Collider>();
+        if (col != null)
+        {
+            DestroyImmediate(col);
+        }
+    }
+
 }
