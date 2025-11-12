@@ -23,6 +23,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     // === SWARM EFFECTS (sans grab) ===
     private float swarmSlowdownMultiplier = 1f;
+    private float waterSlowdownMultiplier = 1f; // NOUVEAU
+
     private bool isInSwarmVision = false;
 
     private Material originalMaterial;
@@ -313,6 +315,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
         baseSpeed *= swarmSlowdownMultiplier;
         baseSpeed *= brightEyesSlowdown;
+        baseSpeed *= waterSlowdownMultiplier;
         return baseSpeed;
     }
 
@@ -382,6 +385,15 @@ public class PlayerPhysicsMovement : MonoBehaviour
         swarmSlowdownMultiplier = 1f;
     }
 
+    public void ApplyWaterSlowdown(float multiplier)
+    {
+        waterSlowdownMultiplier = multiplier;
+    }
+
+    public void RemoveWaterSlowdown()
+    {
+        waterSlowdownMultiplier = 1f;
+    }
     public void ApplySwarmVision(bool active)
     {
         isInSwarmVision = active;

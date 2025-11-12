@@ -217,21 +217,19 @@ public class PitZone : MonoBehaviour
             if (kvp.Key.y > max.y) max.y = kvp.Key.y;
         }
 
-        // Centre en grid coordinates
-        Vector2Int centerGrid = new Vector2Int(
-            (min.x + max.x) / 2,
-            (min.y + max.y) / 2
-        );
+        // Calcul du centre en world space
+        float cellSize = gridData.gridCellSize;
 
-        // Converti en world position
-        Vector3 centerWorld = gridData.CellToWorld(centerGrid);
+        // CORRECTION : On ajoute cellSize/2 pour centrer dans les cellules
+        float centerWorldX = ((min.x + max.x) * 0.5f * cellSize) + (cellSize * 0.5f);
+        float centerWorldZ = ((min.y + max.y) * 0.5f * cellSize) + (cellSize * 0.5f);
 
         // Position Y : depuis le fond
         float maxDepth = GetMaxDepth();
         float fillHeightAbsolute = Mathf.Abs(maxDepth * fillHeightPercent);
-        centerWorld.y = maxDepth + (fillHeightAbsolute * 0.5f);
+        float centerWorldY = maxDepth + (fillHeightAbsolute * 0.5f);
 
-        return centerWorld;
+        return new Vector3(centerWorldX, centerWorldY, centerWorldZ);
     }
 
     private void ScaleFillContent(float fillHeight)

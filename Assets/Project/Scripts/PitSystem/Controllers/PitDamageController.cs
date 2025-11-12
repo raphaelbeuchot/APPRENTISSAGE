@@ -54,15 +54,48 @@ public class PitDamageController : MonoBehaviour
     /// </summary>
     public void UpdateTriggerBounds()
     {
-        if (pitZone == null || pitZone.gridData == null) return;
+        Debug.Log("=== UPDATE TRIGGER BOUNDS START ===");
+
+        if (triggerCollider == null)
+        {
+            triggerCollider = GetComponent<BoxCollider>();
+            if (triggerCollider == null)
+            {
+                Debug.LogError("No BoxCollider found! Adding one...");
+                triggerCollider = gameObject.AddComponent<BoxCollider>();
+                triggerCollider.isTrigger = true;
+            }
+        }
+
+        if (pitZone == null)
+        {
+            Debug.LogError("pitZone is NULL!");
+            return;
+        }
+        Debug.Log("pitZone OK: " + pitZone.name);
+
+        if (pitZone.gridData == null)
+        {
+            Debug.LogError("pitZone.gridData is NULL!");
+            return;
+        }
+        Debug.Log("gridData OK: " + pitZone.gridData.name);
 
         Dictionary<Vector2Int, float> allCells = pitZone.gridData.GetAllCells();
-        if (allCells.Count == 0) return;
+        Debug.Log("Cell count: " + allCells.Count);
+
+        if (allCells.Count == 0)
+        {
+            Debug.LogError("No cells in gridData!");
+            return;
+        }
 
         // Calcule les bounds de la fosse
         Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
         Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
         float maxDepth = pitZone.GetMaxDepth();
+
+        Debug.Log("maxDepth: " + maxDepth);
 
         foreach (var kvp in allCells)
         {
@@ -72,27 +105,37 @@ public class PitDamageController : MonoBehaviour
             if (kvp.Key.y > max.y) max.y = kvp.Key.y;
         }
 
+        Debug.Log("Grid bounds - min: " + min + ", max: " + max);
+
         float cellSize = pitZone.gridData.gridCellSize;
         float sizeX = (max.x - min.x + 1) * cellSize;
         float sizeZ = (max.y - min.y + 1) * cellSize;
         float sizeY = Mathf.Abs(maxDepth);
 
-        // Centre du trigger
-        Vector2Int centerGrid = new Vector2Int(
-            (min.x + max.x) / 2,
-            (min.y + max.y) / 2
-        );
-        Vector3 centerWorld = pitZone.gridData.CellToWorld(centerGrid);
+        Debug.Log("Calculated size - X: " + sizeX + ", Y: " + sizeY + ", Z: " + sizeZ);
+
+        // Calcul du centre en world space directement
+        float centerWorldX = ((min.x + max.x) * 0.5f * cellSize) + (cellSize * 0.5f);
+        float centerWorldZ = ((min.y + max.y) * 0.5f * cellSize) + (cellSize * 0.5f);
+
+        Debug.Log("Center position - X: " + centerWorldX + ", Z: " + centerWorldZ);
 
         // Position locale par rapport au PitZone parent
         transform.localPosition = new Vector3(
-            centerWorld.x,
+            centerWorldX,
             maxDepth / 2f,
-            centerWorld.z
+            centerWorldZ
         );
+
+        if (triggerCollider == null)
+        {
+            Debug.LogError("triggerCollider is NULL!");
+            return;
+        }
 
         triggerCollider.size = new Vector3(sizeX, sizeY, sizeZ);
         triggerCollider.center = Vector3.zero;
+        triggerCollider.isTrigger = true;  // FIX AJOUTE ICI
 
         // Cache les hauteurs pour les calculs
         bottomHeight = maxDepth + bottomZoneHeight;
@@ -108,7 +151,7 @@ public class PitDamageController : MonoBehaviour
             fillSurfaceHeight = maxDepth;
         }
 
-        Debug.Log($"PitDamageController: Trigger updated - Size: {sizeX:F1}x{sizeY:F1}x{sizeZ:F1}, FillSurface: {fillSurfaceHeight:F2}, Bottom: {bottomHeight:F2}");
+        Debug.Log("=== BOUNDS UPDATED - Size: " + sizeX.ToString("F1") + "x" + sizeY.ToString("F1") + "x" + sizeZ.ToString("F1") + ", FillSurface: " + fillSurfaceHeight.ToString("F2") + ", Bottom: " + bottomHeight.ToString("F2") + " ===");
     }
 
     void OnTriggerEnter(Collider other)
@@ -129,10 +172,9 @@ public class PitDamageController : MonoBehaviour
 
             interactable.OnEnterPit(pitZone);
 
-            Debug.Log($"[PitDamage] {go.name} entered pit at Y={entryPos.y:F2}");
+            Debug.Log("[PitDamage] " + go.name + " entered pit at Y=" + entryPos.y.ToString("F2"));
         }
     }
-
     void OnTriggerStay(Collider other)
     {
         if (((1 << other.gameObject.layer) & fallableLayerMask) == 0) return;
