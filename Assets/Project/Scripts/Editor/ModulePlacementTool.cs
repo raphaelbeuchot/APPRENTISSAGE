@@ -190,14 +190,142 @@ public class ModulePlacementTool
         Vector3 mousePos = GetSnappedMousePosition(sceneView);
         previewInstance.transform.position = mousePos;
 
-        // Check collision
-        ModulePiece modulePiece = previewInstance.GetComponent<ModulePiece>();
-        if (modulePiece != null)
-        {
-            isValidPlacement = !modulePiece.CheckForCollision();
-            UpdatePreviewMaterial(isValidPlacement);
-        }
+        // Check collision avec Physics.OverlapBox
+        isValidPlacement = CheckValidPlacement(mousePos);
+        UpdatePreviewMaterial(isValidPlacement);
     }
+
+    private static bool CheckValidPlacement(Vector3 position)
+    {
+        if (selectedPrefab == null) return true;
+
+        ModulePiece modulePiece = selectedPrefab.GetComponent<ModulePiece>();
+        if (modulePiece == null) return true;
+
+        // Recupere les bounds du prefab
+        Bounds prefabBounds = GetCombinedBounds(selectedPrefab);
+
+        if (prefabBounds.size == Vector3.zero)
+        {
+            // Pas de renderer trouve, fallback sur box simple
+            Vector3 halfExtents = new Vector3(modulePiece.snapSize * 0.45f, 0.25f, modulePiece.snapSize * 0.45f);
+            Collider[] colliders = Physics.OverlapBox(position, halfExtents, Quaternion.Euler(0, currentRotation, 0));
+
+            foreach (Collider col in colliders)
+            {
+                ModulePiece other = col.GetComponentInParent<ModulePiece>();
+                if (other != null && other.category == modulePiece.category)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Applique la rotation aux bounds
+        Bounds rotatedBounds = RotateBounds(prefabBounds, currentRotation);
+
+        // Centre les bounds a la position du placement
+        rotatedBounds.center = position + prefabBounds.center;
+
+        // Trouve tous les ModulePiece dans la scene
+        ModulePiece[] allModules = Object.FindObjectsOfType<ModulePiece>();
+
+        foreach (ModulePiece other in allModules)
+        {
+            if (other.category != modulePiece.category) continue;
+
+            // Recupere les bounds de l'autre module
+            Bounds otherBounds = GetCombinedBounds(other.gameObject);
+            otherBounds.center = other.transform.position + otherBounds.center;
+
+            if (rotatedBounds.Intersects(otherBounds))
+            {
+                // NOUVEAU : Verifie si c'est vraiment un overlap ou juste un contact
+                float overlapVolume = CalculateOverlapVolume(rotatedBounds, otherBounds);
+
+                // Si l'overlap est significatif (plus de 10% du volume), c'est une collision
+                float volumeThreshold = rotatedBounds.size.x * rotatedBounds.size.y * rotatedBounds.size.z * 0.1f;
+
+                if (overlapVolume > volumeThreshold)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static float CalculateOverlapVolume(Bounds a, Bounds b)
+    {
+        Vector3 min = Vector3.Max(a.min, b.min);
+        Vector3 max = Vector3.Min(a.max, b.max);
+
+        Vector3 size = max - min;
+
+        if (size.x <= 0 || size.y <= 0 || size.z <= 0)
+        {
+            return 0f;
+        }
+
+        return size.x * size.y * size.z;
+    }
+
+    private static Bounds GetCombinedBounds(GameObject obj)
+    {
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+
+        if (renderers.Length == 0)
+        {
+            return new Bounds(Vector3.zero, Vector3.zero);
+        }
+
+        Bounds combined = renderers[0].bounds;
+
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            combined.Encapsulate(renderers[i].bounds);
+        }
+
+        // Converti en local bounds
+        combined.center -= obj.transform.position;
+
+        return combined;
+    }
+
+    private static Bounds RotateBounds(Bounds bounds, float rotationY)
+    {
+        // Pour simplifier, on prend la bounding box apres rotation
+        Vector3[] corners = new Vector3[8];
+        Vector3 center = bounds.center;
+        Vector3 extents = bounds.extents;
+
+        corners[0] = center + new Vector3(-extents.x, -extents.y, -extents.z);
+        corners[1] = center + new Vector3(extents.x, -extents.y, -extents.z);
+        corners[2] = center + new Vector3(-extents.x, extents.y, -extents.z);
+        corners[3] = center + new Vector3(extents.x, extents.y, -extents.z);
+        corners[4] = center + new Vector3(-extents.x, -extents.y, extents.z);
+        corners[5] = center + new Vector3(extents.x, -extents.y, extents.z);
+        corners[6] = center + new Vector3(-extents.x, extents.y, extents.z);
+        corners[7] = center + new Vector3(extents.x, extents.y, extents.z);
+
+        Quaternion rotation = Quaternion.Euler(0, rotationY, 0);
+
+        for (int i = 0; i < 8; i++)
+        {
+            corners[i] = rotation * (corners[i] - center) + center;
+        }
+
+        Bounds rotated = new Bounds(corners[0], Vector3.zero);
+        for (int i = 1; i < 8; i++)
+        {
+            rotated.Encapsulate(corners[i]);
+        }
+
+        return rotated;
+    }
+
 
     private static Vector3 GetSnappedMousePosition(SceneView sceneView)
     {

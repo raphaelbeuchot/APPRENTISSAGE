@@ -9,23 +9,17 @@ public class PitDamageController : MonoBehaviour
     public PitZone pitZone;
 
     [Header("Detection Settings")]
-    [Tooltip("Layers qui peuvent tomber dans la fosse (Player, Enemies, etc.)")]
     public LayerMask fallableLayerMask = -1;
 
     [Header("Zone Heights")]
-    [Tooltip("Distance du fond pour declencher le fall damage (en metres)")]
     public float bottomZoneHeight = 0.5f;
 
     [Header("Debug")]
     public bool showDebugGizmos = true;
 
-    // Components
     private BoxCollider triggerCollider;
-
-    // Tracking des entites
     private Dictionary<GameObject, PitEntityData> entitiesInPit = new Dictionary<GameObject, PitEntityData>();
 
-    // Cache des hauteurs
     private float fillSurfaceHeight;
     private float bottomHeight;
 
@@ -52,8 +46,6 @@ public class PitDamageController : MonoBehaviour
 
     public void UpdateTriggerBounds()
     {
-        Debug.Log("=== UPDATE TRIGGER BOUNDS START ===");
-
         if (triggerCollider == null)
         {
             triggerCollider = GetComponent<BoxCollider>();
@@ -70,16 +62,13 @@ public class PitDamageController : MonoBehaviour
             Debug.LogError("pitZone is NULL!");
             return;
         }
-        Debug.Log("pitZone OK: " + pitZone.name);
 
         if (pitZone.gridData == null)
         {
             Debug.LogError("pitZone.gridData is NULL!");
             return;
         }
-        Debug.Log("gridData OK: " + pitZone.gridData.name);
 
-        // MODIFICATION : Utilise GetCellsForZone au lieu de GetAllCells
         if (pitZone.zoneID == -1)
         {
             Debug.LogError("pitZone has invalid zoneID!");
@@ -87,7 +76,6 @@ public class PitDamageController : MonoBehaviour
         }
 
         Dictionary<Vector2Int, float> ownedCells = pitZone.gridData.GetCellsForZone(pitZone.zoneID);
-        Debug.Log("Owned cells count: " + ownedCells.Count);
 
         if (ownedCells.Count == 0)
         {
@@ -99,9 +87,6 @@ public class PitDamageController : MonoBehaviour
         Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
         float maxDepth = pitZone.GetMaxDepth();
 
-        Debug.Log("maxDepth: " + maxDepth);
-
-        // MODIFICATION : Boucle sur ownedCells
         foreach (var kvp in ownedCells)
         {
             if (kvp.Key.x < min.x) min.x = kvp.Key.x;
@@ -110,19 +95,13 @@ public class PitDamageController : MonoBehaviour
             if (kvp.Key.y > max.y) max.y = kvp.Key.y;
         }
 
-        Debug.Log("Grid bounds - min: " + min + ", max: " + max);
-
         float cellSize = pitZone.gridData.gridCellSize;
         float sizeX = (max.x - min.x + 1) * cellSize;
         float sizeZ = (max.y - min.y + 1) * cellSize;
         float sizeY = Mathf.Abs(maxDepth);
 
-        Debug.Log("Calculated size - X: " + sizeX + ", Y: " + sizeY + ", Z: " + sizeZ);
-
         float centerWorldX = ((min.x + max.x) * 0.5f * cellSize) + (cellSize * 0.5f);
         float centerWorldZ = ((min.y + max.y) * 0.5f * cellSize) + (cellSize * 0.5f);
-
-        Debug.Log("Center position - X: " + centerWorldX + ", Z: " + centerWorldZ);
 
         transform.localPosition = new Vector3(
             centerWorldX,
@@ -152,8 +131,6 @@ public class PitDamageController : MonoBehaviour
             fillSurfaceHeight = maxDepth;
         }
 
-        Debug.Log("=== BOUNDS UPDATED - Size: " + sizeX.ToString("F1") + "x" + sizeY.ToString("F1") + "x" + sizeZ.ToString("F1") + ", FillSurface: " + fillSurfaceHeight.ToString("F2") + ", Bottom: " + bottomHeight.ToString("F2") + " ===");
-
         SetupNavMeshObstacle();
     }
 
@@ -174,8 +151,6 @@ public class PitDamageController : MonoBehaviour
             obstacle.size = triggerCollider.size;
             obstacle.center = triggerCollider.center;
         }
-
-        Debug.Log("DamageController: NavMeshObstacle configured");
     }
 
     void OnTriggerEnter(Collider other)
@@ -194,8 +169,6 @@ public class PitDamageController : MonoBehaviour
             entitiesInPit.Add(go, data);
 
             interactable.OnEnterPit(pitZone);
-
-            Debug.Log("[PitDamage] " + go.name + " entered pit at Y=" + entryPos.y.ToString("F2"));
         }
     }
 
@@ -239,8 +212,6 @@ public class PitDamageController : MonoBehaviour
         {
             interactable.OnExitPit(pitZone);
             entitiesInPit.Remove(go);
-
-            Debug.Log("[PitDamage] " + go.name + " exited pit");
         }
     }
 
@@ -258,7 +229,6 @@ public class PitDamageController : MonoBehaviour
 
             case PitContentType.ContentCategory.InstantKill:
                 interactable.TakePitDamage(99999f, PitDamageType.InstantKill);
-                Debug.Log("[PitDamage] " + interactable.GetGameObject().name + " hit InstantKill content: " + fillType.contentName);
                 break;
 
             case PitContentType.ContentCategory.Liquid:
@@ -274,8 +244,6 @@ public class PitDamageController : MonoBehaviour
                         float damageThisTick = fillType.damagePerSecond * fillType.damageInterval;
                         interactable.TakePitDamage(damageThisTick, PitDamageType.DamageOverTime);
                         data.lastDamageTick = Time.time;
-
-                        Debug.Log("[PitDamage] " + interactable.GetGameObject().name + " took " + damageThisTick.ToString("F1") + " DoT from " + fillType.contentName);
                     }
                 }
                 break;
@@ -296,12 +264,6 @@ public class PitDamageController : MonoBehaviour
         {
             float damage = (fallHeight - immunityThreshold) * damageMultiplier;
             interactable.TakePitDamage(damage, PitDamageType.Fall);
-
-            Debug.Log("[PitDamage] " + interactable.GetGameObject().name + " took " + damage.ToString("F1") + " fall damage (fell " + fallHeight.ToString("F1") + "m)");
-        }
-        else
-        {
-            Debug.Log("[PitDamage] " + interactable.GetGameObject().name + " fell " + fallHeight.ToString("F1") + "m (below " + immunityThreshold.ToString("F1") + "m threshold, no damage)");
         }
     }
 

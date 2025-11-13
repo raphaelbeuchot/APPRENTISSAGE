@@ -6,7 +6,7 @@ using Unity.AI.Navigation;
 public class PitZone : MonoBehaviour
 {
     [Header("Zone Identity")]
-    public int zoneID = -1; // NOUVEAU : ID unique de cette zone
+    public int zoneID = -1;
 
     [Header("Grid Data")]
     public PitGridData gridData;
@@ -30,7 +30,6 @@ public class PitZone : MonoBehaviour
     public float fillHeightPercent = 0.5f;
     public GameObject contentInstance;
 
-    // NOUVELLE METHODE : Initialise le zoneID
     public void Initialize(int id, PitGridData data)
     {
         zoneID = id;
@@ -38,7 +37,6 @@ public class PitZone : MonoBehaviour
         gameObject.name = "PitZone_" + id;
     }
 
-    // NOUVELLE METHODE : Retourne uniquement les cellules de CETTE zone
     private Dictionary<Vector2Int, float> GetOwnedCells()
     {
         if (gridData == null || zoneID == -1)
@@ -46,12 +44,10 @@ public class PitZone : MonoBehaviour
             return new Dictionary<Vector2Int, float>();
         }
 
-        // FORCE le reload du gridData si necessaire (fix pour l'ordre de chargement)
         Dictionary<Vector2Int, float> cells = gridData.GetCellsForZone(zoneID);
 
         if (cells.Count == 0 && gridData.GetAllCells().Count > 0)
         {
-            Debug.LogWarning("GridData seems not loaded properly, forcing OnEnable...");
             gridData.OnEnable();
             cells = gridData.GetCellsForZone(zoneID);
         }
@@ -83,7 +79,6 @@ public class PitZone : MonoBehaviour
 
         SetupMeshObjects();
 
-        // MODIFICATION : on passe les cellules de cette zone uniquement
         Dictionary<Vector2Int, float> ownedCells = GetOwnedCells();
 
         if (ownedCells.Count == 0)
@@ -110,7 +105,6 @@ public class PitZone : MonoBehaviour
 
     private void SetupMeshObjects()
     {
-        // Cree ou trouve le child object pour les walls
         Transform wallsTransform = transform.Find("Walls");
         if (wallsTransform == null)
         {
@@ -131,7 +125,6 @@ public class PitZone : MonoBehaviour
                 wallsRenderer = wallsTransform.GetComponent<MeshRenderer>();
         }
 
-        // Cree ou trouve le child object pour les floors
         Transform floorTransform = transform.Find("Floor");
         if (floorTransform == null)
         {
@@ -152,7 +145,6 @@ public class PitZone : MonoBehaviour
                 floorRenderer = floorTransform.GetComponent<MeshRenderer>();
         }
 
-        // Assigne les materiaux par defaut si pas deja assignes
         if (wallMaterial != null && wallsRenderer != null)
         {
             wallsRenderer.sharedMaterial = wallMaterial;
@@ -195,20 +187,7 @@ public class PitZone : MonoBehaviour
 
         ClearFillContent();
 
-        // DEBUG
-        Debug.Log("=== SPAWN FILL CONTENT DEBUG ===");
-        Debug.Log("Zone ID: " + zoneID);
-        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells();
-        Debug.Log("Owned cells count: " + ownedCells.Count);
-
-        foreach (var cell in ownedCells)
-        {
-            Debug.Log("  Cell: " + cell.Key + " depth: " + cell.Value);
-        }
-        // FIN DEBUG
-
         float maxDepth = GetMaxDepth();
-        Debug.Log("Max depth: " + maxDepth); // DEBUG
 
         if (maxDepth >= 0)
         {
@@ -219,8 +198,6 @@ public class PitZone : MonoBehaviour
         float fillHeight = maxDepth * fillHeightPercent;
         Vector3 fillPosition = GetFillPosition(fillHeight);
 
-        Debug.Log("Fill position: " + fillPosition); // DEBUG
-
         contentInstance = Instantiate(fillType.contentPrefab, transform);
         contentInstance.name = "Content_" + fillType.contentName;
         contentInstance.transform.position = fillPosition;
@@ -229,6 +206,7 @@ public class PitZone : MonoBehaviour
 
         Debug.Log("PitZone: Spawned fill content: " + fillType.contentName + " at height " + fillHeight);
     }
+
     public void ClearFillContent()
     {
         if (contentInstance != null)
@@ -250,7 +228,7 @@ public class PitZone : MonoBehaviour
         if (gridData == null) return 0f;
 
         float maxDepth = 0f;
-        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells(); // MODIFICATION
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells();
 
         foreach (var kvp in ownedCells)
         {
@@ -267,7 +245,7 @@ public class PitZone : MonoBehaviour
     {
         if (gridData == null) return Vector3.zero;
 
-        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells(); // MODIFICATION
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells();
 
         if (ownedCells.Count == 0) return Vector3.zero;
 
@@ -298,7 +276,7 @@ public class PitZone : MonoBehaviour
     {
         if (contentInstance == null || gridData == null) return;
 
-        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells(); // MODIFICATION
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells();
 
         Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
         Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
@@ -360,7 +338,7 @@ public class PitZone : MonoBehaviour
         marginParent.transform.SetParent(transform);
         marginParent.transform.localPosition = Vector3.zero;
 
-        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells(); // MODIFICATION
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells();
 
         if (ownedCells.Count == 0)
         {
