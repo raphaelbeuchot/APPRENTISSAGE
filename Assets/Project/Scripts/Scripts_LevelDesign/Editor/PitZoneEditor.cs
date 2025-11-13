@@ -173,7 +173,7 @@ public class PitZoneEditor : Editor
         if (GUILayout.Button("Create NavMesh Margin", GUILayout.Height(25)))
         {
             Undo.RecordObject(pitZone, "Create NavMesh Margin");
-            pitZone.CreateNavMeshMargin(0.5f);
+            pitZone.CreateNavMeshMargin();
             EditorUtility.SetDirty(pitZone);
             SceneView.RepaintAll();
         }

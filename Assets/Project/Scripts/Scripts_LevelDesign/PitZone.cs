@@ -11,6 +11,9 @@ public class PitZone : MonoBehaviour
     [Header("Grid Data")]
     public PitGridData gridData;
 
+    [Header("NavMesh Settings")]
+    public float navMeshMarginWidth = 0.05f;
+
     [Header("Mesh Settings")]
     public float floorThickness = 0.2f;
 
@@ -424,7 +427,12 @@ public class PitZone : MonoBehaviour
         Debug.Log("PitZone: Damage system setup complete");
     }
 
-    public void CreateNavMeshMargin(float marginWidth = 0.5f)
+    public void CreateNavMeshMargin()
+    {
+        CreateNavMeshMargin(navMeshMarginWidth); // Utilise la variable de l'Inspector
+    }
+
+    public void CreateNavMeshMargin(float marginWidth)
     {
         if (gridData == null)
         {
@@ -451,7 +459,7 @@ public class PitZone : MonoBehaviour
         }
 
         float cellSize = gridData.gridCellSize;
-        float thickness = 0.01f;
+        float thickness = 0.1f;
 
         // Pour chaque cellule, verifie les 4 directions
         foreach (var kvp in ownedCells)
