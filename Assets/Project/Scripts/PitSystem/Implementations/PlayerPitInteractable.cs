@@ -16,6 +16,9 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     [Tooltip("Tolerance pour declencher la flottaison (en metres)")]
     public float floatTriggerThreshold = 0.1f;
 
+    [Tooltip("Distance du bord pour sortir de l'eau (en metres)")]
+    public float waterExitDistance = 0.5f;
+
     // References
     private PlayerHealth playerHealth;
     private PlayerPhysicsMovement playerMovement;
@@ -27,6 +30,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     private bool isInWater = false;
     private bool isFloating = false;
     private PitZone currentPitZone;
+    private PitFill currentPitFill;
     private float waterSurfaceY;
     private float targetFloatY;
 
@@ -45,12 +49,10 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
 
     void FixedUpdate()
     {
-        if (!isInWater || currentPitZone == null) return;
+        if (!isInWater || currentPitFill == null) return;
 
         // Calcule la surface de l'eau
-        float maxDepth = currentPitZone.GetMaxDepth();
-        float fillHeightAbsolute = Mathf.Abs(maxDepth * currentPitZone.fillHeightPercent);
-        waterSurfaceY = maxDepth + fillHeightAbsolute;
+        waterSurfaceY = currentPitFill.GetFillSurfaceHeight();
 
         // Position cible de flottaison
         targetFloatY = waterSurfaceY - swimDepth;
@@ -70,6 +72,15 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         }
     }
 
+    void Update()
+    {
+        // Check sortie de l'eau avec Space
+        if (isInWater && isFloating && Input.GetKeyDown(KeyCode.Space))
+        {
+            TryExitWater();
+        }
+    }
+
     private void StartFloating()
     {
         isFloating = true;
@@ -84,21 +95,21 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
             rb.useGravity = false;
         }
 
-        // APPLIQUE LE SLOW MAINTENANT
-        if (playerMovement != null && currentPitZone != null && currentPitZone.fillType != null)
+        // Applique le slow
+        if (playerMovement != null && currentPitFill != null && currentPitFill.fillType != null)
         {
-            playerMovement.ApplyWaterSlowdown(currentPitZone.fillType.movementSpeedMultiplier);
+            playerMovement.ApplyWaterSlowdown(currentPitFill.fillType.swimSpeedMultiplier);
             Debug.Log("[PlayerPit] Started floating + slow applied");
         }
     }
 
-    private void EnterWater(PitContentType waterType)
+    private void EnterWater(PitFill pitFill)
     {
         if (isInWater) return;
 
         isInWater = true;
+        currentPitFill = pitFill;
 
-        // NE PAS appliquer le slow ici, on attend la flottaison
         Debug.Log("[PlayerPit] Player in water - waiting for swim depth");
     }
 
@@ -106,15 +117,75 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     {
         if (rb == null) return;
 
-        // TELEPORTE le player a la position cible
+        // Teleporte le player a la position cible
         Vector3 pos = transform.position;
         pos.y = targetFloatY;
         transform.position = pos;
 
-        // STOP toute velocite verticale
+        // Stop toute velocite verticale
         Vector3 vel = rb.linearVelocity;
         vel.y = 0f;
         rb.linearVelocity = vel;
+    }
+
+    private void TryExitWater()
+    {
+        if (currentPitZone == null) return;
+
+        // Check si le player est a moins de waterExitDistance du bord du pit
+        if (IsNearPitEdge(waterExitDistance))
+        {
+            ExitWater();
+            Debug.Log("[PlayerPit] Player exited water manually (Space at edge)");
+        }
+        else
+        {
+            Debug.Log("[PlayerPit] Too far from edge to exit water (need < " + waterExitDistance + "m)");
+        }
+    }
+
+    private bool IsNearPitEdge(float distance)
+    {
+        if (currentPitZone == null || currentPitZone.gridData == null) return false;
+
+        // Position player dans la grille
+        Vector2Int playerCell = currentPitZone.gridData.WorldToCell(transform.position);
+
+        // Check les 4 directions pour trouver un bord
+        Vector2Int[] neighbors = new Vector2Int[]
+        {
+            playerCell + new Vector2Int(0, 1),  // Nord
+            playerCell + new Vector2Int(0, -1), // Sud
+            playerCell + new Vector2Int(1, 0),  // Est
+            playerCell + new Vector2Int(-1, 0)  // Ouest
+        };
+
+        var ownedCells = currentPitZone.gridData.GetCellsForZone(currentPitZone.zoneID);
+
+        foreach (var neighbor in neighbors)
+        {
+            // Si le voisin n'est pas dans le pit, c'est un bord
+            if (!ownedCells.ContainsKey(neighbor))
+            {
+                // Calcule distance au bord de cette cellule
+                Vector3 edgePos = currentPitZone.gridData.CellToWorld(playerCell);
+                float cellSize = currentPitZone.gridData.gridCellSize;
+
+                // Position du bord au centre de la cellule voisine
+                Vector3 neighborPos = currentPitZone.gridData.CellToWorld(neighbor);
+                Vector3 edgeCenter = (edgePos + neighborPos) * 0.5f;
+
+                float distToEdge = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z),
+                                                     new Vector3(edgeCenter.x, 0, edgeCenter.z));
+
+                if (distToEdge <= distance)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public void OnEnterPit(PitZone pitZone)
@@ -125,10 +196,11 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         Debug.Log("[PlayerPit] Player entered pit: " + pitZone.name);
 
         // Check si c'est de l'eau
-        if (pitZone.fillType != null &&
-            pitZone.fillType.category == PitContentType.ContentCategory.Liquid)
+        PitFill pitFill = pitZone.GetComponent<PitFill>();
+        if (pitFill != null && pitFill.fillType != null &&
+            pitFill.fillType.category == PitContentType.ContentCategory.Water)
         {
-            EnterWater(pitZone.fillType);
+            EnterWater(pitFill);
         }
     }
 
@@ -142,6 +214,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         }
 
         currentPitZone = null;
+        currentPitFill = null;
         Debug.Log("[PlayerPit] Player exited pit");
     }
 
@@ -172,8 +245,6 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     {
         return gameObject;
     }
-
-    
 
     private void ExitWater()
     {

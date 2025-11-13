@@ -1,13 +1,10 @@
 using UnityEngine;
 
-/// <summary>
-/// Implémentation de IPitInteractable pour les ennemis
-/// </summary>
 [RequireComponent(typeof(EnemyHealth))]
 public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
 {
     [Header("Pit Settings")]
-    [Tooltip("Multiplicateur de dégâts de fosse (1.0 = normal)")]
+    [Tooltip("Multiplicateur de degats de fosse (1.0 = normal)")]
     public float pitDamageMultiplier = 1f;
 
     [Header("Character Dimensions")]
@@ -29,7 +26,6 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         enemyAI = GetComponent<EnemyAI>();
         capsuleCollider = GetComponent<CapsuleCollider>();
 
-        // Auto-detect character center height si on a un collider
         if (capsuleCollider != null)
         {
             characterCenterHeight = capsuleCollider.height / 2f;
@@ -40,16 +36,16 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
     {
         isInPit = true;
         currentPitZone = pitZone;
-
         Debug.Log($"[EnemyPit] {name} entered pit: {pitZone.name}");
 
-        // Désactive l'AI si le fill type le demande
-        if (pitZone.fillType != null && pitZone.fillType.disableEnemyAI)
+        // Desactive l'AI si le fill type le demande
+        PitFill pitFill = pitZone.GetComponent<PitFill>();
+        if (pitFill != null && pitFill.fillType != null && pitFill.fillType.disableEnemyAI)
         {
             if (enemyAI != null)
             {
                 enemyAI.enabled = false;
-                Debug.Log($"[EnemyPit] {name} AI disabled in {pitZone.fillType.contentName}");
+                Debug.Log($"[EnemyPit] {name} AI disabled in {pitFill.fillType.contentName}");
             }
         }
     }
@@ -58,7 +54,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
     {
         isInPit = false;
 
-        // Réactive l'AI
+        // Reactive l'AI
         if (enemyAI != null && !enemyHealth.IsDead())
         {
             enemyAI.enabled = true;
@@ -75,7 +71,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
 
         float finalDamage = damage * pitDamageMultiplier;
 
-        // Applique les dégâts via le système existant
+        // Applique les degats via le systeme existant
         enemyHealth.TakeMeleeDamage(finalDamage);
 
         string typeStr = damageType == PitDamageType.Fall ? "fall" :
@@ -85,14 +81,12 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
 
     public bool CanTakePitDamage()
     {
-        // Ne prend pas de dégâts si mort
         if (enemyHealth == null) return false;
         return !enemyHealth.IsDead();
     }
 
     public Vector3 GetCharacterCenter()
     {
-        // Retourne la position du centre du personnage
         return transform.position + Vector3.up * characterCenterHeight;
     }
 
@@ -101,7 +95,6 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         return gameObject;
     }
 
-    // Getter pour savoir si l'ennemi est dans une fosse
     public bool IsInPit() => isInPit;
     public PitZone GetCurrentPitZone() => currentPitZone;
 }
