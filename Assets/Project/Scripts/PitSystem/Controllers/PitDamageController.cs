@@ -46,17 +46,6 @@ public class PitDamageController : MonoBehaviour
 
     public void UpdateTriggerBounds()
     {
-        if (triggerCollider == null)
-        {
-            triggerCollider = GetComponent<BoxCollider>();
-            if (triggerCollider == null)
-            {
-                Debug.LogError("No BoxCollider found! Adding one...");
-                triggerCollider = gameObject.AddComponent<BoxCollider>();
-                triggerCollider.isTrigger = true;
-            }
-        }
-
         if (pitZone == null)
         {
             Debug.LogError("pitZone is NULL!");
@@ -83,42 +72,33 @@ public class PitDamageController : MonoBehaviour
             return;
         }
 
-        Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
-        Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
-        float maxDepth = pitZone.GetMaxDepth();
-
-        foreach (var kvp in ownedCells)
+        // Supprime les anciens colliders
+        BoxCollider[] oldColliders = GetComponents<BoxCollider>();
+        foreach (BoxCollider col in oldColliders)
         {
-            if (kvp.Key.x < min.x) min.x = kvp.Key.x;
-            if (kvp.Key.y < min.y) min.y = kvp.Key.y;
-            if (kvp.Key.x > max.x) max.x = kvp.Key.x;
-            if (kvp.Key.y > max.y) max.y = kvp.Key.y;
+            DestroyImmediate(col);
         }
 
         float cellSize = pitZone.gridData.gridCellSize;
-        float sizeX = (max.x - min.x + 1) * cellSize;
-        float sizeZ = (max.y - min.y + 1) * cellSize;
+        float maxDepth = pitZone.GetMaxDepth();
         float sizeY = Mathf.Abs(maxDepth);
 
-        float centerWorldX = ((min.x + max.x) * 0.5f * cellSize) + (cellSize * 0.5f);
-        float centerWorldZ = ((min.y + max.y) * 0.5f * cellSize) + (cellSize * 0.5f);
-
-        transform.localPosition = new Vector3(
-            centerWorldX,
-            maxDepth / 2f,
-            centerWorldZ
-        );
-
-        if (triggerCollider == null)
+        // Cree un BoxCollider par cellule
+        foreach (var kvp in ownedCells)
         {
-            Debug.LogError("triggerCollider is NULL!");
-            return;
+            Vector2Int cellPos = kvp.Key;
+            Vector3 cellWorldPos = pitZone.gridData.CellToWorld(cellPos);
+
+            BoxCollider cellCollider = gameObject.AddComponent<BoxCollider>();
+            cellCollider.isTrigger = true;
+
+            // Position relative au DamageController
+            Vector3 localPos = cellWorldPos + new Vector3(cellSize * 0.5f, maxDepth * 0.5f, cellSize * 0.5f);
+            cellCollider.center = transform.InverseTransformPoint(localPos);
+            cellCollider.size = new Vector3(cellSize, sizeY, cellSize);
         }
 
-        triggerCollider.size = new Vector3(sizeX, sizeY, sizeZ);
-        triggerCollider.center = Vector3.zero;
-        triggerCollider.isTrigger = true;
-
+        // Met a jour les hauteurs
         bottomHeight = maxDepth + bottomZoneHeight;
 
         if (pitZone.fillType != null && pitZone.contentInstance != null)
@@ -131,7 +111,26 @@ public class PitDamageController : MonoBehaviour
             fillSurfaceHeight = maxDepth;
         }
 
+        // Position le DamageController au centre du pit pour simplifier
+        Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
+        Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
+
+        foreach (var kvp in ownedCells)
+        {
+            if (kvp.Key.x < min.x) min.x = kvp.Key.x;
+            if (kvp.Key.y < min.y) min.y = kvp.Key.y;
+            if (kvp.Key.x > max.x) max.x = kvp.Key.x;
+            if (kvp.Key.y > max.y) max.y = kvp.Key.y;
+        }
+
+        float centerWorldX = ((min.x + max.x) * 0.5f * cellSize) + (cellSize * 0.5f);
+        float centerWorldZ = ((min.y + max.y) * 0.5f * cellSize) + (cellSize * 0.5f);
+
+        transform.localPosition = new Vector3(centerWorldX, 0, centerWorldZ);
+
         SetupNavMeshObstacle();
+
+        Debug.Log("DamageController: Created " + ownedCells.Count + " BoxColliders for pit shape");
     }
 
     private void SetupNavMeshObstacle()
@@ -146,11 +145,28 @@ public class PitDamageController : MonoBehaviour
         obstacle.carving = true;
         obstacle.shape = NavMeshObstacleShape.Box;
 
-        if (triggerCollider != null)
+        // Calcule la taille englobante pour le NavMeshObstacle
+        Dictionary<Vector2Int, float> ownedCells = pitZone.gridData.GetCellsForZone(pitZone.zoneID);
+
+        Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
+        Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
+
+        foreach (var kvp in ownedCells)
         {
-            obstacle.size = triggerCollider.size;
-            obstacle.center = triggerCollider.center;
+            if (kvp.Key.x < min.x) min.x = kvp.Key.x;
+            if (kvp.Key.y < min.y) min.y = kvp.Key.y;
+            if (kvp.Key.x > max.x) max.x = kvp.Key.x;
+            if (kvp.Key.y > max.y) max.y = kvp.Key.y;
         }
+
+        float cellSize = pitZone.gridData.gridCellSize;
+        float sizeX = (max.x - min.x + 1) * cellSize;
+        float sizeZ = (max.y - min.y + 1) * cellSize;
+        float maxDepth = pitZone.GetMaxDepth();
+        float sizeY = Mathf.Abs(maxDepth);
+
+        obstacle.size = new Vector3(sizeX, sizeY, sizeZ);
+        obstacle.center = new Vector3(0, maxDepth * 0.5f, 0);
     }
 
     void OnTriggerEnter(Collider other)
@@ -270,11 +286,15 @@ public class PitDamageController : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         if (!showDebugGizmos) return;
-        if (triggerCollider == null) return;
 
-        Gizmos.color = new Color(1f, 0f, 0f, 0.2f);
-        Gizmos.matrix = transform.localToWorldMatrix;
-        Gizmos.DrawCube(triggerCollider.center, triggerCollider.size);
+        BoxCollider[] colliders = GetComponents<BoxCollider>();
+
+        foreach (BoxCollider col in colliders)
+        {
+            Gizmos.color = new Color(1f, 0f, 0f, 0.2f);
+            Gizmos.matrix = transform.localToWorldMatrix;
+            Gizmos.DrawCube(col.center, col.size);
+        }
 
         if (pitZone != null && pitZone.fillType != null)
         {
@@ -282,13 +302,13 @@ public class PitDamageController : MonoBehaviour
             Gizmos.matrix = Matrix4x4.identity;
             Vector3 center = transform.position;
             center.y = fillSurfaceHeight;
-            Gizmos.DrawWireCube(center, new Vector3(triggerCollider.size.x, 0.1f, triggerCollider.size.z));
-        }
 
-        Gizmos.color = Color.yellow;
-        Gizmos.matrix = Matrix4x4.identity;
-        Vector3 bottomCenter = transform.position;
-        bottomCenter.y = bottomHeight;
-        Gizmos.DrawWireCube(bottomCenter, new Vector3(triggerCollider.size.x, 0.1f, triggerCollider.size.z));
+            // Approximation pour l'affichage
+            NavMeshObstacle obstacle = GetComponent<NavMeshObstacle>();
+            if (obstacle != null)
+            {
+                Gizmos.DrawWireCube(center, new Vector3(obstacle.size.x, 0.1f, obstacle.size.z));
+            }
+        }
     }
 }

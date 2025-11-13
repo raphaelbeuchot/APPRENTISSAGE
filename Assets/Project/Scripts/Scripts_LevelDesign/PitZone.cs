@@ -179,12 +179,6 @@ public class PitZone : MonoBehaviour
             return;
         }
 
-        if (fillType.contentPrefab == null)
-        {
-            Debug.LogWarning("PitZone: Fill type has no prefab assigned!");
-            return;
-        }
-
         ClearFillContent();
 
         float maxDepth = GetMaxDepth();
@@ -195,16 +189,126 @@ public class PitZone : MonoBehaviour
             return;
         }
 
-        float fillHeight = maxDepth * fillHeightPercent;
-        Vector3 fillPosition = GetFillPosition(fillHeight);
+        // Cree le parent pour le fill content
+        contentInstance = new GameObject("Content_" + fillType.contentName);
+        contentInstance.transform.SetParent(transform);
+        contentInstance.transform.localPosition = Vector3.zero;
 
-        contentInstance = Instantiate(fillType.contentPrefab, transform);
-        contentInstance.name = "Content_" + fillType.contentName;
-        contentInstance.transform.position = fillPosition;
+        // Genere le mesh procedurale qui suit les cellules
+        Mesh fillMesh = GenerateFillMesh(maxDepth * fillHeightPercent);
 
-        ScaleFillContent(fillHeight);
+        if (fillMesh != null)
+        {
+            MeshFilter meshFilter = contentInstance.AddComponent<MeshFilter>();
+            MeshRenderer meshRenderer = contentInstance.AddComponent<MeshRenderer>();
 
-        Debug.Log("PitZone: Spawned fill content: " + fillType.contentName + " at height " + fillHeight);
+            meshFilter.sharedMesh = fillMesh;
+
+            // Assigne le materiau du prefab si disponible
+            if (fillType.contentPrefab != null)
+            {
+                MeshRenderer prefabRenderer = fillType.contentPrefab.GetComponent<MeshRenderer>();
+                if (prefabRenderer != null)
+                {
+                    meshRenderer.sharedMaterial = prefabRenderer.sharedMaterial;
+                }
+            }
+        }
+
+        Debug.Log("PitZone: Spawned fill content: " + fillType.contentName);
+    }
+
+    private Mesh GenerateFillMesh(float fillHeight)
+    {
+        if (gridData == null) return null;
+
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells();
+        if (ownedCells.Count == 0) return null;
+
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> triangles = new List<int>();
+        List<Vector2> uvs = new List<Vector2>();
+
+        float cellSize = gridData.gridCellSize;
+        float fillHeightAbsolute = Mathf.Abs(fillHeight);
+        float fillBottom = GetMaxDepth();
+        float fillTop = fillBottom + fillHeightAbsolute;
+
+        foreach (var kvp in ownedCells)
+        {
+            Vector2Int cellPos = kvp.Key;
+            Vector3 cellWorldPos = gridData.CellToWorld(cellPos);
+
+            // Genere un cube pour cette cellule
+            AddFillCube(vertices, triangles, uvs, cellWorldPos, cellSize, fillBottom, fillTop);
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.name = "FillContent";
+        mesh.vertices = vertices.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.uv = uvs.ToArray();
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        return mesh;
+    }
+
+    private void AddFillCube(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
+                             Vector3 cellWorldPos, float cellSize, float bottom, float top)
+    {
+        int startIndex = vertices.Count;
+
+        // 8 vertices du cube
+        Vector3 v0 = cellWorldPos + new Vector3(0, bottom, 0);
+        Vector3 v1 = cellWorldPos + new Vector3(cellSize, bottom, 0);
+        Vector3 v2 = cellWorldPos + new Vector3(cellSize, bottom, cellSize);
+        Vector3 v3 = cellWorldPos + new Vector3(0, bottom, cellSize);
+        Vector3 v4 = cellWorldPos + new Vector3(0, top, 0);
+        Vector3 v5 = cellWorldPos + new Vector3(cellSize, top, 0);
+        Vector3 v6 = cellWorldPos + new Vector3(cellSize, top, cellSize);
+        Vector3 v7 = cellWorldPos + new Vector3(0, top, cellSize);
+
+        // Bottom face
+        vertices.Add(v0); vertices.Add(v1); vertices.Add(v2); vertices.Add(v3);
+        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(1, 0)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(0, 1));
+        AddQuad(triangles, startIndex);
+
+        // Top face
+        vertices.Add(v7); vertices.Add(v6); vertices.Add(v5); vertices.Add(v4);
+        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(1, 0)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(0, 1));
+        AddQuad(triangles, startIndex + 4);
+
+        // Front face
+        vertices.Add(v0); vertices.Add(v4); vertices.Add(v5); vertices.Add(v1);
+        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(0, 1)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(1, 0));
+        AddQuad(triangles, startIndex + 8);
+
+        // Back face
+        vertices.Add(v3); vertices.Add(v7); vertices.Add(v6); vertices.Add(v2);
+        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(0, 1)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(1, 0));
+        AddQuad(triangles, startIndex + 12);
+
+        // Left face
+        vertices.Add(v0); vertices.Add(v3); vertices.Add(v7); vertices.Add(v4);
+        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(1, 0)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(0, 1));
+        AddQuad(triangles, startIndex + 16);
+
+        // Right face
+        vertices.Add(v1); vertices.Add(v5); vertices.Add(v6); vertices.Add(v2);
+        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(0, 1)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(1, 0));
+        AddQuad(triangles, startIndex + 20);
+    }
+
+    private void AddQuad(List<int> triangles, int startIndex)
+    {
+        triangles.Add(startIndex);
+        triangles.Add(startIndex + 1);
+        triangles.Add(startIndex + 2);
+
+        triangles.Add(startIndex);
+        triangles.Add(startIndex + 2);
+        triangles.Add(startIndex + 3);
     }
 
     public void ClearFillContent()
@@ -346,58 +450,89 @@ public class PitZone : MonoBehaviour
             return;
         }
 
-        Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
-        Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
-
-        foreach (var kvp in ownedCells)
-        {
-            if (kvp.Key.x < min.x) min.x = kvp.Key.x;
-            if (kvp.Key.y < min.y) min.y = kvp.Key.y;
-            if (kvp.Key.x > max.x) max.x = kvp.Key.x;
-            if (kvp.Key.y > max.y) max.y = kvp.Key.y;
-        }
-
         float cellSize = gridData.gridCellSize;
-        float pitSizeX = (max.x - min.x + 1) * cellSize;
-        float pitSizeZ = (max.y - min.y + 1) * cellSize;
-        float centerX = ((min.x + max.x) * 0.5f * cellSize) + (cellSize * 0.5f);
-        float centerZ = ((min.y + max.y) * 0.5f * cellSize) + (cellSize * 0.5f);
-
         float thickness = 0.01f;
 
-        CreateMarginSide(marginParent, "North",
-            new Vector3(centerX, 0f, centerZ + pitSizeZ / 2f - marginWidth / 2f),
-            new Vector3(pitSizeX, thickness, marginWidth));
+        // Pour chaque cellule, verifie les 4 directions
+        foreach (var kvp in ownedCells)
+        {
+            Vector2Int cellPos = kvp.Key;
+            Vector3 cellWorldPos = gridData.CellToWorld(cellPos);
 
-        CreateMarginSide(marginParent, "South",
-            new Vector3(centerX, 0f, centerZ - pitSizeZ / 2f + marginWidth / 2f),
-            new Vector3(pitSizeX, thickness, marginWidth));
+            // Nord (Z+)
+            if (!ownedCells.ContainsKey(cellPos + new Vector2Int(0, 1)))
+            {
+                CreateMarginSegment(marginParent, cellWorldPos, cellSize, thickness, marginWidth, "North");
+            }
 
-        CreateMarginSide(marginParent, "East",
-            new Vector3(centerX + pitSizeX / 2f - marginWidth / 2f, 0f, centerZ),
-            new Vector3(marginWidth, thickness, pitSizeZ - 2f * marginWidth));
+            // Sud (Z-)
+            if (!ownedCells.ContainsKey(cellPos + new Vector2Int(0, -1)))
+            {
+                CreateMarginSegment(marginParent, cellWorldPos, cellSize, thickness, marginWidth, "South");
+            }
 
-        CreateMarginSide(marginParent, "West",
-            new Vector3(centerX - pitSizeX / 2f + marginWidth / 2f, 0f, centerZ),
-            new Vector3(marginWidth, thickness, pitSizeZ - 2f * marginWidth));
+            // Est (X+)
+            if (!ownedCells.ContainsKey(cellPos + new Vector2Int(1, 0)))
+            {
+                CreateMarginSegment(marginParent, cellWorldPos, cellSize, thickness, marginWidth, "East");
+            }
 
-        Debug.Log("NavMeshMargin created: frame around pit with " + marginWidth + "m width");
+            // Ouest (X-)
+            if (!ownedCells.ContainsKey(cellPos + new Vector2Int(-1, 0)))
+            {
+                CreateMarginSegment(marginParent, cellWorldPos, cellSize, thickness, marginWidth, "West");
+            }
+        }
+
+        Debug.Log("NavMeshMargin created: " + marginParent.transform.childCount + " segments following pit shape");
     }
 
-    private void CreateMarginSide(GameObject parent, string name, Vector3 position, Vector3 size)
+    private void CreateMarginSegment(GameObject parent, Vector3 cellWorldPos, float cellSize,
+                                  float thickness, float marginWidth, string direction)
     {
-        GameObject side = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        side.name = "Margin_" + name;
-        side.transform.SetParent(parent.transform);
-        side.layer = LayerMask.NameToLayer("Ground");
+        GameObject segment = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        segment.name = "Margin_" + direction;
+        segment.transform.SetParent(parent.transform);
+        segment.layer = LayerMask.NameToLayer("Ground");
 
-        side.transform.localPosition = position;
-        side.transform.localScale = size;
+        Vector3 position = Vector3.zero;
+        Vector3 scale = Vector3.zero;
 
-        Collider col = side.GetComponent<Collider>();
+        switch (direction)
+        {
+            case "North":
+                // INVERSE : au lieu de +cellSize, on met -marginWidth/2 (interieur)
+                position = cellWorldPos + new Vector3(cellSize * 0.5f, 0f, cellSize - marginWidth * 0.5f);
+                scale = new Vector3(cellSize, thickness, marginWidth);
+                break;
+
+            case "South":
+                // INVERSE : au lieu de -marginWidth/2, on met +marginWidth/2 (interieur)
+                position = cellWorldPos + new Vector3(cellSize * 0.5f, 0f, marginWidth * 0.5f);
+                scale = new Vector3(cellSize, thickness, marginWidth);
+                break;
+
+            case "East":
+                // INVERSE : au lieu de +cellSize, on met -marginWidth/2 (interieur)
+                position = cellWorldPos + new Vector3(cellSize - marginWidth * 0.5f, 0f, cellSize * 0.5f);
+                scale = new Vector3(marginWidth, thickness, cellSize);
+                break;
+
+            case "West":
+                // INVERSE : au lieu de -marginWidth/2, on met +marginWidth/2 (interieur)
+                position = cellWorldPos + new Vector3(marginWidth * 0.5f, 0f, cellSize * 0.5f);
+                scale = new Vector3(marginWidth, thickness, cellSize);
+                break;
+        }
+
+        segment.transform.position = position;
+        segment.transform.localScale = scale;
+
+        Collider col = segment.GetComponent<Collider>();
         if (col != null)
         {
             DestroyImmediate(col);
         }
     }
+    
 }
