@@ -181,7 +181,10 @@ public class PitFillEditor : EditorWindow
                 selectedPitZone.gridData.GetCellsForZone(selectedPitZone.zoneID).Count : 0;
             EditorGUILayout.LabelField("Cell Count", cellCount.ToString());
 
-            PitFill pitFill = selectedPitZone.GetComponent<PitFill>();
+            // CHANGEMENT: Cherche le PitFill dans les enfants
+            Transform fillTransform = selectedPitZone.transform.Find("FillContent");
+            PitFill pitFill = fillTransform != null ? fillTransform.GetComponent<PitFill>() : null;
+
             if (pitFill != null)
             {
                 EditorGUILayout.LabelField("Fill Status", "Active", EditorStyles.boldLabel);
@@ -203,7 +206,10 @@ public class PitFillEditor : EditorWindow
     {
         if (selectedPitZone == null) return;
 
-        PitFill pitFill = selectedPitZone.GetComponent<PitFill>();
+        // CHANGEMENT: Cherche le PitFill dans les enfants
+        Transform fillTransform = selectedPitZone.transform.Find("FillContent");
+        PitFill pitFill = fillTransform != null ? fillTransform.GetComponent<PitFill>() : null;
+
         if (pitFill != null)
         {
             selectedFillType = pitFill.fillType;
@@ -225,11 +231,28 @@ public class PitFillEditor : EditorWindow
             return;
         }
 
-        PitFill pitFill = selectedPitZone.GetComponent<PitFill>();
+        // CHANGEMENT: Crée ou trouve le GameObject FillContent
+        Transform fillTransform = selectedPitZone.transform.Find("FillContent");
+        GameObject fillObject;
 
+        if (fillTransform == null)
+        {
+            fillObject = new GameObject("FillContent");
+            fillObject.transform.SetParent(selectedPitZone.transform);
+            fillObject.transform.localPosition = Vector3.zero;
+            fillObject.transform.localRotation = Quaternion.identity;
+            Undo.RegisterCreatedObjectUndo(fillObject, "Create Fill Content");
+        }
+        else
+        {
+            fillObject = fillTransform.gameObject;
+        }
+
+        // Ajoute ou récupère le component PitFill
+        PitFill pitFill = fillObject.GetComponent<PitFill>();
         if (pitFill == null)
         {
-            pitFill = selectedPitZone.gameObject.AddComponent<PitFill>();
+            pitFill = fillObject.AddComponent<PitFill>();
             Undo.RegisterCreatedObjectUndo(pitFill, "Add PitFill Component");
         }
 
@@ -251,15 +274,13 @@ public class PitFillEditor : EditorWindow
     {
         if (selectedPitZone == null) return;
 
-        PitFill pitFill = selectedPitZone.GetComponent<PitFill>();
+        // CHANGEMENT: Cherche le FillContent dans les enfants
+        Transform fillTransform = selectedPitZone.transform.Find("FillContent");
 
-        if (pitFill != null)
+        if (fillTransform != null)
         {
-            Undo.RecordObject(pitFill, "Clear Fill Content");
-            pitFill.ClearFillContent();
-            EditorUtility.SetDirty(pitFill);
+            Undo.DestroyObjectImmediate(fillTransform.gameObject);
+            Debug.Log("Fill content cleared for: " + selectedPitZone.name);
         }
-
-        Debug.Log("Fill content cleared for: " + selectedPitZone.name);
     }
 }

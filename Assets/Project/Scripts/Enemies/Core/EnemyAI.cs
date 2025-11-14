@@ -409,6 +409,11 @@ public class EnemyAI : MonoBehaviour
         if (value) currentState = State.Dead;
     }
 
+    public NavMeshAgent GetNavMeshAgent()
+    {
+        return agent;
+    }
+
     protected virtual void OnDrawGizmosSelected()
     {
         if (stats == null) return;
