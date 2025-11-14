@@ -11,7 +11,7 @@ public class PitZone : MonoBehaviour
     public PitGridData gridData;
 
     [Header("NavMesh Settings")]
-    public float navMeshMarginWidth = 0.05f;
+    public float navMeshMarginWidth = 0.35f;
 
     [Header("Mesh Settings")]
     public float floorThickness = 0.2f;
