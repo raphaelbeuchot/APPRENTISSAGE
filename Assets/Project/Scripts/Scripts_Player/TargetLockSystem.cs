@@ -34,7 +34,7 @@ public class TargetLockSystem : MonoBehaviour
             {
                 LockOntoTarget();
             }
-            else
+            /*else
             {
                 // Switch target avec molette
                 float scroll = Input.GetAxis("Mouse ScrollWheel");
@@ -42,7 +42,7 @@ public class TargetLockSystem : MonoBehaviour
                     SwitchTarget(1);
                 else if (scroll < 0f)
                     SwitchTarget(-1);
-            }
+            }*/
         }
         else
         {
@@ -86,7 +86,7 @@ public class TargetLockSystem : MonoBehaviour
         }
     }
 
-    private void SwitchTarget(int direction)
+    /*private void SwitchTarget(int direction)
     {
         if (availableTargets.Count <= 1)
             return;
@@ -120,7 +120,7 @@ public class TargetLockSystem : MonoBehaviour
         }
 
         Debug.Log($"Switched to: {currentTarget.name}");
-    }
+    }*/
 
     private void LockOntoTarget()
     {

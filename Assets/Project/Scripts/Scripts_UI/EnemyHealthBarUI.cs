@@ -91,14 +91,13 @@ public class EnemyHealthBarUI : MonoBehaviour
     {
         if (this == null || gameObject == null) return;
 
-        if (fadeCoroutine != null)
-            StopCoroutine(fadeCoroutine);
-        fadeCoroutine = StartCoroutine(FadeOutCoroutine());
+        gameObject.SetActive(false);  // Instantanément
     }
+
 
     private IEnumerator FadeOutCoroutine()
     {
-        yield return new WaitForSeconds(2f);
+        /*yield return new WaitForSeconds(2f);
         CanvasGroup cg = GetComponent<CanvasGroup>();
         if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
 
@@ -111,8 +110,8 @@ public class EnemyHealthBarUI : MonoBehaviour
             elapsed += Time.deltaTime;
             yield return null;
         }
-
-        gameObject.SetActive(false);
+        */
+        yield break;
     }
 
     // === LOCK-ON OUTLINE ===
