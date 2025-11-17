@@ -2,11 +2,6 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.AI;
 
-/// <summary>
-/// Generic AI for all enemies.
-/// Handles: Idle, Wander, Chase, and delegates attacks to IAttackBehavior.
-/// Works with all enemy types (Grabber, Hitter, Spitter, Blinder, etc.)
-/// </summary>
 [RequireComponent(typeof(Rigidbody))]
 public class EnemyAI : MonoBehaviour
 {
@@ -21,14 +16,11 @@ public class EnemyAI : MonoBehaviour
     protected EnemyHealth health;
     protected IAttackBehavior attackBehavior;
     protected NavMeshAgent agent;
-    private BlinderWanderBehavior wanderBehavior; // Added reference for Blinder
+    private BlinderWanderBehavior wanderBehavior;
 
-    // State variables
-    
     private EnemyHealthBarUI healthBarUI;
     public bool canMove = true;
     [HideInInspector] public bool isStunnedBySentinel = false;
-
 
     private bool isPlayerInRange = false;
     protected float lastWanderTime = 0f;
@@ -38,6 +30,8 @@ public class EnemyAI : MonoBehaviour
     protected float currentSpeed;
     protected bool isDead = false;
     [HideInInspector] public bool isDetectedBySentinel = false;
+
+    private bool isBlinder = false;
 
     protected enum State { Idle, Wandering, Chasing, Attacking, Dead }
     protected State currentState = State.Idle;
@@ -54,7 +48,9 @@ public class EnemyAI : MonoBehaviour
         gameManager = FindObjectOfType<GameManager>();
         health = GetComponent<EnemyHealth>();
         agent = GetComponent<NavMeshAgent>();
-        wanderBehavior = GetComponent<BlinderWanderBehavior>(); // Initialize wander behavior
+        wanderBehavior = GetComponent<BlinderWanderBehavior>();
+
+        isBlinder = stats.attackType == EnemyStats.AttackType.Blinder;
 
         if (agent != null)
         {
@@ -73,28 +69,24 @@ public class EnemyAI : MonoBehaviour
             case EnemyStats.AttackType.Grabber:
                 attackBehavior = GetComponent<GrabAttack>() ?? gameObject.AddComponent<GrabAttack>();
                 break;
-
             case EnemyStats.AttackType.Hitter:
-                Debug.LogWarning($"{gameObject.name}: Hitter attack not yet implemented!");
+                Debug.LogWarning(gameObject.name + ": Hitter attack not yet implemented!");
                 break;
-
             case EnemyStats.AttackType.Spitter:
-                Debug.LogWarning($"{gameObject.name}: Spitter attack not yet implemented!");
+                Debug.LogWarning(gameObject.name + ": Spitter attack not yet implemented!");
                 break;
-
             case EnemyStats.AttackType.Blinder:
                 attackBehavior = GetComponent<ChargeAttack>() ?? gameObject.AddComponent<ChargeAttack>();
                 break;
-
             default:
-                Debug.LogWarning($"{gameObject.name}: Unknown attack type {stats.attackType}");
+                Debug.LogWarning(gameObject.name + ": Unknown attack type " + stats.attackType);
                 break;
         }
 
         if (attackBehavior != null)
         {
             attackBehavior.Initialize(stats, playerStats, transform, rb);
-            Debug.Log($"{gameObject.name} initialized with {stats.attackType} attack behavior");
+            Debug.Log(gameObject.name + " initialized with " + stats.attackType + " attack behavior");
         }
     }
 
@@ -110,8 +102,9 @@ public class EnemyAI : MonoBehaviour
 
         if (!canMove)
         {
-            agent.isStopped = true;
-            return; // Bloque toutes les actions pendant le stun
+            if (agent != null && agent.isOnNavMesh)
+                agent.isStopped = true;
+            return;
         }
 
         if (health != null && health.IsDead())
@@ -162,10 +155,6 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    // ============================================
-    // DETECTION
-    // ============================================
-
     protected IEnumerator DetectionLoop()
     {
         while (true)
@@ -179,6 +168,15 @@ public class EnemyAI : MonoBehaviour
 
     protected virtual void DetectHumans()
     {
+        if (isBlinder)
+        {
+            // Blinder ignore la vision et ne chase jamais
+            targetHuman = null;
+            if (currentState == State.Chasing || currentState == State.Attacking)
+                currentState = State.Idle;
+            return;
+        }
+
         Collider[] hits = Physics.OverlapSphere(transform.position, stats.detectionRadius, stats.targetLayer);
         Transform closestHuman = null;
         float closestDistance = Mathf.Infinity;
@@ -218,7 +216,6 @@ public class EnemyAI : MonoBehaviour
                 currentState = State.Idle;
         }
 
-        // Update health bar visibility (separate 6m range, 360 degrees)
         PlayerHealth player = FindObjectOfType<PlayerHealth>();
         bool wasInRange = isPlayerInRange;
 
@@ -234,19 +231,15 @@ public class EnemyAI : MonoBehaviour
 
         if (isPlayerInRange && !wasInRange)
         {
-            if (health?.healthBarUI != null) // AJOUTE CE CHECK
+            if (health?.healthBarUI != null)
                 health.healthBarUI.Show();
         }
         else if (!isPlayerInRange && wasInRange)
         {
-            if (health?.healthBarUI != null) // AJOUTE CE CHECK
+            if (health?.healthBarUI != null)
                 health.healthBarUI.Hide();
         }
     }
-
-    // ============================================
-    // STATES
-    // ============================================
 
     protected virtual void HandleIdleState()
     {
@@ -278,6 +271,8 @@ public class EnemyAI : MonoBehaviour
 
     protected virtual void HandleChasingState()
     {
+        if (isBlinder) return;
+
         if (wanderBehavior != null) wanderBehavior.StopWandering();
 
         if (agent != null && agent.isOnNavMesh)
@@ -304,6 +299,8 @@ public class EnemyAI : MonoBehaviour
 
     protected virtual void HandleAttackingState()
     {
+        if (isBlinder) return;
+
         if (wanderBehavior != null) wanderBehavior.StopWandering();
 
         if (targetHuman == null)
@@ -338,10 +335,6 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    // ============================================
-    // MOVEMENT
-    // ============================================
-
     protected virtual void MoveInDirection(Vector3 direction, float speed)
     {
         if (agent == null || !agent.isOnNavMesh) return;
@@ -349,13 +342,9 @@ public class EnemyAI : MonoBehaviour
         agent.speed = speed;
 
         if (targetHuman != null)
-        {
             agent.SetDestination(targetHuman.position);
-        }
         else
-        {
             agent.SetDestination(transform.position + direction * 3f);
-        }
 
         direction.y = 0;
         direction.Normalize();
@@ -377,10 +366,6 @@ public class EnemyAI : MonoBehaviour
 
         rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
     }
-
-    // ============================================
-    // PUBLIC METHODS
-    // ============================================
 
     public void UpdateSpeed(float currentHealth, bool isCrawler)
     {

@@ -18,12 +18,29 @@ public class EnemyHealth : MonoBehaviour
     private bool isRecovering = false;
     private float recoverUntilTime = 0f;
 
+    private float originalLinearDamping;
+    private float originalAngularDamping;
+    private float originalMass;
+
+    private Rigidbody rb;
+
     public event Action OnDeath;
     public event Action<float, float> OnHealthChanged;
 
     // Health bar
     public EnemyHealthBarUI healthBarUI;
     private EnemyHealthBarManager healthBarManager;
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            originalLinearDamping = rb.linearDamping;
+            originalAngularDamping = rb.angularDamping;
+            originalMass = rb.mass;
+        }
+    }
 
     void Start()
     {
@@ -287,12 +304,19 @@ public class EnemyHealth : MonoBehaviour
         }
 
         // Activer la physique pour que le corps soit poussable
+        
         Rigidbody rb = GetComponent<Rigidbody>();
+        
+
         if (rb != null)
         {
-            rb.isKinematic = false;  // laisse la physique agir
+            rb.isKinematic = false;  // indispensable pour ragdoll
+            rb.linearDamping = originalLinearDamping;
+            rb.angularDamping = originalAngularDamping;
+            rb.mass = originalMass;
             rb.detectCollisions = true;
         }
+
 
         Collider col = GetComponent<Collider>();
         if (col != null)
@@ -301,6 +325,8 @@ public class EnemyHealth : MonoBehaviour
         }
 
         // Activer ragdoll si présent
+        
+
         IDeathEffect[] deathEffects = GetComponents<IDeathEffect>();
         DeathContext context = new DeathContext
         {
