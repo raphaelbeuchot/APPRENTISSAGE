@@ -22,13 +22,13 @@ MonoBehaviour:
   chaseSpeed: 2
   rotationSpeed: 30
   crawlSpeed: 1
-  speedReductionPerHealthPercent: 0.3
+  speedReductionPerHealthPercent: 1
   detectionRadius: 6
   detectionAngle: 360
   detectionCheckInterval: 0.5
   targetLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   stealthDetectionMultiplier: 1
   idleWanderChance: 0.3
   wanderInterval: 5
@@ -64,7 +64,7 @@ MonoBehaviour:
   hurtSound: {fileID: 0}
   deathSound: {fileID: 0}
   deathEffectType: 1
-  ragdollForce: 5
+  ragdollForce: 10
   ragdollTorque: 10
   meleeForceMultiplier: 1
   sentinelForceMultiplier: 1.5
