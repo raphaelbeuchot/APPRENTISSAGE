@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(PitFill))]
@@ -12,17 +13,18 @@ public class PitFillDamageController : MonoBehaviour
     public LayerMask detectionLayerMask = -1;
 
     [Header("Pit Depth Settings")]
-    [Tooltip("Seuil pour pit shallow vs deep (en mètres)")]
+    [Tooltip("Seuil pour pit shallow vs deep (base sur fill height en metres)")]
     public float shallowPitThreshold = 1f;
 
     [Header("Progressive Death Settings")]
-    [Tooltip("Intervalle entre chaque tick de dégâts progressifs (en secondes)")]
+    [Tooltip("Intervalle entre chaque tick de degats progressifs (en secondes)")]
     public float damageTickRate = 0.1f;
 
     [Header("Debug")]
     public bool showDebugLogs = false;
 
     private Dictionary<GameObject, FillEntityData> entitiesInFill = new Dictionary<GameObject, FillEntityData>();
+    private Dictionary<GameObject, Coroutine> activeDeathCoroutines = new Dictionary<GameObject, Coroutine>();
 
     void Awake()
     {
@@ -45,7 +47,6 @@ public class PitFillDamageController : MonoBehaviour
     void Update()
     {
         CleanupDestroyedEntities();
-        ProcessProgressiveDeaths();
     }
 
     private void CleanupDestroyedEntities()
@@ -62,33 +63,41 @@ public class PitFillDamageController : MonoBehaviour
 
         foreach (GameObject key in keysToRemove)
         {
-            entitiesInFill.Remove(key);
-        }
-    }
-
-    private void ProcessProgressiveDeaths()
-    {
-        foreach (var kvp in entitiesInFill)
-        {
-            FillEntityData data = kvp.Value;
-
-            if (data.isDyingProgressively)
+            // Arreter la coroutine si elle existe
+            if (activeDeathCoroutines.ContainsKey(key))
             {
-                if (Time.time >= data.nextDamageTick)
+                if (activeDeathCoroutines[key] != null)
                 {
-                    ApplyProgressiveDamage(data);
-                    data.nextDamageTick = Time.time + damageTickRate;
+                    StopCoroutine(activeDeathCoroutines[key]);
                 }
+                activeDeathCoroutines.Remove(key);
             }
+
+            entitiesInFill.Remove(key);
         }
     }
 
     void OnTriggerEnter(Collider other)
     {
-        if (((1 << other.gameObject.layer) & detectionLayerMask) == 0) return;
+        Debug.Log(string.Format("[PitFill DEBUG] OnTriggerEnter detected: {0}, layer: {1}",
+            other.gameObject.name, LayerMask.LayerToName(other.gameObject.layer)));
+
+        if (((1 << other.gameObject.layer) & detectionLayerMask) == 0)
+        {
+            Debug.Log("[PitFill DEBUG] Layer mask blocked!");
+            return;
+        }
+
+        Debug.Log("[PitFill DEBUG] Layer mask passed, looking for IPitInteractable...");
 
         IPitInteractable interactable = other.GetComponent<IPitInteractable>();
-        if (interactable == null) return;
+        if (interactable == null)
+        {
+            Debug.Log(string.Format("[PitFill DEBUG] No IPitInteractable found on {0}!", other.gameObject.name));
+            return;
+        }
+
+        Debug.Log(string.Format("[PitFill DEBUG] IPitInteractable found on {0}, processing...", other.gameObject.name));
 
         GameObject go = other.gameObject;
 
@@ -99,41 +108,11 @@ public class PitFillDamageController : MonoBehaviour
             entitiesInFill.Add(go, data);
 
             if (showDebugLogs)
-                Debug.Log($"[PitFill] {go.name} entered fill: {pitFill.fillType.contentName}");
+                Debug.Log(string.Format("[PitFill] {0} entered fill: {1}", go.name, pitFill.fillType.contentName));
+
+            // Traiter immediatement l'entree
+            ProcessFillEntry(interactable, data);
         }
-    }
-
-    void OnTriggerStay(Collider other)
-    {
-        if (((1 << other.gameObject.layer) & detectionLayerMask) == 0) return;
-
-        IPitInteractable interactable = other.GetComponent<IPitInteractable>();
-        if (interactable == null) return;
-
-        GameObject go = other.gameObject;
-
-        if (!entitiesInFill.ContainsKey(go))
-        {
-            Vector3 entryPos = interactable.GetCharacterCenter();
-            FillEntityData data = new FillEntityData(interactable, entryPos);
-            entitiesInFill.Add(go, data);
-
-            if (showDebugLogs)
-                Debug.LogWarning($"[PitFill] {go.name} was in fill but not tracked, re-adding");
-        }
-
-        FillEntityData entityData = entitiesInFill[go];
-
-        if (entityData.interactable == null)
-        {
-            entitiesInFill.Remove(go);
-            return;
-        }
-
-        if (!interactable.CanTakePitDamage())
-            return;
-
-        ProcessFillDamage(interactable, entityData);
     }
 
     void OnTriggerExit(Collider other)
@@ -147,172 +126,215 @@ public class PitFillDamageController : MonoBehaviour
 
         if (entitiesInFill.ContainsKey(go))
         {
-            entitiesInFill.Remove(go);
-
+            // Note: On NE supprime PAS l'entite ici car la coroutine doit continuer
             if (showDebugLogs)
-                Debug.Log($"[PitFill] {go.name} exited fill");
+                Debug.Log(string.Format("[PitFill] {0} exited fill trigger (coroutine continues)", go.name));
         }
     }
 
-    private void ProcessFillDamage(IPitInteractable interactable, FillEntityData data)
+    private void ProcessFillEntry(IPitInteractable interactable, FillEntityData data)
     {
-        if (pitFill.fillType == null) return;
+        Debug.Log(string.Format("[PitFill DEBUG] ProcessFillEntry called for {0}", interactable.GetGameObject().name));
+
+        if (pitFill.fillType == null)
+        {
+            Debug.Log("[PitFill DEBUG] pitFill.fillType is NULL!");
+            return;
+        }
+
+        Debug.Log("[PitFill DEBUG] fillType exists, checking CanTakePitDamage...");
+
+        if (!interactable.CanTakePitDamage())
+        {
+            Debug.Log("[PitFill DEBUG] Cannot take pit damage!");
+            return;
+        }
+
+        Debug.Log("[PitFill DEBUG] Can take damage, getting fill height...");
 
         PitContentType fillType = pitFill.fillType;
-        Vector3 centerPos = interactable.GetCharacterCenter();
-        float fillSurfaceHeight = pitFill.GetFillSurfaceHeight();
+        float fillHeight = pitFill.GetFillHeightMeters();
+        bool isShallow = fillHeight <= shallowPitThreshold;
 
-        float pitDepth = Mathf.Abs(pitZone.GetMaxDepth());
-        bool isShallowPit = pitDepth <= shallowPitThreshold;
+        GameObject go = interactable.GetGameObject();
 
-        // AJOUTE CE LOG
+        Debug.Log(string.Format("[PitFill DEBUG] fillHeight={0:F2}, shallowThreshold={1:F2}, isShallow={2}",
+            fillHeight, shallowPitThreshold, isShallow));
+
         if (showDebugLogs)
         {
-            Debug.Log($"[PitFill] ProcessFillDamage: {interactable.GetGameObject().name}, category={fillType.category}, isShallow={isShallowPit}");
+            Debug.Log(string.Format("[PitFill] ProcessFillEntry: {0}, category={1}, fillHeight={2:F2}m, isShallow={3}",
+                go.name, fillType.category, fillHeight, isShallow));
         }
+
+        Debug.Log(string.Format("[PitFill DEBUG] About to check enemy type..."));
+
+        // Verifier si c'est un ennemi
+        bool isEnemy = interactable is EnemyPitInteractable;
+
+        Debug.Log(string.Format("[PitFill DEBUG] isEnemy={0}, category={1}", isEnemy, fillType.category));
 
         switch (fillType.category)
         {
             case PitContentType.ContentCategory.Empty:
-                // Pas de dégâts du fill lui-même
+                Debug.Log("[PitFill DEBUG] Category is Empty, marking as falling");
+                // Marquer comme en chute (pour calcul degats au floor)
+                data.isFalling = true;
                 break;
 
             case PitContentType.ContentCategory.Water:
-                ProcessWaterDamage(interactable, centerPos, fillSurfaceHeight, data, isShallowPit);
+                Debug.Log(string.Format("[PitFill DEBUG] Category is Water, isEnemy={0}, isShallow={1}", isEnemy, isShallow));
+                if (isEnemy)
+                {
+                    if (isShallow)
+                    {
+                        Debug.Log("[PitFill DEBUG] Shallow water for enemy - applying slowdown");
+
+                        // Appliquer le ralentissement via EnemyPitInteractable
+                        EnemyPitInteractable enemyPit = interactable as EnemyPitInteractable;
+                        if (enemyPit != null)
+                        {
+                            enemyPit.OnEnterPit(pitZone); //  AJOUTE CETTE LIGNE
+                        }
+
+                        if (showDebugLogs)
+                            Debug.Log(string.Format("[PitFill] {0} in shallow water - slowed but alive", go.name));
+                    }
+                    else
+                    {
+                        Debug.Log("[PitFill DEBUG] Deep water for enemy - starting death coroutine");
+                        // Deep water: mort progressive
+                        StartProgressiveDeathCoroutine(go, data, fillType);
+                    }
+                }
+                // Pour le player: swim mode (TODO plus tard)
                 break;
 
             case PitContentType.ContentCategory.InstantKill:
-                ProcessInstantKillDamage(interactable, centerPos, fillSurfaceHeight, data, isShallowPit);
+                Debug.Log("[PitFill DEBUG] Category is InstantKill - starting death coroutine");
+                // Lava, Acid: mort progressive immediate
+                StartProgressiveDeathCoroutine(go, data, fillType);
                 break;
 
             case PitContentType.ContentCategory.Spikes:
-                // Géré par OnCollisionEnter avec le floor
+                Debug.Log("[PitFill DEBUG] Category is Spikes");
+                // Gere par collision avec le floor
                 break;
 
             case PitContentType.ContentCategory.DamageZone:
-                ProcessDamageOverTime(interactable, data, fillType);
+                Debug.Log("[PitFill DEBUG] Category is DamageZone");
+                // TODO: Degats over time si necessaire
                 break;
         }
+
+        Debug.Log("[PitFill DEBUG] ProcessFillEntry completed");
     }
 
-    private void ProcessWaterDamage(IPitInteractable interactable, Vector3 centerPos, float fillSurfaceHeight, FillEntityData data, bool isShallowPit)
+    private void StartProgressiveDeathCoroutine(GameObject go, FillEntityData data, PitContentType fillType)
     {
-        bool isEnemy = interactable.GetGameObject().layer == LayerMask.NameToLayer("Zombie");
-
-        if (isEnemy)
+        // Verifier si une coroutine existe deja
+        if (activeDeathCoroutines.ContainsKey(go))
         {
-            if (isShallowPit)
-            {
-                // Shallow water: ralentissement, pas de mort
-                if (showDebugLogs && !data.hasLoggedShallowWater)
-                {
-                    Debug.Log($"[PitFill] {interactable.GetGameObject().name} in shallow water - slowed but alive");
-                    data.hasLoggedShallowWater = true;
-                }
-            }
-            else
-            {
-                // AJOUTE CE LOG TEMPORAIRE
-                if (showDebugLogs)
-                {
-                    Debug.Log($"[PitFill DEBUG] centerPos.y={centerPos.y:F2}, fillSurfaceHeight={fillSurfaceHeight:F2}, isBelow={centerPos.y < fillSurfaceHeight}");
-                }
-
-                // Deep water: mort progressive
-                if (centerPos.y < fillSurfaceHeight && !data.isDyingProgressively)
-                {
-                    StartProgressiveDeath(data, pitFill.fillType);
-                }
-            }
-        }
-    }
-
-    private void ProcessInstantKillDamage(IPitInteractable interactable, Vector3 centerPos, float fillSurfaceHeight, FillEntityData data, bool isShallowPit)
-    {
-        if (pitFill.fillType.killTrigger == PitContentType.KillTrigger.CenterImmersed)
-        {
-            if (!data.isDyingProgressively && !data.hasReceivedInstantKill)
-            {
-                StartProgressiveDeath(data, pitFill.fillType);
-            }
-        }
-    }
-
-    private void StartProgressiveDeath(FillEntityData data, PitContentType fillType)
-    {
-        data.isDyingProgressively = true;
-        data.deathStartTime = Time.time;
-        data.deathDuration = fillType.deathDuration;
-        data.nextDamageTick = Time.time + damageTickRate;
-
-        // Calcule le damage par tick en pourcentage
-        float ticksNeeded = fillType.deathDuration / damageTickRate;
-        data.damagePercentPerTick = 100f / ticksNeeded;
-
-        if (showDebugLogs)
-            Debug.Log($"[PitFill] {data.interactable.GetGameObject().name} started progressive death ({fillType.deathDuration}s, {data.damagePercentPerTick:F1}% per tick)");
-    }
-
-    private void ApplyProgressiveDamage(FillEntityData data)
-    {
-        if (data.interactable == null || !data.interactable.CanTakePitDamage())
-        {
-            data.isDyingProgressively = false;
-            CheckAndDestroyIfDead(data);
+            if (showDebugLogs)
+                Debug.LogWarning(string.Format("[PitFill] {0} already has active death coroutine!", go.name));
             return;
         }
 
-        // Applique les dégâts en pourcentage
-        // On utilise une grande valeur qui sera réduite par le pourcentage
-        float damage = data.damagePercentPerTick;
+        // Lancer la coroutine
+        Coroutine deathCoroutine = StartCoroutine(ProgressiveDeathCoroutine(go, data, fillType));
+        activeDeathCoroutines[go] = deathCoroutine;
 
-        data.interactable.TakePitDamage(damage, PitDamageType.InstantKill);
-        CheckAndDestroyIfDead(data);
         if (showDebugLogs)
-            Debug.Log($"[PitFill] {data.interactable.GetGameObject().name} took {damage:F1}% damage (progressive death)");
+            Debug.Log(string.Format("[PitFill] {0} started progressive death coroutine ({1}s)", go.name, fillType.deathDuration));
     }
 
-    private void ProcessDamageOverTime(IPitInteractable interactable, FillEntityData data, PitContentType fillType)
+    private IEnumerator ProgressiveDeathCoroutine(GameObject go, FillEntityData data, PitContentType fillType)
     {
-        data.submersionTime += Time.deltaTime;
+        float duration = fillType.deathDuration;
+        float elapsed = 0f;
+        float ticksNeeded = duration / damageTickRate;
+        float damagePercentPerTick = 100f / ticksNeeded;
 
-        if (data.submersionTime >= fillType.damageDelay)
+        if (showDebugLogs)
+            Debug.Log(string.Format("[PitFill] {0} progressive death: {1:F1}% every {2}s for {3}s",
+                go.name, damagePercentPerTick, damageTickRate, duration));
+
+        while (elapsed < duration)
         {
-            if (Time.time >= data.lastDamageTick + fillType.damageInterval)
+            // Verifier si l'entite existe toujours
+            if (go == null || data.interactable == null)
             {
-                float damageThisTick = fillType.damagePerSecond * fillType.damageInterval;
-                interactable.TakePitDamage(damageThisTick, PitDamageType.DamageOverTime);
-                data.lastDamageTick = Time.time;
-
                 if (showDebugLogs)
-                    Debug.Log($"[PitFill] {interactable.GetGameObject().name} took {damageThisTick} DoT damage");
+                    Debug.Log("[PitFill] Entity destroyed, stopping coroutine");
+                yield break;
             }
+
+            // Verifier si l'entite peut encore prendre des degats
+            if (!data.interactable.CanTakePitDamage())
+            {
+                if (showDebugLogs)
+                    Debug.Log(string.Format("[PitFill] {0} already dead, stopping coroutine", go.name));
+                CheckAndDestroyIfDead(data, fillType);
+                yield break;
+            }
+
+            // Appliquer les degats
+            data.interactable.TakePitDamage(damagePercentPerTick, PitDamageType.InstantKill);
+
+            if (showDebugLogs)
+                Debug.Log(string.Format("[PitFill] {0} took {1:F1}% damage (elapsed: {2:F2}s)",
+                    go.name, damagePercentPerTick, elapsed));
+
+            // Verifier si mort
+            if (!data.interactable.CanTakePitDamage())
+            {
+                CheckAndDestroyIfDead(data, fillType);
+                yield break;
+            }
+
+            // Attendre le prochain tick
+            yield return new WaitForSeconds(damageTickRate);
+            elapsed += damageTickRate;
+        }
+
+        // Fin de la duree : tuer si toujours vivant
+        if (go != null && data.interactable != null && data.interactable.CanTakePitDamage())
+        {
+            data.interactable.TakePitDamage(100f, PitDamageType.InstantKill);
+
+            if (showDebugLogs)
+                Debug.Log(string.Format("[PitFill] {0} force killed after {1}s", go.name, duration));
+
+            CheckAndDestroyIfDead(data, fillType);
+        }
+
+        // Nettoyer la reference a la coroutine
+        if (activeDeathCoroutines.ContainsKey(go))
+        {
+            activeDeathCoroutines.Remove(go);
         }
     }
 
-    private void CheckAndDestroyIfDead(FillEntityData data)
+    private void CheckAndDestroyIfDead(FillEntityData data, PitContentType fillType)
     {
         if (data.interactable == null) return;
 
-        // Check si l'entité est morte
+        // Verifier si l'entite est morte
         if (!data.interactable.CanTakePitDamage())
         {
-            // Check si c'est un liquide destructif (Lava, Acid)
-            if (pitFill.fillType.category == PitContentType.ContentCategory.InstantKill)
+            // Si c'est un liquide destructif (Lava, Acid), detruire le GameObject
+            if (fillType.category == PitContentType.ContentCategory.InstantKill)
             {
                 GameObject go = data.interactable.GetGameObject();
 
                 if (go != null)
                 {
                     if (showDebugLogs)
-                        Debug.Log($"[PitFill] {go.name} destroyed by {pitFill.fillType.contentName}");
+                        Debug.Log(string.Format("[PitFill] {0} will be destroyed by {1}", go.name, fillType.contentName));
 
-                    Destroy(go, 0.2f); // Petit délai pour que la mort se termine
+                    Destroy(go, 0.5f); // Delai pour que la mort se termine proprement
                 }
             }
-
-            // Arrête la mort progressive
-            data.isDyingProgressively = false;
         }
     }
 
@@ -320,46 +342,66 @@ public class PitFillDamageController : MonoBehaviour
     {
         if (!interactable.CanTakePitDamage()) return;
 
-        if (pitFill.fillType == null) return;
+        GameObject go = interactable.GetGameObject();
 
-        PitContentType fillType = pitFill.fillType;
-
-        switch (fillType.category)
+        // Recuperer les donnees de l'entite si elle etait trackee
+        if (entitiesInFill.ContainsKey(go))
         {
-            case PitContentType.ContentCategory.Empty:
-                ApplyFallDamage(interactable, fallHeight, fillType);
-                break;
+            FillEntityData data = entitiesInFill[go];
 
-            case PitContentType.ContentCategory.Spikes:
-                ApplyInstantKill(interactable, "Spikes");
-                break;
+            // Si l'entite etait en chute (pit Empty)
+            if (data.isFalling)
+            {
+                ApplyFallDamage(interactable, data);
+                data.isFalling = false;
+            }
+        }
 
-            default:
-                break;
+        // Gerer les cas speciaux (Spikes, etc.)
+        if (pitFill.fillType != null)
+        {
+            switch (pitFill.fillType.category)
+            {
+                case PitContentType.ContentCategory.Spikes:
+                    interactable.TakePitDamage(99999f, PitDamageType.InstantKill);
+                    if (showDebugLogs)
+                        Debug.Log(string.Format("[PitFill] {0} instant killed by Spikes", go.name));
+                    break;
+            }
         }
     }
 
-    private void ApplyFallDamage(IPitInteractable interactable, float fallHeight, PitContentType fillType)
+    private void ApplyFallDamage(IPitInteractable interactable, FillEntityData data)
     {
-        float immunityThreshold = fillType.fallImmunityThreshold;
-        float damageMultiplier = fillType.fallDamageMultiplier;
+        // Calculer la hauteur de chute = profondeur du pit
+        float pitDepth = Mathf.Abs(pitZone.GetMaxDepth());
 
-        if (fallHeight > immunityThreshold)
+        // Parametres depuis le SO ou valeurs par defaut
+        float immunityThreshold = 3f;
+        float damageMultiplier = 10f;
+
+        if (pitFill.fillType != null)
         {
-            float damage = (fallHeight - immunityThreshold) * damageMultiplier;
+            immunityThreshold = pitFill.fillType.fallImmunityThreshold;
+            damageMultiplier = pitFill.fillType.fallDamageMultiplier;
+        }
+
+        // Appliquer les degats si au-dessus du seuil
+        if (pitDepth > immunityThreshold)
+        {
+            float damage = (pitDepth - immunityThreshold) * damageMultiplier;
             interactable.TakePitDamage(damage, PitDamageType.Fall);
 
             if (showDebugLogs)
-                Debug.Log($"[PitFill] {interactable.GetGameObject().name} took {damage} fall damage (fell {fallHeight}m)");
+                Debug.Log(string.Format("[PitFill] {0} took {1} fall damage (pit depth: {2}m, threshold: {3}m)",
+                    interactable.GetGameObject().name, damage, pitDepth, immunityThreshold));
         }
-    }
-
-    private void ApplyInstantKill(IPitInteractable interactable, string reason)
-    {
-        interactable.TakePitDamage(99999f, PitDamageType.InstantKill);
-
-        if (showDebugLogs)
-            Debug.Log($"[PitFill] {interactable.GetGameObject().name} instant killed by {reason}");
+        else
+        {
+            if (showDebugLogs)
+                Debug.Log(string.Format("[PitFill] {0} hit floor but pit too shallow ({1}m <= {2}m)",
+                    interactable.GetGameObject().name, pitDepth, immunityThreshold));
+        }
     }
 }
 
@@ -368,29 +410,15 @@ public class FillEntityData
     public IPitInteractable interactable;
     public Vector3 entryPosition;
     public float entryTime;
-    public bool hasReceivedInstantKill;
-    public float submersionTime;
-    public float lastDamageTick;
 
-    // Progressive death
-    public bool isDyingProgressively;
-    public float deathStartTime;
-    public float deathDuration;
-    public float damagePercentPerTick;
-    public float nextDamageTick;
-
-    // Debug
-    public bool hasLoggedShallowWater;
+    // Pour Empty pits
+    public bool isFalling;
 
     public FillEntityData(IPitInteractable e, Vector3 entryPos)
     {
         interactable = e;
         entryPosition = entryPos;
         entryTime = Time.time;
-        hasReceivedInstantKill = false;
-        submersionTime = 0f;
-        lastDamageTick = 0f;
-        isDyingProgressively = false;
-        hasLoggedShallowWater = false;
+        isFalling = false;
     }
 }

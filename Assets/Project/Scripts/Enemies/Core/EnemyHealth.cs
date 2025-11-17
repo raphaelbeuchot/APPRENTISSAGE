@@ -12,6 +12,8 @@ public class EnemyHealth : MonoBehaviour
     private Vector3 lastImpactDirection = Vector3.forward;
     private float lastImpactForce = 1f;
 
+    public bool deathByPit = false;
+
     private float currentHealth;
     private bool isDead = false;
 
@@ -279,17 +281,17 @@ public class EnemyHealth : MonoBehaviour
         if (isDead) return;
 
         isDead = true;
-        Debug.Log($"{gameObject.name} is dead!");
+        Debug.Log(string.Format("{0} is dead!", gameObject.name));
 
         OnDeath?.Invoke();
 
-        // Désinscrire la barre de vie
+        // Desinscrire la barre de vie
         if (healthBarManager != null)
         {
             healthBarManager.UnregisterEnemy(transform);
         }
 
-        // Désactiver l'IA et les scripts de contrôle
+        // Desactiver l'IA et les scripts de controle
         EnemyAI ai = GetComponent<EnemyAI>();
         if (ai != null) ai.enabled = false;
 
@@ -303,30 +305,46 @@ public class EnemyHealth : MonoBehaviour
             agent.enabled = false;
         }
 
-        // Activer la physique pour que le corps soit poussable
-        
-        Rigidbody rb = GetComponent<Rigidbody>();
-        
-
-        if (rb != null)
+        // SI MORT PAR PIT: Pas de ragdoll, juste couler
+        if (deathByPit)
         {
-            rb.isKinematic = false;  // indispensable pour ragdoll
-            rb.linearDamping = originalLinearDamping;
-            rb.angularDamping = originalAngularDamping;
-            rb.mass = originalMass;
-            rb.detectCollisions = true;
+            Debug.Log(string.Format("[EnemyHealth] {0} died in pit - no ragdoll, sinking", gameObject.name));
+
+            Rigidbody rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+                rb.useGravity = true;
+            }
+
+            Collider col = GetComponent<Collider>();
+            if (col != null)
+            {
+                col.isTrigger = true; // Traverse les objets en coulant
+            }
+
+            // Detruire apres un delai (gere par PitFillDamageController)
+            return;
         }
 
-
-        Collider col = GetComponent<Collider>();
-        if (col != null)
+        // SINON: Mort normale avec ragdoll
+        Rigidbody rbNormal = GetComponent<Rigidbody>();
+        if (rbNormal != null)
         {
-            col.isTrigger = false;  // le corps devient solide
+            rbNormal.isKinematic = false;
+            rbNormal.linearDamping = originalLinearDamping;
+            rbNormal.angularDamping = originalAngularDamping;
+            rbNormal.mass = originalMass;
+            rbNormal.detectCollisions = true;
         }
 
-        // Activer ragdoll si présent
-        
+        Collider colNormal = GetComponent<Collider>();
+        if (colNormal != null)
+        {
+            colNormal.isTrigger = false;
+        }
 
+        // Appliquer les effets de mort (ragdoll, explosion, etc.)
         IDeathEffect[] deathEffects = GetComponents<IDeathEffect>();
         DeathContext context = new DeathContext
         {
@@ -342,7 +360,7 @@ public class EnemyHealth : MonoBehaviour
             }
         }
 
-        // Event pour autres comportements à la mort
+        // Event pour autres comportements a la mort
         IOnDeathBehavior[] deathBehaviors = GetComponents<IOnDeathBehavior>();
         if (deathBehaviors != null && deathBehaviors.Length > 0)
         {
@@ -351,8 +369,6 @@ public class EnemyHealth : MonoBehaviour
                 behavior.OnEnemyDeath(transform.position);
             }
         }
-
-        // Le corps reste dans la scène, prêt à être poussé
     }
 
 

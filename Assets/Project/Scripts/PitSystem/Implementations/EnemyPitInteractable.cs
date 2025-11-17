@@ -103,25 +103,28 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
 
         float finalDamage;
 
-        // Si c'est un dégât progressif (mort dans liquide), on calcule en pourcentage
+        // Si c'est un degat progressif (mort dans liquide), on calcule en pourcentage
         if (damageType == PitDamageType.InstantKill && damage <= 100f)
         {
             // C'est un pourcentage (ex: 20% = 20)
             float maxHealth = enemyHealth.GetMaxHealth();
             finalDamage = (damage / 100f) * maxHealth * pitDamageMultiplier;
+
+            // MARQUER COMME MORT PAR PIT
+            enemyHealth.deathByPit = true;
         }
         else
         {
-            // Dégâts absolus normaux
+            // Degats absolus normaux (fall damage, spikes)
             finalDamage = damage * pitDamageMultiplier;
         }
 
-        // Applique les dégâts via le système existant
+        // Applique les degats via le systeme existant
         enemyHealth.TakeMeleeDamage(finalDamage);
 
         string typeStr = damageType == PitDamageType.Fall ? "fall" :
                         damageType == PitDamageType.InstantKill ? "liquid" : "DoT";
-        Debug.Log($"[EnemyPit] {name} took {finalDamage:F1} {typeStr} damage");
+        Debug.Log(string.Format("[EnemyPit] {0} took {1:F1} {2} damage", name, finalDamage, typeStr));
     }
 
     public bool CanTakePitDamage()

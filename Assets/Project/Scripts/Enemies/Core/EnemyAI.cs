@@ -168,15 +168,29 @@ public class EnemyAI : MonoBehaviour
 
     protected virtual void DetectHumans()
     {
+        PlayerHealth player = FindObjectOfType<PlayerHealth>();
+        if (player == null || player.IsDead())
+            return;
+
+        // ----- Gestion spéciale pour le Blinder -----
         if (isBlinder)
         {
-            // Blinder ignore la vision et ne chase jamais
+            // Le Blinder ne poursuit jamais le joueur
             targetHuman = null;
             if (currentState == State.Chasing || currentState == State.Attacking)
                 currentState = State.Idle;
-            return;
+
+            // Affichage de la barre de vie si le joueur est dans le range défini
+            float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
+            if (distanceToPlayer <= stats.blinderHealthBarRange)
+                health?.healthBarUI?.Show();
+            else
+                health?.healthBarUI?.Hide();
+
+            return; // On ignore le reste de DetectHumans pour le Blinder
         }
 
+        // ----- Détection classique pour les autres ennemis -----
         Collider[] hits = Physics.OverlapSphere(transform.position, stats.detectionRadius, stats.targetLayer);
         Transform closestHuman = null;
         float closestDistance = Mathf.Infinity;
@@ -216,29 +230,15 @@ public class EnemyAI : MonoBehaviour
                 currentState = State.Idle;
         }
 
-        PlayerHealth player = FindObjectOfType<PlayerHealth>();
+        // ----- Mise à jour de la barre de vie pour tous les ennemis -----
         bool wasInRange = isPlayerInRange;
-
-        if (player != null && !player.IsDead())
-        {
-            float distToPlayer = Vector3.Distance(transform.position, player.transform.position);
-            isPlayerInRange = (distToPlayer <= 5f);
-        }
-        else
-        {
-            isPlayerInRange = false;
-        }
+        float distToPlayer = Vector3.Distance(transform.position, player.transform.position);
+        isPlayerInRange = distToPlayer <= 5f;
 
         if (isPlayerInRange && !wasInRange)
-        {
-            if (health?.healthBarUI != null)
-                health.healthBarUI.Show();
-        }
+            health?.healthBarUI?.Show();
         else if (!isPlayerInRange && wasInRange)
-        {
-            if (health?.healthBarUI != null)
-                health.healthBarUI.Hide();
-        }
+            health?.healthBarUI?.Hide();
     }
 
     protected virtual void HandleIdleState()

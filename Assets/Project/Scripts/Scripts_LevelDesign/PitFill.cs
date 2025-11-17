@@ -123,88 +123,74 @@ public class PitFill : MonoBehaviour
         Dictionary<Vector2Int, float> ownedCells = pitZone.gridData.GetCellsForZone(pitZone.zoneID);
         if (ownedCells.Count == 0) return null;
 
+        // Pour Empty : pas de mesh visuel
+        if (fillType.category == PitContentType.ContentCategory.Empty)
+        {
+            Debug.Log("PitFill: Empty pit - no visual mesh generated");
+            return null;
+        }
+
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
         List<Vector2> uvs = new List<Vector2>();
 
         float cellSize = pitZone.gridData.gridCellSize;
         float fillHeightAbsolute = Mathf.Abs(fillHeight);
-        float fillBottom = pitZone.GetMaxDepth();
-        float fillTop = fillBottom + fillHeightAbsolute;
+        float fillSurfaceY = pitZone.GetMaxDepth() + fillHeightAbsolute;
 
+        // Crée un quad (surface plane) par cellule
         foreach (var kvp in ownedCells)
         {
             Vector2Int cellPos = kvp.Key;
             Vector3 cellWorldPos = pitZone.gridData.CellToWorld(cellPos);
 
-            AddFillCube(vertices, triangles, uvs, cellWorldPos, cellSize, fillBottom, fillTop);
+            AddSurfaceQuad(vertices, triangles, uvs, cellWorldPos, cellSize, fillSurfaceY);
         }
 
         Mesh mesh = new Mesh();
-        mesh.name = "FillContent_" + fillType.contentName;
+        mesh.name = "FillSurface_" + fillType.contentName;
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.uv = uvs.ToArray();
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
 
+        Debug.Log($"PitFill: Generated {ownedCells.Count} surface quads at Y={fillSurfaceY:F2}m");
+
         return mesh;
     }
 
-    private void AddFillCube(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
-                             Vector3 cellWorldPos, float cellSize, float bottom, float top)
+    private void AddSurfaceQuad(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
+                            Vector3 cellWorldPos, float cellSize, float surfaceY)
     {
         int startIndex = vertices.Count;
 
-        Vector3 v0 = cellWorldPos + new Vector3(0, bottom, 0);
-        Vector3 v1 = cellWorldPos + new Vector3(cellSize, bottom, 0);
-        Vector3 v2 = cellWorldPos + new Vector3(cellSize, bottom, cellSize);
-        Vector3 v3 = cellWorldPos + new Vector3(0, bottom, cellSize);
-        Vector3 v4 = cellWorldPos + new Vector3(0, top, 0);
-        Vector3 v5 = cellWorldPos + new Vector3(cellSize, top, 0);
-        Vector3 v6 = cellWorldPos + new Vector3(cellSize, top, cellSize);
-        Vector3 v7 = cellWorldPos + new Vector3(0, top, cellSize);
+        // 4 coins du quad (surface du liquide uniquement)
+        Vector3 v0 = cellWorldPos + new Vector3(0, surfaceY, 0);
+        Vector3 v1 = cellWorldPos + new Vector3(cellSize, surfaceY, 0);
+        Vector3 v2 = cellWorldPos + new Vector3(cellSize, surfaceY, cellSize);
+        Vector3 v3 = cellWorldPos + new Vector3(0, surfaceY, cellSize);
 
-        // Bottom face
-        vertices.Add(v0); vertices.Add(v1); vertices.Add(v2); vertices.Add(v3);
-        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(1, 0)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(0, 1));
-        AddQuad(triangles, startIndex);
+        // Ajouter les vertices
+        vertices.Add(v0);
+        vertices.Add(v1);
+        vertices.Add(v2);
+        vertices.Add(v3);
 
-        // Top face
-        vertices.Add(v7); vertices.Add(v6); vertices.Add(v5); vertices.Add(v4);
-        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(1, 0)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(0, 1));
-        AddQuad(triangles, startIndex + 4);
+        // UVs
+        uvs.Add(new Vector2(0, 0));
+        uvs.Add(new Vector2(1, 0));
+        uvs.Add(new Vector2(1, 1));
+        uvs.Add(new Vector2(0, 1));
 
-        // Front face
-        vertices.Add(v0); vertices.Add(v4); vertices.Add(v5); vertices.Add(v1);
-        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(0, 1)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(1, 0));
-        AddQuad(triangles, startIndex + 8);
-
-        // Back face
-        vertices.Add(v3); vertices.Add(v7); vertices.Add(v6); vertices.Add(v2);
-        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(0, 1)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(1, 0));
-        AddQuad(triangles, startIndex + 12);
-
-        // Left face
-        vertices.Add(v0); vertices.Add(v3); vertices.Add(v7); vertices.Add(v4);
-        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(1, 0)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(0, 1));
-        AddQuad(triangles, startIndex + 16);
-
-        // Right face
-        vertices.Add(v1); vertices.Add(v5); vertices.Add(v6); vertices.Add(v2);
-        uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(0, 1)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(1, 0));
-        AddQuad(triangles, startIndex + 20);
-    }
-
-    private void AddQuad(List<int> triangles, int startIndex)
-    {
+        // Triangles INVERSÉS (normales vers le haut)
         triangles.Add(startIndex);
+        triangles.Add(startIndex + 2);
         triangles.Add(startIndex + 1);
-        triangles.Add(startIndex + 2);
 
         triangles.Add(startIndex);
-        triangles.Add(startIndex + 2);
         triangles.Add(startIndex + 3);
+        triangles.Add(startIndex + 2);
     }
 
     private void CreateFillTriggers()
@@ -221,10 +207,26 @@ public class PitFill : MonoBehaviour
         Dictionary<Vector2Int, float> ownedCells = pitZone.gridData.GetCellsForZone(pitZone.zoneID);
         float cellSize = pitZone.gridData.gridCellSize;
         float maxDepth = pitZone.GetMaxDepth();
-        float fillHeightAbsolute = Mathf.Abs(maxDepth * fillHeightPercent);
-        float sizeY = fillHeightAbsolute;
 
-        // Cree un BoxCollider trigger par cellule
+        float triggerY;
+        float triggerHeight = 0.1f; // Trigger très fin (10cm)
+
+        // Déterminer la position Y du trigger selon le type
+        if (fillType.category == PitContentType.ContentCategory.Empty)
+        {
+            // Empty : trigger à -2m (fixe) pour détecter chutes >= 3m
+            triggerY = -2f;
+            Debug.Log("PitFill: Empty pit - trigger at Y=-2m");
+        }
+        else
+        {
+            // Liquides : trigger aligné avec la surface visuelle
+            float fillHeightAbsolute = Mathf.Abs(maxDepth * fillHeightPercent);
+            triggerY = maxDepth + fillHeightAbsolute;
+            Debug.Log($"PitFill: {fillType.contentName} - trigger at Y={triggerY:F2}m (surface level)");
+        }
+
+        // Crée un BoxCollider trigger fin par cellule
         foreach (var kvp in ownedCells)
         {
             Vector2Int cellPos = kvp.Key;
@@ -233,13 +235,13 @@ public class PitFill : MonoBehaviour
             BoxCollider cellCollider = gameObject.AddComponent<BoxCollider>();
             cellCollider.isTrigger = true;
 
-            // Position relative au PitFill
-            Vector3 localPos = cellWorldPos + new Vector3(cellSize * 0.5f, maxDepth + fillHeightAbsolute * 0.5f, cellSize * 0.5f);
+            // Position du trigger (centre du collider)
+            Vector3 localPos = cellWorldPos + new Vector3(cellSize * 0.5f, triggerY, cellSize * 0.5f);
             cellCollider.center = localPos - transform.position;
-            cellCollider.size = new Vector3(cellSize, sizeY, cellSize);
+            cellCollider.size = new Vector3(cellSize, triggerHeight, cellSize);
         }
 
-        Debug.Log("PitFill: Created " + ownedCells.Count + " trigger colliders");
+        Debug.Log($"PitFill: Created {ownedCells.Count} trigger colliders (height={triggerHeight}m)");
     }
 
     public void ClearFillContent()
