@@ -421,13 +421,48 @@ public class PitFillDamageController : MonoBehaviour
 
         if (pitDepth > immunityThreshold)
         {
-            float totalDamagePercent = pitDepth * damageMultiplier; // Ex: 10m * 10 = 100%
+            float totalDamagePercent = pitDepth * damageMultiplier;
+            GameObject go = interactable.GetGameObject();
+
+            // NOUVEAU : Vérifier si les dégâts vont tuer le zombie
+            EnemyHealth enemyHealth = go.GetComponent<EnemyHealth>();
+            bool willDie = false;
+
+            if (enemyHealth != null)
+            {
+                float currentHealthPercent = (enemyHealth.GetCurrentHealth() / enemyHealth.GetMaxHealth()) * 100f;
+                willDie = totalDamagePercent >= currentHealthPercent;
+
+                Debug.Log($"[PitFill] {go.name} - Current HP: {currentHealthPercent:F1}%, Damage: {totalDamagePercent:F1}%, WillDie: {willDie}");
+            }
+
+            // Activer le ragdoll SEULEMENT si ça va le tuer
+            if (willDie && enemyHealth != null)
+            {
+                enemyHealth.deathByPit = true;
+
+                IDeathEffect[] deathEffects = go.GetComponents<IDeathEffect>();
+                if (deathEffects != null && deathEffects.Length > 0)
+                {
+                    DeathContext impactContext = new DeathContext
+                    {
+                        deathType = DeathContext.DeathType.Fall,
+                        impactDirection = Vector3.down,
+                        impactForce = pitDepth * 10f
+                    };
+
+                    foreach (IDeathEffect effect in deathEffects)
+                    {
+                        effect.OnDeath(go.transform.position, impactContext);
+                    }
+
+                    Debug.Log($"[PitFill] Ragdoll activated on lethal impact for {go.name}");
+                }
+            }
 
             Debug.Log(string.Format("[PitFill DEBUG] Starting progressive fall damage ({0}%) for {1}",
-                totalDamagePercent, interactable.GetGameObject().name));
+                totalDamagePercent, go.name));
 
-            // Lancer une coroutine de mort progressive
-            GameObject go = interactable.GetGameObject();
             if (!activeDeathCoroutines.ContainsKey(go))
             {
                 Coroutine deathCoroutine = StartCoroutine(ProgressiveFallDamageCoroutine(go, data, totalDamagePercent));
