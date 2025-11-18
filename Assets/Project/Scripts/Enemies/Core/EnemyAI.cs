@@ -17,6 +17,7 @@ public class EnemyAI : MonoBehaviour
     protected IAttackBehavior attackBehavior;
     protected NavMeshAgent agent;
     private BlinderWanderBehavior wanderBehavior;
+    private EnemyPitInteractable pitInteractable;
 
     private EnemyHealthBarUI healthBarUI;
     public bool canMove = true;
@@ -49,6 +50,7 @@ public class EnemyAI : MonoBehaviour
         health = GetComponent<EnemyHealth>();
         agent = GetComponent<NavMeshAgent>();
         wanderBehavior = GetComponent<BlinderWanderBehavior>();
+        pitInteractable = GetComponent<EnemyPitInteractable>();
 
         isBlinder = stats.attackType == EnemyStats.AttackType.Blinder;
 
@@ -153,6 +155,7 @@ public class EnemyAI : MonoBehaviour
                 StopMovement();
                 break;
         }
+
     }
 
     protected IEnumerator DetectionLoop()
@@ -277,7 +280,20 @@ public class EnemyAI : MonoBehaviour
 
         if (agent != null && agent.isOnNavMesh)
         {
-            agent.speed = stats.chaseSpeed;
+            float finalSpeed = stats.chaseSpeed;
+
+            // LOG ICI
+            Debug.Log(string.Format("[CHASE] {0} base speed: {1}, isInShallowWater: {2}",
+                gameObject.name, finalSpeed, pitInteractable != null ? pitInteractable.isInShallowWater.ToString() : "NULL"));
+
+            // Appliquer ralentissement shallow water
+            if (pitInteractable != null && pitInteractable.isInShallowWater)
+            {
+                finalSpeed = finalSpeed * pitInteractable.waterSlowdownMultiplier;
+                Debug.Log(string.Format("[CHASE] {0} SLOWED to {1}", gameObject.name, finalSpeed));
+            }
+
+            agent.speed = finalSpeed;
         }
 
         if (targetHuman == null)
@@ -339,8 +355,15 @@ public class EnemyAI : MonoBehaviour
     {
         if (agent == null || !agent.isOnNavMesh) return;
 
-        agent.speed = speed;
+        float finalSpeed = speed;
 
+        // Appliquer ralentissement shallow water
+        if (pitInteractable != null && pitInteractable.isInShallowWater)
+        {
+            finalSpeed = finalSpeed * pitInteractable.waterSlowdownMultiplier;
+        }
+
+        agent.speed = finalSpeed;
         if (targetHuman != null)
             agent.SetDestination(targetHuman.position);
         else
@@ -358,6 +381,8 @@ public class EnemyAI : MonoBehaviour
             rb.linearVelocity = new Vector3(velocity.x, rb.linearVelocity.y, velocity.z);
         }
     }
+
+    
 
     protected void StopMovement()
     {

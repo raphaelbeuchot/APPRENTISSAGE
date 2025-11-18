@@ -24,6 +24,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
     // State
     private bool isInPit = false;
     private bool isInWaterShallow = false;
+    public bool isInShallowWater = false;
     private PitZone currentPitZone;
     private float originalNavSpeed = 0f;
 

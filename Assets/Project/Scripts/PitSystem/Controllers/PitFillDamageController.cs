@@ -126,9 +126,8 @@ public class PitFillDamageController : MonoBehaviour
 
         if (entitiesInFill.ContainsKey(go))
         {
-            // Note: On NE supprime PAS l'entite ici car la coroutine doit continuer
             if (showDebugLogs)
-                Debug.Log(string.Format("[PitFill] {0} exited fill trigger (coroutine continues)", go.name));
+                Debug.Log(string.Format("[PitFill] {0} exited fill trigger", go.name));
         }
     }
 
@@ -188,17 +187,18 @@ public class PitFillDamageController : MonoBehaviour
                 {
                     if (isShallow)
                     {
-                        Debug.Log("[PitFill DEBUG] Shallow water for enemy - applying slowdown");
+                        Debug.Log("[PitFill DEBUG] Shallow water for enemy - marking flag");
 
-                        // Appliquer le ralentissement via EnemyPitInteractable
+                        // Marquer le flag pour que EnemyAI ralentisse
                         EnemyPitInteractable enemyPit = interactable as EnemyPitInteractable;
                         if (enemyPit != null)
                         {
-                            enemyPit.OnEnterPit(pitZone); //  AJOUTE CETTE LIGNE
+                            enemyPit.isInShallowWater = true;
+                            Debug.Log(string.Format("[PitFill DEBUG] Flag set for {0}", go.name));
                         }
 
                         if (showDebugLogs)
-                            Debug.Log(string.Format("[PitFill] {0} in shallow water - slowed but alive", go.name));
+                            Debug.Log(string.Format("[PitFill] {0} in shallow water - will be slowed by AI", go.name));
                     }
                     else
                     {
