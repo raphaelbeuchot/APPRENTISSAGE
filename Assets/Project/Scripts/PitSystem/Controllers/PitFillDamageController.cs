@@ -112,6 +112,17 @@ public class PitFillDamageController : MonoBehaviour
 
             // Traiter immediatement l'entree
             ProcessFillEntry(interactable, data);
+
+            // NOUVEAU : Notifier le Player s'il entre dans l'eau
+            if (pitFill.fillType.category == PitContentType.ContentCategory.Water)
+            {
+                PlayerPitInteractable playerPit = interactable as PlayerPitInteractable;
+                if (playerPit != null)
+                {
+                    playerPit.OnEnterPit(pitZone);
+                    Debug.Log("[PitFill DEBUG] Called OnEnterPit for Player");
+                }
+            }
         }
     }
 

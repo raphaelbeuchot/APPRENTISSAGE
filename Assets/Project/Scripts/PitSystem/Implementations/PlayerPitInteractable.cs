@@ -195,8 +195,13 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
 
         Debug.Log("[PlayerPit] Player entered pit: " + pitZone.name);
 
-        // Check si c'est de l'eau
+        // Check si c'est de l'eau - chercher dans les enfants aussi
         PitFill pitFill = pitZone.GetComponent<PitFill>();
+        if (pitFill == null)
+        {
+            pitFill = pitZone.GetComponentInChildren<PitFill>();
+        }
+
         if (pitFill != null && pitFill.fillType != null &&
             pitFill.fillType.category == PitContentType.ContentCategory.Water)
         {
