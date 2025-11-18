@@ -278,7 +278,7 @@ public class EnemyAI : MonoBehaviour
 
         if (wanderBehavior != null) wanderBehavior.StopWandering();
 
-        if (agent != null && agent.isOnNavMesh)
+        /*if (agent != null && agent.isOnNavMesh)
         {
             float finalSpeed = stats.chaseSpeed;
 
@@ -294,7 +294,7 @@ public class EnemyAI : MonoBehaviour
             }
 
             agent.speed = finalSpeed;
-        }
+        }*/
 
         if (targetHuman == null)
         {

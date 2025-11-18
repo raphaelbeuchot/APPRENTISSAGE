@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Cinemachine.Samples;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -199,12 +200,30 @@ public class GameManager : MonoBehaviour
             {
                 NavMeshAgent agent = col.GetComponent<NavMeshAgent>();
                 if (agent != null && agent.isOnNavMesh)
-                    isMoving = agent.velocity.magnitude > sentinelSettings.movementThreshold;
+                {
+                    float effectiveThreshold = sentinelSettings.movementThreshold;
+
+                    // Si dans shallow water, reduire le threshold proportionnellement
+                    EnemyPitInteractable enemyPit = col.GetComponent<EnemyPitInteractable>();
+                    if (enemyPit != null && enemyPit.isInShallowWater)
+                    {
+                        effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
+                    }
+
+                    isMoving = agent.velocity.magnitude > effectiveThreshold;
+                }
                 else
                     isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
             }
 
             bool shouldBeShot = (isMoving || isAttacking || isInBourrade || isFakeGrabber) && !playerImmune;
+
+            // AJOUTEZ LE LOG ICI
+            EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
+            if (pitInt != null && pitInt.isInShallowWater)
+            {
+                Debug.Log($"[WATER] {col.name} - isMoving: {isMoving}, hasLOS: {hasLOS}, shouldShoot: {shouldBeShot}");
+            }
 
             // TIR SUR LA CIBLE SI ELLE EST EN MOUVEMENT ET VISIBLE
             if (shouldBeShot && hasLOS && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)

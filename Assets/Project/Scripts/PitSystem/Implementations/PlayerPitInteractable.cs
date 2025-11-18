@@ -33,6 +33,8 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     private PitFill currentPitFill;
     private float waterSurfaceY;
     private float targetFloatY;
+    private bool isInShallowWater = false;
+
 
     void Awake()
     {
@@ -205,13 +207,43 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         if (pitFill != null && pitFill.fillType != null &&
             pitFill.fillType.category == PitContentType.ContentCategory.Water)
         {
-            EnterWater(pitFill);
+            // Utiliser GetFillHeightMeters() pour avoir la hauteur en mètres
+            float fillHeight = pitFill.GetFillHeightMeters();
+            // La threshold n'existe pas dans PitContentType, on utilise 1.0m comme dans PitFillDamageController
+            bool isShallow = fillHeight <= 1.0f;
+
+            if (isShallow)
+            {
+                // SHALLOW WATER - juste ralentir
+                isInShallowWater = true;
+                if (playerMovement != null)
+                {
+                    // Utiliser swimSpeedMultiplier (c'est le seul multiplier disponible)
+                    playerMovement.ApplyWaterSlowdown(pitFill.fillType.swimSpeedMultiplier);
+                    Debug.Log("[PlayerPit] Player in shallow water - slowdown applied");
+                }
+            }
+            else
+            {
+                // DEEP WATER - mode swim
+                EnterWater(pitFill);
+            }
         }
     }
 
     public void OnExitPit(PitZone pitZone)
     {
         isInPit = false;
+
+        if (isInShallowWater)
+        {
+            isInShallowWater = false;
+            if (playerMovement != null)
+            {
+                playerMovement.RemoveWaterSlowdown();
+                Debug.Log("[PlayerPit] Player exited shallow water");
+            }
+        }
 
         if (isInWater)
         {
