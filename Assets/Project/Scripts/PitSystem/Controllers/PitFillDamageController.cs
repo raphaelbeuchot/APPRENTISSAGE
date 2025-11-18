@@ -334,21 +334,18 @@ public class PitFillDamageController : MonoBehaviour
     {
         if (data.interactable == null) return;
 
-        // Verifier si l'entite est morte
         if (!data.interactable.CanTakePitDamage())
         {
-            // Si c'est un liquide destructif (Lava, Acid, OU Deep Water), detruire le GameObject
             if (fillType.category == PitContentType.ContentCategory.InstantKill ||
-                fillType.category == PitContentType.ContentCategory.Water)
+                fillType.category == PitContentType.ContentCategory.Water ||
+                fillType.category == PitContentType.ContentCategory.Empty) // AJOUTÉ
             {
                 GameObject go = data.interactable.GetGameObject();
-
                 if (go != null)
                 {
                     if (showDebugLogs)
                         Debug.Log(string.Format("[PitFill] {0} will be destroyed by {1}", go.name, fillType.contentName));
-
-                    Destroy(go, 0.5f); // Delai pour que la mort se termine proprement
+                    Destroy(go, 0.5f);
                 }
             }
         }
@@ -408,12 +405,9 @@ public class PitFillDamageController : MonoBehaviour
     {
         Debug.Log(string.Format("[PitFill DEBUG] ApplyFallDamage called for {0}", interactable.GetGameObject().name));
 
-        // Utiliser la hauteur stockee dans les donnees
         float pitDepth = data.fallHeight;
-
         Debug.Log(string.Format("[PitFill DEBUG] Using stored fallHeight={0:F2}m", pitDepth));
 
-        // Parametres depuis le SO ou valeurs par defaut
         float immunityThreshold = 3f;
         float damageMultiplier = 10f;
 
@@ -425,46 +419,95 @@ public class PitFillDamageController : MonoBehaviour
 
         Debug.Log(string.Format("[PitFill DEBUG] threshold={0}, multiplier={1}", immunityThreshold, damageMultiplier));
 
-        // Appliquer les degats si au-dessus du seuil
         if (pitDepth > immunityThreshold)
         {
-            float damage = pitDepth * damageMultiplier;
+            float totalDamagePercent = pitDepth * damageMultiplier; // Ex: 10m * 10 = 100%
 
-            Debug.Log(string.Format("[PitFill DEBUG] Applying {0} fall damage to {1}", damage, interactable.GetGameObject().name));
+            Debug.Log(string.Format("[PitFill DEBUG] Starting progressive fall damage ({0}%) for {1}",
+                totalDamagePercent, interactable.GetGameObject().name));
 
-            interactable.TakePitDamage(damage, PitDamageType.Fall);
-
-            if (showDebugLogs)
-                Debug.Log(string.Format("[PitFill] {0} took {1} fall damage (pit depth: {2}m, threshold: {3}m)",
-                    interactable.GetGameObject().name, damage, pitDepth, immunityThreshold));
+            // Lancer une coroutine de mort progressive
+            GameObject go = interactable.GetGameObject();
+            if (!activeDeathCoroutines.ContainsKey(go))
+            {
+                Coroutine deathCoroutine = StartCoroutine(ProgressiveFallDamageCoroutine(go, data, totalDamagePercent));
+                activeDeathCoroutines[go] = deathCoroutine;
+            }
         }
         else
         {
             Debug.Log(string.Format("[PitFill DEBUG] No damage - pit too shallow ({0}m <= {1}m)", pitDepth, immunityThreshold));
-
-            if (showDebugLogs)
-                Debug.Log(string.Format("[PitFill] {0} hit floor but pit too shallow ({1}m <= {2}m)",
-                    interactable.GetGameObject().name, pitDepth, immunityThreshold));
         }
     }
-}
 
-public class FillEntityData
-{
-    public IPitInteractable interactable;
-    public Vector3 entryPosition;
-    public float entryTime;
-
-    // Pour Empty pits
-    public bool isFalling;
-    public float fallHeight;
-
-    public FillEntityData(IPitInteractable e, Vector3 entryPos)
+    private IEnumerator ProgressiveFallDamageCoroutine(GameObject go, FillEntityData data, float totalDamagePercent)
     {
-        interactable = e;
-        entryPosition = entryPos;
-        entryTime = Time.time;
-        isFalling = false;
-        fallHeight = 0f;
+        // Durée de la mort progressive (ajustable)
+        float duration = 1.0f; // 1 seconde pour voir la barre descendre
+        float elapsed = 0f;
+        float ticksNeeded = duration / damageTickRate;
+        float damagePercentPerTick = totalDamagePercent / ticksNeeded;
+
+        if (showDebugLogs)
+            Debug.Log(string.Format("[PitFill] {0} progressive fall damage: {1:F1}% every {2}s for {3}s",
+                go.name, damagePercentPerTick, damageTickRate, duration));
+
+        while (elapsed < duration)
+        {
+            if (go == null || data.interactable == null)
+            {
+                yield break;
+            }
+
+            if (!data.interactable.CanTakePitDamage())
+            {
+                CheckAndDestroyIfDead(data, pitFill.fillType);
+                yield break;
+            }
+
+            // Appliquer les dégâts progressifs
+            data.interactable.TakePitDamage(damagePercentPerTick, PitDamageType.Fall);
+
+            if (!data.interactable.CanTakePitDamage())
+            {
+                CheckAndDestroyIfDead(data, pitFill.fillType);
+                yield break;
+            }
+
+            yield return new WaitForSeconds(damageTickRate);
+            elapsed += damageTickRate;
+        }
+
+        // Force kill si toujours vivant
+        if (go != null && data.interactable != null && data.interactable.CanTakePitDamage())
+        {
+            data.interactable.TakePitDamage(100f, PitDamageType.Fall);
+            CheckAndDestroyIfDead(data, pitFill.fillType);
+        }
+
+        if (activeDeathCoroutines.ContainsKey(go))
+        {
+            activeDeathCoroutines.Remove(go);
+        }
+    }
+
+    public class FillEntityData
+    {
+        public IPitInteractable interactable;
+        public Vector3 entryPosition;
+        public float entryTime;
+
+        // Pour Empty pits
+        public bool isFalling;
+        public float fallHeight;
+
+        public FillEntityData(IPitInteractable e, Vector3 entryPos)
+        {
+            interactable = e;
+            entryPosition = entryPos;
+            entryTime = Time.time;
+            isFalling = false;
+            fallHeight = 0f;
+        }
     }
 }

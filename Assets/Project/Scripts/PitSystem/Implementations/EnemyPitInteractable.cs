@@ -102,6 +102,12 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
     {
         if (!CanTakePitDamage()) return;
 
+        // FORCER l'affichage de la healthbar pour les dégâts de pit
+        if (enemyHealth != null && enemyHealth.healthBarUI != null)
+        {
+            enemyHealth.healthBarUI.Show();
+        }
+
         float finalDamage;
 
         // Si c'est un degat progressif (mort dans liquide), on calcule en pourcentage
@@ -127,7 +133,6 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
                         damageType == PitDamageType.InstantKill ? "liquid" : "DoT";
         Debug.Log(string.Format("[EnemyPit] {0} took {1:F1} {2} damage", name, finalDamage, typeStr));
     }
-
     public bool CanTakePitDamage()
     {
         if (enemyHealth == null) return false;
