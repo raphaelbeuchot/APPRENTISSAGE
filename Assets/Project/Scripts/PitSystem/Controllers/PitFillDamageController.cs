@@ -337,8 +337,9 @@ public class PitFillDamageController : MonoBehaviour
         // Verifier si l'entite est morte
         if (!data.interactable.CanTakePitDamage())
         {
-            // Si c'est un liquide destructif (Lava, Acid), detruire le GameObject
-            if (fillType.category == PitContentType.ContentCategory.InstantKill)
+            // Si c'est un liquide destructif (Lava, Acid, OU Deep Water), detruire le GameObject
+            if (fillType.category == PitContentType.ContentCategory.InstantKill ||
+                fillType.category == PitContentType.ContentCategory.Water)
             {
                 GameObject go = data.interactable.GetGameObject();
 
