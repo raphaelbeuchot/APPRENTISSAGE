@@ -207,16 +207,15 @@ public class PitFill : MonoBehaviour
         Dictionary<Vector2Int, float> ownedCells = pitZone.gridData.GetCellsForZone(pitZone.zoneID);
         float cellSize = pitZone.gridData.gridCellSize;
         float maxDepth = pitZone.GetMaxDepth();
-
         float triggerY;
-        float triggerHeight = 0.1f; // Trigger très fin (10cm)
+        float triggerHeight = 0.1f;
 
         // Déterminer la position Y du trigger selon le type
         if (fillType.category == PitContentType.ContentCategory.Empty)
         {
-            // Empty : trigger à -2m (fixe) pour détecter chutes >= 3m
-            triggerY = -2f;
-            Debug.Log("PitFill: Empty pit - trigger at Y=-2m");
+            // Empty : trigger a la profondeur du seuil d'immunite
+            triggerY = -fillType.fallImmunityThreshold;
+            Debug.Log(string.Format("PitFill: Empty pit - trigger at Y={0:F2}m", triggerY));
         }
         else
         {
@@ -235,7 +234,6 @@ public class PitFill : MonoBehaviour
             BoxCollider cellCollider = gameObject.AddComponent<BoxCollider>();
             cellCollider.isTrigger = true;
 
-            // Position du trigger (centre du collider)
             Vector3 localPos = cellWorldPos + new Vector3(cellSize * 0.5f, triggerY, cellSize * 0.5f);
             cellCollider.center = localPos - transform.position;
             cellCollider.size = new Vector3(cellSize, triggerHeight, cellSize);

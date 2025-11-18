@@ -42,12 +42,11 @@ public class PitContentType : ScriptableObject
     [Tooltip("Désactive l'AI des ennemis dans ce contenu")]
     public bool disableEnemyAI = true;
 
-    [Header("Fall Damage - Empty Pits Only")]
-    [Tooltip("Dégâts par mètre au-delà du seuil d'immunité")]
+    [Header("Fall Damage Settings")]
+    public float fallImmunityThreshold = 3f;
     public float fallDamageMultiplier = 10f;
 
-    [Tooltip("Hauteur minimum de chute sans dégâts (en mètres)")]
-    public float fallImmunityThreshold = 3f;
+  
 
     [Header("Special Properties")]
     [Tooltip("Ce contenu est un liquide (affecte la physique et les effets visuels)")]

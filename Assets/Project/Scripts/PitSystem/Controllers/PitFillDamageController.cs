@@ -177,8 +177,12 @@ public class PitFillDamageController : MonoBehaviour
         {
             case PitContentType.ContentCategory.Empty:
                 Debug.Log("[PitFill DEBUG] Category is Empty, marking as falling");
-                // Marquer comme en chute (pour calcul degats au floor)
+
+                // Marquer comme en chute et stocker la hauteur de chute
                 data.isFalling = true;
+                data.fallHeight = Mathf.Abs(pitZone.GetMaxDepth());
+
+                Debug.Log(string.Format("[PitFill DEBUG] Stored fallHeight={0:F2}m", data.fallHeight));
                 break;
 
             case PitContentType.ContentCategory.Water:
@@ -340,21 +344,38 @@ public class PitFillDamageController : MonoBehaviour
 
     public void OnEntityHitFloor(IPitInteractable interactable, float fallHeight)
     {
-        if (!interactable.CanTakePitDamage()) return;
+        Debug.Log(string.Format("[PitFill DEBUG] OnEntityHitFloor called for {0}", interactable.GetGameObject().name));
+
+        if (!interactable.CanTakePitDamage())
+        {
+            Debug.Log("[PitFill DEBUG] Cannot take pit damage, returning");
+            return;
+        }
 
         GameObject go = interactable.GetGameObject();
+
+        Debug.Log(string.Format("[PitFill DEBUG] Checking if {0} is in entitiesInFill...", go.name));
 
         // Recuperer les donnees de l'entite si elle etait trackee
         if (entitiesInFill.ContainsKey(go))
         {
+            Debug.Log(string.Format("[PitFill DEBUG] {0} FOUND in entitiesInFill!", go.name));
+
             FillEntityData data = entitiesInFill[go];
 
-            // Si l'entite etait en chute (pit Empty)
+            Debug.Log(string.Format("[PitFill DEBUG] isFalling={0}, fallHeight={1:F2}", data.isFalling, data.fallHeight));
+
+            // Si l'entite etait en chute (pit Empty) et a traverse le trigger
             if (data.isFalling)
             {
+                Debug.Log(string.Format("[PitFill DEBUG] Calling ApplyFallDamage for {0} with fallHeight={1:F2}m", go.name, data.fallHeight));
                 ApplyFallDamage(interactable, data);
                 data.isFalling = false;
             }
+        }
+        else
+        {
+            Debug.Log(string.Format("[PitFill DEBUG] {0} NOT FOUND in entitiesInFill!", go.name));
         }
 
         // Gerer les cas speciaux (Spikes, etc.)
@@ -373,8 +394,12 @@ public class PitFillDamageController : MonoBehaviour
 
     private void ApplyFallDamage(IPitInteractable interactable, FillEntityData data)
     {
-        // Calculer la hauteur de chute = profondeur du pit
-        float pitDepth = Mathf.Abs(pitZone.GetMaxDepth());
+        Debug.Log(string.Format("[PitFill DEBUG] ApplyFallDamage called for {0}", interactable.GetGameObject().name));
+
+        // Utiliser la hauteur stockee dans les donnees
+        float pitDepth = data.fallHeight;
+
+        Debug.Log(string.Format("[PitFill DEBUG] Using stored fallHeight={0:F2}m", pitDepth));
 
         // Parametres depuis le SO ou valeurs par defaut
         float immunityThreshold = 3f;
@@ -386,10 +411,15 @@ public class PitFillDamageController : MonoBehaviour
             damageMultiplier = pitFill.fillType.fallDamageMultiplier;
         }
 
+        Debug.Log(string.Format("[PitFill DEBUG] threshold={0}, multiplier={1}", immunityThreshold, damageMultiplier));
+
         // Appliquer les degats si au-dessus du seuil
         if (pitDepth > immunityThreshold)
         {
-            float damage = (pitDepth - immunityThreshold) * damageMultiplier;
+            float damage = pitDepth * damageMultiplier;
+
+            Debug.Log(string.Format("[PitFill DEBUG] Applying {0} fall damage to {1}", damage, interactable.GetGameObject().name));
+
             interactable.TakePitDamage(damage, PitDamageType.Fall);
 
             if (showDebugLogs)
@@ -398,6 +428,8 @@ public class PitFillDamageController : MonoBehaviour
         }
         else
         {
+            Debug.Log(string.Format("[PitFill DEBUG] No damage - pit too shallow ({0}m <= {1}m)", pitDepth, immunityThreshold));
+
             if (showDebugLogs)
                 Debug.Log(string.Format("[PitFill] {0} hit floor but pit too shallow ({1}m <= {2}m)",
                     interactable.GetGameObject().name, pitDepth, immunityThreshold));
@@ -413,6 +445,7 @@ public class FillEntityData
 
     // Pour Empty pits
     public bool isFalling;
+    public float fallHeight;
 
     public FillEntityData(IPitInteractable e, Vector3 entryPos)
     {
@@ -420,5 +453,6 @@ public class FillEntityData
         entryPosition = entryPos;
         entryTime = Time.time;
         isFalling = false;
+        fallHeight = 0f;
     }
 }
