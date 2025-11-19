@@ -44,10 +44,11 @@ public class PitFillDamageController : MonoBehaviour
         }
     }
 
-    void Update()
+    /*void Update()
     {
         CleanupDestroyedEntities();
     }
+    */
 
     private void CleanupDestroyedEntities()
     {
@@ -55,6 +56,10 @@ public class PitFillDamageController : MonoBehaviour
 
         foreach (var kvp in entitiesInFill)
         {
+            // NE PAS RETIRER si en train de tomber (isFalling = true)
+            if (kvp.Value.isFalling)
+                continue;
+
             if (kvp.Key == null || kvp.Value.interactable == null)
             {
                 keysToRemove.Add(kvp.Key);
@@ -63,7 +68,6 @@ public class PitFillDamageController : MonoBehaviour
 
         foreach (GameObject key in keysToRemove)
         {
-            // Arreter la coroutine si elle existe
             if (activeDeathCoroutines.ContainsKey(key))
             {
                 if (activeDeathCoroutines[key] != null)
@@ -106,6 +110,8 @@ public class PitFillDamageController : MonoBehaviour
             Vector3 entryPos = interactable.GetCharacterCenter();
             FillEntityData data = new FillEntityData(interactable, entryPos);
             entitiesInFill.Add(go, data);
+            Debug.Log($"[PitFill] ADDED {go.name} to dict. Dict size: {entitiesInFill.Count}");
+            Debug.Log($"[PitFill] GameObject InstanceID: {go.GetInstanceID()}");
 
             if (showDebugLogs)
                 Debug.Log(string.Format("[PitFill] {0} entered fill: {1}", go.name, pitFill.fillType.contentName));
@@ -137,8 +143,29 @@ public class PitFillDamageController : MonoBehaviour
 
         if (entitiesInFill.ContainsKey(go))
         {
+            FillEntityData data = entitiesInFill[go];
+
+            // NE PAS RETIRER si l'entité est en train de tomber
+            if (data.isFalling)
+            {
+                if (showDebugLogs)
+                    Debug.Log($"[PitFill] {go.name} exited trigger but is falling - keeping in dict");
+                return;
+            }
+
+            // NE PAS RETIRER si mort progressive en cours (Water, Lava, etc.)
+            if (activeDeathCoroutines.ContainsKey(go))
+            {
+                if (showDebugLogs)
+                    Debug.Log($"[PitFill] {go.name} exited trigger but death coroutine active - keeping in dict");
+                return;
+            }
+
+            // Sinon, retirer normalement
+            entitiesInFill.Remove(go);
+
             if (showDebugLogs)
-                Debug.Log(string.Format("[PitFill] {0} exited fill trigger", go.name));
+                Debug.Log($"[PitFill] {go.name} exited fill trigger - removed from dict");
         }
     }
 
@@ -270,25 +297,29 @@ public class PitFillDamageController : MonoBehaviour
         float ticksNeeded = duration / damageTickRate;
         float damagePercentPerTick = 100f / ticksNeeded;
 
+        // LOG AJOUTÉ
+        Debug.Log($"[PitFill COROUTINE] Starting for {go.name}: duration={duration}s, ticks={ticksNeeded}, dmg/tick={damagePercentPerTick}%");
+
         if (showDebugLogs)
             Debug.Log(string.Format("[PitFill] {0} progressive death: {1:F1}% every {2}s for {3}s",
                 go.name, damagePercentPerTick, damageTickRate, duration));
 
         while (elapsed < duration)
         {
+            // LOG AJOUTÉ
+            Debug.Log($"[PitFill COROUTINE] {go.name} tick: elapsed={elapsed:F2}s / {duration}s");
+
             // Verifier si l'entite existe toujours
             if (go == null || data.interactable == null)
             {
-                if (showDebugLogs)
-                    Debug.Log("[PitFill] Entity destroyed, stopping coroutine");
+                Debug.Log("[PitFill COROUTINE] Entity destroyed, stopping"); // MODIFIÉ
                 yield break;
             }
 
             // Verifier si l'entite peut encore prendre des degats
             if (!data.interactable.CanTakePitDamage())
             {
-                if (showDebugLogs)
-                    Debug.Log(string.Format("[PitFill] {0} already dead, stopping coroutine", go.name));
+                Debug.Log($"[PitFill COROUTINE] {go.name} already dead, stopping"); // MODIFIÉ
                 CheckAndDestroyIfDead(data, fillType);
                 yield break;
             }
@@ -303,6 +334,7 @@ public class PitFillDamageController : MonoBehaviour
             // Verifier si mort
             if (!data.interactable.CanTakePitDamage())
             {
+                Debug.Log($"[PitFill COROUTINE] {go.name} died after damage"); // AJOUTÉ
                 CheckAndDestroyIfDead(data, fillType);
                 yield break;
             }
@@ -312,14 +344,15 @@ public class PitFillDamageController : MonoBehaviour
             elapsed += damageTickRate;
         }
 
+        // LOG AJOUTÉ
+        Debug.Log($"[PitFill COROUTINE] {go.name} finished loop, force killing");
+
         // Fin de la duree : tuer si toujours vivant
         if (go != null && data.interactable != null && data.interactable.CanTakePitDamage())
         {
             data.interactable.TakePitDamage(100f, PitDamageType.InstantKill);
-
             if (showDebugLogs)
                 Debug.Log(string.Format("[PitFill] {0} force killed after {1}s", go.name, duration));
-
             CheckAndDestroyIfDead(data, fillType);
         }
 
@@ -328,6 +361,9 @@ public class PitFillDamageController : MonoBehaviour
         {
             activeDeathCoroutines.Remove(go);
         }
+
+        // LOG AJOUTÉ
+        Debug.Log($"[PitFill COROUTINE] {go.name} coroutine completed");
     }
 
     private void CheckAndDestroyIfDead(FillEntityData data, PitContentType fillType)
@@ -338,14 +374,17 @@ public class PitFillDamageController : MonoBehaviour
         {
             if (fillType.category == PitContentType.ContentCategory.InstantKill ||
                 fillType.category == PitContentType.ContentCategory.Water ||
-                fillType.category == PitContentType.ContentCategory.Empty) // AJOUTÉ
+                fillType.category == PitContentType.ContentCategory.Empty)
             {
                 GameObject go = data.interactable.GetGameObject();
                 if (go != null)
                 {
+                    float delay = fillType.destroyDelay;
+
                     if (showDebugLogs)
-                        Debug.Log(string.Format("[PitFill] {0} will be destroyed by {1}", go.name, fillType.contentName));
-                    Destroy(go, 0.5f);
+                        Debug.Log($"[PitFill] {go.name} will be destroyed in {delay}s");
+
+                    Destroy(go, delay);
                 }
             }
         }
@@ -362,6 +401,8 @@ public class PitFillDamageController : MonoBehaviour
         }
 
         GameObject go = interactable.GetGameObject();
+        Debug.Log($"[PitFill] Looking for {go.name}. GameObject InstanceID: {go.GetInstanceID()}");
+        Debug.Log($"[PitFill] Dict contains {entitiesInFill.Count} entries");
 
         Debug.Log(string.Format("[PitFill DEBUG] Checking if {0} is in entitiesInFill...", go.name));
 

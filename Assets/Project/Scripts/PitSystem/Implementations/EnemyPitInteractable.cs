@@ -105,7 +105,12 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         // FORCER l'affichage de la healthbar pour les dégâts de pit
         if (enemyHealth != null && enemyHealth.healthBarUI != null)
         {
+            Debug.Log($"[EnemyPit] Forcing healthbar show for {name}");
             enemyHealth.healthBarUI.Show();
+        }
+        else
+        {
+            Debug.LogWarning($"[EnemyPit] Cannot show healthbar - enemyHealth: {enemyHealth != null}, healthBarUI: {enemyHealth?.healthBarUI != null}");
         }
 
         float finalDamage;

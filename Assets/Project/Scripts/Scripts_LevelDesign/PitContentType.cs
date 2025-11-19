@@ -15,7 +15,9 @@ public class PitContentType : ScriptableObject
 
     [Header("Death Settings - Liquids")]
     [Tooltip("Durée de la mort progressive dans les liquides (en secondes)")]
-    public float deathDuration = 0.5f;
+    public float deathDuration = 1.5f;
+    [Tooltip("Délai avant destruction du GameObject après la mort (en secondes)")]
+    public float destroyDelay = 1.0f;
 
     [Header("Damage Settings - InstantKill")]
     [Tooltip("Kill trigger point: where character dies (CenterImmersed or TouchBottom)")]
