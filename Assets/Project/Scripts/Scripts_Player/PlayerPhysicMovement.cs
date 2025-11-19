@@ -399,7 +399,14 @@ public class PlayerPhysicsMovement : MonoBehaviour
         isInSwarmVision = active;
         Debug.Log($"Swarm vision effect: {active}");
     }
+    public Vector3 GetMoveInput()
+    {
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
 
+        Vector3 input = new Vector3(horizontal, 0f, vertical);
+        return transform.TransformDirection(input);
+    }
     // === FREEZE FUNCTIONS ===
     private Color originalColor; // <--- ajoute cette ligne dans tes variables privées
 

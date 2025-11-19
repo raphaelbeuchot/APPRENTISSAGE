@@ -60,43 +60,40 @@ public class PitZone : MonoBehaviour
             Debug.LogWarning("PitZone: No grid data assigned!");
             return;
         }
-
         if (zoneID == -1)
         {
             Debug.LogWarning("PitZone: No zone ID assigned!");
             return;
         }
-
         SetupMeshObjects();
 
-        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells();
+        if (wallsMeshFilter != null)
+        {
+            int pitWallLayer = LayerMask.NameToLayer("PitWall");
+            Debug.Log("[PitZone] Attempting to set PitWall layer. Layer ID: " + pitWallLayer);
+            wallsMeshFilter.gameObject.layer = pitWallLayer;
+            Debug.Log("[PitZone] Walls GameObject layer is now: " + wallsMeshFilter.gameObject.layer + " (name: " + LayerMask.LayerToName(wallsMeshFilter.gameObject.layer) + ")");
+        }
 
+        Dictionary<Vector2Int, float> ownedCells = GetOwnedCells();
         if (ownedCells.Count == 0)
         {
             Debug.LogWarning("PitZone " + zoneID + ": No cells owned, cannot generate meshes!");
             return;
         }
-
         Mesh wallsMesh = PitMeshGenerator.GenerateWallsMesh(gridData, floorThickness, ownedCells);
         Mesh floorMesh = PitMeshGenerator.GenerateFloorMesh(gridData, ownedCells);
-
-
         if (wallsMesh != null && wallsMeshFilter != null)
         {
             wallsMeshFilter.sharedMesh = wallsMesh;
         }
-
         if (floorMesh != null && floorMeshFilter != null)
         {
             floorMeshFilter.sharedMesh = floorMesh;
         }
-
         AddMeshColliders();
-
         Debug.Log("PitZone " + zoneID + ": Meshes generated successfully with " + ownedCells.Count + " cells!");
-
         SetupFloorCollisionDetector();
-
     }
     private void SetupFloorCollisionDetector()
     {
@@ -160,6 +157,10 @@ public class PitZone : MonoBehaviour
             wallsObj.transform.SetParent(transform);
             wallsObj.transform.localPosition = Vector3.zero;
             wallsObj.transform.localRotation = Quaternion.identity;
+
+            // NOUVEAU : Assigner automatiquement le layer PitWall
+            wallsObj.layer = LayerMask.NameToLayer("PitWall");
+
             wallsTransform = wallsObj.transform;
 
             wallsMeshFilter = wallsObj.AddComponent<MeshFilter>();
@@ -167,6 +168,9 @@ public class PitZone : MonoBehaviour
         }
         else
         {
+            // NOUVEAU : S'assurer que le layer est correct même si l'objet existe déjà
+            wallsTransform.gameObject.layer = LayerMask.NameToLayer("PitWall");
+
             if (wallsMeshFilter == null)
                 wallsMeshFilter = wallsTransform.GetComponent<MeshFilter>();
             if (wallsRenderer == null)
