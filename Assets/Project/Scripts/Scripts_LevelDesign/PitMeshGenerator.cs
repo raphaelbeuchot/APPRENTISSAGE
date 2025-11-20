@@ -161,13 +161,27 @@ public static class PitMeshGenerator
         uvs.Add(new Vector2(1, 1));
         uvs.Add(new Vector2(0, 1));
 
-        triangles.Add(startIndex);
-        triangles.Add(startIndex + 2);
-        triangles.Add(startIndex + 1);
+        // Inverser l'ordre des triangles UNIQUEMENT pour le mur Est (side == 2)
+        if (side == 2) // Est
+        {
+            triangles.Add(startIndex);
+            triangles.Add(startIndex + 1);
+            triangles.Add(startIndex + 2);
 
-        triangles.Add(startIndex);
-        triangles.Add(startIndex + 3);
-        triangles.Add(startIndex + 2);
+            triangles.Add(startIndex);
+            triangles.Add(startIndex + 2);
+            triangles.Add(startIndex + 3);
+        }
+        else
+        {
+            triangles.Add(startIndex);
+            triangles.Add(startIndex + 2);
+            triangles.Add(startIndex + 1);
+
+            triangles.Add(startIndex);
+            triangles.Add(startIndex + 3);
+            triangles.Add(startIndex + 2);
+        }
     }
 
     private static void AddFloorQuad(
