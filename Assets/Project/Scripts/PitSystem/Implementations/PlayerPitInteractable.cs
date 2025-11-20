@@ -20,6 +20,10 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     public float climbOutDuration = 1f;
     [Tooltip("Distance d'avancement lors de la sortie (en metres)")]
     public float climbOutDistance = 0.5f;
+    [Tooltip("Hauteur maximale pour pouvoir sortir (en metres sous Y=0)")]
+    public float maxClimbHeight = 1f;
+    [Tooltip("Temps d'immunite apres sortie (pour eviter re-collision)")]
+    public float exitImmunityDuration = 0.5f;
 
     // References
     private PlayerHealth playerHealth;
@@ -33,6 +37,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     private bool isFloating = false;
     private bool isInShallowWater = false;
     private bool isClimbingOut = false;
+    private bool hasExitImmunity = false;
     private PitZone currentPitZone;
     private PitFill currentPitFill;
     private float waterSurfaceY;
@@ -61,7 +66,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         if (isClimbingOut) return;
 
         // Sortie du pit avec E - UNIQUEMENT GetKeyDown
-        if ((isInWater || isInShallowWater) && Input.GetKeyDown(exitKey))
+        if (isInPit && Input.GetKeyDown(exitKey))
         {
             TryClimbOut();
         }
@@ -95,7 +100,6 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         if (collision.gameObject.layer == LayerMask.NameToLayer("PitWall"))
         {
             isCollidingWithPitWall = true;
-            Debug.Log("[PlayerPit] COLLISION WITH PITWALL detected!");
 
             if (collision.contactCount > 0)
             {
@@ -106,8 +110,6 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
                 avg.Normalize();
                 pitWallNormal = avg;
             }
-
-
         }
     }
 
@@ -117,6 +119,37 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         {
             isCollidingWithPitWall = false;
         }
+    }
+
+    /// <summary>
+    /// Vérifie si le player peut sortir du pit (pieds à moins de 1m du sol Y=0)
+    /// </summary>
+    /// <summary>
+    /// Vérifie si le player peut sortir du pit
+    /// </summary>
+    private bool CanClimbOut()
+    {
+        if (capsuleCollider == null) return false;
+
+        float feetY = transform.position.y - (capsuleCollider.height / 2f);
+
+        // Si le player est dans l'eau (shallow ou deep), check classique
+        if (isInWater || isInShallowWater)
+        {
+            float groundY = currentPitZone != null ? currentPitZone.transform.position.y : 0f;
+            float distanceFromGround = groundY - feetY;
+            bool canClimbWater = distanceFromGround <= maxClimbHeight;
+
+            Debug.Log($"[PlayerPit] Water check: feetY={feetY:F2}, groundY={groundY:F2}, distance={distanceFromGround:F2}, canClimb={canClimbWater}");
+            return canClimbWater;
+        }
+
+        // Si le player n'est PAS dans l'eau = empty pit ou hors pit
+        // Autoriser climb out si Y entre -maxClimbHeight et 0
+        bool canClimbEmpty = feetY >= -maxClimbHeight && feetY <= 0f;
+
+        Debug.Log($"[PlayerPit] Empty/default check: feetY={feetY:F2}, canClimb={canClimbEmpty}");
+        return canClimbEmpty;
     }
 
     private void TryClimbOut()
@@ -129,13 +162,21 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
             return;
         }
 
+        // CHECK 1 : Peut-on sortir ? (hauteur)
+        if (!CanClimbOut())
+        {
+            Debug.Log("[PlayerPit] Too deep to climb out!");
+            return;
+        }
+
+        // CHECK 2 : Touche-t-on un mur ?
         if (!isCollidingWithPitWall)
         {
             Debug.Log("[PlayerPit] Not touching pit wall, cannot climb out");
             return;
         }
 
-        // Vérifier qu'il y a un input de mouvement
+        // CHECK 3 : Y a-t-il un input de mouvement ?
         if (playerMovement != null)
         {
             Vector3 moveInput = playerMovement.GetMoveInput();
@@ -150,14 +191,14 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         // Récupère la direction de sortie et applique la correction pour l'axe X
         Vector3 exitDirection = transform.TransformDirection(playerMovement.GetMoveInput()).normalized;
 
-        // Correction AXE X inversé : certaines sorties orientées X étaient dirigées vers l'intérieur du bassin
+        // Correction AXE X inversé
         exitDirection.x *= -1f;
 
-        // Vérifier que le player pousse vers le mur détecté
+        // CHECK 4 : Pousse-t-on vers le mur ?
         float dotProduct = Vector3.Dot(exitDirection, -pitWallNormal);
         Debug.Log("[PlayerPit] Dot product: " + dotProduct);
 
-        if (dotProduct < 0.7f) // Seuil strict
+        if (dotProduct < 0.7f)
         {
             Debug.Log("[PlayerPit] Not pushing towards wall correctly (dot=" + dotProduct + ")");
             return;
@@ -167,15 +208,12 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         StartCoroutine(ClimbOutAnimation(exitDirection));
     }
 
-
-
-
     private IEnumerator ClimbOutAnimation(Vector3 exitDirection)
     {
         Debug.Log("[PlayerPit] === COROUTINE STARTED === exitDirection: " + exitDirection);
 
         // FORCER exitDirection sur le plan XZ et normaliser MANUELLEMENT
-        exitDirection.y = 0f; // Éliminer composante Y
+        exitDirection.y = 0f;
         float magnitude = Mathf.Sqrt(exitDirection.x * exitDirection.x + exitDirection.z * exitDirection.z);
         if (magnitude > 0.001f)
         {
@@ -183,12 +221,11 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
             exitDirection.z /= magnitude;
         }
         Debug.Log("[PlayerPit] Manually normalized exitDirection: " + exitDirection);
-        Debug.Log("[PlayerPit] Magnitude check: " + exitDirection.magnitude);
 
         // BLOQUER immediatement
         isClimbingOut = true;
 
-        // ATTENDRE 1 frame pour etre sur que Update() voit le flag
+        // ATTENDRE 1 frame
         yield return null;
 
         // Désactivation movement et collider
@@ -212,7 +249,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
             float t = elapsed / climbOutDuration;
             transform.position = Vector3.Lerp(startPos, endPos, t);
             elapsed += Time.deltaTime;
-            yield return null; // <-- OK, plus de try/catch autour
+            yield return null;
         }
 
         transform.position = endPos;
@@ -225,9 +262,25 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
 
         isClimbingOut = false;
 
+        // Activer immunité temporaire
+        StartCoroutine(ExitImmunityCoroutine());
+
         Debug.Log("[PlayerPit] Climb out complete");
     }
 
+    /// <summary>
+    /// Donne une immunité temporaire après sortie pour éviter re-collision immédiate
+    /// </summary>
+    private IEnumerator ExitImmunityCoroutine()
+    {
+        hasExitImmunity = true;
+        Debug.Log("[PlayerPit] Exit immunity activated");
+
+        yield return new WaitForSeconds(exitImmunityDuration);
+
+        hasExitImmunity = false;
+        Debug.Log("[PlayerPit] Exit immunity ended");
+    }
 
     private void ExitPit()
     {
@@ -302,6 +355,13 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
 
     public void OnEnterPit(PitZone pitZone)
     {
+        // Si on a l'immunité, ignorer
+        if (hasExitImmunity)
+        {
+            Debug.Log("[PlayerPit] Exit immunity active, ignoring pit entry");
+            return;
+        }
+
         isInPit = true;
         currentPitZone = pitZone;
 
@@ -315,7 +375,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         if (pitFill != null && pitFill.fillType != null &&
             pitFill.fillType.category == PitContentType.ContentCategory.Water)
         {
-            currentPitFill = pitFill; // stocker pour FixedUpdate
+            currentPitFill = pitFill;
 
             float fillHeight = pitFill.GetFillHeightMeters();
             bool isShallow = fillHeight <= 1.0f;
@@ -337,11 +397,9 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
                 isInShallowWater = false;
                 isInWater = true;
 
-                // Recalculer surface et target float Y
                 waterSurfaceY = pitFill.GetFillSurfaceHeight();
                 targetFloatY = waterSurfaceY - swimDepth;
 
-                // Si player déjà sous l'eau, déclencher flottaison immédiatement
                 if (transform.position.y <= targetFloatY)
                 {
                     StartFloating();
@@ -351,16 +409,18 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
                 Debug.Log("[PlayerPit] Player in deep water - swim mode activated");
             }
         }
+        else
+        {
+            // EMPTY PIT ou autre type
+            Debug.Log("[PlayerPit] Player in empty/other pit");
+        }
 
         Debug.Log("[PitFill DEBUG] Called OnEnterPit for Player");
     }
 
-
     public void OnExitPit(PitZone pitZone)
     {
-        // Cette fonction est appelee par le PitFillDamageController
-        // On ne l'utilise plus pour la sortie manuelle
-        // Mais on la garde pour compatibilite
+        // Compatibilité avec PitFillDamageController
     }
 
     public void TakePitDamage(float damage, PitDamageType damageType)
@@ -412,7 +472,6 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
 
         Debug.Log("[PlayerPit] Player exited water");
     }
-
 
     public bool IsInPit() { return isInPit; }
     public bool IsInWater() { return isInWater; }

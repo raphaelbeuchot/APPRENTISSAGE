@@ -213,8 +213,8 @@ public class PitFill : MonoBehaviour
         // Déterminer la position Y du trigger selon le type
         if (fillType.category == PitContentType.ContentCategory.Empty)
         {
-            // Empty : trigger a la profondeur du seuil d'immunite
-            triggerY = -fillType.fallImmunityThreshold;
+            // Empty : trigger proche du sol (-0.3m) pour détecter l'entrée rapidement
+            triggerY = -0.3f;
             Debug.Log(string.Format("PitFill: Empty pit - trigger at Y={0:F2}m", triggerY));
         }
         else

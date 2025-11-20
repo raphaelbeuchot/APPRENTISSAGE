@@ -119,14 +119,15 @@ public class PitFillDamageController : MonoBehaviour
             // Traiter immediatement l'entree
             ProcessFillEntry(interactable, data);
 
-            // NOUVEAU : Notifier le Player s'il entre dans l'eau
-            if (pitFill.fillType.category == PitContentType.ContentCategory.Water)
+            // Notifier le Player qu'il entre dans le pit (Water OU Empty)
+            PlayerPitInteractable playerPit = interactable as PlayerPitInteractable;
+            if (playerPit != null)
             {
-                PlayerPitInteractable playerPit = interactable as PlayerPitInteractable;
-                if (playerPit != null)
+                if (pitFill.fillType.category == PitContentType.ContentCategory.Water ||
+                    pitFill.fillType.category == PitContentType.ContentCategory.Empty)
                 {
                     playerPit.OnEnterPit(pitZone);
-                    Debug.Log("[PitFill DEBUG] Called OnEnterPit for Player");
+                    Debug.Log($"[PitFill DEBUG] Called OnEnterPit for Player ({pitFill.fillType.category})");
                 }
             }
         }
@@ -460,12 +461,15 @@ public class PitFillDamageController : MonoBehaviour
 
         Debug.Log(string.Format("[PitFill DEBUG] threshold={0}, multiplier={1}", immunityThreshold, damageMultiplier));
 
+        // Pour empty pit avec trigger à -0.3m, on ajuste le seuil
+        float effectiveThreshold = immunityThreshold - 0.3f; // 3m - 0.3m = 2.7m
+
         if (pitDepth > immunityThreshold)
         {
             float totalDamagePercent = pitDepth * damageMultiplier;
             GameObject go = interactable.GetGameObject();
 
-            // NOUVEAU : Vérifier si les dégâts vont tuer le zombie
+            // Vérifier si les dégâts vont tuer (pour ragdoll)
             EnemyHealth enemyHealth = go.GetComponent<EnemyHealth>();
             bool willDie = false;
 
@@ -473,7 +477,6 @@ public class PitFillDamageController : MonoBehaviour
             {
                 float currentHealthPercent = (enemyHealth.GetCurrentHealth() / enemyHealth.GetMaxHealth()) * 100f;
                 willDie = totalDamagePercent >= currentHealthPercent;
-
                 Debug.Log($"[PitFill] {go.name} - Current HP: {currentHealthPercent:F1}%, Damage: {totalDamagePercent:F1}%, WillDie: {willDie}");
             }
 
@@ -481,7 +484,6 @@ public class PitFillDamageController : MonoBehaviour
             if (willDie && enemyHealth != null)
             {
                 enemyHealth.deathByPit = true;
-
                 IDeathEffect[] deathEffects = go.GetComponents<IDeathEffect>();
                 if (deathEffects != null && deathEffects.Length > 0)
                 {
@@ -501,18 +503,11 @@ public class PitFillDamageController : MonoBehaviour
                 }
             }
 
-            Debug.Log(string.Format("[PitFill DEBUG] Starting progressive fall damage ({0}%) for {1}",
-                totalDamagePercent, go.name));
+            // APPLIQUER LES DÉGÂTS INSTANTANÉMENT
+            interactable.TakePitDamage(totalDamagePercent, PitDamageType.Fall);
+            Debug.Log($"[PitFill] {go.name} took {totalDamagePercent:F1}% fall damage instantly");
 
-            if (!activeDeathCoroutines.ContainsKey(go))
-            {
-                Coroutine deathCoroutine = StartCoroutine(ProgressiveFallDamageCoroutine(go, data, totalDamagePercent));
-                activeDeathCoroutines[go] = deathCoroutine;
-            }
-        }
-        else
-        {
-            Debug.Log(string.Format("[PitFill DEBUG] No damage - pit too shallow ({0}m <= {1}m)", pitDepth, immunityThreshold));
+            CheckAndDestroyIfDead(data, pitFill.fillType);
         }
     }
 
@@ -554,7 +549,7 @@ public class PitFillDamageController : MonoBehaviour
             elapsed += damageTickRate;
         }
 
-        // Force kill si toujours vivant
+        /*// Force kill si toujours vivant
         if (go != null && data.interactable != null && data.interactable.CanTakePitDamage())
         {
             data.interactable.TakePitDamage(100f, PitDamageType.Fall);
@@ -564,7 +559,7 @@ public class PitFillDamageController : MonoBehaviour
         if (activeDeathCoroutines.ContainsKey(go))
         {
             activeDeathCoroutines.Remove(go);
-        }
+        }*/
     }
 
     public class FillEntityData
