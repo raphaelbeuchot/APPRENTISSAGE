@@ -18,6 +18,11 @@ public class MeleeAttackSystem : MonoBehaviour
     // Grab state tracking
     private bool isGrabbed = false;
 
+    // Spray ammo system
+    private int currentSprayAmmo;
+    private bool isReloading = false;
+    private float reloadStartTime;
+
     private Vector3 originalScale;
     private AudioSource audioSource;
 
@@ -42,6 +47,9 @@ public class MeleeAttackSystem : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
 
         originalScale = transform.localScale;
+
+        // Initialize spray ammo
+        currentSprayAmmo = stats.maxSprayAmmo;
     }
 
     void OnDisable()
@@ -57,14 +65,58 @@ public class MeleeAttackSystem : MonoBehaviour
     {
         if (stats == null) return;
 
+        // Handle reload
+        HandleReload();
+
         if (Input.GetKeyDown(KeyCode.Space) && CanAttack())
         {
             StartCoroutine(PerformAttack());
         }
     }
+    void HandleReload()
+    {
+        if (Input.GetKeyDown(KeyCode.R) && currentSprayAmmo < stats.maxSprayAmmo && !isReloading)
+        {
+            StartReload();
+        }
 
+        if (isReloading && Time.time >= reloadStartTime + stats.sprayReloadTime)
+        {
+            CompleteReload();
+        }
+    }
+
+    void StartReload()
+    {
+        isReloading = true;
+        reloadStartTime = Time.time;
+        Debug.Log("Reloading spray...");
+    }
+
+    void CompleteReload()
+    {
+        isReloading = false;
+        currentSprayAmmo = stats.maxSprayAmmo;
+        Debug.Log("Spray reloaded!");
+    }
     bool CanAttack()
     {
+        // Check spray ammo
+    if (currentSprayAmmo <= 0)
+        {
+            if (!isReloading)
+            {
+                StartReload();
+            }
+            Debug.Log("Cannot attack: no spray ammo!");
+            return false;
+        }
+
+        if (isReloading)
+        {
+            Debug.Log("Cannot attack: reloading!");
+            return false;
+        }
         if (isGrabbed)
         {
             Debug.Log("Cannot attack: player is grabbed!");
@@ -77,14 +129,14 @@ public class MeleeAttackSystem : MonoBehaviour
         {
             return false;
         }
-
+        /*
         // CHECK STAMINA
         if (movement != null && movement.GetCurrentStamina() < stats.meleeStaminaCost)
         {
             Debug.Log("Cannot attack: not enough stamina!");
             return false;
         }
-
+        */
         if (Time.time - lastAttackTime < stats.attackCooldown)
         {
             return false;
@@ -114,14 +166,16 @@ public class MeleeAttackSystem : MonoBehaviour
     IEnumerator PerformAttack()
     {
         isAttacking = true;
+        
         try
         {
-            // CONSOMMER LA STAMINA
+            /*// CONSOMMER LA STAMINA
             if (movement != null)
             {
                 float currentStamina = movement.GetCurrentStamina();
                 movement.UpdateStamina(currentStamina - stats.meleeStaminaCost);
             }
+            */
 
             lastAttackTime = Time.time;
             StartCoroutine(PulseScale());
@@ -177,20 +231,20 @@ public class MeleeAttackSystem : MonoBehaviour
         );
 
         bool hitSomething = false;
+        bool sprayUsed = false;
+        bool wasFrontAttack = false;
 
         foreach (Collider hit in hits)
         {
             if (hit.gameObject == gameObject) continue;
 
-            // Calculer la direction vers la cible
             Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
-            directionToTarget.y = 0f; // ignorer la hauteur
+            directionToTarget.y = 0f;
 
             float angleToTarget = Vector3.Angle(transform.forward, directionToTarget);
 
             if (angleToTarget > stats.meleeConeAngle / 2f)
             {
-                // En dehors du cone => ignorer
                 continue;
             }
 
@@ -199,6 +253,36 @@ public class MeleeAttackSystem : MonoBehaviour
             if (enemyHealth != null && !enemyHealth.IsDead())
             {
                 hitSomething = true;
+
+                // CHECK SI ENNEMI AWARE DU PLAYER
+                EnemyAI enemyAI = hit.GetComponent<EnemyAI>();
+                bool isPshitAttack = false;
+
+                if (enemyAI != null)
+                {
+                    isPshitAttack = (enemyAI.currentState == EnemyAI.State.Chasing ||
+                                    enemyAI.currentState == EnemyAI.State.Attacking);
+                }
+
+                // Consume spray ammo only once if pshit attack
+                if (isPshitAttack && !sprayUsed)
+                {
+                    currentSprayAmmo--;
+                    sprayUsed = true;
+                    wasFrontAttack = true;
+                    Debug.Log("PSHIT SPRAY used! Ammo: " + currentSprayAmmo + "/" + stats.maxSprayAmmo);
+
+                    if (currentSprayAmmo <= 0 && !isReloading)
+                    {
+                        StartReload();
+                    }
+                }
+                // Back attack: no ammo consumption but mark for sound
+                if (!isPshitAttack)
+                {
+                    wasFrontAttack = false;
+                    sprayUsed = true;
+                }
 
                 // Knockback
                 Rigidbody targetRb = hit.GetComponent<Rigidbody>();
@@ -218,7 +302,7 @@ public class MeleeAttackSystem : MonoBehaviour
                 float damage = stats.GetAdjustedDamage();
                 enemyHealth.TakeMeleeDamage(damage);
 
-                // Notifier les Blinders (audio global)
+                // Notifier les Blinders
                 MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
 
                 // Check si c'est un Blinder
@@ -235,7 +319,7 @@ public class MeleeAttackSystem : MonoBehaviour
                 Debug.Log(gameObject.name + " hit " + hit.gameObject.name + " for " + damage + " damage!");
             }
 
-            // GESTION NU�ES
+            // GESTION NUEES
             SwarmController swarm = hit.GetComponent<SwarmController>();
             if (swarm != null)
             {
@@ -250,24 +334,40 @@ public class MeleeAttackSystem : MonoBehaviour
             if (brightEyes != null && brightEyes.IsAlive() && !brightEyes.IsFlameExtinguished())
             {
                 hitSomething = true;
-
-                // Eteindre la flamme
                 brightEyes.ExtinguishFlame();
-
                 Debug.Log(gameObject.name + " extinguished " + hit.gameObject.name + "'s flame!");
             }
         }
 
-        // Jouer le bon son
+        // Jouer le bon son + VFX
         if (audioSource != null)
         {
-            if (hitSomething && stats.attackHitSound != null)
+            if (sprayUsed)
             {
-                audioSource.PlayOneShot(stats.attackHitSound);
+                // PSHIT SPRAY
+                if (wasFrontAttack && stats.sprayFrontSound != null)
+                {
+                    audioSource.PlayOneShot(stats.sprayFrontSound);
+                }
+                else if (!wasFrontAttack && stats.sprayBackSound != null)
+                {
+                    audioSource.PlayOneShot(stats.sprayBackSound);
+                }
+
+                // Spawn VFX spray
+                if (stats.sprayVFX != null)
+                {
+                    Vector3 spawnPos = transform.position + transform.forward * 1f + Vector3.up * 1f;
+                    Instantiate(stats.sprayVFX, spawnPos, transform.rotation);
+                }
             }
-            else if (stats.attackSound != null)
+            else
             {
-                audioSource.PlayOneShot(stats.attackSound);
+                // SPRAY A VIDE
+                if (stats.sprayMissSound != null)
+                {
+                    audioSource.PlayOneShot(stats.sprayMissSound);
+                }
             }
         }
     }
@@ -346,6 +446,9 @@ public class MeleeAttackSystem : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, stats.attackRange);
     }
+    public int GetCurrentSprayAmmo() => currentSprayAmmo;
+    public int GetMaxSprayAmmo() => stats.maxSprayAmmo;
+    public bool IsReloading() => isReloading;
+    public float GetReloadProgress() => isReloading ? (Time.time - reloadStartTime) / stats.sprayReloadTime : 0f;
 
- 
 }

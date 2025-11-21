@@ -60,6 +60,41 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Cooldown entre deux attaques (en secondes)")]
     public float attackCooldown = 0.5f;
 
+    [Header("SPRAY SYSTEM")]
+    [Tooltip("Munitions max du spray")]
+    public int maxSprayAmmo = 10;
+    [Tooltip("Temps de rechargement automatique en secondes")]
+    public float sprayReloadTime = 3f;
+    [Tooltip("Particules effet spray")]
+    public GameObject sprayVFX;
+    [Tooltip("Son du spray pshit de face aware")]
+    public AudioClip sprayFrontSound;
+    [Tooltip("Son du spray pshit de dos non-aware")]
+    public AudioClip sprayBackSound;
+    [Tooltip("Son du spray a vide")]
+    public AudioClip sprayMissSound;
+
+    [Header("BROOM SYSTEM")]
+    [Tooltip("Portee de l'attaque balai")]
+    public float broomRange = 2f;
+    [Tooltip("Angle du cone balai en degres")]
+    [Range(0f, 360f)]
+    public float broomConeAngle = 270f;
+    [Tooltip("Cout en stamina de l'attaque balai")]
+    public float broomStaminaCost = 15f;
+    [Tooltip("Degats du balai")]
+    public float broomDamage = 40f;
+    [Tooltip("Duree du windup en secondes")]
+    public float broomWindupTime = 0.8f;
+    [Tooltip("Duree totale de l'attaque balai")]
+    public float broomAttackDuration = 1.2f;
+    [Tooltip("Cooldown entre attaques balai")]
+    public float broomCooldown = 0.5f;
+    [Tooltip("Son du balai")]
+    public AudioClip broomSound;
+    [Tooltip("Force du knockback balai")]
+    public float broomKnockbackForce = 8f;
+
     [Header("BOURRADE")]
     [Tooltip("Force de la bourrade")]
     public float bourradeForce = 12f;

@@ -34,9 +34,8 @@ public class EnemyAI : MonoBehaviour
 
     private bool isBlinder = false;
 
-    protected enum State { Idle, Wandering, Chasing, Attacking, Dead }
-    protected State currentState = State.Idle;
-
+    public enum State { Idle, Wandering, Chasing, Attacking, Dead }
+    public State currentState = State.Idle;
     protected virtual void Start()
     {
         if (stats == null)

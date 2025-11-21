@@ -131,6 +131,9 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         if (playerMelee) playerMelee.OnGrabStart();
 
+        BroomAttackSystem playerBroom = player.GetComponent<BroomAttackSystem>();
+        if (playerBroom) playerBroom.OnGrabStart();
+
         int mashCount = 0;
         int required = player.stats.mashesToEscape;
 
@@ -152,7 +155,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
                 UpdateFakeGrabbers();
 
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (Input.GetKeyDown(KeyCode.B))
                 {
                     mashCount++;
                 }
@@ -243,6 +246,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             {
                 playerMelee.OnGrabEnd();
             }
+            BroomAttackSystem playerBroom = player.GetComponent<BroomAttackSystem>();
+            if (playerBroom) playerBroom.OnGrabEnd();
         }
 
         isGrabbing = false;
