@@ -151,22 +151,24 @@ public class TargetLockSystem : MonoBehaviour
         }
     }
 
-    private void UnlockTarget()
+    public void UnlockTarget()
     {
-        // Force clear de toutes les outlines
-        ClearAllOutlines();
-
+        // 1. Désactiver l'outline de la cible actuelle
         if (currentTargetHealthBar != null)
         {
             currentTargetHealthBar.SetLockedOutline(false);
             currentTargetHealthBar = null;
         }
 
+        // 2. Force clear TOUTES les outlines
+        ClearAllOutlines();
+
+        // 3. Clear les références
         currentTarget = null;
         availableTargets.Clear();
         currentTargetIndex = 0;
 
-        Debug.Log("Target unlocked");
+        Debug.Log("Target unlocked - all outlines cleared");
     }
 
     private Transform FindBestTarget()
@@ -221,11 +223,14 @@ public class TargetLockSystem : MonoBehaviour
 
     private void ClearAllOutlines()
     {
-        // Trouver toutes les barres de vie et forcer leur outline a false
         EnemyHealthBarUI[] allBars = FindObjectsByType<EnemyHealthBarUI>(FindObjectsSortMode.None);
+        Debug.Log("Clearing " + allBars.Length + " health bars outlines");
         foreach (EnemyHealthBarUI bar in allBars)
         {
-            bar.SetLockedOutline(false);
+            if (bar != null)
+            {
+                bar.SetLockedOutline(false);
+            }
         }
     }
 

@@ -11,7 +11,7 @@ public class EnemyAI : MonoBehaviour
 
     [Header("References")]
     protected Rigidbody rb;
-    protected Transform targetHuman;
+    public Transform targetHuman;
     protected GameManager gameManager;
     protected EnemyHealth health;
     protected IAttackBehavior attackBehavior;
@@ -22,6 +22,9 @@ public class EnemyAI : MonoBehaviour
     private EnemyHealthBarUI healthBarUI;
     public bool canMove = true;
     [HideInInspector] public bool isStunnedBySentinel = false;
+
+    [HideInInspector] public bool isForcedChase = false;
+
 
     private bool isPlayerInRange = false;
     protected float lastWanderTime = 0f;
@@ -227,9 +230,13 @@ public class EnemyAI : MonoBehaviour
         }
         else
         {
-            targetHuman = null;
-            if (currentState == State.Chasing || currentState == State.Attacking)
-                currentState = State.Idle;
+            // Ne pas reset si forced chase actif
+            if (!isForcedChase)
+            {
+                targetHuman = null;
+                if (currentState == State.Chasing || currentState == State.Attacking)
+                    currentState = State.Idle;
+            }
         }
 
         // ----- Mise à jour de la barre de vie pour tous les ennemis -----

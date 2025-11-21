@@ -74,6 +74,22 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Son du spray a vide")]
     public AudioClip sprayMissSound;
 
+    [Header("BOTTLE THROW")]
+    [Tooltip("Force de lancer de la bouteille")]
+    public float bottleThrowForce = 15f;
+    [Tooltip("Degats de la bouteille jetee")]
+    public float bottleThrowDamage = 2f;
+    [Tooltip("Duree du stun ennemi secondes")]
+    public float bottleStunDuration = 0.5f;
+    [Tooltip("Prefab de la bouteille jetee")]
+    public GameObject bottlePrefab;
+    [Tooltip("Son du lancer")]
+    public AudioClip bottleThrowSound;
+    [Tooltip("Son de l'impact blong")]
+    public AudioClip bottleImpactSound;
+
+    
+
     [Header("BROOM SYSTEM")]
     [Tooltip("Portee de l'attaque balai")]
     public float broomRange = 2f;

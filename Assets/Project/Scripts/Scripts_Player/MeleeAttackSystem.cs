@@ -10,6 +10,8 @@ public class MeleeAttackSystem : MonoBehaviour
     private Rigidbody rb;
     private PlayerHealth health;
     private PlayerPhysicsMovement movement;
+    private TargetLockSystem lockSystem;
+
 
     // State runtime
     private bool isAttacking = false;
@@ -30,6 +32,11 @@ public class MeleeAttackSystem : MonoBehaviour
     private enum AttackArm { Left, Right }
     private AttackArm currentArm = AttackArm.Left;
 
+    // Bottle throw system
+    private bool bottleThrown = false;
+    private int savedSprayAmmo = 0;
+    private GameObject thrownBottleInstance;
+
     void Start()
     {
         if (stats == null)
@@ -41,7 +48,9 @@ public class MeleeAttackSystem : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         health = GetComponent<PlayerHealth>();
         movement = GetComponent<PlayerPhysicsMovement>();
-        
+        lockSystem = GetComponent<TargetLockSystem>();
+
+
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
@@ -67,6 +76,22 @@ public class MeleeAttackSystem : MonoBehaviour
 
         // Handle reload
         HandleReload();
+        // Check bottle throw
+        if (Input.GetKeyDown(KeyCode.Space) && CanThrowBottle())
+        {
+            ThrowBottle();
+            return;
+        }
+
+        // Check bottle pickup
+        if (bottleThrown && thrownBottleInstance != null)
+        {
+            float distance = Vector3.Distance(transform.position, thrownBottleInstance.transform.position);
+            if (distance <= 1.5f && Input.GetKeyDown(KeyCode.E))
+            {
+                PickupBottle();
+            }
+        }
 
         if (Input.GetKeyDown(KeyCode.Space) && CanAttack())
         {
@@ -101,8 +126,15 @@ public class MeleeAttackSystem : MonoBehaviour
     }
     bool CanAttack()
     {
+
+        // Cannot attack if bottle is thrown
+        if (bottleThrown)
+        {
+            Debug.Log("Cannot attack: bottle is thrown, pick it up first!");
+            return false;
+        }
         // Check spray ammo
-    if (currentSprayAmmo <= 0)
+        if (currentSprayAmmo <= 0)
         {
             if (!isReloading)
             {
@@ -450,5 +482,154 @@ public class MeleeAttackSystem : MonoBehaviour
     public int GetMaxSprayAmmo() => stats.maxSprayAmmo;
     public bool IsReloading() => isReloading;
     public float GetReloadProgress() => isReloading ? (Time.time - reloadStartTime) / stats.sprayReloadTime : 0f;
+
+    bool CanThrowBottle()
+    {
+        if (bottleThrown)
+        {
+            Debug.Log("Cannot throw: bottle already thrown!");
+            return false;
+        }
+
+        if (lockSystem == null || !lockSystem.IsLocked)
+        {
+            return false;
+        }
+
+        if (isGrabbed || movement.grabState != PlayerPhysicsMovement.GrabState.None)
+        {
+            return false;
+        }
+
+        if (health != null && health.IsDead())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    void ThrowBottle()
+    {
+        if (stats.bottlePrefab == null)
+        {
+            Debug.LogError("Bottle prefab not assigned!");
+            return;
+        }
+
+        if (lockSystem.CurrentTarget == null)
+        {
+            Debug.LogError("No target locked!");
+            return;
+        }
+
+        // SAVE target avant de unlock
+        Transform target = lockSystem.CurrentTarget;
+
+        // Save current ammo
+        savedSprayAmmo = currentSprayAmmo;
+        bottleThrown = true;
+
+        // Unlock target
+        lockSystem.UnlockTarget();
+
+        // Raycast vers la cible sauvegardée
+        Vector3 origin = transform.position + Vector3.up * 1.5f;
+        Vector3 direction = (target.position - origin).normalized;
+
+        RaycastHit hit;
+        if (Physics.Raycast(origin, direction, out hit, 50f, LayerMask.GetMask("Zombie")))
+        {
+            Debug.Log("Bottle raycast hit: " + hit.collider.gameObject.name);
+
+            // Hit enemy
+            GameObject enemy = hit.collider.gameObject;
+            EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
+            if (enemyHealth != null && stats != null)
+            {
+                enemyHealth.TakeMeleeDamage(stats.bottleThrowDamage);
+            }
+
+            // Stun + force chase
+            EnemyAI enemyAI = enemy.GetComponent<EnemyAI>();
+            if (enemyAI != null)
+            {
+                StartCoroutine(StunAndChaseEnemy(enemyAI));
+            }
+
+            // Spawn bottle au sol pres de l'ennemi
+            Vector3 bottleSpawnPos = hit.point;
+            bottleSpawnPos.y = 0.5f;
+            thrownBottleInstance = Instantiate(stats.bottlePrefab, bottleSpawnPos, Quaternion.identity);
+
+            // Setup bottle
+            BottleProjectile bottle = thrownBottleInstance.GetComponent<BottleProjectile>();
+            if (bottle != null)
+            {
+                bottle.stats = stats;
+                bottle.savedAmmo = savedSprayAmmo;
+            }
+
+            // Play sounds
+            if (audioSource != null && stats.bottleThrowSound != null)
+            {
+                audioSource.PlayOneShot(stats.bottleThrowSound);
+            }
+            if (stats.bottleImpactSound != null)
+            {
+                AudioSource.PlayClipAtPoint(stats.bottleImpactSound, hit.point);
+            }
+        }
+
+        Debug.Log("Bottle thrown! Ammo saved: " + savedSprayAmmo);
+    }
+
+    System.Collections.IEnumerator StunAndChaseEnemy(EnemyAI enemyAI)
+    {
+        enemyAI.canMove = false;
+        UnityEngine.AI.NavMeshAgent agent = enemyAI.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+        }
+
+        yield return new WaitForSeconds(stats.bottleStunDuration);
+
+        PlayerPhysicsMovement player = FindObjectOfType<PlayerPhysicsMovement>();
+        if (player != null)
+        {
+            enemyAI.targetHuman = player.transform;
+            enemyAI.currentState = EnemyAI.State.Chasing;
+            enemyAI.isForcedChase = true;
+        }
+
+        enemyAI.canMove = true;
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            agent.SetDestination(player.transform.position);
+        }
+
+        Debug.Log(enemyAI.gameObject.name + " is now chasing after bottle hit!");
+    }
+
+    public bool IsBottleThrown() => bottleThrown;
+
+    void PickupBottle()
+    {
+        if (thrownBottleInstance == null) return;
+
+        // Restore ammo
+        currentSprayAmmo = savedSprayAmmo;
+        bottleThrown = false;
+
+        // Destroy bottle
+        Destroy(thrownBottleInstance);
+        thrownBottleInstance = null;
+
+        Debug.Log("Bottle picked up! Ammo restored: " + currentSprayAmmo);
+    }
+
+    public GameObject GetThrownBottle() => thrownBottleInstance;
 
 }

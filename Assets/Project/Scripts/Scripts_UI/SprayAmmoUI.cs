@@ -59,6 +59,15 @@ public class SprayAmmoUI : MonoBehaviour
     {
         if (meleeSystem == null) return;
 
+        bool bottleThrown = meleeSystem.IsBottleThrown();
+
+        // Griser l'UI si bouteille jetée
+        CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+
+        canvasGroup.alpha = bottleThrown ? 0.3f : 1f;
+
         UpdateIcons();
         UpdateAmmoCount();
     }

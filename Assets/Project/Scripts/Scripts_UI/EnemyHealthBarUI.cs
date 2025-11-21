@@ -27,6 +27,7 @@ public class EnemyHealthBarUI : MonoBehaviour
         if (background != null)
         {
             originalBackgroundColor = background.color;
+            Debug.Log($"Original background color saved: {originalBackgroundColor}");
         }
     }
 
@@ -117,9 +118,17 @@ public class EnemyHealthBarUI : MonoBehaviour
     // === LOCK-ON OUTLINE ===
     public void SetLockedOutline(bool locked)
     {
-        if (background != null)
+        if (background == null) return;
+
+        Debug.Log($"SetLockedOutline called on {gameObject.name}: {locked}");
+
+        if (locked)
         {
-            background.color = locked ? lockedColor : originalBackgroundColor;
+            background.color = lockedColor;
+        }
+        else
+        {
+            background.color = originalBackgroundColor;
         }
     }
 }
