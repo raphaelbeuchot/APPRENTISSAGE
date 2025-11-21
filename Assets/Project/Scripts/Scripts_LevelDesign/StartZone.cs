@@ -17,7 +17,7 @@ public class StartZone : MonoBehaviour
 
     void Update()
     {
-        if (playerInZone && !gameStarted && Input.GetKeyDown(KeyCode.O))
+        if (playerInZone && !gameStarted && PlayerInputManager.Instance.InteractPressed)
         {
             Debug.Log("O presse! Lancement du countdown!");
             gameStarted = true;

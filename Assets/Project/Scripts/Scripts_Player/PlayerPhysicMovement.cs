@@ -144,24 +144,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void HandleInput()
     {
-        // --- FREEZE ---
-        if (Input.GetKey(KeyCode.C))
-        {
-            freezeHoldTime += Time.deltaTime;
-
-            if (freezeHoldTime >= 0.5f && !isFrozen && grabState == GrabState.None)
-            {
-                StartFreeze();
-            }
-        }
-        else
-        {
-            if (isFrozen)
-                EndFreeze();
-
-            freezeHoldTime = 0f;
-        }
-
         // Bloquer inputs si grabbed ou en recoil
         if (grabState != GrabState.None || gameManager.stunBySentinel)
         {
@@ -176,11 +158,12 @@ public class PlayerPhysicsMovement : MonoBehaviour
             return;
         }
 
-        float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
-        moveInput = new Vector3(h, 0f, v).normalized;
+        // === NOUVEAU : Utiliser PlayerInputManager ===
+        Vector2 inputVector = PlayerInputManager.Instance.MoveInput;
+        moveInput = new Vector3(inputVector.x, 0f, inputVector.y).normalized;
 
-        if (Input.GetKey(KeyCode.LeftShift) && currentStamina > 0f && moveInput.magnitude > 0.1f)
+        // Sprint
+        if (PlayerInputManager.Instance.SprintPressed && currentStamina > 0f && moveInput.magnitude > 0.1f)
         {
             isSprinting = true;
             lastSprintTime = Time.time;

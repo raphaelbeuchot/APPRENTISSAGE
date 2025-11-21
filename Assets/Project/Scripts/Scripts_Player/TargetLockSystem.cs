@@ -28,21 +28,13 @@ public class TargetLockSystem : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKey(KeyCode.Tab))
+        // === NOUVEAU : Utiliser PlayerInputManager ===
+        if (PlayerInputManager.Instance.LockOnHeld)
         {
             if (!IsLocked)
             {
                 LockOntoTarget();
             }
-            /*else
-            {
-                // Switch target avec molette
-                float scroll = Input.GetAxis("Mouse ScrollWheel");
-                if (scroll > 0f)
-                    SwitchTarget(1);
-                else if (scroll < 0f)
-                    SwitchTarget(-1);
-            }*/
         }
         else
         {

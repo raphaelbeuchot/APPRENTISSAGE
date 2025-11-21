@@ -74,33 +74,33 @@ public class MeleeAttackSystem : MonoBehaviour
     {
         if (stats == null) return;
 
-        // Handle reload
         HandleReload();
-        // Check bottle throw
-        if (Input.GetKeyDown(KeyCode.Space) && CanThrowBottle())
-        {
-            ThrowBottle();
-            return;
-        }
 
         // Check bottle pickup
         if (bottleThrown && thrownBottleInstance != null)
         {
             float distance = Vector3.Distance(transform.position, thrownBottleInstance.transform.position);
-            if (distance <= 1.5f && Input.GetKeyDown(KeyCode.E))
+            if (distance <= 1.5f && PlayerInputManager.Instance.InteractPressed)
             {
                 PickupBottle();
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && CanAttack())
+        // === SPRAY = RB/R1 uniquement (SprayAttackPressed) ===
+        if (PlayerInputManager.Instance.SprayAttackPressed && CanAttack())
         {
             StartCoroutine(PerformAttack());
+        }
+
+        // === THROW BOTTLE = RT/R2 + lock-on (ThrowBottlePressed) ===
+        if (PlayerInputManager.Instance.ThrowBottlePressed && CanThrowBottle())
+        {
+            ThrowBottle();
         }
     }
     void HandleReload()
     {
-        if (Input.GetKeyDown(KeyCode.R) && currentSprayAmmo < stats.maxSprayAmmo && !isReloading)
+        if (PlayerInputManager.Instance.ReloadPressed && currentSprayAmmo < stats.maxSprayAmmo && !isReloading)
         {
             StartReload();
         }

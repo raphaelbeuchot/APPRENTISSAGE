@@ -38,7 +38,7 @@ public class BroomAttackSystem : MonoBehaviour
     {
         if (stats == null) return;
 
-        if (Input.GetKeyDown(KeyCode.B) && CanAttack())
+        if (PlayerInputManager.Instance.BroomAttackPressed && CanAttack())
         {
             StartCoroutine(PerformBroomAttack());
         }
