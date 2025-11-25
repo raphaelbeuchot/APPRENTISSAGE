@@ -168,6 +168,13 @@ public class BroomAttackSystem : MonoBehaviour
             EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
             if (enemyHealth != null && !enemyHealth.IsDead())
             {
+                // DESACTIVER ZOMBIE AVANT KNOCKBACK
+                EnemyAI_AStar zombieAI_AStar_temp = hit.GetComponent<EnemyAI_AStar>();
+                if (zombieAI_AStar_temp != null)
+                {
+                    zombieAI_AStar_temp.enabled = false;
+                }
+
                 // Knockback
                 Rigidbody targetRb = hit.GetComponent<Rigidbody>();
                 if (targetRb != null)

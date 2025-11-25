@@ -286,14 +286,25 @@ public class MeleeAttackSystem : MonoBehaviour
             {
                 hitSomething = true;
 
-                // CHECK SI ENNEMI AWARE DU PLAYER
-                EnemyAI enemyAI = hit.GetComponent<EnemyAI>();
+                // CHECK SI ENNEMI AWARE DU PLAYER (support A* et NavMesh)
                 bool isPshitAttack = false;
 
-                if (enemyAI != null)
+                // Essayer nouveau systeme A*
+                EnemyAI_AStar enemyAI_AStar = hit.GetComponent<EnemyAI_AStar>();
+                if (enemyAI_AStar != null)
                 {
-                    isPshitAttack = (enemyAI.currentState == EnemyAI.State.Chasing ||
-                                    enemyAI.currentState == EnemyAI.State.Attacking);
+                    isPshitAttack = (enemyAI_AStar.currentState == EnemyAI_AStar.State.Chasing ||
+                                    enemyAI_AStar.currentState == EnemyAI_AStar.State.Attacking);
+                }
+                else
+                {
+                    // Fallback ancien systeme NavMesh
+                    EnemyAI enemyAI = hit.GetComponent<EnemyAI>();
+                    if (enemyAI != null)
+                    {
+                        isPshitAttack = (enemyAI.currentState == EnemyAI.State.Chasing ||
+                                        enemyAI.currentState == EnemyAI.State.Attacking);
+                    }
                 }
 
                 // Consume spray ammo only once if pshit attack
@@ -314,6 +325,13 @@ public class MeleeAttackSystem : MonoBehaviour
                 {
                     wasFrontAttack = false;
                     sprayUsed = true;
+                }
+
+                // DESACTIVER ZOMBIE AVANT KNOCKBACK
+                EnemyAI_AStar zombieAI_AStar_temp = hit.GetComponent<EnemyAI_AStar>();
+                if (zombieAI_AStar_temp != null)
+                {
+                    zombieAI_AStar_temp.enabled = false;
                 }
 
                 // Knockback
@@ -414,31 +432,51 @@ public class MeleeAttackSystem : MonoBehaviour
             yield break;
         }
 
+        // Support A* et NavMesh
+        EnemyAI_AStar zombieAI_AStar = target.GetComponent<EnemyAI_AStar>();
         EnemyAI zombieAI = target.GetComponent<EnemyAI>();
 
-        // NOUVEAU : Désactive NavMesh pendant le knockdown
-        UnityEngine.AI.NavMeshAgent agent = target.GetComponent<UnityEngine.AI.NavMeshAgent>();
-        bool hadAgent = agent != null;
-        if (hadAgent && agent.isOnNavMesh)
+        // Desactiver pathfinding A*
+        if (zombieAI_AStar != null)
         {
-            agent.enabled = false;
+            Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
+            if (aiPath != null)
+            {
+                aiPath.enabled = false;
+            }
+            zombieAI_AStar.enabled = false;
         }
-
-        if (zombieAI != null)
+        // Desactiver NavMesh
+        else if (zombieAI != null)
         {
+            UnityEngine.AI.NavMeshAgent agent = target.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.enabled = false;
+            }
             zombieAI.enabled = false;
         }
 
         yield return new WaitForSeconds(2f);
 
-        // NOUVEAU : Réactive NavMesh
-        if (hadAgent && agent != null)
+        // Reactiver pathfinding A*
+        if (zombieAI_AStar != null && target != null)
         {
-            agent.enabled = true;
+            Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
+            if (aiPath != null)
+            {
+                aiPath.enabled = true;
+            }
+            zombieAI_AStar.enabled = true;
         }
-
-        if (zombieAI != null && target != null)
+        // Reactiver NavMesh
+        else if (zombieAI != null && target != null)
         {
+            UnityEngine.AI.NavMeshAgent agent = target.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.enabled = true;
+            }
             zombieAI.enabled = true;
         }
     }

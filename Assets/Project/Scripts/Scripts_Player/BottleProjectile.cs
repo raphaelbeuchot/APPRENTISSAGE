@@ -20,7 +20,7 @@ public class BottleProjectile : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         Debug.Log("Bottle collision with: " + collision.gameObject.name + ", layer: " + LayerMask.LayerToName(collision.gameObject.layer));
-        
+
         // Impact sur ennemi
         if (!hasHitEnemy && collision.gameObject.layer == LayerMask.NameToLayer("Zombie"))
         {
@@ -48,15 +48,65 @@ public class BottleProjectile : MonoBehaviour
             enemyHealth.TakeMeleeDamage(stats.bottleThrowDamage);
         }
 
-        // Stun + force chase
-        EnemyAI enemyAI = enemy.GetComponent<EnemyAI>();
-        if (enemyAI != null && stats != null)
+        // Essayer nouveau systeme A* d'abord
+        EnemyAI_AStar enemyAI_AStar = enemy.GetComponent<EnemyAI_AStar>();
+        if (enemyAI_AStar != null)
         {
-            StartCoroutine(StunAndChase(enemyAI));
+            StartCoroutine(StunAndChase_AStar(enemyAI_AStar));
+            return;
+        }
+
+        // Fallback ancien systeme NavMesh
+        EnemyAI enemyAI = enemy.GetComponent<EnemyAI>();
+        if (enemyAI != null)
+        {
+            StartCoroutine(StunAndChase_NavMesh(enemyAI));
         }
     }
 
-    System.Collections.IEnumerator StunAndChase(EnemyAI enemyAI)
+    System.Collections.IEnumerator StunAndChase_AStar(EnemyAI_AStar enemyAI)
+    {
+        // Arreter mouvement
+        enemyAI.canMove = false;
+        Pathfinding.AIPath aiPath = enemyAI.GetAIPath();
+        if (aiPath != null)
+        {
+            aiPath.canMove = false;
+        }
+
+        Debug.Log("Zombie stunned by bottle (A*)");
+
+        // Stun duration
+        yield return new WaitForSeconds(stats.bottleStunDuration);
+
+        Debug.Log("Zombie waking up from stun (A*)");
+
+        // Forcer la cible player
+        PlayerPhysicsMovement player = FindObjectOfType<PlayerPhysicsMovement>();
+        if (player != null)
+        {
+            enemyAI.targetHuman = player.transform;
+            enemyAI.currentState = EnemyAI_AStar.State.Chasing;
+            enemyAI.isForcedChase = true;
+            Debug.Log("Target set to player, state = Chasing (A*)");
+        }
+
+        // Reactiver mouvement
+        enemyAI.canMove = true;
+        if (aiPath != null)
+        {
+            aiPath.canMove = true;
+            if (player != null)
+            {
+                aiPath.destination = player.transform.position;
+                Debug.Log("AIPath destination set to player position");
+            }
+        }
+
+        Debug.Log(enemyAI.gameObject.name + " should be chasing now! (A*)");
+    }
+
+    System.Collections.IEnumerator StunAndChase_NavMesh(EnemyAI enemyAI)
     {
         // Arreter mouvement
         enemyAI.canMove = false;
@@ -66,12 +116,12 @@ public class BottleProjectile : MonoBehaviour
             agent.isStopped = true;
         }
 
-        Debug.Log("Zombie stunned by bottle");
+        Debug.Log("Zombie stunned by bottle (NavMesh)");
 
         // Stun duration
         yield return new WaitForSeconds(stats.bottleStunDuration);
 
-        Debug.Log("Zombie waking up from stun");
+        Debug.Log("Zombie waking up from stun (NavMesh)");
 
         // Forcer la cible player
         PlayerPhysicsMovement player = FindObjectOfType<PlayerPhysicsMovement>();
@@ -80,8 +130,7 @@ public class BottleProjectile : MonoBehaviour
             enemyAI.targetHuman = player.transform;
             enemyAI.currentState = EnemyAI.State.Chasing;
             enemyAI.isForcedChase = true;
-
-            Debug.Log("Target set to player, state = Chasing");
+            Debug.Log("Target set to player, state = Chasing (NavMesh)");
         }
 
         // Reactiver mouvement
@@ -93,6 +142,6 @@ public class BottleProjectile : MonoBehaviour
             Debug.Log("NavMesh destination set to player position");
         }
 
-        Debug.Log(enemyAI.gameObject.name + " should be chasing now!");
+        Debug.Log(enemyAI.gameObject.name + " should be chasing now! (NavMesh)");
     }
 }
