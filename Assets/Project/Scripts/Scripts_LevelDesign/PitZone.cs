@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.AI.Navigation;
+using Pathfinding;
+
 
 public class PitZone : MonoBehaviour
 {
@@ -26,8 +28,20 @@ public class PitZone : MonoBehaviour
     public Material wallMaterial;
     public Material floorMaterial;
 
-   
 
+    private void Start()
+    {
+        // Attendre que A* ait fini de scanner
+        if (AstarPath.active != null)
+        {
+            AstarPath.active.AddWorkItem(new AstarWorkItem(ctx =>
+            {
+                // Appliquer walkability après scan
+                ApplyAStarWalkability();
+                return true;
+            }));
+        }
+    }
     public void Initialize(int id, PitGridData data)
     {
         zoneID = id;
@@ -359,4 +373,59 @@ public class PitZone : MonoBehaviour
         }
     }
 
+    public void ApplyAStarWalkability(int penaltyAmount = 10000)
+    {
+        Debug.Log("=== APPLY A* WALKABILITY START ===");
+
+        if (AstarPath.active == null)
+        {
+            Debug.LogError("AstarPath not found!");
+            return;
+        }
+
+        if (gridData == null || zoneID < 0)
+        {
+            Debug.LogError($"PitZone not initialized! gridData null: {gridData == null}, zoneID: {zoneID}");
+            return;
+        }
+
+        var cells = gridData.GetCellsForZone(zoneID);
+        Debug.Log($"Cells found for zone {zoneID}: {cells.Count}");
+
+        if (cells == null || cells.Count == 0)
+        {
+            Debug.LogError($"No cells found for zone {zoneID}");
+            return;
+        }
+
+        float gridCellSize = gridData.gridCellSize;
+        Debug.Log($"Grid cell size: {gridCellSize}");
+
+        int processedCells = 0;
+        foreach (var kvp in cells)
+        {
+            Vector2Int cellPos = kvp.Key;
+            Vector3 worldPos = gridData.CellToWorld(cellPos);
+
+            worldPos.x += gridCellSize * 0.5f;
+            worldPos.z += gridCellSize * 0.5f;
+            worldPos.y = 0f;
+
+            Debug.Log($"Processing cell {cellPos} at world pos {worldPos}");
+
+            Bounds cellBounds = new Bounds(
+                worldPos,
+                new Vector3(gridCellSize, 0.5f, gridCellSize) // CHANGE: sans le *1.1
+            );
+
+            GraphUpdateObject guo = new GraphUpdateObject(cellBounds);
+            guo.modifyWalkability = false;
+            guo.addPenalty = penaltyAmount;
+
+            AstarPath.active.UpdateGraphs(guo);
+            processedCells++;
+        }
+
+        Debug.Log($"=== FINISHED: Applied penalty to {processedCells} cells ===");
+    }
 }
