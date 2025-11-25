@@ -198,7 +198,7 @@ public class MeleeAttackSystem : MonoBehaviour
     IEnumerator PerformAttack()
     {
         isAttacking = true;
-        
+
         try
         {
             /*// CONSOMMER LA STAMINA

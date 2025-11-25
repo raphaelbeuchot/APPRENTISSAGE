@@ -7,6 +7,10 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     [Header("Pit Settings")]
     public float pitDamageMultiplier = 1f;
 
+
+    private float lastClimbOutTime = -999f;
+    private float climbOutCooldown = 1.5f; // Cooldown entre sorties
+
     [Header("Character Dimensions")]
     public float characterCenterHeight = 1f;
 
@@ -65,8 +69,8 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         // Bloquer TOUT pendant l'animation
         if (isClimbingOut) return;
 
-        // Sortie du pit avec E - UNIQUEMENT GetKeyDown
-        if (isInPit && Input.GetKeyDown(exitKey))
+        // === NOUVEAU : Utiliser PlayerInputManager ===
+        if (isInPit && PlayerInputManager.Instance.InteractPressed)
         {
             TryClimbOut();
         }
@@ -156,6 +160,12 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     {
         Debug.Log("[PlayerPit] TryClimbOut CALLED");
 
+        // NOUVEAU : Check cooldown
+        if (Time.time - lastClimbOutTime < climbOutCooldown)
+        {
+            return;
+        }
+
         if (isClimbingOut)
         {
             Debug.Log("[PlayerPit] Already climbing out!");
@@ -210,60 +220,75 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
 
     private IEnumerator ClimbOutAnimation(Vector3 exitDirection)
     {
-        Debug.Log("[PlayerPit] === COROUTINE STARTED === exitDirection: " + exitDirection);
+        Debug.Log($"[PlayerPit] === COROUTINE STARTED === exitDirection: {exitDirection}");
 
-        // FORCER exitDirection sur le plan XZ et normaliser MANUELLEMENT
-        exitDirection.y = 0f;
-        float magnitude = Mathf.Sqrt(exitDirection.x * exitDirection.x + exitDirection.z * exitDirection.z);
-        if (magnitude > 0.001f)
-        {
-            exitDirection.x /= magnitude;
-            exitDirection.z /= magnitude;
-        }
-        Debug.Log("[PlayerPit] Manually normalized exitDirection: " + exitDirection);
-
-        // BLOQUER immediatement
         isClimbingOut = true;
 
-        // ATTENDRE 1 frame
-        yield return null;
+        // Désactiver le contrôle du joueur
+        if (playerMovement != null)
+            playerMovement.enabled = false;
 
-        // Désactivation movement et collider
-        if (playerMovement != null) playerMovement.enabled = false;
-        if (capsuleCollider != null) capsuleCollider.enabled = false;
+        // Normaliser la direction (juste au cas où)
+        exitDirection.y = 0;
+        if (exitDirection.sqrMagnitude > 0.01f)
+        {
+            exitDirection.Normalize();
+        }
+        Debug.Log($"[PlayerPit] Manually normalized exitDirection: {exitDirection}");
 
         Vector3 startPos = transform.position;
-        float groundY = currentPitZone != null ? currentPitZone.transform.position.y : 0f;
 
-        Vector3 endPos = new Vector3(
-            startPos.x + exitDirection.x * climbOutDistance,
-            groundY,
-            startPos.z + exitDirection.z * climbOutDistance
-        );
+        // --- PHASE 1 : TRACTION VERTICALE (monte à Y=0) ---
+        float tractionDuration = 0.6f;
+        Vector3 topPos = new Vector3(startPos.x, 0f, startPos.z);
 
-        Debug.Log("[PlayerPit] Climb out: from " + startPos + " to " + endPos);
+        Debug.Log($"[PlayerPit] Phase 1 - Traction: from {startPos} to {topPos}");
 
-        float elapsed = 0f;
-        while (elapsed < climbOutDuration)
+        float elapsedTime = 0f;
+        while (elapsedTime < tractionDuration)
         {
-            float t = elapsed / climbOutDuration;
-            transform.position = Vector3.Lerp(startPos, endPos, t);
-            elapsed += Time.deltaTime;
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / tractionDuration;
+            transform.position = Vector3.Lerp(startPos, topPos, t);
             yield return null;
         }
 
-        transform.position = endPos;
+        // Force position exacte après traction
+        transform.position = topPos;
+        Debug.Log($"[PlayerPit] Phase 1 complete, position: {transform.position}");
 
-        // Nettoyage et réactivation
+        // --- PHASE 2 : PAS EN AVANT (avance horizontalement) ---
+        float stepDuration = 0.4f;
+        float stepDistance = 0.5f; // Distance du pas
+        Vector3 finalPos = topPos + exitDirection * stepDistance;
+
+        Debug.Log($"[PlayerPit] Phase 2 - Step: from {topPos} to {finalPos}");
+
+        elapsedTime = 0f;
+        while (elapsedTime < stepDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / stepDuration;
+            transform.position = Vector3.Lerp(topPos, finalPos, t);
+            yield return null;
+        }
+
+        // Force position finale exacte
+        transform.position = finalPos;
+        Debug.Log($"[PlayerPit] Phase 2 complete, final position: {transform.position}");
+
+        // Sortie du pit
         ExitPit();
 
-        if (capsuleCollider != null) capsuleCollider.enabled = true;
-        if (playerMovement != null) playerMovement.enabled = true;
+        // Réactiver le contrôle
+        if (playerMovement != null)
+            playerMovement.enabled = true;
+
+        // Immunité temporaire
+        StartCoroutine(ExitImmunityCoroutine());
 
         isClimbingOut = false;
-
-        // Activer immunité temporaire
-        StartCoroutine(ExitImmunityCoroutine());
+        lastClimbOutTime = Time.time; // Cooldown
 
         Debug.Log("[PlayerPit] Climb out complete");
     }

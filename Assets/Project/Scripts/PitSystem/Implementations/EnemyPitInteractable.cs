@@ -40,6 +40,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         }
     }
 
+
     public void OnEnterPit(PitZone pitZone)
     {
         isInPit = true;

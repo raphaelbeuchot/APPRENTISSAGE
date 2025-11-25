@@ -384,11 +384,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
     }
     public Vector3 GetMoveInput()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-
-        Vector3 input = new Vector3(horizontal, 0f, vertical);
-        return transform.TransformDirection(input);
+        Vector2 input = PlayerInputManager.Instance.MoveInput;
+        Vector3 input3D = new Vector3(input.x, 0f, input.y);
+        return transform.TransformDirection(input3D);
     }
     // === FREEZE FUNCTIONS ===
     private Color originalColor; // <--- ajoute cette ligne dans tes variables privées

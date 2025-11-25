@@ -19,6 +19,9 @@ public class PlayerInputManager : MonoBehaviour
     public bool InteractPressed { get; private set; }
     public bool ReloadPressed { get; private set; }
 
+    public bool MashEscapePressed { get; private set; }
+
+
     private void Awake()
     {
         // Singleton
@@ -68,6 +71,9 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.Reload.performed += ctx => ReloadPressed = true;
         inputActions.Player.Reload.canceled += ctx => ReloadPressed = false;
+
+        inputActions.Player.MashEscape.performed += ctx => MashEscapePressed = true;
+        inputActions.Player.MashEscape.canceled += ctx => MashEscapePressed = false;
     }
 
     private void OnDisable()
@@ -101,5 +107,7 @@ public class PlayerInputManager : MonoBehaviour
         ThrowBottlePressed = false;
         InteractPressed = false;
         ReloadPressed = false;
+        MashEscapePressed = false;
+
     }
 }

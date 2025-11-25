@@ -388,7 +388,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    
+
 
     protected void StopMovement()
     {

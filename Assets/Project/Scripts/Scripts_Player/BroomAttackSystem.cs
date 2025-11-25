@@ -38,6 +38,8 @@ public class BroomAttackSystem : MonoBehaviour
     {
         if (stats == null) return;
 
+        Debug.Log($"BroomPressed: {PlayerInputManager.Instance.BroomAttackPressed}, MashPressed: {PlayerInputManager.Instance.MashEscapePressed}");
+
         if (PlayerInputManager.Instance.BroomAttackPressed && CanAttack())
         {
             StartCoroutine(PerformBroomAttack());
@@ -254,7 +256,7 @@ public class BroomAttackSystem : MonoBehaviour
     public void OnGrabEnd()
     {
         isGrabbed = false;
-        Debug.Log("BroomAttack: Player released");
+        Debug.Log("BroomAttack: Player released, isGrabbed now FALSE");
     }
 
     public bool IsAttacking() => isAttacking;
