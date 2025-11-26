@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.Cinemachine.Samples;
 using UnityEngine;
 using UnityEngine.AI;
+using Pathfinding;
 
 public class GameManager : MonoBehaviour
 {
@@ -198,8 +199,9 @@ public class GameManager : MonoBehaviour
             bool isMoving = false;
             if (rb != null)
             {
-                NavMeshAgent agent = col.GetComponent<NavMeshAgent>();
-                if (agent != null && agent.isOnNavMesh)
+                // ESSAYER A* EN PREMIER
+                Pathfinding.AIPath aiPath = col.GetComponent<Pathfinding.AIPath>();
+                if (aiPath != null && aiPath.canMove)
                 {
                     float effectiveThreshold = sentinelSettings.movementThreshold;
 
@@ -210,10 +212,31 @@ public class GameManager : MonoBehaviour
                         effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
                     }
 
-                    isMoving = agent.velocity.magnitude > effectiveThreshold;
+                    // AIPath : utiliser velocity (Vector3)
+                    isMoving = aiPath.velocity.magnitude > effectiveThreshold;
                 }
+                // SINON ESSAYER NAVMESH (ancien systeme)
                 else
-                    isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
+                {
+                    NavMeshAgent agent = col.GetComponent<NavMeshAgent>();
+                    if (agent != null && agent.isOnNavMesh)
+                    {
+                        float effectiveThreshold = sentinelSettings.movementThreshold;
+
+                        EnemyPitInteractable enemyPit = col.GetComponent<EnemyPitInteractable>();
+                        if (enemyPit != null && enemyPit.isInShallowWater)
+                        {
+                            effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
+                        }
+
+                        isMoving = agent.velocity.magnitude > effectiveThreshold;
+                    }
+                    // FALLBACK : Rigidbody velocity
+                    else
+                    {
+                        isMoving = rb.linearVelocity.magnitude > sentinelSettings.movementThreshold;
+                    }
+                }
             }
 
             bool shouldBeShot = (isMoving || isAttacking || isInBourrade || isFakeGrabber) && !playerImmune;

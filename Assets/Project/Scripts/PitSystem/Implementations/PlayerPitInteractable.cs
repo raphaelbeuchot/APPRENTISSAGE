@@ -7,7 +7,6 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     [Header("Pit Settings")]
     public float pitDamageMultiplier = 1f;
 
-
     private float lastClimbOutTime = -999f;
     private float climbOutCooldown = 1.5f; // Cooldown entre sorties
 
@@ -50,6 +49,8 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     // Wall contact detection
     private bool isCollidingWithPitWall = false;
     private Vector3 pitWallNormal;
+    private float lastWallContactTime = -999f;
+    private float wallContactPersistence = 0.2f; // Contact persiste 0.2s apres exit
 
     void Awake()
     {
@@ -104,6 +105,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         if (collision.gameObject.layer == LayerMask.NameToLayer("PitWall"))
         {
             isCollidingWithPitWall = true;
+            lastWallContactTime = Time.time; // Timestamp contact
 
             if (collision.contactCount > 0)
             {
@@ -121,7 +123,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("PitWall"))
         {
-            isCollidingWithPitWall = false;
+            // Ne plus set false immediatement, la persistence gere
         }
     }
 
@@ -179,11 +181,18 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
             return;
         }
 
-        // CHECK 2 : Touche-t-on un mur ?
-        if (!isCollidingWithPitWall)
+        // CHECK 2 : Touche-t-on un mur ? (avec persistence)
+        bool hasWallContact = isCollidingWithPitWall || (Time.time - lastWallContactTime < wallContactPersistence);
+        if (!hasWallContact)
         {
             Debug.Log("[PlayerPit] Not touching pit wall, cannot climb out");
             return;
+        }
+
+        // Si pas de contact actif mais persistence active, invalider le flag apres le check
+        if (!isCollidingWithPitWall && Time.time - lastWallContactTime >= wallContactPersistence)
+        {
+            isCollidingWithPitWall = false;
         }
 
         // CHECK 3 : Y a-t-il un input de mouvement ?
@@ -198,23 +207,12 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
             }
         }
 
-        // Récupère la direction de sortie et applique la correction pour l'axe X
-        Vector3 exitDirection = transform.TransformDirection(playerMovement.GetMoveInput()).normalized;
+        // NOUVEAU : Direction de sortie = normale du mur (sortir perpendiculairement)
+        Vector3 exitDirection = -pitWallNormal;
+        exitDirection.y = 0;
+        exitDirection.Normalize();
 
-        // Correction AXE X inversé
-        exitDirection.x *= -1f;
-
-        // CHECK 4 : Pousse-t-on vers le mur ?
-        float dotProduct = Vector3.Dot(exitDirection, -pitWallNormal);
-        Debug.Log("[PlayerPit] Dot product: " + dotProduct);
-
-        if (dotProduct < 0.7f)
-        {
-            Debug.Log("[PlayerPit] Not pushing towards wall correctly (dot=" + dotProduct + ")");
-            return;
-        }
-
-        Debug.Log("[PlayerPit] Starting climb out animation, exit direction: " + exitDirection);
+        Debug.Log($"[PlayerPit] Starting climb out, wall normal: {pitWallNormal}, exit direction: {exitDirection}");
         StartCoroutine(ClimbOutAnimation(exitDirection));
     }
 
@@ -305,10 +303,32 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
 
         hasExitImmunity = false;
         Debug.Log("[PlayerPit] Exit immunity ended");
+
+        // NOUVEAU : Check si on est encore dans un pit trigger
+        // Si oui, re-process l'entree manuellement
+        if (currentPitZone != null)
+        {
+            Debug.Log("[PlayerPit] Still in pit zone after immunity, re-processing entry");
+            OnEnterPit(currentPitZone);
+        }
     }
 
     private void ExitPit()
     {
+        // NOUVEAU : Nettoyer le dictionnaire du PitFillDamageController
+        if (currentPitZone != null)
+        {
+            PitFill pitFill = currentPitZone.GetComponent<PitFill>();
+            if (pitFill != null)
+            {
+                PitFillDamageController damageController = pitFill.GetComponent<PitFillDamageController>();
+                if (damageController != null)
+                {
+                    damageController.ForceRemoveEntity(gameObject);
+                }
+            }
+        }
+
         if (isInShallowWater)
         {
             isInShallowWater = false;
@@ -324,6 +344,10 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         {
             playerMovement.RemoveWaterSlowdown();
         }
+
+        // Reset wall contact state
+        isCollidingWithPitWall = false;
+        lastWallContactTime = -999f;
 
         isInPit = false;
         currentPitZone = null;
@@ -380,11 +404,13 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
 
     public void OnEnterPit(PitZone pitZone)
     {
-        // Si on a l'immunité, ignorer
+        // Si on a l'immunite, ignorer LES EFFETS mais SET quand meme isInPit
         if (hasExitImmunity)
         {
-            Debug.Log("[PlayerPit] Exit immunity active, ignoring pit entry");
-            return;
+            Debug.Log("[PlayerPit] Exit immunity active, delaying pit effects");
+            isInPit = true; // FIX : Enregistre quand meme qu'on est dans le pit
+            currentPitZone = pitZone;
+            return; // Ignore juste les effets (water, damage, etc.)
         }
 
         isInPit = true;
@@ -443,6 +469,10 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         Debug.Log("[PitFill DEBUG] Called OnEnterPit for Player");
     }
 
+    public bool IsClimbingOut()
+    {
+        return isClimbingOut;
+    }
     public void OnExitPit(PitZone pitZone)
     {
         // Compatibilité avec PitFillDamageController

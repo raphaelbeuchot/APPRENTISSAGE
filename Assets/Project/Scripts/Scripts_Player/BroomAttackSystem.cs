@@ -200,12 +200,21 @@ public class BroomAttackSystem : MonoBehaviour
                 Debug.Log(gameObject.name + " BROOM hit " + hit.gameObject.name + " for " + stats.broomDamage + " damage!");
             }
 
-            // SWARMS
-            SwarmController swarm = hit.GetComponent<SwarmController>();
-            if (swarm != null)
+            // SWARMS (support A* et NavMesh)
+            SwarmController_AStar swarmAStar = hit.GetComponent<SwarmController_AStar>();
+            if (swarmAStar != null)
             {
-                swarm.TakeDamage(stats.broomDamage);
-                Debug.Log(gameObject.name + " BROOM hit swarm for " + stats.broomDamage + " damage!");
+                swarmAStar.TakeDamage(stats.broomDamage);
+                Debug.Log(gameObject.name + " BROOM hit swarm (A*) for " + stats.broomDamage + " damage!");
+            }
+            else
+            {
+                SwarmController swarm = hit.GetComponent<SwarmController>();
+                if (swarm != null)
+                {
+                    swarm.TakeDamage(stats.broomDamage);
+                    Debug.Log(gameObject.name + " BROOM hit swarm for " + stats.broomDamage + " damage!");
+                }
             }
 
             // BRIGHT EYES
@@ -220,29 +229,51 @@ public class BroomAttackSystem : MonoBehaviour
 
     IEnumerator KnockdownTarget(GameObject target)
     {
+        // Support A* et NavMesh
+        EnemyAI_AStar zombieAI_AStar = target.GetComponent<EnemyAI_AStar>();
         EnemyAI zombieAI = target.GetComponent<EnemyAI>();
-        UnityEngine.AI.NavMeshAgent agent = target.GetComponent<UnityEngine.AI.NavMeshAgent>();
 
-        bool hadAgent = agent != null;
-        if (hadAgent && agent.isOnNavMesh)
+        // Desactiver pathfinding A*
+        if (zombieAI_AStar != null)
         {
-            agent.enabled = false;
+            Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
+            if (aiPath != null)
+            {
+                aiPath.enabled = false;
+            }
+            zombieAI_AStar.enabled = false;
         }
-
-        if (zombieAI != null)
+        // Desactiver NavMesh
+        else if (zombieAI != null)
         {
+            UnityEngine.AI.NavMeshAgent agent = target.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.enabled = false;
+            }
             zombieAI.enabled = false;
         }
 
         yield return new WaitForSeconds(2f);
 
-        if (hadAgent && agent != null)
+        // Reactiver pathfinding A*
+        if (zombieAI_AStar != null && target != null)
         {
-            agent.enabled = true;
+            Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
+            if (aiPath != null)
+            {
+                aiPath.enabled = true;
+            }
+            zombieAI_AStar.enabled = true;
         }
-
-        if (zombieAI != null && target != null)
+        // Reactiver NavMesh
+        else if (zombieAI != null && target != null)
         {
+            UnityEngine.AI.NavMeshAgent agent = target.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.enabled = true;
+            }
             zombieAI.enabled = true;
         }
     }

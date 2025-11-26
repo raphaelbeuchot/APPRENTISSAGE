@@ -146,9 +146,19 @@ public class PitFillDamageController : MonoBehaviour
         {
             FillEntityData data = entitiesInFill[go];
 
-            // NE PAS RETIRER si l'entité est en train de tomber
+            // NE PAS RETIRER si l'entite est en train de tomber
             if (data.isFalling)
             {
+                // NOUVEAU : Exception SEULEMENT pour le player en train de climb out
+                PlayerPitInteractable playerPit = interactable as PlayerPitInteractable;
+                if (playerPit != null && playerPit.IsClimbingOut())
+                {
+                    entitiesInFill.Remove(go);
+                    if (showDebugLogs)
+                        Debug.Log($"[PitFill] {go.name} climbing out - removed from dict");
+                    return;
+                }
+
                 if (showDebugLogs)
                     Debug.Log($"[PitFill] {go.name} exited trigger but is falling - keeping in dict");
                 return;
@@ -366,7 +376,25 @@ public class PitFillDamageController : MonoBehaviour
         // LOG AJOUTÉ
         Debug.Log($"[PitFill COROUTINE] {go.name} coroutine completed");
     }
+    public void ForceRemoveEntity(GameObject go)
+    {
+        if (entitiesInFill.ContainsKey(go))
+        {
+            if (activeDeathCoroutines.ContainsKey(go))
+            {
+                if (activeDeathCoroutines[go] != null)
+                {
+                    StopCoroutine(activeDeathCoroutines[go]);
+                }
+                activeDeathCoroutines.Remove(go);
+            }
 
+            entitiesInFill.Remove(go);
+
+            if (showDebugLogs)
+                Debug.Log($"[PitFill] Force removed {go.name} from dict");
+        }
+    }
     private void CheckAndDestroyIfDead(FillEntityData data, PitContentType fillType)
     {
         if (data.interactable == null) return;

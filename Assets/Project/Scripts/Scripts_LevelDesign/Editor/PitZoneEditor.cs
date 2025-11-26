@@ -76,7 +76,7 @@ public class PitZoneEditor : Editor
         GUI.backgroundColor = Color.yellow;
         if (GUILayout.Button("Apply A* Walkability", GUILayout.Height(30)))
         {
-            pitZone.ApplyAStarWalkability();
+            pitZone.ApplyAStarWalkability(pitZone.penaltyAmount);
         }
         GUI.backgroundColor = Color.white;
 

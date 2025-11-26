@@ -55,10 +55,14 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
     // Audio trigger: set the target position and start the charge
     void OnMeleeHitHeard(Vector3 soundPosition)
     {
+        Debug.Log($"BLINDER HEARD MELEE at {soundPosition}, distance: {Vector3.Distance(transform.position, soundPosition)}");
+
         if (isCharging || isStraightRunning) return;
 
         float dist = Vector3.Distance(transform.position, soundPosition);
         if (dist > stats.audioDetectionRange) return;
+
+        Debug.Log($"BLINDER STARTING CHARGE!");
 
         chargeTargetPosition = soundPosition;
         StartCharge();
@@ -128,7 +132,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             if (rb != null)
             {
                 Vector3 vel = lockedDirection * speed;
-                vel.y = 0;
+                vel.y = Mathf.Min(rb.linearVelocity.y, 0f); // PRESERVE gravite, bloque envol
                 rb.linearVelocity = vel;
             }
             elapsed += Time.deltaTime;
@@ -139,7 +143,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
         if (rb != null)
         {
             Vector3 vel = lockedDirection * stats.chargeSpeed;
-            vel.y = 0;
+            vel.y = Mathf.Min(rb.linearVelocity.y, 0f); // PRESERVE gravite, bloque envol
             rb.linearVelocity = vel;
         }
 
@@ -152,11 +156,6 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
         isCharging = false;
         isStraightRunning = true;
-
-        /*// Ignore collisions avec zombies pour ne pas d�vier
-        int blinderLayer = gameObject.layer;
-        int zombieLayer = LayerMask.NameToLayer("Zombie");
-        if (zombieLayer >= 0) Physics.IgnoreLayerCollision(blinderLayer, zombieLayer, true);*/
 
         float elapsed = 0f;
         float maxDuration = 1.5f;
@@ -171,7 +170,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             if (rb != null)
             {
                 Vector3 vel = forwardDir * stats.chargeSpeed;
-                vel.y = 0;
+                vel.y = Mathf.Min(rb.linearVelocity.y, 0f); // PRESERVE gravite, bloque envol
                 rb.linearVelocity = vel;
             }
 
@@ -193,8 +192,8 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             yield return null;
         }
 
-        // Commencer la d�c�l�ration jusqu'� l'arr�t
-        float decelDuration = 1f; // temps de d�c�l�ration, ajustable
+        // Commencer la deceleration jusqu'a l'arret
+        float decelDuration = 1f; // temps de deceleration, ajustable
         float decelElapsed = 0f;
         Vector3 initialVelocity = rb != null ? rb.linearVelocity : Vector3.zero;
 
@@ -209,9 +208,6 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
         if (rb != null)
             rb.linearVelocity = Vector3.zero;
-
-        /*// Restaurer collisions avec zombies
-        if (zombieLayer >= 0) Physics.IgnoreLayerCollision(blinderLayer, zombieLayer, false);*/
 
         // Fin de charge
         FinishCharge();
@@ -277,19 +273,19 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
             if (otherRb != null)
             {
-                // Même force que le player
+                // Meme force que le player
                 otherRb.AddForce(pushDir * stats.knockbackForce, ForceMode.VelocityChange);
 
                 // Keep the Blinder moving forward (prevent bounce)
                 if (rb != null)
                 {
                     Vector3 vel = transform.forward * stats.chargeSpeed;
-                    vel.y = 0;
+                    vel.y = Mathf.Min(rb.linearVelocity.y, 0f); // PRESERVE gravite
                     rb.linearVelocity = vel;
                 }
             }
 
-            
+
         }
 
         // Walls / environment: stop the charge gracefully if needed
@@ -326,7 +322,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             if (rb != null)
             {
                 Vector3 vel = Vector3.Lerp(initialVelocity, Vector3.zero, t);
-                vel.y = 0;
+                vel.y = Mathf.Min(rb.linearVelocity.y, 0f); // PRESERVE gravite
                 rb.linearVelocity = vel;
             }
             yield return null;

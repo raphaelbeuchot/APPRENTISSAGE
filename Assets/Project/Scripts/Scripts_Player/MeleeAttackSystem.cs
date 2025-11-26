@@ -369,14 +369,47 @@ public class MeleeAttackSystem : MonoBehaviour
                 Debug.Log(gameObject.name + " hit " + hit.gameObject.name + " for " + damage + " damage!");
             }
 
-            // GESTION NUEES
-            SwarmController swarm = hit.GetComponent<SwarmController>();
-            if (swarm != null)
+            // GESTION NUEES (support A* et NavMesh) - TOUJOURS PSHIT
+            SwarmController_AStar swarmAStar = hit.GetComponent<SwarmController_AStar>();
+            if (swarmAStar != null)
             {
                 hitSomething = true;
-                float damage = stats.GetAdjustedDamage();
-                swarm.TakeDamage(damage);
-                Debug.Log(gameObject.name + " hit swarm for " + damage + " damage!");
+
+                // Toujours consommer munition (pshit obligatoire)
+                if (!sprayUsed)
+                {
+                    currentSprayAmmo--;
+                    sprayUsed = true;
+                    wasFrontAttack = true;
+                }
+
+                // Degats eleves contre swarms
+                float damage = stats.attackDamage * 3f;
+                swarmAStar.TakeDamage(damage);
+
+                Debug.Log(gameObject.name + " PSHIT swarm (A*) for " + damage + " damage!");
+            }
+            else
+            {
+                SwarmController swarm = hit.GetComponent<SwarmController>();
+                if (swarm != null)
+                {
+                    hitSomething = true;
+
+                    // Toujours consommer munition (pshit obligatoire)
+                    if (!sprayUsed)
+                    {
+                        currentSprayAmmo--;
+                        sprayUsed = true;
+                        wasFrontAttack = true;
+                    }
+
+                    // Degats eleves contre swarms
+                    float damage = stats.attackDamage * 3f;
+                    swarm.TakeDamage(damage);
+
+                    Debug.Log(gameObject.name + " PSHIT swarm for " + damage + " damage!");
+                }
             }
 
             // GESTION BRIGHT EYES

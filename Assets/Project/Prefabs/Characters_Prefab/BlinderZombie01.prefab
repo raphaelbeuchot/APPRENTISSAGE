@@ -160,7 +160,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
       propertyPath: m_Name
-      value: BlinderZombie 1
+      value: BlinderZombie01
       objectReference: {fileID: 0}
     - target: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
       propertyPath: m_Layer
@@ -479,10 +479,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4912937214979650276}
-    - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 522051519322752510}
+      addedObject: {fileID: 1897056354708244938}
     - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8477212096443037886}
@@ -492,35 +489,19 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6839133426026470582}
+    - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1617681065848092908}
+    - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5969453713487826695}
   m_SourcePrefab: {fileID: 100100000, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
 --- !u!1 &485149489708715402 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
   m_PrefabInstance: {fileID: 1509593841276875296}
   m_PrefabAsset: {fileID: 0}
---- !u!195 &4912937214979650276
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 485149489708715402}
-  m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 2
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0.5
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 3
---- !u!114 &522051519322752510
+--- !u!114 &1897056354708244938
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -529,12 +510,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 485149489708715402}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2207af147c350604ab61bc1bc6f35b82, type: 3}
+  m_Script: {fileID: 11500000, guid: 72d07bd214d077c488abee747a7073be, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: bddc9e55d177f5645a3dd8485befb1ca, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  targetHuman: {fileID: 0}
+  canMove: 1
+  isStunnedBySentinel: 0
+  isForcedChase: 0
   isDetectedBySentinel: 0
+  currentState: 0
 --- !u!114 &8477212096443037886
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -548,6 +534,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   stats: {fileID: 11400000, guid: bddc9e55d177f5645a3dd8485befb1ca, type: 2}
+  deathByPit: 0
+  healthBarUI: {fileID: 0}
   pulseScaleMultiplier: 1.2
   pulseDuration: 0.3
 --- !u!114 &4356401846840655459
@@ -576,6 +564,114 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BlinderWanderBehavior
   stats: {fileID: 11400000, guid: 1d912fb29d211354a8983ee231a8fb3f, type: 2}
+--- !u!114 &1617681065848092908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485149489708715402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 373b52eb9bf8c40f785bb6947a1aee66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AstarPathfindingProject::Pathfinding.Seeker
+  version: 1073741824
+  drawGizmos: 1
+  detailedGizmos: 0
+  startEndModifier:
+    addPoints: 0
+    exactStartPoint: 3
+    exactEndPoint: 3
+    useRaycasting: 0
+    mask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    useGraphRaycasting: 0
+  traversableTags: -1
+  tagCostMultipliers:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  tagEntryCosts: 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  graphMask:
+    value: -1
+--- !u!114 &5969453713487826695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485149489708715402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6eb1402c17e84a9282a7f0f62eb584f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AstarPathfindingProject::Pathfinding.AIPath
+  version: 1073741824
+  radius: 0.5
+  height: 2
+  simulateMovement: 1
+  maxSpeed: 1
+  gravity: {x: NaN, y: NaN, z: NaN}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  endReachedDistance: 1
+  whenCloseToDestination: 0
+  rvoDensityBehavior:
+    enabled: 1
+    densityThreshold: 0.5
+    returnAfterBeingPushedAway: 0
+    progressAverage: 0
+    lastJobDensityResult: 0
+  repathRateCompatibility: NaN
+  canSearchCompability: 0
+  orientation: 0
+  enableRotation: 1
+  autoRepath:
+    mode: 2
+    period: 0.5
+    sensitivity: 10
+    maximumPeriod: 2
+    visualizeSensitivity: 0
+  maxAcceleration: -2.5
+  rotationSpeed: 360
+  slowdownDistance: 0.6
+  pickNextWaypointDist: 2
+  alwaysDrawGizmos: 0
+  slowWhenNotFacingTarget: 1
+  preventMovingBackwards: 0
+  constrainInsideGraph: 0
 --- !u!4 &1004382222917867312 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1802407244412773648, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}

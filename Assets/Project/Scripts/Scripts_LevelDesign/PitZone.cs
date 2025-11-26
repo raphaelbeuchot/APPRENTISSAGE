@@ -18,6 +18,9 @@ public class PitZone : MonoBehaviour
     [Header("Mesh Settings")]
     public float floorThickness = 0.2f;
 
+    [Header("A* Pathfinding")]
+    public int penaltyAmount = 10000;
+
     [Header("Mesh References")]
     public MeshFilter wallsMeshFilter;
     public MeshRenderer wallsRenderer;

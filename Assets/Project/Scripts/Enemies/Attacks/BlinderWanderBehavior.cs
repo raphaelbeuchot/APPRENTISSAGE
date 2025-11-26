@@ -1,22 +1,21 @@
 using UnityEngine;
-using UnityEngine.AI;
+using Pathfinding; // AJOUTER pour AIPath
 using System.Collections;
 
 public class BlinderWanderBehavior : MonoBehaviour
 {
     [Header("References")]
     public BlinderStats stats;
-    private NavMeshAgent agent;
-
+    private AIPath aiPath; // CHANGEMENT: NavMeshAgent -> AIPath
     private bool isWandering = false;
     private Coroutine wanderCoroutine;
 
     void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
-        if (agent == null)
+        aiPath = GetComponent<AIPath>(); // CHANGEMENT: GetComponent<AIPath>()
+        if (aiPath == null)
         {
-            Debug.LogError("BlinderWanderBehavior needs NavMeshAgent!");
+            Debug.LogError("BlinderWanderBehavior needs AIPath!"); // CHANGEMENT: message erreur
             return;
         }
     }
@@ -24,7 +23,6 @@ public class BlinderWanderBehavior : MonoBehaviour
     public void StartWandering()
     {
         if (isWandering) return;
-
         isWandering = true;
         wanderCoroutine = StartCoroutine(WanderPattern());
     }
@@ -32,45 +30,57 @@ public class BlinderWanderBehavior : MonoBehaviour
     public void StopWandering()
     {
         isWandering = false;
-
         if (wanderCoroutine != null)
         {
             StopCoroutine(wanderCoroutine);
             wanderCoroutine = null;
         }
 
-        agent.isStopped = true;
+        // CHANGEMENT: null check + AIPath n'a pas isStopped
+        if (aiPath != null)
+        {
+            aiPath.canMove = false; // CHANGEMENT: utiliser canMove
+        }
     }
 
     IEnumerator WanderPattern()
     {
         while (isWandering)
         {
-            // 1. Choisir destination random
+            // CHANGEMENT: A* utilise des positions directes, pas NavMesh.SamplePosition
             Vector3 randomDirection = Random.insideUnitSphere * stats.wanderRadius;
             randomDirection += transform.position;
+            randomDirection.y = transform.position.y; // Garder Y constant
 
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(randomDirection, out hit, stats.wanderRadius, NavMesh.AllAreas))
+            // CHANGEMENT: Vérifier si point est walkable via A* graph
+            var gg = AstarPath.active.data.gridGraph;
+            if (gg != null)
             {
-                agent.isStopped = false;
-                agent.speed = stats.wanderSpeed;
-                agent.SetDestination(hit.position);
+                var node = gg.GetNearest(randomDirection).node;
+                if (node != null && node.Walkable)
+                {
+                    aiPath.canMove = true; // CHANGEMENT
+                    aiPath.maxSpeed = stats.wanderSpeed; // CHANGEMENT: speed -> maxSpeed
+                    aiPath.destination = (Vector3)node.position; // CHANGEMENT: SetDestination -> destination
 
-                // 2. Marcher pendant walkDuration
-                yield return new WaitForSeconds(stats.walkDuration);
+                    // 2. Marcher pendant walkDuration
+                    yield return new WaitForSeconds(stats.walkDuration);
 
-                // 3. S'arrêter (animation "chasse mouches")
-                agent.isStopped = true;
+                    // 3. S'arrêter (animation "chasse mouches")
+                    aiPath.canMove = false; // CHANGEMENT
 
-                // TODO: Trigger animation "swat flies" ici
-                Debug.Log("Blinder swatting flies...");
-
-                yield return new WaitForSeconds(stats.stopDuration);
+                    // TODO: Trigger animation "swat flies" ici
+                    Debug.Log("Blinder swatting flies...");
+                    yield return new WaitForSeconds(stats.stopDuration);
+                }
+                else
+                {
+                    // Si pas de point valide trouvé, attendre un peu
+                    yield return new WaitForSeconds(0.5f);
+                }
             }
             else
             {
-                // Si pas de point valide trouvé, attendre un peu
                 yield return new WaitForSeconds(0.5f);
             }
         }
