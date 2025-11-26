@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using UnityEngine.AI;
 using System.Collections;
+using Pathfinding;
 
 public class EnemyHealth : MonoBehaviour
 {
@@ -232,26 +233,30 @@ public class EnemyHealth : MonoBehaviour
 
         isRecovering = true;
 
-        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        // NOUVEAU : Utiliser A* AIPath au lieu de NavMeshAgent
+        Pathfinding.AIPath aiPath = GetComponent<Pathfinding.AIPath>();
         EnemyAI ai = GetComponent<EnemyAI>();
 
         float originalSpeed = 0f;
-        if (agent != null)
+        if (aiPath != null)
         {
-            originalSpeed = agent.speed;
-            agent.isStopped = true;   // Stop la navigation
+            originalSpeed = aiPath.maxSpeed;
+            aiPath.canMove = false;   // Stop la navigation A*
         }
 
         if (ai != null)
-            ai.canMove = false;       // Booléen à ajouter dans EnemyAI pour stopper les actions
+            ai.canMove = false;       // Stoppe les actions de l'AI
 
         Debug.Log($"{gameObject.name} stunned for 2 seconds");
 
         yield return new WaitForSeconds(2f);
 
         // Restauration après stun
-        if (agent != null)
-            agent.isStopped = false;
+        if (aiPath != null)
+        {
+            aiPath.canMove = true;
+            aiPath.maxSpeed = originalSpeed;
+        }
 
         if (ai != null)
             ai.canMove = true;

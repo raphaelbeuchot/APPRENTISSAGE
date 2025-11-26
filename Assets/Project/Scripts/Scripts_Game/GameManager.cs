@@ -186,7 +186,7 @@ public class GameManager : MonoBehaviour
             trackData.canShoot = hasLOS;
             trackData.wasInLOS = hasLOS;
 
-            EnemyAI ai = col.GetComponent<EnemyAI>();
+            EnemyAI_AStar ai = col.GetComponent<EnemyAI_AStar>();
             if (ai != null && hasLOS)
                 ai.isDetectedBySentinel = true;
 
@@ -358,7 +358,7 @@ public class GameManager : MonoBehaviour
 
         Vector3 currentTargetPos = enemy.transform.position + Vector3.up * 1f;
 
-        EnemyAI ai = enemy.GetComponent<EnemyAI>();
+        EnemyAI_AStar ai = enemy.GetComponent<EnemyAI_AStar>();
         if (ai != null)
         {
             StartCoroutine(StunSpecificZombie(ai));
@@ -381,7 +381,7 @@ public class GameManager : MonoBehaviour
     }
 
 
-    IEnumerator StunSpecificZombie(EnemyAI ai)
+    IEnumerator StunSpecificZombie(EnemyAI_AStar ai)
     {
         ai.isStunnedBySentinel = true;
         yield return new WaitForSeconds(sentinel.stunZombieDuration);
@@ -390,7 +390,7 @@ public class GameManager : MonoBehaviour
         alreadyShot.Remove(ai.gameObject);
     }
 
-    
+
 
     void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 oldTargetPos)
     {
