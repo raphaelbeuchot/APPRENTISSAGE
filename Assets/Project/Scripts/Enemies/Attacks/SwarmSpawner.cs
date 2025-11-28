@@ -13,13 +13,6 @@ public class SwarmSpawner : MonoBehaviour, IOnDeathBehavior
     [Tooltip("Offset from death position to spawn swarm")]
     public Vector3 spawnOffset = Vector3.up * 0.5f;
 
-    [Header("Visual/Audio (Optional)")]
-    [Tooltip("Explosion effect on death (optional)")]
-    public GameObject explosionEffectPrefab;
-
-    [Tooltip("Explosion sound (optional)")]
-    public AudioClip explosionSound;
-
     public void OnEnemyDeath(Vector3 deathPosition)
     {
         if (swarmPrefab == null || swarmStats == null)
@@ -29,16 +22,6 @@ public class SwarmSpawner : MonoBehaviour, IOnDeathBehavior
         }
 
         Vector3 spawnPosition = deathPosition + spawnOffset;
-
-        if (explosionEffectPrefab != null)
-        {
-            Instantiate(explosionEffectPrefab, deathPosition, Quaternion.identity);
-        }
-
-        if (explosionSound != null)
-        {
-            AudioSource.PlayClipAtPoint(explosionSound, deathPosition);
-        }
 
         GameObject swarmObject = Instantiate(swarmPrefab, spawnPosition, Quaternion.identity);
 

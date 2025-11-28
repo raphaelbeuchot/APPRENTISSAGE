@@ -117,6 +117,11 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Nombre de jambes au départ")]
     public int startingLegCount = 2;
 
+    [Header("Bloated Specific")]
+    public float swellDuration = 1.5f;
+    public float swellScale = 1.5f;
+
+
     [Header("RAMPANT (Crawler)")]
     [Tooltip("Peut devenir rampant après perte des jambes")]
     public bool canBecomeCrawler = true;

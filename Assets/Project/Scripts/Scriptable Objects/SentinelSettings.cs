@@ -45,6 +45,10 @@ public class SentinelSettings : ScriptableObject
     public Color redlightLightColor = Color.red;
     public GameObject redlightParticlesPrefab;
     public float redlightScanInterval = 0.2f;
+    [Header("Exposure Detection")]
+    [Tooltip("Nombre de scans consecutifs requis avant tir (si cible etait cachee)")]
+    public int minimumExposureScans = 4;
+
     public float shootDelay = 0.2f;       // délai avant tir
     public float shootCooldown = 2f;      // cooldown entre tirs pour une même cible
 
@@ -81,6 +85,16 @@ public class SentinelSettings : ScriptableObject
     public AudioClip detectionSound;
     [Tooltip("Durée du fade des lasers en Release")]
     public float laserFadeDuration = 1f;
+
+    [Header("Ricochet System")]
+    [Tooltip("Son joue quand le tir touche un obstacle")]
+    public AudioClip ricochetSound;
+
+    [Tooltip("VFX spawne sur l'obstacle touche (etincelles)")]
+    public GameObject ricochetVFX;
+
+    [Tooltip("Duree du VFX ricochet avant destruction")]
+    public float ricochetVFXDuration = 2f;
 
     [Header("ETAT : RELEASE")]
     public float releaseDuration = 1.5f;

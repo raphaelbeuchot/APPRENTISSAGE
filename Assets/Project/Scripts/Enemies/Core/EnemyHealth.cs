@@ -92,6 +92,8 @@ public class EnemyHealth : MonoBehaviour
                 explosion.explosionSound = stats.explosionSound;
                 explosion.soundVolume = stats.explosionSoundVolume;
                 explosion.vfxScale = stats.explosionVFXScale;
+                explosion.swellDuration = stats.swellDuration;  // NOUVEAU
+                explosion.swellScale = stats.swellScale;        // NOUVEAU
                 Debug.Log($"Added ExplosionDeathEffect to {gameObject.name}");
                 break;
 
@@ -296,8 +298,7 @@ public class EnemyHealth : MonoBehaviour
             healthBarManager.UnregisterEnemy(transform);
         }
 
-        // Desactiver l'IA et les scripts de controle
-        EnemyAI ai = GetComponent<EnemyAI>();
+        EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
         if (ai != null) ai.enabled = false;
 
         GrabAttack grabAttack = GetComponent<GrabAttack>();
@@ -357,21 +358,34 @@ public class EnemyHealth : MonoBehaviour
             impactDirection = lastImpactDirection,
             impactForce = lastImpactForce
         };
+
+        bool hasExplosionEffect = false;
+
         if (deathEffects != null && deathEffects.Length > 0)
         {
             foreach (IDeathEffect effect in deathEffects)
             {
                 effect.OnDeath(transform.position, context);
+
+                // Verifier si c'est une explosion (Bloated)
+                if (effect is ExplosionDeathEffect)
+                {
+                    hasExplosionEffect = true;
+                }
             }
         }
 
         // Event pour autres comportements a la mort
-        IOnDeathBehavior[] deathBehaviors = GetComponents<IOnDeathBehavior>();
-        if (deathBehaviors != null && deathBehaviors.Length > 0)
+        // SAUF si explosion (qui gerera elle-meme le spawn apres delai)
+        if (!hasExplosionEffect)
         {
-            foreach (IOnDeathBehavior behavior in deathBehaviors)
+            IOnDeathBehavior[] deathBehaviors = GetComponents<IOnDeathBehavior>();
+            if (deathBehaviors != null && deathBehaviors.Length > 0)
             {
-                behavior.OnEnemyDeath(transform.position);
+                foreach (IOnDeathBehavior behavior in deathBehaviors)
+                {
+                    behavior.OnEnemyDeath(transform.position);
+                }
             }
         }
     }
@@ -379,7 +393,7 @@ public class EnemyHealth : MonoBehaviour
 
     void UpdateSpeed()
     {
-        EnemyAI ai = GetComponent<EnemyAI>();
+        EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
         if (ai != null)
         {
             ai.UpdateSpeed(currentHealth, false);
