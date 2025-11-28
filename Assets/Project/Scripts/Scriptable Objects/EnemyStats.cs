@@ -67,6 +67,10 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Durée d'un wander")]
     public float wanderDuration = 3f;
 
+    [Header("Chase Persistence")]
+    [Tooltip("Duree en secondes pendant laquelle le zombie continue de chercher apres avoir perdu le joueur de vue")]
+    public float chasePersistenceDuration = 2f;
+
     [Header("ATTAQUE - PARAMÈTRES GÉNÉRAUX")]
     [Tooltip("Portée d'attaque")]
     public float attackRange = 1.5f;
