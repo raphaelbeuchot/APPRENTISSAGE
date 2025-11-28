@@ -285,36 +285,52 @@ public class EnemyHealth : MonoBehaviour
 
     void Die()
     {
-        if (isDead) return;
+        
+            if (isDead) return;
 
-        isDead = true;
-        Debug.Log(string.Format("{0} is dead!", gameObject.name));
+            isDead = true;
+            Debug.Log(string.Format("{0} is dead!", gameObject.name));
 
-        OnDeath?.Invoke();
+            OnDeath?.Invoke();
 
-        // Desinscrire la barre de vie
-        if (healthBarManager != null)
+            // NOUVEAU : Forcer la barre visible meme apres mort si en pit
+            EnemyPitInteractable pitInt = GetComponent<EnemyPitInteractable>();
+            if (pitInt != null && pitInt.isFallingInPit && healthBarUI != null)
+            {
+                healthBarUI.Show();
+                Debug.Log(string.Format("[EnemyHealth] Forced healthbar show for {0} after pit death", gameObject.name));
+            }
+
+        /// Desinscrire la barre de vie (SAUF si dans deep empty pit)
+        bool isInDeepPit = pitInt != null && pitInt.shouldIgnoreHealthbarDistance;
+
+        if (healthBarManager != null && !isInDeepPit)
         {
             healthBarManager.UnregisterEnemy(transform);
         }
+        else if (isInDeepPit)
+        {
+            Debug.Log(string.Format("[EnemyHealth] {0} died in deep pit, keeping healthbar for 2s", gameObject.name));
+        }
 
-        EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
+        // Desactiver l'IA et les scripts de controle
+        EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>(); // MODIFIE : _AStar
         if (ai != null) ai.enabled = false;
 
         GrabAttack grabAttack = GetComponent<GrabAttack>();
         if (grabAttack != null) grabAttack.enabled = false;
 
-        NavMeshAgent agent = GetComponent<NavMeshAgent>();
-        if (agent != null)
+        // NOUVEAU : Desactiver AIPath au lieu de NavMeshAgent
+        Pathfinding.AIPath aiPath = GetComponent<Pathfinding.AIPath>();
+        if (aiPath != null)
         {
-            agent.isStopped = true;
-            agent.enabled = false;
+            aiPath.canMove = false;
+            aiPath.enabled = false;
         }
-
-        // SI MORT PAR PIT: Pas de ragdoll, juste couler
+        // SI MORT PAR PIT: Pas de ragdoll, comportement selon type de pit
         if (deathByPit)
         {
-            Debug.Log(string.Format("[EnemyHealth] {0} died in pit - no ragdoll, sinking", gameObject.name));
+            Debug.Log(string.Format("[EnemyHealth] {0} died in pit - no ragdoll", gameObject.name));
 
             Rigidbody rb = GetComponent<Rigidbody>();
             if (rb != null)
@@ -323,11 +339,9 @@ public class EnemyHealth : MonoBehaviour
                 rb.useGravity = true;
             }
 
-            Collider col = GetComponent<Collider>();
-            if (col != null)
-            {
-                col.isTrigger = true; // Traverse les objets en coulant
-            }
+            // NE PAS mettre isTrigger = true pour Empty pits
+            // Le collider doit rester solide pour s'arreter sur le floor
+            // Pour Water/Lava, PitFillDamageController gerera la destruction
 
             // Detruire apres un delai (gere par PitFillDamageController)
             return;
@@ -389,7 +403,6 @@ public class EnemyHealth : MonoBehaviour
             }
         }
     }
-
 
     void UpdateSpeed()
     {

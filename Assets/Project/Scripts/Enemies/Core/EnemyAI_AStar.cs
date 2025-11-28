@@ -249,8 +249,8 @@ public class EnemyAI_AStar : MonoBehaviour
         if (closestHuman != null)
         {
             targetHuman = closestHuman;
-            wasChasing = true; // Marquer qu'on etait en chase
-            lostTargetTime = -999f; // Reset le timer de perte
+            wasChasing = true;
+            lostTargetTime = -999f;
 
             if (closestDistance <= stats.attackRange)
                 currentState = State.Attacking;
@@ -262,18 +262,15 @@ public class EnemyAI_AStar : MonoBehaviour
             // NOUVEAU : Persistance du chase apres perte de cible
             if (wasChasing && !isForcedChase)
             {
-                // Si on vient de perdre la cible, demarrer le timer
                 if (lostTargetTime < 0f)
                 {
                     lostTargetTime = Time.time;
                     Debug.Log($"{gameObject.name} a perdu le joueur, continue de chercher pendant {stats.chasePersistenceDuration}s");
                 }
 
-                // Verifier si le delai de persistance est ecoule
                 float timeSinceLost = Time.time - lostTargetTime;
                 if (timeSinceLost >= stats.chasePersistenceDuration)
                 {
-                    // Delai ecoule : arreter vraiment la poursuite
                     targetHuman = null;
                     wasChasing = false;
                     lostTargetTime = -999f;
@@ -283,16 +280,9 @@ public class EnemyAI_AStar : MonoBehaviour
 
                     Debug.Log($"{gameObject.name} abandonne la poursuite");
                 }
-                else
-                {
-                    // Delai pas encore ecoule : continuer de chercher
-                    // Le zombie garde targetHuman et continue State.Chasing
-                    // (gere par HandleChasingState qui ira vers la derniere position connue)
-                }
             }
             else if (!isForcedChase)
             {
-                // Cas normal : pas en chase, ou forced chase termine
                 targetHuman = null;
                 wasChasing = false;
                 lostTargetTime = -999f;
@@ -301,6 +291,18 @@ public class EnemyAI_AStar : MonoBehaviour
                     currentState = State.Idle;
             }
         }
+
+        // CRITIQUE : Mise a jour de la barre de vie APRES toute la logique
+        // (pour TOUS les ennemis non-Blinder)
+        isPlayerInRange = distToPlayer <= 5f;
+        // NOUVEAU : Ignorer distance check si zombie dans deep empty pit
+        EnemyPitInteractable pitInt = GetComponent<EnemyPitInteractable>();
+        bool ignoreDistance = pitInt != null && pitInt.shouldIgnoreHealthbarDistance;
+
+        if (isPlayerInRange && !wasInRange)
+            health?.healthBarUI?.Show();
+        else if (!isPlayerInRange && wasInRange && !ignoreDistance)
+            health?.healthBarUI?.Hide();
     }
     protected virtual void HandleIdleState()
     {

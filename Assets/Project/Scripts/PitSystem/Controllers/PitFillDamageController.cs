@@ -119,6 +119,18 @@ public class PitFillDamageController : MonoBehaviour
             // Traiter immediatement l'entree
             ProcessFillEntry(interactable, data);
 
+            // NOUVEAU : Notifier les ennemis qu'ils entrent dans un pit Empty
+            EnemyPitInteractable enemyPit = interactable as EnemyPitInteractable;
+            if (enemyPit != null)
+            {
+                if (pitFill.fillType.category == PitContentType.ContentCategory.Empty ||
+                    pitFill.fillType.category == PitContentType.ContentCategory.Water)
+                {
+                    enemyPit.OnEnterPit(pitZone);
+                    Debug.Log(string.Format("[PitFill DEBUG] Called OnEnterPit for Enemy ({0})", pitFill.fillType.category));
+                }
+            }
+
             // Notifier le Player qu'il entre dans le pit (Water OU Empty)
             PlayerPitInteractable playerPit = interactable as PlayerPitInteractable;
             if (playerPit != null)
@@ -230,6 +242,27 @@ public class PitFillDamageController : MonoBehaviour
                 // Marquer comme en chute et stocker la hauteur de chute
                 data.isFalling = true;
                 data.fallHeight = Mathf.Abs(pitZone.GetMaxDepth());
+
+                // NOUVEAU : Si pit profond (>6m), ignorer distance check pour healthbar
+                EnemyPitInteractable enemyPitInt = interactable as EnemyPitInteractable;
+                if (enemyPitInt != null && data.fallHeight > 6f)
+                {
+                    enemyPitInt.shouldIgnoreHealthbarDistance = true;
+                    Debug.Log(string.Format("[PitFill] {0} in deep pit ({1}m), healthbar will ignore distance", go.name, data.fallHeight));
+                }
+
+                // NOUVEAU : Reduire air resistance pour chute realiste
+                Rigidbody rbFall = go.GetComponent<Rigidbody>();
+                if (rbFall != null)
+                {
+                    // Sauvegarder damping original
+                    data.originalLinearDamping = rbFall.linearDamping;
+
+                    // Quasi-supprimer l'air resistance
+                    rbFall.linearDamping = 0.1f;
+
+                    Debug.Log(string.Format("[PitFill] {0} damping reduced: {1:F1} -> 0.1", go.name, data.originalLinearDamping));
+                }
 
                 Debug.Log(string.Format("[PitFill DEBUG] Stored fallHeight={0:F2}m", data.fallHeight));
                 break;
@@ -531,14 +564,73 @@ public class PitFillDamageController : MonoBehaviour
                 }
             }
 
+            // Restaurer le damping original AVANT d'appliquer les degats
+            Rigidbody rbRestore = go.GetComponent<Rigidbody>();
+            if (rbRestore != null && data.originalLinearDamping > 0f)
+            {
+                rbRestore.linearDamping = data.originalLinearDamping;
+                Debug.Log(string.Format("[PitFill] Damping restored to {0:F1}", data.originalLinearDamping));
+            }
+
+            
             // APPLIQUER LES DÉGÂTS INSTANTANÉMENT
             interactable.TakePitDamage(totalDamagePercent, PitDamageType.Fall);
             Debug.Log($"[PitFill] {go.name} took {totalDamagePercent:F1}% fall damage instantly");
 
+            // APPLIQUER LES DEGATS INSTANTANEMENT
+            interactable.TakePitDamage(totalDamagePercent, PitDamageType.Fall);
+            Debug.Log(string.Format("[PitFill] {0} took {1:F1}% fall damage instantly", go.name, totalDamagePercent));
+
+            // NOUVEAU : Delai avant destruction pour voir la healthbar se vider
+            if (!data.interactable.CanTakePitDamage())
+            {
+                // Zombie mort : lancer coroutine de destruction avec delai
+                float displayDelay = 2f; // Parametrable si tu veux
+                StartCoroutine(DelayedDestroyCoroutine(go, data, displayDelay));
+            }
+            else
+            {
+                // Zombie survit : destruction normale
+                CheckAndDestroyIfDead(data, pitFill.fillType);
+            }
+
             CheckAndDestroyIfDead(data, pitFill.fillType);
         }
     }
+    private IEnumerator DelayedDestroyCoroutine(GameObject go, FillEntityData data, float delay)
+    {
+        Debug.Log(string.Format("[PitFill] {0} will be destroyed in {1}s (Empty pit fall death)", go.name, delay));
 
+        // SAUVEGARDER les references AVANT le delai (au cas ou le GameObject est detruit)
+        EnemyHealth enemyHealth = go.GetComponent<EnemyHealth>();
+        EnemyHealthBarUI healthBarUI = enemyHealth != null ? enemyHealth.healthBarUI : null;
+        Transform enemyTransform = go.transform;
+
+        yield return new WaitForSeconds(delay);
+
+        // Unregister la healthbar (meme si le GameObject est null maintenant)
+        if (healthBarUI != null)
+        {
+            EnemyHealthBarManager manager = FindObjectOfType<EnemyHealthBarManager>();
+            if (manager != null)
+            {
+                manager.UnregisterEnemy(enemyTransform);
+                Debug.Log(string.Format("[PitFill] Unregistered healthbar after delay"));
+            }
+        }
+
+        if (go != null)
+        {
+            Debug.Log(string.Format("[PitFill] Destroying {0} after fall death delay", go.name));
+            Destroy(go);
+        }
+
+        // Cleanup dict
+        if (entitiesInFill.ContainsKey(go))
+        {
+            entitiesInFill.Remove(go);
+        }
+    }
     private IEnumerator ProgressiveFallDamageCoroutine(GameObject go, FillEntityData data, float totalDamagePercent)
     {
         // Durée de la mort progressive (ajustable)
@@ -595,10 +687,9 @@ public class PitFillDamageController : MonoBehaviour
         public IPitInteractable interactable;
         public Vector3 entryPosition;
         public float entryTime;
-
-        // Pour Empty pits
         public bool isFalling;
         public float fallHeight;
+        public float originalLinearDamping; // NOUVEAU
 
         public FillEntityData(IPitInteractable e, Vector3 entryPos)
         {
@@ -607,6 +698,7 @@ public class PitFillDamageController : MonoBehaviour
             entryTime = Time.time;
             isFalling = false;
             fallHeight = 0f;
+            originalLinearDamping = 0f; // NOUVEAU
         }
     }
 }
