@@ -12468,7 +12468,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6003483332429627736, guid: c2b11f3f5bf682a4996e674ab60f85e2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.9749475
+      value: 6.005215
       objectReference: {fileID: 0}
     - target: {fileID: 6003483332429627736, guid: c2b11f3f5bf682a4996e674ab60f85e2, type: 3}
       propertyPath: m_LocalPosition.y
@@ -12476,7 +12476,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6003483332429627736, guid: c2b11f3f5bf682a4996e674ab60f85e2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 4.5195932
+      value: 6.7353597
       objectReference: {fileID: 0}
     - target: {fileID: 6003483332429627736, guid: c2b11f3f5bf682a4996e674ab60f85e2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -21360,7 +21360,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 376458153215030046, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.573331
+      value: 6.3733306
       objectReference: {fileID: 0}
     - target: {fileID: 376458153215030046, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
       propertyPath: m_LocalPosition.y
@@ -21368,7 +21368,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 376458153215030046, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.9451634
+      value: 4.145163
       objectReference: {fileID: 0}
     - target: {fileID: 376458153215030046, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
       propertyPath: m_LocalRotation.w
@@ -28894,11 +28894,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 485149489708715402, guid: 52c40c7023c607e448890dc1ea4ed9c0, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1004382222917867312, guid: 52c40c7023c607e448890dc1ea4ed9c0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8.849121
+      value: 8.340277
       objectReference: {fileID: 0}
     - target: {fileID: 1004382222917867312, guid: 52c40c7023c607e448890dc1ea4ed9c0, type: 3}
       propertyPath: m_LocalPosition.y
@@ -28906,7 +28906,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1004382222917867312, guid: 52c40c7023c607e448890dc1ea4ed9c0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 4.0397825
+      value: 4.0725994
       objectReference: {fileID: 0}
     - target: {fileID: 1004382222917867312, guid: 52c40c7023c607e448890dc1ea4ed9c0, type: 3}
       propertyPath: m_LocalRotation.w
@@ -28955,7 +28955,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 485149489708715402, guid: 52c40c7023c607e448890dc1ea4ed9c0, type: 3}
+      insertIndex: 6
+      addedObject: {fileID: 1942870842}
   m_SourcePrefab: {fileID: 100100000, guid: 52c40c7023c607e448890dc1ea4ed9c0, type: 3}
 --- !u!1001 &1921034392
 PrefabInstance:
@@ -29647,6 +29650,27 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ff49c1d99179227478761ec917125f49, type: 3}
+--- !u!1 &1942870831 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 485149489708715402, guid: 52c40c7023c607e448890dc1ea4ed9c0, type: 3}
+  m_PrefabInstance: {fileID: 1917822584}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1942870842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1942870831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d36065851de262743ac229c33d0e77b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPitInteractable
+  pitDamageMultiplier: 1
+  characterCenterHeight: 1
+  waterSlowdownMultiplier: 0.5
+  isInShallowWater: 0
 --- !u!1001 &1945405423
 PrefabInstance:
   m_ObjectHideFlags: 0

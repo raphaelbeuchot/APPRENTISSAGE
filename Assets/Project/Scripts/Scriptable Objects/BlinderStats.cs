@@ -26,4 +26,8 @@ public class BlinderStats : ScriptableObject
     public float aoeKnockbackRadius = 3f;
     public float recoilStunDuration = 3f;
 
+    [Header("Recharge Behavior")]
+    [Tooltip("Delai avant re-charge apres hit melee en secondes")]
+    public float rechargeDelayAfterHit = 1f;
+
 }

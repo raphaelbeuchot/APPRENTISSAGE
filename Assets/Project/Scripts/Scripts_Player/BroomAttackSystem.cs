@@ -175,7 +175,7 @@ public class BroomAttackSystem : MonoBehaviour
                     zombieAI_AStar_temp.enabled = false;
                 }
 
-                // Knockback
+                // Knockback (applique a TOUS les zombies, Blinder inclus)
                 Rigidbody targetRb = hit.GetComponent<Rigidbody>();
                 if (targetRb != null)
                 {
@@ -187,20 +187,18 @@ public class BroomAttackSystem : MonoBehaviour
                 // Degats
                 enemyHealth.TakeMeleeDamage(stats.broomDamage);
 
-                // Notifier Blinders
-                MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
-
-                // Knockdown
+                // Knockdown (sauf Blinders)
                 ChargeAttack chargeAttack = hit.GetComponent<ChargeAttack>();
                 if (chargeAttack == null)
                 {
+                    MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
                     StartCoroutine(KnockdownTarget(hit.gameObject));
                 }
 
                 Debug.Log(gameObject.name + " BROOM hit " + hit.gameObject.name + " for " + stats.broomDamage + " damage!");
             }
 
-            // SWARMS (support A* et NavMesh)
+            // SWARMS
             SwarmController_AStar swarmAStar = hit.GetComponent<SwarmController_AStar>();
             if (swarmAStar != null)
             {
@@ -225,8 +223,23 @@ public class BroomAttackSystem : MonoBehaviour
                 Debug.Log(gameObject.name + " BROOM extinguished " + hit.gameObject.name + "'s flame!");
             }
         }
-    }
 
+        // NOTIFICATION GLOBALE : Tous les Blinders dans leur audioDetectionRange chargent
+        ChargeAttack[] allBlinders = FindObjectsOfType<ChargeAttack>();
+
+        foreach (ChargeAttack blinder in allBlinders)
+        {
+            if (blinder.stats != null)
+            {
+                float distanceToPlayer = Vector3.Distance(blinder.transform.position, transform.position);
+
+                if (distanceToPlayer <= blinder.stats.audioDetectionRange)
+                {
+                    blinder.OnDirectHit(transform.position);
+                }
+            }
+        }
+    }
     IEnumerator KnockdownTarget(GameObject target)
     {
         // Support A* et NavMesh

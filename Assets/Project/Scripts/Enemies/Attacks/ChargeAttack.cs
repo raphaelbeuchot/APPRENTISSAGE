@@ -1,6 +1,6 @@
 using UnityEngine;
-using UnityEngine.AI;
 using System.Collections;
+using Pathfinding;
 
 [RequireComponent(typeof(Rigidbody))]
 public class ChargeAttack : MonoBehaviour, IAttackBehavior
@@ -8,11 +8,14 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
     [Header("References")]
     public BlinderStats stats;
 
-    private EnemyAI enemyAI;
+    private EnemyAI_AStar enemyAI;
     private BlinderWanderBehavior wanderBehavior;
-    private NavMeshAgent agent;
+    private AIPath aiPath;
     private Rigidbody rb;
     private Transform player;
+
+    private float originalLinearDamping = 5f;
+    private float originalAngularDamping = 5f;
 
     // States
     private bool isCharging = false;
@@ -24,7 +27,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
     private const float straightDuration = 1.5f;
     private const float postFinishDelay = 0.3f;
     private const float knockAiDisableDuration = 1.5f;
-    private const float zombiePushForceMultiplier = 1.0f; // multiplies stats.knockbackForce
+    private const float zombiePushForceMultiplier = 1.0f;
 
     void Start()
     {
@@ -34,16 +37,23 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             return;
         }
 
-        enemyAI = GetComponent<EnemyAI>();
+        enemyAI = GetComponent<EnemyAI_AStar>();
         wanderBehavior = GetComponent<BlinderWanderBehavior>();
-        agent = GetComponent<NavMeshAgent>();
+        aiPath = GetComponent<AIPath>();
         rb = GetComponent<Rigidbody>();
+
+        // Sauvegarder les valeurs originales
+        if (rb != null)
+        {
+            originalLinearDamping = rb.linearDamping;
+            originalAngularDamping = rb.angularDamping;
+        }
+
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
         if (rb == null)
             Debug.LogError("ChargeAttack requires a Rigidbody on the same GameObject.");
 
-        // Subscribe to melee audio event (if you use it)
         MeleeAudioManager.OnMeleeHit += OnMeleeHitHeard;
     }
 
@@ -52,23 +62,27 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
         MeleeAudioManager.OnMeleeHit -= OnMeleeHitHeard;
     }
 
-    // Audio trigger: set the target position and start the charge
     void OnMeleeHitHeard(Vector3 soundPosition)
     {
         Debug.Log($"BLINDER HEARD MELEE at {soundPosition}, distance: {Vector3.Distance(transform.position, soundPosition)}");
 
+        // Ignorer si le son est sur nous
+        float distToSound = Vector3.Distance(transform.position, soundPosition);
+        if (distToSound < 1f)
+        {
+            Debug.Log("BLINDER: Sound is on me, ignoring (OnDirectHit handles it)");
+            return;
+        }
+
         if (isCharging || isStraightRunning) return;
 
-        float dist = Vector3.Distance(transform.position, soundPosition);
-        if (dist > stats.audioDetectionRange) return;
+        if (distToSound > stats.audioDetectionRange) return;
 
         Debug.Log($"BLINDER STARTING CHARGE!");
-
         chargeTargetPosition = soundPosition;
         StartCharge();
     }
 
-    // Public entry used by EnemyAI (if it wants to trigger the charge directly)
     public void StartChargePublic(Vector3 targetPos)
     {
         if (isCharging || isStraightRunning) return;
@@ -76,25 +90,20 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
         StartCharge();
     }
 
-    // Start the charge sequence
     void StartCharge()
     {
         if (isCharging || isStraightRunning) return;
 
         isCharging = true;
 
-        // Disable AI and wander
         if (enemyAI != null) enemyAI.enabled = false;
         if (wanderBehavior != null && wanderBehavior.IsWandering()) wanderBehavior.StopWandering();
 
-        // Disable agent so NavMesh won't fight Rigidbody
-        if (agent != null)
+        if (aiPath != null)
         {
-            agent.isStopped = true;
-            agent.enabled = false;
+            aiPath.canMove = false;
         }
 
-        // Ensure RB is non-kinematic and under our control
         if (rb != null)
         {
             rb.isKinematic = false;
@@ -107,7 +116,6 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
     IEnumerator AccelerateAndCharge()
     {
-        // Calculer direction UNE SEULE FOIS au debut
         Vector3 dir = (chargeTargetPosition - transform.position);
         dir.y = 0;
         if (dir.sqrMagnitude < 0.01f)
@@ -115,16 +123,31 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
         else
             dir.Normalize();
 
-        // LOCK la direction
         Vector3 lockedDirection = dir;
 
         Debug.Log("Blinder charging, locked direction: " + lockedDirection);
+
+        // Phase de rotation progressive (0.3s)
+        float rotationDuration = 0.3f;
+        float rotationElapsed = 0f;
+        Quaternion startRotation = transform.rotation;
+        Quaternion targetRotation = Quaternion.LookRotation(lockedDirection);
+
+        while (rotationElapsed < rotationDuration)
+        {
+            rotationElapsed += Time.deltaTime;
+            float t = rotationElapsed / rotationDuration;
+            transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            yield return null;
+        }
+
+        // Force rotation finale
+        transform.rotation = targetRotation;
 
         // Acceleration phase
         float elapsed = 0f;
         while (elapsed < accelerateDuration)
         {
-            // Forcer rotation vers direction lockee
             transform.rotation = Quaternion.LookRotation(lockedDirection);
 
             float t = elapsed / accelerateDuration;
@@ -132,18 +155,17 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             if (rb != null)
             {
                 Vector3 vel = lockedDirection * speed;
-                vel.y = Mathf.Min(rb.linearVelocity.y, 0f); // PRESERVE gravite, bloque envol
+                vel.y = Mathf.Min(rb.linearVelocity.y, 0f);
                 rb.linearVelocity = vel;
             }
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Full speed
         if (rb != null)
         {
             Vector3 vel = lockedDirection * stats.chargeSpeed;
-            vel.y = Mathf.Min(rb.linearVelocity.y, 0f); // PRESERVE gravite, bloque envol
+            vel.y = Mathf.Min(rb.linearVelocity.y, 0f);
             rb.linearVelocity = vel;
         }
 
@@ -163,27 +185,23 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
         while (!stopTriggered)
         {
-            // Forcer rotation
             transform.rotation = Quaternion.LookRotation(forwardDir);
 
-            // Deplacer le Blinder
             if (rb != null)
             {
                 Vector3 vel = forwardDir * stats.chargeSpeed;
-                vel.y = Mathf.Min(rb.linearVelocity.y, 0f); // PRESERVE gravite, bloque envol
+                vel.y = Mathf.Min(rb.linearVelocity.y, 0f);
                 rb.linearVelocity = vel;
             }
 
             elapsed += Time.deltaTime;
 
-            // Verifier si proche de l'origine du son
             float distToSound = Vector3.Distance(transform.position, chargeTargetPosition);
             if (distToSound < 0.5f)
             {
                 stopTriggered = true;
             }
 
-            // Stop si straightDuration max atteinte
             if (elapsed >= maxDuration)
             {
                 stopTriggered = true;
@@ -192,8 +210,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             yield return null;
         }
 
-        // Commencer la deceleration jusqu'a l'arret
-        float decelDuration = 1f; // temps de deceleration, ajustable
+        float decelDuration = 1f;
         float decelElapsed = 0f;
         Vector3 initialVelocity = rb != null ? rb.linearVelocity : Vector3.zero;
 
@@ -209,35 +226,36 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
         if (rb != null)
             rb.linearVelocity = Vector3.zero;
 
-        // Fin de charge
         FinishCharge();
     }
-
 
     void FinishCharge()
     {
         isStraightRunning = false;
         isCharging = false;
 
-        // Re-enable agent & AI & wander
-        if (agent != null)
+        // Restaurer le damping
+        if (rb != null)
         {
-            agent.enabled = true;
-            agent.isStopped = false;
+            rb.linearDamping = originalLinearDamping;
+            rb.angularDamping = originalAngularDamping;
+        }
+
+        if (aiPath != null)
+        {
+            aiPath.canMove = true;
         }
 
         if (enemyAI != null) enemyAI.enabled = true;
         if (wanderBehavior != null) wanderBehavior.StartWandering();
     }
 
-    // Collision handling: push zombies and player, disable AI of hit zombies briefly
     void OnCollisionEnter(Collision collision)
     {
         if (!isStraightRunning && !isCharging) return;
 
         GameObject other = collision.gameObject;
 
-        // Player
         if (other.CompareTag("Player"))
         {
             PlayerPhysicsMovement pm = other.GetComponent<PlayerPhysicsMovement>();
@@ -247,13 +265,11 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
             if (pm != null)
             {
-                // Utiliser ApplyKnockback au lieu de AddForce
                 Vector3 knockbackVel = pushDir * stats.knockbackForce;
                 knockbackVel.y = 0;
                 pm.ApplyKnockback(knockbackVel, 0.3f);
             }
 
-            // NOUVEAU : Arreter la charge apres avoir touche le player
             if (isCharging || isStraightRunning)
             {
                 StopAllCoroutines();
@@ -261,46 +277,36 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             }
         }
 
-        // Other zombies
         if (other.layer == LayerMask.NameToLayer("Zombie"))
         {
             Rigidbody otherRb = other.GetComponent<Rigidbody>();
-            EnemyAI otherAI = other.GetComponent<EnemyAI>();
-            EnemyHealth otherHealth = other.GetComponent<EnemyHealth>();
 
             Vector3 pushDir = (other.transform.position - transform.position).normalized;
             pushDir.y = 0;
 
             if (otherRb != null)
             {
-                // Meme force que le player
                 otherRb.AddForce(pushDir * stats.knockbackForce, ForceMode.VelocityChange);
 
-                // Keep the Blinder moving forward (prevent bounce)
                 if (rb != null)
                 {
                     Vector3 vel = transform.forward * stats.chargeSpeed;
-                    vel.y = Mathf.Min(rb.linearVelocity.y, 0f); // PRESERVE gravite
+                    vel.y = Mathf.Min(rb.linearVelocity.y, 0f);
                     rb.linearVelocity = vel;
                 }
             }
-
-
         }
 
-        // Walls / environment: stop the charge gracefully if needed
         int envLayer = LayerMask.NameToLayer("Environment");
         int defaultLayer = LayerMask.NameToLayer("Default");
         if (other.layer == envLayer || other.layer == defaultLayer)
         {
-            // End the charge early on big obstacle
             StopAllCoroutines();
             if (rb != null) rb.linearVelocity = Vector3.zero;
             FinishCharge();
         }
     }
 
-    // Appele par GrabAttack.EndGrab() pour les FGRB
     public void ApplyBourrade(Vector3 bourradeDirection, float bourradeForce, float bourradeDuration)
     {
         StartCoroutine(BlinderBourradeCoroutine(bourradeDirection, bourradeForce, bourradeDuration));
@@ -322,7 +328,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             if (rb != null)
             {
                 Vector3 vel = Vector3.Lerp(initialVelocity, Vector3.zero, t);
-                vel.y = Mathf.Min(rb.linearVelocity.y, 0f); // PRESERVE gravite
+                vel.y = Mathf.Min(rb.linearVelocity.y, 0f);
                 rb.linearVelocity = vel;
             }
             yield return null;
@@ -332,9 +338,9 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
         FinishCharge();
     }
+
     IEnumerator BlinderBourradeCoroutine(Vector3 direction, float force, float duration)
     {
-        // Arreter charge en cours
         if (isCharging || isStraightRunning)
         {
             StopAllCoroutines();
@@ -342,14 +348,12 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             isStraightRunning = false;
         }
 
-        // Desactiver AI temporairement
         if (enemyAI != null) enemyAI.enabled = false;
-        if (agent != null)
+        if (aiPath != null)
         {
-            agent.enabled = false;
+            aiPath.canMove = false;
         }
 
-        // Appliquer bourrade
         if (rb != null)
         {
             Vector3 vel = direction * force;
@@ -359,63 +363,60 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
         yield return new WaitForSeconds(duration);
 
-        // Arreter
         if (rb != null) rb.linearVelocity = Vector3.zero;
 
-        // Reactiver
-        if (agent != null)
+        if (aiPath != null)
         {
-            agent.enabled = true;
-            agent.isStopped = false;
+            aiPath.canMove = true;
         }
         if (enemyAI != null) enemyAI.enabled = true;
 
         Debug.Log("Blinder bourrade ended");
     }
-    // Appele quand le Blinder est frappe en melee
+
     public void OnDirectHit(Vector3 hitSourcePosition)
     {
-        Debug.Log("Blinder hit by melee! Charging toward attacker!");
+        Debug.Log("Blinder hit by melee! Will charge after knockback...");
 
-        // Si deja en charge, arreter et recharger vers nouvelle position
         if (isCharging || isStraightRunning)
         {
             StopAllCoroutines();
             isCharging = false;
             isStraightRunning = false;
 
-            if (rb != null) rb.linearVelocity = Vector3.zero;
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                // Restaurer damping si charge annulee
+                rb.linearDamping = originalLinearDamping;
+                rb.angularDamping = originalAngularDamping;
+            }
         }
 
-        // Re-enable agent si necessaire
-        if (agent != null && !agent.enabled)
+        if (aiPath != null && !aiPath.canMove)
         {
-            agent.enabled = true;
+            aiPath.canMove = true;
         }
 
-        // Demarrer nouvelle charge vers l'attaquant
         chargeTargetPosition = hitSourcePosition;
+
+        StartCoroutine(RechargeAfterKnockback());
+    }
+
+    IEnumerator RechargeAfterKnockback()
+    {
+        yield return new WaitForSeconds(stats.rechargeDelayAfterHit);
+
+        Debug.Log("Blinder re-charging toward attacker!");
         StartCharge();
     }
-    IEnumerator TemporaryDisableAI(EnemyAI ai, float duration)
-    {
-        if (ai == null) yield break;
-        ai.enabled = false;
-        yield return new WaitForSeconds(duration);
-        if (ai != null) ai.enabled = true;
-    }
 
-    // =========================
-    // IAttackBehavior interface
-    // =========================
     public void Initialize(EnemyStats enemyStats, PlayerStats playerStats, Transform enemyTransform, Rigidbody enemyRigidbody)
     {
-        // Not used for the Blinder, but required by interface
     }
 
     public void AttemptAttack(GameObject target)
     {
-        // Blinder attack is triggered by sound. If AI wants to force it, we provide:
         if (target != null)
             StartChargePublic(target.transform.position);
     }
@@ -438,14 +439,18 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
     public void ForceStop()
     {
         StopAllCoroutines();
-        if (rb != null) rb.linearVelocity = Vector3.zero;
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.linearDamping = originalLinearDamping;
+            rb.angularDamping = originalAngularDamping;
+        }
         isCharging = false;
         isStraightRunning = false;
 
-        if (agent != null)
+        if (aiPath != null)
         {
-            agent.enabled = true;
-            agent.isStopped = false;
+            aiPath.canMove = true;
         }
 
         if (enemyAI != null) enemyAI.enabled = true;
