@@ -123,7 +123,14 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     IEnumerator GrabCoroutine()
     {
         isGrabbing = true;
-        player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
+        
+
+            // NOUVEAU : Enregistrer le grab pour l'UI
+            StartGrab();
+
+            player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
+            player.ForceStop();
+            player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
         player.ForceStop();
 
         playerRb.constraints = RigidbodyConstraints.FreezeAll;

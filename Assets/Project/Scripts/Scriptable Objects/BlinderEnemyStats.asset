@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4810535072c26b49a2ac7d4c794a03c, type: 3}
   m_Name: BlinderEnemyStats
   m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
-  enemyName: Basic Enemy
+  enemyName: Blinder
   enemyModel: {fileID: 0}
   skinVariants: []
   attackType: 5
@@ -30,9 +30,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   stealthDetectionMultiplier: 1
+  blinderHealthBarRange: 5
   idleWanderChance: 0.05
   wanderInterval: 5
   wanderDuration: 2
+  chasePersistenceDuration: 2
   attackRange: 2
   attackCooldown: 1
   grabDuration: 4
@@ -51,6 +53,8 @@ MonoBehaviour:
   bourradeCooldown: 2
   startingArmCount: 2
   startingLegCount: 2
+  swellDuration: 1.5
+  swellScale: 1.5
   canBecomeCrawler: 1
   meleeHitsForFinisher: 3
   forceMultiplier: 1
