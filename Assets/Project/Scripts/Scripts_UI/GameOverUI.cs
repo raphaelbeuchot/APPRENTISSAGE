@@ -3,13 +3,14 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Gère l'écran de Game Over.
+/// Gere l'ecran de Game Over.
 /// Affiche un message et des boutons pour rejouer ou quitter.
 /// </summary>
 public class GameOverUI : MonoBehaviour
 {
     [Header("UI Elements")]
     [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private CanvasGroup gameOverCanvasGroup; // NOUVEAU
     [SerializeField] private TextMeshProUGUI gameOverText;
     [SerializeField] private Button restartButton;
     [SerializeField] private Button quitButton;
@@ -29,6 +30,9 @@ public class GameOverUI : MonoBehaviour
     [SerializeField] private AudioClip gameOverSound;
     private AudioSource audioSource;
 
+    [Header("References")]
+    [SerializeField] private PlayerHealth playerHealth;
+
     void Start()
     {
         // Setup audio
@@ -36,6 +40,22 @@ public class GameOverUI : MonoBehaviour
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        // NOUVEAU : S'abonner a la mort du joueur
+        if (playerHealth == null)
+        {
+            playerHealth = FindObjectOfType<PlayerHealth>();
+        }
+
+        if (playerHealth != null)
+        {
+            playerHealth.OnDeath += Show;
+            Debug.Log("GameOverUI subscribed to PlayerHealth.OnDeath");
+        }
+        else
+        {
+            Debug.LogError("GameOverUI: PlayerHealth not found!");
         }
 
         // Connecter les boutons
@@ -49,21 +69,30 @@ public class GameOverUI : MonoBehaviour
             quitButton.onClick.AddListener(OnQuitClicked);
         }
 
-        // Cacher le panel au démarrage
-        Hide();
-    }
-
-    /// <summary>
-    /// Affiche l'écran de Game Over
-    /// </summary>
-    public void Show()
-    {
+        // Garder le panel actif mais invisible
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
         }
 
-        // Message aléatoire
+        // Cacher au demarrage
+        Hide();
+    }
+
+    /// <summary>
+    /// Affiche l'ecran de Game Over
+    /// </summary>
+    public void Show()
+    {
+        // NOUVEAU : Utiliser CanvasGroup pour afficher
+        if (gameOverCanvasGroup != null)
+        {
+            gameOverCanvasGroup.alpha = 1f;
+            gameOverCanvasGroup.interactable = true;
+            gameOverCanvasGroup.blocksRaycasts = true;
+        }
+
+        // Message aleatoire
         if (gameOverText != null && deathMessages.Length > 0)
         {
             string randomMessage = deathMessages[Random.Range(0, deathMessages.Length)];
@@ -76,20 +105,20 @@ public class GameOverUI : MonoBehaviour
             audioSource.PlayOneShot(gameOverSound);
         }
 
-        // Arrêter le temps (optionnel)
-        // Time.timeScale = 0f;
-
         Debug.Log("=== GAME OVER ===");
     }
 
     /// <summary>
-    /// Cache l'écran de Game Over
+    /// Cache l'ecran de Game Over
     /// </summary>
     public void Hide()
     {
-        if (gameOverPanel != null)
+        // NOUVEAU : Utiliser CanvasGroup pour cacher
+        if (gameOverCanvasGroup != null)
         {
-            gameOverPanel.SetActive(false);
+            gameOverCanvasGroup.alpha = 0f;
+            gameOverCanvasGroup.interactable = false;
+            gameOverCanvasGroup.blocksRaycasts = false;
         }
     }
 
@@ -97,7 +126,7 @@ public class GameOverUI : MonoBehaviour
     {
         Debug.Log("Restart button clicked!");
 
-        // Remettre le temps à la normale
+        // Remettre le temps a la normale
         Time.timeScale = 1f;
 
         // Notifier le LevelManager
@@ -108,7 +137,7 @@ public class GameOverUI : MonoBehaviour
         }
         else
         {
-            // Fallback: recharger la scène manuellement
+            // Fallback: recharger la scene manuellement
             UnityEngine.SceneManagement.SceneManager.LoadScene(
                 UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
             );
@@ -129,10 +158,18 @@ public class GameOverUI : MonoBehaviour
         {
             // Fallback
             Application.Quit();
-
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #endif
+        }
+    }
+
+    void OnDestroy()
+    {
+        // Se desabonner pour eviter les leaks
+        if (playerHealth != null)
+        {
+            playerHealth.OnDeath -= Show;
         }
     }
 }

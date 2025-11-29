@@ -7346,6 +7346,7 @@ GameObject:
   - component: {fileID: 500014196}
   - component: {fileID: 500014195}
   - component: {fileID: 500014194}
+  - component: {fileID: 500014197}
   m_Layer: 5
   m_Name: GameOverPanel
   m_TagString: Untagged
@@ -7388,6 +7389,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameOverUI
   gameOverPanel: {fileID: 500014192}
+  gameOverCanvasGroup: {fileID: 500014197}
   gameOverText: {fileID: 1844223316}
   restartButton: {fileID: 634778757}
   quitButton: {fileID: 247455188}
@@ -7398,6 +7400,7 @@ MonoBehaviour:
   - ELIMINATED
   - TERMINATED
   gameOverSound: {fileID: 0}
+  playerHealth: {fileID: 0}
 --- !u!114 &500014195
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7436,6 +7439,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 500014192}
   m_CullTransparentMesh: 1
+--- !u!225 &500014197
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 500014192}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1001 &502418049
 PrefabInstance:
   m_ObjectHideFlags: 0
