@@ -2,6 +2,11 @@ using UnityEngine;
 
 public class ClimbableObject : MonoBehaviour
 {
-    [Header("Debug")]
-    public string climbTypeName = "Test"; // Juste pour identifier dans les logs
+    public ClimbType climbType;
+
+    // Pour debug (optionnel)
+    public string climbTypeName
+    {
+        get { return climbType != null ? climbType.climbName : "None"; }
+    }
 }
