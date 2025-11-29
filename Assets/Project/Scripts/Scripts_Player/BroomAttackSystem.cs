@@ -38,7 +38,6 @@ public class BroomAttackSystem : MonoBehaviour
     {
         if (stats == null) return;
 
-        Debug.Log($"BroomPressed: {PlayerInputManager.Instance.BroomAttackPressed}, MashPressed: {PlayerInputManager.Instance.MashEscapePressed}");
 
         if (PlayerInputManager.Instance.BroomAttackPressed && CanAttack())
         {

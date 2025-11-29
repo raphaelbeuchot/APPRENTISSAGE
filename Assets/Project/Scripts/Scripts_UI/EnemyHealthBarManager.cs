@@ -39,13 +39,10 @@ public class EnemyHealthBarManager : MonoBehaviour
 
     private void LateUpdate()
     {
-        Debug.Log($"LateUpdate - healthBars count: {healthBars.Count}");
 
-        Debug.Log($"canvas null? {canvas == null}, mainCamera null? {mainCamera == null}");
 
         if (canvas == null || mainCamera == null) return;
 
-        Debug.Log("Before foreach");
         foreach (var kvp in healthBars)
         {
             Transform enemy = kvp.Key;
@@ -66,6 +63,5 @@ public class EnemyHealthBarManager : MonoBehaviour
                 barRect.localPosition = localPoint;
             }
         }
-        Debug.Log("After foreach");
     }
 }
