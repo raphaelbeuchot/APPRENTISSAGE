@@ -50,7 +50,7 @@ public class TestClimbDetection : MonoBehaviour
             ClimbableObject climbable = hit.GetComponent<ClimbableObject>();
             if (climbable == null) continue;
 
-            Vector3 toObstacle = (hit.transform.position - transform.position).normalized;
+            Vector3 toObstacle = (hit.bounds.center - transform.position).normalized;
             toObstacle.y = 0f;
 
             float alignment = Vector3.Dot(inputDirection, toObstacle);
