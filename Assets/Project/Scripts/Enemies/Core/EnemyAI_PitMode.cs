@@ -3,7 +3,7 @@ using UnityEngine;
 public class EnemyAI_PitMode : MonoBehaviour
 {
     [Header("Pit Mode Settings")]
-    public float moveSpeed = 2f;
+    public float moveSpeed = 0.6f;
     public float rotationSpeed = 120f;
 
     private Transform player;
