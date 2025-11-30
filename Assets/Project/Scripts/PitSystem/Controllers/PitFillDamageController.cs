@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Pathfinding;
 
 [RequireComponent(typeof(PitFill))]
 public class PitFillDamageController : MonoBehaviour
@@ -112,6 +113,8 @@ public class PitFillDamageController : MonoBehaviour
             entitiesInFill.Add(go, data);
             Debug.Log($"[PitFill] ADDED {go.name} to dict. Dict size: {entitiesInFill.Count}");
             Debug.Log($"[PitFill] GameObject InstanceID: {go.GetInstanceID()}");
+
+            
 
             if (showDebugLogs)
                 Debug.Log(string.Format("[PitFill] {0} entered fill: {1}", go.name, pitFill.fillType.contentName));

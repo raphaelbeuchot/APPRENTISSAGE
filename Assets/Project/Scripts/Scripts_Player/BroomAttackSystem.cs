@@ -181,6 +181,7 @@ public class BroomAttackSystem : MonoBehaviour
                     Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
                     knockbackDir.y = 0;
                     targetRb.AddForce(knockbackDir * stats.broomKnockbackForce, ForceMode.VelocityChange);
+                    
                 }
 
                 // Degats
@@ -268,9 +269,10 @@ public class BroomAttackSystem : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
-        // Reactiver pathfinding A*
+        // Reset knockback flag
         if (zombieAI_AStar != null && target != null)
         {
+
             Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
             if (aiPath != null)
             {

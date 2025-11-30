@@ -73,14 +73,17 @@ public class PitZoneEditor : Editor
 
         GUILayout.Space(5);
 
-        GUI.backgroundColor = Color.yellow;
-        if (GUILayout.Button("Apply A* Walkability", GUILayout.Height(30)))
-        {
-            pitZone.ApplyAStarWalkability(pitZone.penaltyAmount);
-        }
+        
+    
         GUI.backgroundColor = Color.white;
 
         GUILayout.Space(5);
+
+        
+        GUI.backgroundColor = Color.white;
+
+        GUILayout.Space(5);
+
         EditorGUILayout.HelpBox("Use 'Tools > Pit Fill Editor' to add fill content.", MessageType.Info);
 
         GUILayout.EndVertical();

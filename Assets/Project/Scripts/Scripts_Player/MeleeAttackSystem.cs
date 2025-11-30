@@ -346,6 +346,7 @@ public class MeleeAttackSystem : MonoBehaviour
                     Vector3 velocityChange = desiredVel - currentVel;
 
                     targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
+                    
                 }
 
                 // Degats

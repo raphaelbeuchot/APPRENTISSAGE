@@ -30,7 +30,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
     [HideInInspector] public bool isForcedChase = false;
 
-
+    
     private bool isPlayerInRange = false;
     protected float lastWanderTime = 0f;
     protected float wanderTimer = 0f;
@@ -63,10 +63,12 @@ public class EnemyAI_AStar : MonoBehaviour
 
         isBlinder = stats.attackType == EnemyStats.AttackType.Blinder;
 
-        if (aiPath != null) // REMPLACE agent != null
+        if (aiPath != null)
         {
-            aiPath.maxSpeed = stats.walkSpeed; // REMPLACE agent.speed
-            aiPath.rotationSpeed = stats.rotationSpeed; // REMPLACE agent.angularSpeed
+            aiPath.maxSpeed = stats.walkSpeed;
+            aiPath.rotationSpeed = stats.rotationSpeed;
+
+            
         }
 
         InitializeAttackBehavior();
