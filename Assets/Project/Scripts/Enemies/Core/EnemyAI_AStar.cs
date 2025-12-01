@@ -20,6 +20,9 @@ public class EnemyAI_AStar : MonoBehaviour
     private BlinderWanderBehavior wanderBehavior;
     private EnemyPitInteractable pitInteractable;
 
+    [Header("Pit Mode")]
+    [HideInInspector] public bool isInPitMode = false;
+
     private EnemyHealthBarUI healthBarUI;
     public bool canMove = true;
     [HideInInspector] public bool isStunnedBySentinel = false;
@@ -353,8 +356,15 @@ public class EnemyAI_AStar : MonoBehaviour
             return;
         }
 
-        Vector3 direction = (targetHuman.position - transform.position).normalized;
-        MoveInDirection(direction, stats.chaseSpeed);
+        if (isInPitMode)
+        {
+            MoveInPitMode();
+        }
+        else
+        {
+            Vector3 direction = (targetHuman.position - transform.position).normalized;
+            MoveInDirection(direction, stats.chaseSpeed);
+        }
     }
 
     protected virtual void HandleAttackingState()
@@ -427,6 +437,38 @@ public class EnemyAI_AStar : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
         }
     }
+
+    protected virtual void MoveInPitMode()
+    {
+        Debug.Log($"[PitMode] {gameObject.name} MoveInPitMode called!");
+
+        if (targetHuman == null) return;
+
+        Vector3 directionToPlayer = (targetHuman.position - transform.position);
+        directionToPlayer.y = 0;
+        directionToPlayer.Normalize();
+
+        if (directionToPlayer.magnitude > 0.1f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                Time.deltaTime * stats.rotationSpeed
+            );
+
+        }
+
+        bool isChasing = (currentState == State.Chasing || currentState == State.Attacking);
+        float pitMoveSpeed = (isChasing ? stats.chaseSpeed : stats.walkSpeed) * 2f;
+        Vector3 moveDirection = transform.forward * pitMoveSpeed;
+        rb.linearVelocity = new Vector3(moveDirection.x, rb.linearVelocity.y, moveDirection.z);
+
+        Debug.Log($"[PitMode] Setting velocity to {moveDirection}, speed={pitMoveSpeed}");
+
+    }
+
+
     protected void StopMovement()
     {
         if (aiPath != null)
@@ -469,6 +511,29 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         return aiPath;
     }
+
+    public void EnablePitMode()
+    {
+        isInPitMode = true;
+        if (aiPath != null)
+        {
+            aiPath.enabled = false; // Desactive SEULEMENT AIPath
+        }
+        // NE PAS desactiver this.enabled !
+        Debug.Log($"[EnemyAI] {gameObject.name} PitMode enabled");
+    }
+
+    public void DisablePitMode()
+    {
+        isInPitMode = false;
+        if (aiPath != null)
+        {
+            aiPath.enabled = true;
+        }
+        Debug.Log($"[EnemyAI] {gameObject.name} PitMode disabled");
+    }
+
+
 
     protected virtual void OnDrawGizmosSelected()
     {

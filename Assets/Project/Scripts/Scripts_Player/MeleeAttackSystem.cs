@@ -286,41 +286,24 @@ public class MeleeAttackSystem : MonoBehaviour
             {
                 hitSomething = true;
 
-                // CHECK SI ENNEMI AWARE DU PLAYER (support A* et NavMesh)
+                // CHECK SI ENNEMI AWARE DU PLAYER
                 bool isPshitAttack = false;
 
-                // Essayer nouveau systeme A*
                 EnemyAI_AStar enemyAI_AStar = hit.GetComponent<EnemyAI_AStar>();
                 if (enemyAI_AStar != null)
                 {
                     isPshitAttack = (enemyAI_AStar.currentState == EnemyAI_AStar.State.Chasing ||
                                     enemyAI_AStar.currentState == EnemyAI_AStar.State.Attacking);
                 }
-                else
-                {
-                    // Fallback ancien systeme NavMesh
-                    EnemyAI enemyAI = hit.GetComponent<EnemyAI>();
-                    if (enemyAI != null)
-                    {
-                        isPshitAttack = (enemyAI.currentState == EnemyAI.State.Chasing ||
-                                        enemyAI.currentState == EnemyAI.State.Attacking);
-                    }
-                }
 
-                // Consume spray ammo only once if pshit attack
+                // Consume spray ammo logic...
                 if (isPshitAttack && !sprayUsed)
                 {
                     currentSprayAmmo--;
                     sprayUsed = true;
                     wasFrontAttack = true;
-                    Debug.Log("PSHIT SPRAY used! Ammo: " + currentSprayAmmo + "/" + stats.maxSprayAmmo);
-
-                    if (currentSprayAmmo <= 0 && !isReloading)
-                    {
-                        StartReload();
-                    }
+                    // ... logs
                 }
-                // Back attack: no ammo consumption but mark for sound
                 if (!isPshitAttack)
                 {
                     wasFrontAttack = false;
@@ -340,23 +323,20 @@ public class MeleeAttackSystem : MonoBehaviour
                 {
                     Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
                     knockbackDir.y = 0;
-
                     Vector3 currentVel = targetRb.linearVelocity;
                     Vector3 desiredVel = knockbackDir * stats.knockbackForce;
                     Vector3 velocityChange = desiredVel - currentVel;
-
                     targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
-                    
                 }
 
                 // Degats
                 float damage = stats.GetAdjustedDamage();
                 enemyHealth.TakeMeleeDamage(damage);
 
-                // Notifier les Blinders
+                // Notifier Blinders
                 MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
 
-                // Check si c'est un Blinder
+                // Check Blinder
                 ChargeAttack chargeAttack = hit.GetComponent<ChargeAttack>();
                 if (chargeAttack != null)
                 {
@@ -466,52 +446,30 @@ public class MeleeAttackSystem : MonoBehaviour
             yield break;
         }
 
-        // Support A* et NavMesh
         EnemyAI_AStar zombieAI_AStar = target.GetComponent<EnemyAI_AStar>();
-        EnemyAI zombieAI = target.GetComponent<EnemyAI>();
 
-        // Desactiver pathfinding A*
-        if (zombieAI_AStar != null)
-        {
-            Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
-            if (aiPath != null)
-            {
-                aiPath.enabled = false;
-            }
-            zombieAI_AStar.enabled = false;
-        }
-        // Desactiver NavMesh
-        else if (zombieAI != null)
-        {
-            UnityEngine.AI.NavMeshAgent agent = target.GetComponent<UnityEngine.AI.NavMeshAgent>();
-            if (agent != null && agent.isOnNavMesh)
-            {
-                agent.enabled = false;
-            }
-            zombieAI.enabled = false;
-        }
+        // Pas besoin de redisable, deja fait dans DetectAndHit
 
         yield return new WaitForSeconds(2f);
 
-        // Reactiver pathfinding A*
+        // Reactiver
         if (zombieAI_AStar != null && target != null)
         {
-            Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
-            if (aiPath != null)
+            if (zombieAI_AStar.isInPitMode)
             {
-                aiPath.enabled = true;
+                // En PitMode : juste reactiver AI (AIPath reste disabled)
+                zombieAI_AStar.enabled = true;
             }
-            zombieAI_AStar.enabled = true;
-        }
-        // Reactiver NavMesh
-        else if (zombieAI != null && target != null)
-        {
-            UnityEngine.AI.NavMeshAgent agent = target.GetComponent<UnityEngine.AI.NavMeshAgent>();
-            if (agent != null)
+            else
             {
-                agent.enabled = true;
+                // Hors pit : reactiver AI + AIPath
+                Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
+                if (aiPath != null)
+                {
+                    aiPath.enabled = true;
+                }
+                zombieAI_AStar.enabled = true;
             }
-            zombieAI.enabled = true;
         }
     }
 

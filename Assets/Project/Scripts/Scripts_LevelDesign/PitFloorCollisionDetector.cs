@@ -32,48 +32,37 @@ public class PitFloorCollisionDetector : MonoBehaviour
             }
         }
 
-        // Si damageController existe, lui deleguer la gestion
-        if (damageController != null)
+        if (damageController == null)
         {
-            Debug.Log("[PitFloor DEBUG] Calling OnEntityHitFloor");
-            damageController.OnEntityHitFloor(interactable, 0f);
+            Debug.Log("[PitFloor DEBUG] damageController NULL, searching in parent...");
+            // Chercher dans le PARENT (PitZone) au lieu de FindObjectsOfType
+            damageController = transform.GetComponentInParent<PitFillDamageController>();
+            if (damageController != null)
+                Debug.Log("[PitFloor DEBUG] Found damageController in parent!");
         }
         else
         {
             Debug.LogError("[PitFloor ERROR] NO DAMAGECONTROLLER FOUND!");
         }
 
-        // NOUVEAU : Switch vers PitMode pour les zombies
         EnemyAI_AStar enemyAI = collision.gameObject.GetComponent<EnemyAI_AStar>();
         if (enemyAI != null)
         {
             Debug.Log($"[PitFloor] {collision.gameObject.name} switching to PitMode");
 
-            // Desactiver AI normale
-            enemyAI.enabled = false;
+            // Activer PitMode AVANT de toucher au Rigidbody
+            enemyAI.EnablePitMode();
+            enemyAI.enabled = true; // FORCER RALLUMAGE
 
-            // Desactiver Seeker
-            Pathfinding.Seeker seeker = collision.gameObject.GetComponent<Pathfinding.Seeker>();
-            if (seeker != null)
-            {
-                Destroy(seeker);
-            }
 
-            // DETRUIRE AIPath (au lieu de disable)
-            Pathfinding.AIPath aiPath = collision.gameObject.GetComponent<Pathfinding.AIPath>();
-            if (aiPath != null)
+            // Restaurer le damping maintenant que AIPath est desactive
+            Rigidbody rbRestore = collision.gameObject.GetComponent<Rigidbody>();
+            EnemyPitInteractable pitInt = collision.gameObject.GetComponent<EnemyPitInteractable>();
+            if (rbRestore != null && pitInt != null)
             {
-                Destroy(aiPath);
-                Debug.Log($"[PitFloor] Destroyed AIPath component");
+                rbRestore.linearDamping = 5f;
+                Debug.Log($"[PitFloor] Damping restored to 5 after AIPath disabled");
             }
-
-            // Activer/Creer PitMode
-            EnemyAI_PitMode pitMode = collision.gameObject.GetComponent<EnemyAI_PitMode>();
-            if (pitMode == null)
-            {
-                pitMode = collision.gameObject.AddComponent<EnemyAI_PitMode>();
-            }
-            pitMode.enabled = true;
         }
 
 

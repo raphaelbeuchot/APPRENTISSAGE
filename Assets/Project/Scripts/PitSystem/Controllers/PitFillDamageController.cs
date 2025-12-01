@@ -567,15 +567,7 @@ public class PitFillDamageController : MonoBehaviour
                 }
             }
 
-            // Restaurer le damping original AVANT d'appliquer les degats
-            Rigidbody rbRestore = go.GetComponent<Rigidbody>();
-            if (rbRestore != null && data.originalLinearDamping > 0f)
-            {
-                rbRestore.linearDamping = data.originalLinearDamping;
-                Debug.Log(string.Format("[PitFill] Damping restored to {0:F1}", data.originalLinearDamping));
-            }
-
-            
+                       
             // APPLIQUER LES DÉGÂTS INSTANTANÉMENT
             interactable.TakePitDamage(totalDamagePercent, PitDamageType.Fall);
             Debug.Log($"[PitFill] {go.name} took {totalDamagePercent:F1}% fall damage instantly");

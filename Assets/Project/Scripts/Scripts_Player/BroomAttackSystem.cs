@@ -181,7 +181,6 @@ public class BroomAttackSystem : MonoBehaviour
                     Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
                     knockbackDir.y = 0;
                     targetRb.AddForce(knockbackDir * stats.broomKnockbackForce, ForceMode.VelocityChange);
-                    
                 }
 
                 // Degats
@@ -246,8 +245,8 @@ public class BroomAttackSystem : MonoBehaviour
         EnemyAI_AStar zombieAI_AStar = target.GetComponent<EnemyAI_AStar>();
         EnemyAI zombieAI = target.GetComponent<EnemyAI>();
 
-        // Desactiver pathfinding A*
-        if (zombieAI_AStar != null)
+        // Desactiver pathfinding A* (sauf si en PitMode)
+        if (zombieAI_AStar != null && !zombieAI_AStar.isInPitMode)
         {
             Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
             if (aiPath != null)
@@ -269,17 +268,25 @@ public class BroomAttackSystem : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
-        // Reset knockback flag
         if (zombieAI_AStar != null && target != null)
         {
-
-            Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
-            if (aiPath != null)
+            if (zombieAI_AStar.isInPitMode)
             {
-                aiPath.enabled = true;
+                // En PitMode : juste réactiver AI (AIPath reste disabled)
+                zombieAI_AStar.enabled = true;
             }
-            zombieAI_AStar.enabled = true;
+            else
+            {
+                // Hors pit : réactiver AI + AIPath
+                Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
+                if (aiPath != null)
+                {
+                    aiPath.enabled = true;
+                }
+                zombieAI_AStar.enabled = true;
+            }
         }
+        /*
         // Reactiver NavMesh
         else if (zombieAI != null && target != null)
         {
@@ -289,7 +296,7 @@ public class BroomAttackSystem : MonoBehaviour
                 agent.enabled = true;
             }
             zombieAI.enabled = true;
-        }
+        }*/
     }
 
     public void OnGrabStart()
