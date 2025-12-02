@@ -23,6 +23,8 @@ public class PlayerInputManager : MonoBehaviour
 
     public bool CrouchPressed { get; private set; }
 
+    public bool SentinelCameraPressed { get; private set; }
+
 
 
     private void Awake()
@@ -80,6 +82,12 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.Crouch.performed += ctx => CrouchPressed = true;
 
+        inputActions.Player.SentinelCamera.performed += ctx =>
+        {
+            Debug.Log("INPUT SENTINEL CAMERA PERFORMED!");
+            SentinelCameraPressed = true;
+        }; inputActions.Player.SentinelCamera.canceled += ctx => SentinelCameraPressed = false;
+
     }
 
     private void OnDisable()
@@ -96,6 +104,8 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.Crouch.performed -= ctx => CrouchPressed = true;
 
+        inputActions.Player.SentinelCamera.performed -= ctx => SentinelCameraPressed = true;
+        inputActions.Player.SentinelCamera.canceled -= ctx => SentinelCameraPressed = false;
     }
 
     private void OnMovement(InputAction.CallbackContext context)
@@ -118,6 +128,7 @@ public class PlayerInputManager : MonoBehaviour
         ReloadPressed = false;
         MashEscapePressed = false;
         CrouchPressed = false;
+        SentinelCameraPressed = false;
 
 
     }

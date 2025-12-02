@@ -124,6 +124,20 @@ public class SentinelSettings : ScriptableObject
     [Header("VARIATIONS")]
     public SentinelType type = SentinelType.Main;
 
+    [Header("CAMERA SENTINEL MODE")]
+    [Tooltip("Distance min camera quand tres proche sentinelle (mode archer)")]
+    public float cameraMinDistance = 2f;
+    [Tooltip("Distance max camera (distance actuelle normale)")]
+    public float cameraMaxDistance = 9f;
+    [Tooltip("Offset lateral de base")]
+    public float cameraLateralOffset = 1.5f;
+    [Tooltip("Offset lateral min quand proche")]
+    public float cameraMinLateralOffset = 0.3f;
+    [Tooltip("Hauteur camera en mode sentinelle")]
+    public float cameraHeightOffset = 2f;
+    [Tooltip("Distance a laquelle on commence a reduire les offsets")]
+    public float cameraTransitionRange = 20f;
+
     public enum SentinelType { Main, Small, Multiple }
 
     public float GetRandomGreenlightDuration()

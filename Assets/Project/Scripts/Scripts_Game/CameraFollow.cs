@@ -1,8 +1,17 @@
 using UnityEngine;
 
+public enum CameraMode
+{
+    Normal,
+    Sentinel
+}
+
 public class CameraFollow : MonoBehaviour
 {
+    [Header("Target")]
     public Transform target;
+    public Transform sentinelTransform;
+    public SentinelSettings sentinelSettings; // Reference au SO
     public TargetLockSystem lockSystem;
 
     [Header("Normal Mode")]
@@ -15,33 +24,73 @@ public class CameraFollow : MonoBehaviour
     public float lockBlendSpeed = 5f;
     public float lockMouseInfluence = 0.3f;
 
+    // Variables privees
+    private CameraMode currentMode = CameraMode.Normal;
     private float rotationX = 0f;
     private float rotationY = 0f;
     private float hauteurFixe;
 
+    private Vector3 sentinelModeReferenceDirection;
+
     void Start()
     {
         hauteurFixe = transform.position.y;
+    }
+    void Update()
+    {
+        // Check toggle AVANT que PlayerInputManager reset le flag
+        if (PlayerInputManager.Instance.SentinelCameraPressed)
+        {
+            Debug.Log("SENTINEL CAMERA TOGGLE PRESSED!");
+            ToggleSentinelMode();
+        }
     }
 
     void LateUpdate()
     {
         if (target == null) return;
 
-        if (lockSystem != null && lockSystem.IsLocked)
+        // Update selon le mode actif (RETIRE le check input d'ici)
+        switch (currentMode)
         {
-            UpdateNormalCamera();
-            
+            case CameraMode.Normal:
+                if (lockSystem != null && lockSystem.IsLocked)
+                {
+                    UpdateLockedCamera();
+                }
+                else
+                {
+                    UpdateNormalCamera();
+                }
+                break;
+
+            case CameraMode.Sentinel:
+                UpdateSentinelCamera();
+                break;
+        }
+    }
+
+    private void ToggleSentinelMode()
+    {
+        if (currentMode == CameraMode.Normal)
+        {
+            // Sauvegarder la direction actuelle de la camera comme reference
+            sentinelModeReferenceDirection = transform.forward;
+            sentinelModeReferenceDirection.y = 0f;
+            sentinelModeReferenceDirection.Normalize();
+
+            currentMode = CameraMode.Sentinel;
+            Debug.Log("Mode SENTINEL active");
         }
         else
         {
-            UpdateNormalCamera();
+            currentMode = CameraMode.Normal;
+            Debug.Log("Mode NORMAL active");
         }
     }
 
     private void UpdateNormalCamera()
     {
-        // === NOUVEAU : Utiliser PlayerInputManager ===
         Vector2 lookInput = PlayerInputManager.Instance.LookInput;
         float sourisX = lookInput.x * sensibiliteSouris * Time.deltaTime;
         float sourisY = lookInput.y * sensibiliteSouris * Time.deltaTime;
@@ -58,6 +107,7 @@ public class CameraFollow : MonoBehaviour
             positionCible.y = hauteurMinSol;
 
         transform.position = positionCible;
+
         Vector3 pointRegard = new Vector3(target.position.x, hauteurFixe, target.position.z);
         transform.LookAt(pointRegard);
     }
@@ -71,7 +121,6 @@ public class CameraFollow : MonoBehaviour
             return;
         }
 
-        // === NOUVEAU : Utiliser PlayerInputManager ===
         Vector2 lookInput = PlayerInputManager.Instance.LookInput;
         float sourisX = lookInput.x * sensibiliteSouris * lockMouseInfluence * Time.deltaTime;
         float sourisY = lookInput.y * sensibiliteSouris * lockMouseInfluence * Time.deltaTime;
@@ -92,8 +141,75 @@ public class CameraFollow : MonoBehaviour
             positionCible.y = hauteurMinSol;
 
         transform.position = positionCible;
+
         Vector3 lookPoint = Vector3.Lerp(target.position, lockedTarget.position, 0.5f);
         lookPoint.y = hauteurFixe;
         transform.LookAt(lookPoint);
+    }
+
+    private void UpdateSentinelCamera()
+    {
+        if (sentinelTransform == null)
+        {
+            Debug.LogWarning("Sentinel Transform non assigne ! Retour en mode Normal.");
+            currentMode = CameraMode.Normal;
+            return;
+        }
+
+        if (sentinelSettings == null)
+        {
+            Debug.LogWarning("SentinelSettings non assigne ! Retour en mode Normal.");
+            currentMode = CameraMode.Normal;
+            return;
+        }
+
+        // Calcul de la distance player-sentinelle
+        float distanceToSentinel = Vector3.Distance(target.position, sentinelTransform.position);
+
+        // Ratio de proximite (0 = loin, 1 = tres proche)
+        float proximityRatio = Mathf.Clamp01(1f - (distanceToSentinel / sentinelSettings.cameraTransitionRange));
+
+        // Interpolation de la distance camera selon proximite
+        float currentDistance = Mathf.Lerp(sentinelSettings.cameraMaxDistance, sentinelSettings.cameraMinDistance, proximityRatio);
+
+        // Interpolation de l'offset lateral selon proximite
+        float currentLateralOffset = Mathf.Lerp(sentinelSettings.cameraLateralOffset, sentinelSettings.cameraMinLateralOffset, proximityRatio);
+
+        // Utiliser la direction de reference sauvegardee au lieu de transform.forward
+        Vector3 directionToSentinel = sentinelTransform.position - target.position;
+        directionToSentinel.y = 0f;
+        directionToSentinel.Normalize();
+
+        // Produit vectoriel pour determiner le cote
+        float crossProduct = Vector3.Cross(sentinelModeReferenceDirection, directionToSentinel).y;
+        float sideMultiplier = crossProduct > 0 ? -1f : 1f;
+
+        // Position de base : derriere le player avec offset lateral
+        Vector3 targetBack = -directionToSentinel; // Direction opposee a la sentinelle
+        Vector3 lateralDirection = Vector3.Cross(Vector3.up, targetBack).normalized;
+
+        // Appliquer l'offset lateral du bon cote
+        Vector3 lateralOffset = lateralDirection * (currentLateralOffset * sideMultiplier);
+
+        // Position finale de la camera
+        Vector3 cameraPosition = target.position
+            + targetBack * currentDistance
+            + lateralOffset
+            + Vector3.up * sentinelSettings.cameraHeightOffset;
+
+        // Contrainte de hauteur min
+        if (cameraPosition.y < hauteurMinSol)
+            cameraPosition.y = hauteurMinSol;
+
+        // Contrainte pour garder la tete dans le cadre
+        float playerHeadHeight = target.position.y + 1.8f; // Approximation hauteur tete
+        if (cameraPosition.y > playerHeadHeight)
+            cameraPosition.y = playerHeadHeight;
+
+        // Application instantanee (pas de lerp)
+        transform.position = cameraPosition;
+
+        // LookAt vers la sentinelle
+        transform.LookAt(sentinelTransform.position);
     }
 }

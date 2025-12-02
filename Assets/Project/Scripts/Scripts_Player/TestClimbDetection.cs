@@ -146,8 +146,16 @@ public class TestClimbDetection : MonoBehaviour
     {
         Rigidbody rb = GetComponent<Rigidbody>();
 
+        // DESACTIVER PlayerPhysicsMovement completement
+        playerMovement.enabled = false;
+
+        // FREEZE RIGIDBODY COMPLET
+        RigidbodyConstraints oldConstraints = rb.constraints;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+
         // PHASE 1 : MONTEE VERTICALE
-        Debug.Log("[CLIMB PHASE 1] Montee verticale");
         Vector3 topPos = startPos + Vector3.up * height;
         float phase1Duration = climbType.phase1Duration;
         float elapsed = 0f;
@@ -158,12 +166,14 @@ public class TestClimbDetection : MonoBehaviour
             float t = elapsed / phase1Duration;
             Vector3 newPos = Vector3.Lerp(startPos, topPos, t);
             rb.MovePosition(newPos);
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
             yield return new WaitForFixedUpdate();
         }
         rb.MovePosition(topPos);
+        rb.linearVelocity = Vector3.zero;
 
         // PHASE 2 : AVANCEE HORIZONTALE
-        Debug.Log("[CLIMB PHASE 2] Avancee horizontale");
         Vector3 finalPos = topPos + transform.forward * distance;
         float phase2Duration = climbType.phase2Duration;
         elapsed = 0f;
@@ -174,11 +184,17 @@ public class TestClimbDetection : MonoBehaviour
             float t = elapsed / phase2Duration;
             Vector3 newPos = Vector3.Lerp(topPos, finalPos, t);
             rb.MovePosition(newPos);
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
             yield return new WaitForFixedUpdate();
         }
         rb.MovePosition(finalPos);
+        rb.linearVelocity = Vector3.zero;
 
-        Debug.Log("[CLIMB] Animation terminee");
+        // RESTAURER TOUT
+        rb.constraints = oldConstraints;
+        playerMovement.enabled = true;
+
         ReEnableMovement();
     }
     void OnDrawGizmos()

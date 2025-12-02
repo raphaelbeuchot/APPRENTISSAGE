@@ -196,8 +196,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void HandleInput()
     {
-        // Bloquer inputs si grabbed ou en recoil
-        if (grabState != GrabState.None || gameManager.stunBySentinel)
+        // Bloquer inputs si grabbed, en recoil, stun sentinelle, ou canMove desactive
+        if (grabState != GrabState.None || gameManager.stunBySentinel || !canMove)
         {
             moveInput = Vector3.zero;
             return;
@@ -210,7 +210,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             return;
         }
 
-        // === NOUVEAU : Utiliser PlayerInputManager ===
+        // Utiliser PlayerInputManager
         Vector2 inputVector = PlayerInputManager.Instance.MoveInput;
         moveInput = new Vector3(inputVector.x, 0f, inputVector.y).normalized;
 
