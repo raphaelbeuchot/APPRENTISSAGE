@@ -29,6 +29,9 @@ public class PlayerStats : ScriptableObject
     [Range(1f, 3f)]
     public float sprintSpeedMultiplier = 1.5f;
 
+    [Header("Crouch")]
+    public float crouchSpeedMultiplier = 0.8f; // 80 prcents vitesse en crouch
+
     [Header("Lock-On System")]
     public float lockOnRange = 10f;
     public float lockOnAngle = 90f; // angle devant la camera
@@ -108,6 +111,8 @@ public class PlayerStats : ScriptableObject
     public float broomCooldown = 0.5f;
     [Tooltip("Son du balai")]
     public AudioClip broomSound;
+    public AudioClip broomHitSound;
+
     [Tooltip("Force du knockback balai")]
     public float broomKnockbackForce = 8f;
 

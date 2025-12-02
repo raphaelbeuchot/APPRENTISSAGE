@@ -9,6 +9,10 @@ public class EnemyAI_AStar : MonoBehaviour
     public EnemyStats stats;
     public PlayerStats playerStats;
 
+    private Vector3 lastKnownPlayerPosition;
+    private bool isGoingToLastKnownPosition = false;
+    [SerializeField] private float arrivalThreshold = 0.5f;
+
     [Header("References")]
     protected Rigidbody rb;
     public Transform targetHuman;
@@ -19,6 +23,7 @@ public class EnemyAI_AStar : MonoBehaviour
     private Seeker seeker; // AJOUT
     private BlinderWanderBehavior wanderBehavior;
     private EnemyPitInteractable pitInteractable;
+
 
     [Header("Pit Mode")]
     [HideInInspector] public bool isInPitMode = false;
@@ -243,6 +248,23 @@ public class EnemyAI_AStar : MonoBehaviour
                 if (angle > stats.detectionAngle / 2f)
                     continue;
 
+                // Check Line of Sight
+                Vector3 eyePos = transform.position + Vector3.up * 1.0f; // hauteur yeux zombie
+                Vector3 targetEyePos = hit.transform.position + Vector3.up * 1.0f; // hauteur yeux du player
+
+                Vector3 dir = (targetEyePos - eyePos).normalized;
+                float dist = Vector3.Distance(eyePos, targetEyePos);
+
+                // Si un obstacle bloque la vue
+                if (Physics.Raycast(eyePos, dir, out RaycastHit wallHit, dist, stats.obstacleMask))
+                {
+                    // Si ce qu'on touche n'est pas le PLAYER  vue bloquée
+                    if (!wallHit.collider.GetComponent<PlayerHealth>())
+                    {
+                        continue;
+                    }
+                }
+
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
@@ -254,6 +276,8 @@ public class EnemyAI_AStar : MonoBehaviour
         if (closestHuman != null)
         {
             targetHuman = closestHuman;
+            lastKnownPlayerPosition = closestHuman.position; // MAJ constante
+            isGoingToLastKnownPosition = false; // On le voit = pas besoin de la derniere position
             wasChasing = true;
             lostTargetTime = -999f;
 
@@ -262,35 +286,22 @@ public class EnemyAI_AStar : MonoBehaviour
             else
                 currentState = State.Chasing;
         }
-        else
+        else // Player invisible (hors range OU cache derriere obstacle)
         {
-            // NOUVEAU : Persistance du chase apres perte de cible
             if (wasChasing && !isForcedChase)
             {
-                if (lostTargetTime < 0f)
-                {
-                    lostTargetTime = Time.time;
-                    Debug.Log($"{gameObject.name} a perdu le joueur, continue de chercher pendant {stats.chasePersistenceDuration}s");
-                }
+                // On perd la vue : on va vers la derniere position connue
+                targetHuman = null; // On ne le voit plus
+                isGoingToLastKnownPosition = true; // Mode "chercher a la derniere position"
+                currentState = State.Chasing; // On reste en chase (mais vers lastKnownPlayerPosition)
 
-                float timeSinceLost = Time.time - lostTargetTime;
-                if (timeSinceLost >= stats.chasePersistenceDuration)
-                {
-                    targetHuman = null;
-                    wasChasing = false;
-                    lostTargetTime = -999f;
-
-                    if (currentState == State.Chasing || currentState == State.Attacking)
-                        currentState = State.Idle;
-
-                    Debug.Log($"{gameObject.name} abandonne la poursuite");
-                }
+                Debug.Log($"{gameObject.name} a perdu le joueur, va chercher a {lastKnownPlayerPosition}");
             }
             else if (!isForcedChase)
             {
                 targetHuman = null;
                 wasChasing = false;
-                lostTargetTime = -999f;
+                isGoingToLastKnownPosition = false;
 
                 if (currentState == State.Chasing || currentState == State.Attacking)
                     currentState = State.Idle;
@@ -343,27 +354,52 @@ public class EnemyAI_AStar : MonoBehaviour
 
         if (wanderBehavior != null) wanderBehavior.StopWandering();
 
-        if (targetHuman == null)
+        // CAS 1 : On voit le player (chase normal)
+        if (targetHuman != null)
         {
-            currentState = State.Idle;
-            return;
-        }
+            float distance = Vector3.Distance(transform.position, targetHuman.position);
+            if (distance <= stats.attackRange)
+            {
+                currentState = State.Attacking;
+                return;
+            }
 
-        float distance = Vector3.Distance(transform.position, targetHuman.position);
-        if (distance <= stats.attackRange)
-        {
-            currentState = State.Attacking;
-            return;
+            if (isInPitMode)
+                MoveInPitMode();
+            else
+            {
+                Vector3 direction = (targetHuman.position - transform.position).normalized;
+                MoveInDirection(direction, stats.chaseSpeed);
+            }
         }
+        // CAS 2 : On ne voit plus le player, on va a la derniere position connue
+        else if (isGoingToLastKnownPosition)
+        {
+            float distanceToLastPos = Vector3.Distance(transform.position, lastKnownPlayerPosition);
 
-        if (isInPitMode)
-        {
-            MoveInPitMode();
+            // Arrive a la derniere position : abandon, retour Idle
+            if (distanceToLastPos <= arrivalThreshold)
+            {
+                Debug.Log($"{gameObject.name} arrive a la derniere position, rien trouve -> Idle");
+                wasChasing = false;
+                isGoingToLastKnownPosition = false;
+                currentState = State.Idle;
+                return;
+            }
+
+            // Avancer vers la derniere position connue
+            if (isInPitMode)
+                MoveInPitMode();
+            else
+            {
+                Vector3 direction = (lastKnownPlayerPosition - transform.position).normalized;
+                MoveInDirection(direction, stats.chaseSpeed);
+            }
         }
+        // CAS 3 : Ni cible ni position -> Idle
         else
         {
-            Vector3 direction = (targetHuman.position - transform.position).normalized;
-            MoveInDirection(direction, stats.chaseSpeed);
+            currentState = State.Idle;
         }
     }
 
@@ -442,21 +478,33 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         Debug.Log($"[PitMode] {gameObject.name} MoveInPitMode called!");
 
-        if (targetHuman == null) return;
-
-        Vector3 directionToPlayer = (targetHuman.position - transform.position);
-        directionToPlayer.y = 0;
-        directionToPlayer.Normalize();
-
-        if (directionToPlayer.magnitude > 0.1f)
+        // Determiner la position cible
+        Vector3 targetPosition;
+        if (targetHuman != null)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
+            targetPosition = targetHuman.position;
+        }
+        else if (isGoingToLastKnownPosition)
+        {
+            targetPosition = lastKnownPlayerPosition;
+        }
+        else
+        {
+            return; // Ni cible ni derniere position, on sort
+        }
+
+        Vector3 directionToTarget = (targetPosition - transform.position);
+        directionToTarget.y = 0;
+        directionToTarget.Normalize();
+
+        if (directionToTarget.magnitude > 0.1f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
             transform.rotation = Quaternion.Slerp(
                 transform.rotation,
                 targetRotation,
                 Time.deltaTime * stats.rotationSpeed
             );
-
         }
 
         bool isChasing = (currentState == State.Chasing || currentState == State.Attacking);
@@ -465,7 +513,6 @@ public class EnemyAI_AStar : MonoBehaviour
         rb.linearVelocity = new Vector3(moveDirection.x, rb.linearVelocity.y, moveDirection.z);
 
         Debug.Log($"[PitMode] Setting velocity to {moveDirection}, speed={pitMoveSpeed}");
-
     }
 
 
@@ -474,7 +521,7 @@ public class EnemyAI_AStar : MonoBehaviour
         if (aiPath != null)
         {
             aiPath.destination = transform.position; // REMPLACE agent.ResetPath()
-            aiPath.canMove = false; // Stop le movement A*
+            aiPath.canMove = false; // Stop le movement Astar
         }
 
         rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
@@ -505,6 +552,18 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         isDead = value;
         if (value) currentState = State.Dead;
+    }
+
+    public void CancelLastKnownPositionSearch()
+    {
+        if (isGoingToLastKnownPosition)
+        {
+            Debug.Log($"{gameObject.name} annule la recherche (stun sentinelle)");
+            targetHuman = null;
+            wasChasing = false;
+            isGoingToLastKnownPosition = false;
+            currentState = State.Idle;
+        }
     }
 
     public AIPath GetAIPath() // REMPLACE GetNavMeshAgent()

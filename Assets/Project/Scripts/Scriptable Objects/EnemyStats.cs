@@ -16,6 +16,7 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Variantes de skin")]
     public GameObject[] skinVariants;
 
+
     [Header("TYPE D'ENNEMI")]
     [Tooltip("Type d'attaque de cet ennemi")]
     public AttackType attackType = AttackType.Grabber;
@@ -26,6 +27,9 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Seuil de perte de membres (0-1)")]
     [Range(0f, 1f)]
     public float limbLossThreshold = 0.5f;
+
+    public LayerMask obstacleMask;
+
 
     [Header("MOUVEMENT")]
     [Tooltip("Vitesse de marche normale")]

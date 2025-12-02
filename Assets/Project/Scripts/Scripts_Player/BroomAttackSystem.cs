@@ -96,6 +96,13 @@ public class BroomAttackSystem : MonoBehaviour
         isAttacking = true;
         isInWindup = true;
 
+        //Sortir du crouch si actif
+
+        if (movement != null)
+        {
+            movement.ExitCrouch();
+        }
+
         try
         {
             // WINDUP PHASE
@@ -185,6 +192,12 @@ public class BroomAttackSystem : MonoBehaviour
 
                 // Degats
                 enemyHealth.TakeMeleeDamage(stats.broomDamage);
+                // Son d'impact individuel
+                if (audioSource != null && stats.broomHitSound != null)
+                {
+                    audioSource.PlayOneShot(stats.broomHitSound);
+                }
+
 
                 // Knockdown (sauf Blinders)
                 ChargeAttack chargeAttack = hit.GetComponent<ChargeAttack>();

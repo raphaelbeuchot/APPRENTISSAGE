@@ -237,7 +237,13 @@ public class EnemyHealth : MonoBehaviour
 
         // NOUVEAU : Utiliser A* AIPath au lieu de NavMeshAgent
         Pathfinding.AIPath aiPath = GetComponent<Pathfinding.AIPath>();
-        EnemyAI ai = GetComponent<EnemyAI>();
+        EnemyAI_AStar zombieAI = GetComponent<EnemyAI_AStar>(); // CORRIGE : _AStar
+
+        // AJOUT : Annuler la recherche de derniere position
+        if (zombieAI != null)
+        {
+            zombieAI.CancelLastKnownPositionSearch();
+        }
 
         float originalSpeed = 0f;
         if (aiPath != null)
@@ -246,22 +252,22 @@ public class EnemyHealth : MonoBehaviour
             aiPath.canMove = false;   // Stop la navigation A*
         }
 
-        if (ai != null)
-            ai.canMove = false;       // Stoppe les actions de l'AI
+        if (zombieAI != null)
+            zombieAI.canMove = false;       // Stoppe les actions de l'AI
 
         Debug.Log($"{gameObject.name} stunned for 2 seconds");
 
         yield return new WaitForSeconds(2f);
 
-        // Restauration après stun
+        // Restauration apres stun
         if (aiPath != null)
         {
             aiPath.canMove = true;
             aiPath.maxSpeed = originalSpeed;
         }
 
-        if (ai != null)
-            ai.canMove = true;
+        if (zombieAI != null)
+            zombieAI.canMove = true;
 
         isRecovering = false;
         Debug.Log($"{gameObject.name} stun ended");

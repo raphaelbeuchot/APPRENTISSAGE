@@ -21,6 +21,9 @@ public class PlayerInputManager : MonoBehaviour
 
     public bool MashEscapePressed { get; private set; }
 
+    public bool CrouchPressed { get; private set; }
+
+
 
     private void Awake()
     {
@@ -74,6 +77,9 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.MashEscape.performed += ctx => MashEscapePressed = true;
         inputActions.Player.MashEscape.canceled += ctx => MashEscapePressed = false;
+
+        inputActions.Player.Crouch.performed += ctx => CrouchPressed = true;
+
     }
 
     private void OnDisable()
@@ -87,6 +93,9 @@ public class PlayerInputManager : MonoBehaviour
 
         // Désactiver l'action map
         inputActions.Player.Disable();
+
+        inputActions.Player.Crouch.performed -= ctx => CrouchPressed = true;
+
     }
 
     private void OnMovement(InputAction.CallbackContext context)
@@ -108,6 +117,8 @@ public class PlayerInputManager : MonoBehaviour
         InteractPressed = false;
         ReloadPressed = false;
         MashEscapePressed = false;
+        CrouchPressed = false;
+
 
     }
 }

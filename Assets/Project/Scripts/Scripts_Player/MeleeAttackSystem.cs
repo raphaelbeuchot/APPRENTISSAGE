@@ -74,6 +74,20 @@ public class MeleeAttackSystem : MonoBehaviour
     {
         if (stats == null) return;
 
+        // Sortir crouch dès qu'on appuie sur spray
+        if (PlayerInputManager.Instance.SprayAttackPressed)
+        {
+            if (movement != null)
+                movement.ExitCrouch();
+        }
+
+        // Sortir crouch dès qu'on lance bouteille
+        if (PlayerInputManager.Instance.ThrowBottlePressed)
+        {
+            if (movement != null)
+                movement.ExitCrouch();
+        }
+
         HandleReload();
 
         // Check bottle pickup

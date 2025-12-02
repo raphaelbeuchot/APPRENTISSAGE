@@ -18,6 +18,9 @@ MonoBehaviour:
   attackType: 0
   maxHealth: 100
   limbLossThreshold: 0.5
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 8
   walkSpeed: 0.2
   chaseSpeed: 0.3
   rotationSpeed: 1
@@ -34,7 +37,7 @@ MonoBehaviour:
   idleWanderChance: 0.1
   wanderInterval: 5
   wanderDuration: 2
-  chasePersistenceDuration: 3
+  chasePersistenceDuration: 10
   attackRange: 0.75
   attackCooldown: 2
   grabDuration: 5

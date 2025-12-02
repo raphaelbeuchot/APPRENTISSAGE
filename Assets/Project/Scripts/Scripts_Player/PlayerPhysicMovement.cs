@@ -27,6 +27,14 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     private bool isInSwarmVision = false;
 
+    [Header("Crouch")]
+    private bool isCrouching = false;
+    [SerializeField] private Transform playerMesh; // Assigner mesh dans Inspector
+    private CapsuleCollider capsuleCollider;
+    private float originalColliderHeight;
+    private Vector3 originalColliderCenter;
+    private Vector3 originalMeshScale;
+
     private Material originalMaterial;
 
 
@@ -115,6 +123,18 @@ public class PlayerPhysicsMovement : MonoBehaviour
         {
             normalMaterial = playerRenderer.sharedMaterial;
         }
+
+        capsuleCollider = GetComponent<CapsuleCollider>();
+        if (capsuleCollider != null)
+        {
+            originalColliderHeight = capsuleCollider.height;
+            originalColliderCenter = capsuleCollider.center;
+        }
+
+        if (playerMesh != null)
+        {
+            originalMeshScale = playerMesh.localScale;
+        }
     }
 
     void Update()
@@ -127,7 +147,39 @@ public class PlayerPhysicsMovement : MonoBehaviour
         // Securite anti-freeze
         if (!canMove && grabState == GrabState.None && !gameManager.stunBySentinel)
             canMove = true;
+
+        if (PlayerInputManager.Instance.CrouchPressed)
+        {
+            if (isCrouching)
+                ExitCrouch();
+            else
+                EnterCrouch();
+        }
+
+        // Sortie crouch si sprint
+        if (PlayerInputManager.Instance.SprintPressed && isCrouching)
+        {
+            ExitCrouch();
+        }
+
+        // Sortie crouch si sprint
+        if (PlayerInputManager.Instance.SprintPressed && isCrouching)
+        {
+            isCrouching = false;
+        }
+
+        // Calculer vitesse
+        float targetSpeed = stats.moveSpeed;
+        if (isCrouching)
+        {
+            targetSpeed *= stats.crouchSpeedMultiplier;
+        }
+        else if (isSprinting && currentStamina > 0)
+        {
+            targetSpeed *= stats.sprintSpeedMultiplier;
+        }
     }
+
 
     void FixedUpdate()
     {
@@ -381,6 +433,62 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         isInSwarmVision = active;
         Debug.Log($"Swarm vision effect: {active}");
+
+
+    }
+
+    void EnterCrouch()
+    {
+        isCrouching = true;
+
+        // Réduire mesh Y à 50%
+        if (playerMesh != null)
+        {
+            playerMesh.localScale = new Vector3(
+                originalMeshScale.x,
+                originalMeshScale.y * 0.5f,
+                originalMeshScale.z
+            );
+        }
+
+        // Réduire collider à 50%
+        if (capsuleCollider != null)
+        {
+            float newHeight = originalColliderHeight;
+            capsuleCollider.height = newHeight;
+            // Center = moitié de la nouvelle hauteur (pieds restent au sol)
+            capsuleCollider.center = new Vector3(
+                originalColliderCenter.x,
+                newHeight * 0.5f, // Si height=1.0, center=0.5
+                originalColliderCenter.z
+            );
+        }
+
+        Debug.Log($"CROUCH: height={capsuleCollider.height} center={capsuleCollider.center} (original: h={originalColliderHeight} c={originalColliderCenter})");
+    }
+    public void ExitCrouch()
+    {
+        if (!isCrouching) return;
+
+        isCrouching = false;
+
+        // Restaurer mesh
+        if (playerMesh != null)
+        {
+            playerMesh.localScale = originalMeshScale;
+        }
+
+        // Restaurer collider
+        if (capsuleCollider != null)
+        {
+            capsuleCollider.height = originalColliderHeight;
+            capsuleCollider.center = originalColliderCenter;
+        }
+    }
+
+    public bool IsCrouching()
+    {
+        return isCrouching;
     }
     public Vector3 GetMoveInput()
     {
