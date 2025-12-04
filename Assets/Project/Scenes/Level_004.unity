@@ -21086,6 +21086,7 @@ GameObject:
   - component: {fileID: 1231677640}
   - component: {fileID: 1231677639}
   - component: {fileID: 1231677642}
+  - component: {fileID: 1231677643}
   m_Layer: 0
   m_Name: CM_NormalMode
   m_TagString: Untagged
@@ -21218,6 +21219,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineConfiner3D
   BoundingVolume: {fileID: 1740174171}
   SlowingDistance: 1
+--- !u!114 &1231677643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1231677631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7795896a60b7f74c91dec122302123e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraPanningController
+  lateralOffset: 4
+  backwardOffset: 2
+  returnSpeed: 3
+  stickThreshold: 0.7
 --- !u!1 &1236789411
 GameObject:
   m_ObjectHideFlags: 0
@@ -23606,6 +23623,7 @@ GameObject:
   - component: {fileID: 1361275054}
   - component: {fileID: 1361275058}
   - component: {fileID: 1361275059}
+  - component: {fileID: 1361275060}
   m_Layer: 0
   m_Name: MainCamera
   m_TagString: Untagged
@@ -23785,6 +23803,23 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   CustomBlends: {fileID: 0}
+--- !u!114 &1361275060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1361275052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c4765672c184614f963e91ba5a994c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraFOVController
+  mainCamera: {fileID: 1361275056}
+  baseFOV: 60
+  maxFOVIncrease: 20
+  fovChangeSpeed: 5
+  stickThreshold: 0.5
 --- !u!4 &1367474635 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 33b4c27d074e62e44b9431205ccfb59e, type: 3}
