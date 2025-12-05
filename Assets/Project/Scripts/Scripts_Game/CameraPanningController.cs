@@ -3,10 +3,20 @@ using Unity.Cinemachine;
 
 public class CameraPanningExtension : CinemachineExtension
 {
-    [Header("Panning Presets")]
+    [Header("Lateral Panning")]
     [SerializeField] private float lateralOffset = 2f;
-    [SerializeField] private float backwardOffset = 2f;
-    [SerializeField] private float returnSpeed = 3f;
+    [SerializeField] private float panSpeed = 10f;
+    [SerializeField] private float returnSpeed = 0f;
+
+    [Header("Vertical Panning")]
+    [SerializeField] private float verticalOffset = 5f;
+    [SerializeField] private float verticalPanSpeed = 10f;
+    [SerializeField] private float verticalReturnSpeed = 0f;
+
+    [Header("Manual Reset")]
+    [SerializeField] private float resetSpeed = 5f;
+
+    [Header("Detection")]
     [SerializeField] private float stickThreshold = 0.7f;
 
     private Vector3 currentPanOffset;
@@ -21,31 +31,58 @@ public class CameraPanningExtension : CinemachineExtension
         {
             Vector2 lookInput = PlayerInputManager.Instance.LookInput;
             Vector3 targetOffset = Vector3.zero;
+            bool isManualReset = false;
 
             // Detection directions discretes
             if (lookInput.magnitude > stickThreshold)
             {
-                // BAS : X monde negatif
+                // BAS : stick en bas - reset position normale
                 if (lookInput.y < -stickThreshold && Mathf.Abs(lookInput.x) < 0.5f)
                 {
-                    targetOffset = new Vector3(-backwardOffset, 0, 0);
+                    targetOffset = Vector3.zero;
+                    isManualReset = true;
                 }
-                // GAUCHE : Lateral gauche selon camera
-                else if (lookInput.x < -stickThreshold && Mathf.Abs(lookInput.y) < 0.5f)
+                // HAUT : stick en haut - camera monte de 5 en Y
+                else if (lookInput.y > stickThreshold && Mathf.Abs(lookInput.x) < 0.5f)
                 {
-                    Vector3 cameraRight = state.RawOrientation * Vector3.right;
-                    targetOffset = -cameraRight * lateralOffset;
+                    targetOffset = Vector3.up * verticalOffset;
                 }
-                // DROITE : Lateral droite selon camera
-                else if (lookInput.x > stickThreshold && Mathf.Abs(lookInput.y) < 0.5f)
+                // GAUCHE : stick a gauche - camera va a DROITE
+                else if (lookInput.x < -stickThreshold && Mathf.Abs(lookInput.y) < 0.5f)
                 {
                     Vector3 cameraRight = state.RawOrientation * Vector3.right;
                     targetOffset = cameraRight * lateralOffset;
                 }
-                // HAUT : A definir plus tard
+                // DROITE : stick a droite - camera va a GAUCHE
+                else if (lookInput.x > stickThreshold && Mathf.Abs(lookInput.y) < 0.5f)
+                {
+                    Vector3 cameraRight = state.RawOrientation * Vector3.right;
+                    targetOffset = -cameraRight * lateralOffset;
+                }
             }
 
-            currentPanOffset = Vector3.Lerp(currentPanOffset, targetOffset, returnSpeed * deltaTime);
+            // Choix de la vitesse
+            float speed;
+            if (isManualReset)
+            {
+                speed = resetSpeed;
+            }
+            else
+            {
+                bool isVerticalMovement = Mathf.Abs(targetOffset.y) > 0.01f;
+                bool isMoving = targetOffset.magnitude > 0.01f;
+
+                if (isVerticalMovement)
+                {
+                    speed = isMoving ? verticalPanSpeed : verticalReturnSpeed;
+                }
+                else
+                {
+                    speed = isMoving ? panSpeed : returnSpeed;
+                }
+            }
+
+            currentPanOffset = Vector3.Lerp(currentPanOffset, targetOffset, speed * deltaTime);
             state.PositionCorrection += currentPanOffset;
         }
     }
