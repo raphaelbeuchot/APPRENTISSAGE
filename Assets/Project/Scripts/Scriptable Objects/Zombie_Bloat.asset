@@ -15,16 +15,19 @@ MonoBehaviour:
   enemyName: Zombie_01
   enemyModel: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
   skinVariants: []
-  attackType: 3
+  attackType: 0
   maxHealth: 100
   limbLossThreshold: 0.5
-  walkSpeed: 0.2
-  chaseSpeed: 0.3
-  rotationSpeed: 1
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 8
+  walkSpeed: 0.4
+  chaseSpeed: 0.6
+  rotationSpeed: 3
   crawlSpeed: 0.2
   speedReductionPerHealthPercent: 0.3
   detectionRadius: 4
-  detectionAngle: 200
+  detectionAngle: 90
   detectionCheckInterval: 0.5
   targetLayer:
     serializedVersion: 2
@@ -34,7 +37,7 @@ MonoBehaviour:
   idleWanderChance: 0.1
   wanderInterval: 5
   wanderDuration: 2
-  chasePersistenceDuration: 3
+  chasePersistenceDuration: 10
   attackRange: 0.75
   attackCooldown: 2
   grabDuration: 5

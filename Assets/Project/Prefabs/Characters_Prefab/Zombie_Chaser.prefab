@@ -10,7 +10,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 334081397803648195, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3242663608269756582, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3242663608269756582, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
       propertyPath: playerStats
@@ -106,6 +110,21 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6475371984408732246}
+    - targetCorrespondingSourceObject: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6588336085180730099}
+    - targetCorrespondingSourceObject: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4687862787308899767}
+    - targetCorrespondingSourceObject: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3892672142847110494}
+    - targetCorrespondingSourceObject: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 257161513730059227}
+    - targetCorrespondingSourceObject: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1279498846029055975}
   m_SourcePrefab: {fileID: 100100000, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
 --- !u!1 &1041072715850459556 stripped
 GameObject:
@@ -119,7 +138,7 @@ NavMeshAgent:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1041072715850459556}
-  m_Enabled: 1
+  m_Enabled: 0
   m_AgentTypeID: 0
   m_Radius: 0.5
   m_Speed: 0
@@ -147,3 +166,179 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealthBarUI
   healthFill: {fileID: 0}
+  damagePreviewFill: {fileID: 0}
+  background: {fileID: 0}
+  lockedColor: {r: 1, g: 1, b: 1, a: 1}
+  damagePreviewDelay: 0.2
+  damagePreviewSpeed: 2
+--- !u!136 &6588336085180730099
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1041072715850459556}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &4687862787308899767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1041072715850459556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72d07bd214d077c488abee747a7073be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
+  stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  arrivalThreshold: 0.5
+  targetHuman: {fileID: 0}
+  isInPitMode: 0
+  canMove: 1
+  isStunnedBySentinel: 0
+  isForcedChase: 0
+  isDetectedBySentinel: 0
+  currentState: 0
+--- !u!114 &3892672142847110494
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1041072715850459556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 373b52eb9bf8c40f785bb6947a1aee66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AstarPathfindingProject::Pathfinding.Seeker
+  version: 1073741824
+  drawGizmos: 1
+  detailedGizmos: 0
+  startEndModifier:
+    addPoints: 0
+    exactStartPoint: 3
+    exactEndPoint: 3
+    useRaycasting: 0
+    mask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    useGraphRaycasting: 0
+  traversableTags: -1
+  tagCostMultipliers:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  tagEntryCosts: 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  graphMask:
+    value: -1
+--- !u!114 &257161513730059227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1041072715850459556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6eb1402c17e84a9282a7f0f62eb584f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AstarPathfindingProject::Pathfinding.AIPath
+  version: 1073741824
+  radius: 0.5
+  height: 2
+  simulateMovement: 1
+  maxSpeed: 1
+  gravity: {x: NaN, y: NaN, z: NaN}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  endReachedDistance: 0.2
+  whenCloseToDestination: 0
+  rvoDensityBehavior:
+    enabled: 1
+    densityThreshold: 0.5
+    returnAfterBeingPushedAway: 0
+    progressAverage: 0
+    lastJobDensityResult: 0
+  repathRateCompatibility: NaN
+  canSearchCompability: 0
+  orientation: 0
+  enableRotation: 1
+  autoRepath:
+    mode: 2
+    period: 0.5
+    sensitivity: 10
+    maximumPeriod: 2
+    visualizeSensitivity: 0
+  maxAcceleration: -2.5
+  rotationSpeed: 80
+  slowdownDistance: 0.6
+  pickNextWaypointDist: 0.5
+  alwaysDrawGizmos: 0
+  slowWhenNotFacingTarget: 1
+  preventMovingBackwards: 0
+  constrainInsideGraph: 0
+--- !u!114 &1279498846029055975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1041072715850459556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d36065851de262743ac229c33d0e77b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPitInteractable
+  pitDamageMultiplier: 1
+  characterCenterHeight: 1
+  isFallingInPit: 0
+  shouldIgnoreHealthbarDistance: 0
+  waterSlowdownMultiplier: 0.5
+  isInShallowWater: 0
