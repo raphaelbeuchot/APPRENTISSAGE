@@ -487,6 +487,13 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
     }
 
+    public void ResetAllInputs()
+    {
+        moveInput = Vector3.zero;
+        currentVelocity = Vector3.zero;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+    }
     public bool IsCrouching()
     {
         return isCrouching;

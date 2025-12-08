@@ -8,6 +8,7 @@ public class TestClimbDetection : MonoBehaviour
     [SerializeField] private float alignmentThreshold = 0.3f;
     [SerializeField] private PlayerPhysicsMovement playerMovement;
     [SerializeField] private float vaultDepthThreshold = 0.6f;
+    [SerializeField] private float rotationDuration = 0.3f;
 
     private bool isClimbing = false;
 
@@ -56,29 +57,47 @@ public class TestClimbDetection : MonoBehaviour
         {
             if (bestMatch.climbType == null)
             {
-                Debug.LogError("[CLIMB ERROR] " + bestMatch.name + " n'a pas de ClimbType SO assigné!");
+                Debug.LogError("[CLIMB ERROR] " + bestMatch.name + " n'a pas de ClimbType SO assigne!");
                 return;
             }
 
             float obstacleHeight = GetObstacleHeight(bestCollider);
             float obstacleDepth = bestMatch.climbType.obstacleDepth;
 
-            // PIVOTER LE PLAYER PERPENDICULAIREMENT À LA FACE
-Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
-RaycastHit hitInfo;
+            // Calculer direction vers obstacle
+            Vector3 toObstacle = (bestCollider.bounds.center - transform.position).normalized;
+            toObstacle.y = 0f;
+            toObstacle.Normalize();
 
-if (Physics.Raycast(rayOrigin, inputDirection, out hitInfo, detectionRadius, obstacleLayer) && hitInfo.collider == bestCollider)
-{
-    Vector3 climbDirection = -hitInfo.normal;
-    climbDirection.y = 0f;
-    climbDirection.Normalize();
-    transform.rotation = Quaternion.LookRotation(climbDirection);
-    Debug.Log("[CLIMB] Player pivoté, normale: " + hitInfo.normal);
-}
-else
-{
-    Debug.LogWarning("[CLIMB] Raycast raté");
-}
+            // RAYCAST POUR OBTENIR LA NORMALE DE LA FACE
+            Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
+            RaycastHit hitInfo;
+
+            int humanLayer = LayerMask.NameToLayer("Human");
+            int finalMask = obstacleLayer & ~(1 << humanLayer);
+
+            Vector3 climbDirection = toObstacle;
+
+            if (Physics.Raycast(rayOrigin, toObstacle, out hitInfo, detectionRadius, finalMask))
+            {
+                Debug.DrawRay(rayOrigin, toObstacle * hitInfo.distance, Color.green, 2f);
+                climbDirection = -hitInfo.normal;
+                climbDirection.y = 0f;
+                climbDirection.Normalize();
+                Debug.Log("[CLIMB] Normale trouvee: " + hitInfo.normal);
+            }
+            else
+            {
+                Debug.DrawRay(rayOrigin, toObstacle * detectionRadius, Color.red, 2f);
+                Debug.LogWarning("[CLIMB] Raycast rate, CLIMB ANNULE");
+
+                // RESTAURER TOUT
+                isClimbing = false;
+                playerMovement.isClimbing = false;
+                playerMovement.canMove = true;
+                playerMovement.enabled = true;
+                return;
+            }
 
             // VAULT / PLATFORM distance
             float distance = (obstacleDepth < vaultDepthThreshold)
@@ -87,12 +106,15 @@ else
 
             float height = obstacleHeight;
 
-            playerMovement.isClimbing = true;
+            // TOUT DEBRANCHER IMMEDIATEMENT
             isClimbing = true;
+            playerMovement.isClimbing = true;
             playerMovement.canMove = false;
-            playerMovement.ForceStop();
+            playerMovement.ResetAllInputs();
+            playerMovement.enabled = false;
 
-            StartCoroutine(ClimbCoroutine(transform.position, height, distance, bestMatch.climbType));
+            // LANCER ROTATION PUIS CLIMB
+            StartCoroutine(RotateAndClimbCoroutine(climbDirection, transform.position, height, distance, bestMatch.climbType));
         }
         else if (bestMatch != null)
         {
@@ -110,7 +132,31 @@ else
     void ReEnableMovement()
     {
         playerMovement.canMove = true;
-        Debug.Log("[CLIMB] Mouvement réactivé");
+        Debug.Log("[CLIMB] Mouvement reactive");
+    }
+
+    private IEnumerator RotateAndClimbCoroutine(Vector3 targetDirection, Vector3 startPos, float height, float distance, ClimbType climbType)
+    {
+        // PHASE ROTATION
+        Quaternion startRotation = transform.rotation;
+        Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
+        float elapsed = 0f;
+
+        Debug.Log("[CLIMB] Debut rotation vers: " + targetDirection);
+
+        while (elapsed < rotationDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / rotationDuration;
+            transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            yield return null;
+        }
+
+        transform.rotation = targetRotation;
+        Debug.Log("[CLIMB] Rotation terminee!");
+
+        // MAINTENANT LANCER LE CLIMB
+        yield return StartCoroutine(ClimbCoroutine(startPos, height, distance, climbType));
     }
 
     private IEnumerator ClimbCoroutine(Vector3 startPos, float height, float distance, ClimbType climbType)
@@ -120,8 +166,6 @@ else
         float startY = transform.position.y;
 
         startPos = transform.position;
-
-        playerMovement.enabled = false;
 
         RigidbodyConstraints oldConstraints = rb.constraints;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
@@ -167,9 +211,9 @@ else
         // Si VAULT : attendre la descente
         if (isVault)
         {
-            Debug.Log("[CLIMB] VAULT détecté, attente descente...");
+            Debug.Log("[CLIMB] VAULT detecte, attente descente...");
             yield return new WaitUntil(() => Mathf.Abs(transform.position.y - startY) < 0.2f);
-            Debug.Log("[CLIMB] Descente terminée!");
+            Debug.Log("[CLIMB] Descente terminee!");
         }
 
         // RESTAURER TOUT
@@ -179,11 +223,11 @@ else
 
         ReEnableMovement();
 
-        // Attendre que E soit relâché
+        // Attendre que E soit relache
         yield return new WaitUntil(() => !PlayerInputManager.Instance.InteractPressed);
 
         isClimbing = false;
-        Debug.Log("[CLIMB] Climb terminé, E relâché, prêt pour prochain climb");
+        Debug.Log("[CLIMB] Climb termine, E relache, pret pour prochain climb");
     }
 
     void OnDrawGizmos()
