@@ -1,34 +1,27 @@
 using UnityEngine;
 using System.Collections;
+
 public class TestClimbDetection : MonoBehaviour
 {
     [SerializeField] private float detectionRadius = 1.5f;
     [SerializeField] private LayerMask obstacleLayer;
     [SerializeField] private float alignmentThreshold = 0.3f;
     [SerializeField] private PlayerPhysicsMovement playerMovement;
-    [SerializeField] private float vaultDepthThreshold = 0.6f; // Seuil Vault vs Platform
-
+    [SerializeField] private float vaultDepthThreshold = 0.6f;
 
     private bool isClimbing = false;
 
     void Update()
     {
-        // Si en train de climb, attendre que E soit relache
         if (isClimbing)
-        {
             return;
-        }
 
         if (!PlayerInputManager.Instance.InteractPressed)
-        {
             return;
-        }
 
         Vector2 input = PlayerInputManager.Instance.MoveInput;
         if (input.magnitude < 0.1f)
-        {
             return;
-        }
 
         Vector3 inputDirection = transform.forward;
         inputDirection.y = 0f;
@@ -37,13 +30,14 @@ public class TestClimbDetection : MonoBehaviour
         Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius, obstacleLayer);
 
         ClimbableObject bestMatch = null;
-        Collider bestCollider = null; // AJOUT: garder reference au collider
+        Collider bestCollider = null;
         float bestAlignment = -1f;
 
         foreach (Collider hit in hits)
         {
             ClimbableObject climbable = hit.GetComponent<ClimbableObject>();
-            if (climbable == null) continue;
+            if (climbable == null)
+                continue;
 
             Vector3 toObstacle = (hit.bounds.center - transform.position).normalized;
             toObstacle.y = 0f;
@@ -54,7 +48,7 @@ public class TestClimbDetection : MonoBehaviour
             {
                 bestAlignment = alignment;
                 bestMatch = climbable;
-                bestCollider = hit; // AJOUT: sauvegarder le collider
+                bestCollider = hit;
             }
         }
 
@@ -62,98 +56,73 @@ public class TestClimbDetection : MonoBehaviour
         {
             if (bestMatch.climbType == null)
             {
-                Debug.LogError("[CLIMB ERROR] " + bestMatch.name + " n'a pas de ClimbType SO assigne!");
+                Debug.LogError("[CLIMB ERROR] " + bestMatch.name + " n'a pas de ClimbType SO assigné!");
                 return;
             }
 
-            // AJOUT: Calcul hauteur reelle
             float obstacleHeight = GetObstacleHeight(bestCollider);
-            Debug.Log("[CLIMB DETECTION] " + bestMatch.name + " - Hauteur reelle: " + obstacleHeight.ToString("F2") + "m");
-
-            // AJOUT: Lecture profondeur depuis SO
             float obstacleDepth = bestMatch.climbType.obstacleDepth;
-            Debug.Log("[CLIMB DETECTION] Profondeur obstacle (SO): " + obstacleDepth.ToString("F2") + "m");
 
-            // AJOUT: Determiner type franchissement
-            string climbCategory = (obstacleDepth < vaultDepthThreshold) ? "VAULT" : "PLATFORM";
-            Debug.Log("[CLIMB TYPE] " + climbCategory + " (seuil: " + vaultDepthThreshold + "m)");
+            // PIVOTER LE PLAYER PERPENDICULAIREMENT À LA FACE
+Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
+RaycastHit hitInfo;
 
-            playerMovement.canMove = false;
-            playerMovement.ForceStop();
+if (Physics.Raycast(rayOrigin, inputDirection, out hitInfo, detectionRadius, obstacleLayer) && hitInfo.collider == bestCollider)
+{
+    Vector3 climbDirection = -hitInfo.normal;
+    climbDirection.y = 0f;
+    climbDirection.Normalize();
+    transform.rotation = Quaternion.LookRotation(climbDirection);
+    Debug.Log("[CLIMB] Player pivoté, normale: " + hitInfo.normal);
+}
+else
+{
+    Debug.LogWarning("[CLIMB] Raycast raté");
+}
 
+            // VAULT / PLATFORM distance
+            float distance = (obstacleDepth < vaultDepthThreshold)
+                ? obstacleDepth + 0.5f
+                : 0.3f;
 
-            // Calculer distance selon type
-            float distance;
-            if (obstacleDepth < vaultDepthThreshold)
-            {
-                // VAULT : passer de l'autre cote (profondeur + marge)
-                distance = obstacleDepth + 0.5f;
-                Debug.Log("[CLIMB CALCUL] VAULT - Distance: profondeur (" + obstacleDepth.ToString("F2") + ") + 0.5m = " + distance.ToString("F2") + "m");
-            }
-            else
-            {
-                // PLATFORM : monter dessus (distance courte fixe)
-                distance = 0.3f;
-                Debug.Log("[CLIMB CALCUL] PLATFORM - Distance fixe: " + distance.ToString("F2") + "m");
-            }
-
-            // Hauteur = exactement le sommet de l'obstacle (pose fesses dessus)
             float height = obstacleHeight;
-            Debug.Log("[CLIMB CALCUL] Hauteur cible: " + height.ToString("F2") + "m (sommet obstacle)");
 
-            Debug.Log("[CLIMB CALCUL] Hauteur obstacle: " + obstacleHeight.ToString("F2") + "m -> Hauteur climb: " + height.ToString("F2") + "m");
-
-            Vector3 startPos = transform.position;
-            Vector3 targetPos = transform.position + transform.forward * distance + Vector3.up * height;
-
-            // Bloquer immédiatement les inputs
             playerMovement.isClimbing = true;
             isClimbing = true;
-
             playerMovement.canMove = false;
             playerMovement.ForceStop();
 
-            // Lancer coroutine animation
             StartCoroutine(ClimbCoroutine(transform.position, height, distance, bestMatch.climbType));
         }
         else if (bestMatch != null)
         {
-            Debug.Log("[CLIMB REFUSE] " + bestMatch.name + " - alignment: " + bestAlignment.ToString("F2") + " (seuil: " + alignmentThreshold + ") <<< TROP FAIBLE");
+            Debug.Log("[CLIMB REFUSE] " + bestMatch.name + " - alignment: " + bestAlignment.ToString("F2"));
         }
     }
 
     private float GetObstacleHeight(Collider obstacleCollider)
     {
-        // Position du sol (Y du player)
         float groundLevel = transform.position.y;
-
-        // Hauteur maximale de l'obstacle
         float obstacleTop = obstacleCollider.bounds.max.y;
-
-        // Hauteur reelle = difference
-        float height = obstacleTop - groundLevel;
-
-        return height;
+        return obstacleTop - groundLevel;
     }
 
     void ReEnableMovement()
     {
         playerMovement.canMove = true;
-        Debug.Log("[CLIMB] Mouvement reactive (attends release E)");
+        Debug.Log("[CLIMB] Mouvement réactivé");
     }
 
     private IEnumerator ClimbCoroutine(Vector3 startPos, float height, float distance, ClimbType climbType)
     {
         Rigidbody rb = GetComponent<Rigidbody>();
-
-        // Déterminer si VAULT ou PLATFORM
         bool isVault = climbType.obstacleDepth < vaultDepthThreshold;
-        float startY = startPos.y; // Hauteur de départ
+        float startY = transform.position.y;
 
-        // DESACTIVER PlayerPhysicsMovement completement
+        startPos = transform.position;
+
         playerMovement.enabled = false;
 
-        // FREEZE RIGIDBODY COMPLET
         RigidbodyConstraints oldConstraints = rb.constraints;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
         rb.linearVelocity = Vector3.zero;
@@ -199,10 +168,7 @@ public class TestClimbDetection : MonoBehaviour
         if (isVault)
         {
             Debug.Log("[CLIMB] VAULT détecté, attente descente...");
-
-            // Attendre qu'on soit redescendu (proche de la hauteur initiale +/- 0.2m)
             yield return new WaitUntil(() => Mathf.Abs(transform.position.y - startY) < 0.2f);
-
             Debug.Log("[CLIMB] Descente terminée!");
         }
 
@@ -213,12 +179,13 @@ public class TestClimbDetection : MonoBehaviour
 
         ReEnableMovement();
 
-        // AJOUT : Attendre que E soit relâché avant de permettre un nouveau climb
+        // Attendre que E soit relâché
         yield return new WaitUntil(() => !PlayerInputManager.Instance.InteractPressed);
 
         isClimbing = false;
         Debug.Log("[CLIMB] Climb terminé, E relâché, prêt pour prochain climb");
     }
+
     void OnDrawGizmos()
     {
         Gizmos.color = Color.cyan;
