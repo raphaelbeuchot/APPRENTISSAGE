@@ -11,7 +11,7 @@ public class TestClimbDetection : MonoBehaviour
     [SerializeField] private float rotationDuration = 0.3f;
 
     private bool isClimbing = false;
-
+    
     void Update()
     {
         if (isClimbing)
@@ -85,6 +85,38 @@ public class TestClimbDetection : MonoBehaviour
                 climbDirection.y = 0f;
                 climbDirection.Normalize();
                 Debug.Log("[CLIMB] Normale trouvee: " + hitInfo.normal);
+
+                Debug.Log("[CLIMB] Normale trouvee: " + hitInfo.normal);
+
+                // VERIFICATION FACE SI RESTRICTION
+                if (bestMatch.onlyClimbFromLongSide)
+                {
+                    BoxCollider boxCol = bestCollider as BoxCollider;
+                    if (boxCol != null)
+                    {
+                        Vector3 size = boxCol.size;
+
+                        // Déterminer axe long/court (ignorant Y)
+                        bool xIsLonger = size.x > size.z;
+
+                        // Transformer la normale dans l'espace local de l'obstacle
+                        Vector3 localNormal = bestCollider.transform.InverseTransformDirection(hitInfo.normal);
+                        localNormal.y = 0f;
+
+                        // Vérifier si on tape la face courte
+                        bool hittingShortSide = (xIsLonger && Mathf.Abs(localNormal.z) > Mathf.Abs(localNormal.x)) ||
+                                                (!xIsLonger && Mathf.Abs(localNormal.x) > Mathf.Abs(localNormal.z));
+
+                        if (hittingShortSide)
+                        {
+                            Debug.LogWarning("[CLIMB] Face courte detectee, CLIMB REFUSE (onlyClimbFromLongSide = true)");
+                            return;
+                        }
+
+                        Debug.Log("[CLIMB] Face longue detectee, OK pour climb");
+                    }
+                }
+                
             }
             else
             {
@@ -111,6 +143,14 @@ public class TestClimbDetection : MonoBehaviour
             playerMovement.isClimbing = true;
             playerMovement.canMove = false;
             playerMovement.ResetAllInputs();
+            playerMovement.enabled = false;
+
+            // ANNULER CROUCH SI ACTIF
+            if (playerMovement.IsCrouching())
+            {
+                playerMovement.ExitCrouch();
+            }
+
             playerMovement.enabled = false;
 
             // LANCER ROTATION PUIS CLIMB
@@ -163,6 +203,7 @@ public class TestClimbDetection : MonoBehaviour
     {
         Rigidbody rb = GetComponent<Rigidbody>();
         bool isVault = climbType.obstacleDepth < vaultDepthThreshold;
+
         float startY = transform.position.y;
 
         startPos = transform.position;
@@ -173,6 +214,8 @@ public class TestClimbDetection : MonoBehaviour
         rb.angularVelocity = Vector3.zero;
 
         // PHASE 1 : MONTEE VERTICALE
+
+
         Vector3 topPos = startPos + Vector3.up * height;
         float phase1Duration = climbType.phase1Duration;
         float elapsed = 0f;
@@ -191,6 +234,8 @@ public class TestClimbDetection : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
 
         // PHASE 2 : AVANCEE HORIZONTALE
+
+
         Vector3 finalPos = topPos + transform.forward * distance;
         float phase2Duration = climbType.phase2Duration;
         elapsed = 0f;
@@ -228,6 +273,30 @@ public class TestClimbDetection : MonoBehaviour
 
         isClimbing = false;
         Debug.Log("[CLIMB] Climb termine, E relache, pret pour prochain climb");
+        
+    }
+
+    public bool IsClimbing()
+    {
+        return isClimbing;
+    }
+    public void CancelClimb()
+    {
+        if (!isClimbing)
+            return;
+
+        Debug.LogWarning("[CLIMB] CLIMB ANNULE par tir sentinelle!");
+
+        StopAllCoroutines();
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+
+        playerMovement.enabled = true;
+        playerMovement.isClimbing = false;
+        playerMovement.canMove = true;
+
+        isClimbing = false;
     }
 
     void OnDrawGizmos()

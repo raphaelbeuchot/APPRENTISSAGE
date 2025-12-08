@@ -408,13 +408,20 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         if (hasExitImmunity)
         {
             Debug.Log("[PlayerPit] Exit immunity active, delaying pit effects");
-            isInPit = true; // FIX : Enregistre quand meme qu'on est dans le pit
+            isInPit = true;
             currentPitZone = pitZone;
-            return; // Ignore juste les effets (water, damage, etc.)
+            return;
         }
 
         isInPit = true;
         currentPitZone = pitZone;
+
+        // ANNULER CROUCH SI ACTIF
+        if (playerMovement != null && playerMovement.IsCrouching())
+        {
+            playerMovement.ExitCrouch();
+            Debug.Log("[PlayerPit] Crouch cancelled by pit entry");
+        }
 
         Debug.Log("[PlayerPit] Player entered pit: " + pitZone.name);
 

@@ -89,8 +89,13 @@ public class PlayerHealth : MonoBehaviour
     /// </summary>
     public void TakeSentinelShot()
     {
-        // Tu peux ajuster les dégâts sentinelle dans SentinelSettings
-        // Pour l'instant on utilise une valeur par défaut
+        // Annuler climb si en cours
+        TestClimbDetection climbDetection = GetComponent<TestClimbDetection>();
+        if (climbDetection != null)
+        {
+            climbDetection.CancelClimb();
+        }
+
         TakeDamage(settings.playerDamage);
     }
 

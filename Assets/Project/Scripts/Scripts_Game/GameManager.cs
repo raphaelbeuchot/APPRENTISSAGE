@@ -314,6 +314,10 @@ public class GameManager : MonoBehaviour
             BroomAttackSystem broomSystem = col.GetComponent<BroomAttackSystem>();
             bool isBroomAttacking = broomSystem != null && broomSystem.IsAttacking();
 
+            // Check climb
+            TestClimbDetection climbSystem = col.GetComponent<TestClimbDetection>();
+            bool isClimbing = climbSystem != null && climbSystem.IsClimbing();
+
             bool isMoving = false;
             if (rb != null)
             {
@@ -377,8 +381,7 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber) && !playerImmune;
-
+            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing) && !playerImmune;
             EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isInShallowWater)
             {
