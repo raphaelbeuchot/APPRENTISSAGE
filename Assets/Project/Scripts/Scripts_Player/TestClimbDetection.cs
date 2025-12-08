@@ -16,11 +16,6 @@ public class TestClimbDetection : MonoBehaviour
         // Si en train de climb, attendre que E soit relache
         if (isClimbing)
         {
-            if (!PlayerInputManager.Instance.InteractPressed)
-            {
-                isClimbing = false;
-                Debug.Log("[CLIMB] E relache, pret pour prochain climb");
-            }
             return;
         }
 
@@ -111,10 +106,15 @@ public class TestClimbDetection : MonoBehaviour
             Vector3 startPos = transform.position;
             Vector3 targetPos = transform.position + transform.forward * distance + Vector3.up * height;
 
+            // Bloquer immédiatement les inputs
+            playerMovement.isClimbing = true;
+            isClimbing = true;
+
+            playerMovement.canMove = false;
+            playerMovement.ForceStop();
+
             // Lancer coroutine animation
             StartCoroutine(ClimbCoroutine(transform.position, height, distance, bestMatch.climbType));
-
-            isClimbing = true;
         }
         else if (bestMatch != null)
         {
@@ -145,6 +145,10 @@ public class TestClimbDetection : MonoBehaviour
     private IEnumerator ClimbCoroutine(Vector3 startPos, float height, float distance, ClimbType climbType)
     {
         Rigidbody rb = GetComponent<Rigidbody>();
+
+        // Déterminer si VAULT ou PLATFORM
+        bool isVault = climbType.obstacleDepth < vaultDepthThreshold;
+        float startY = startPos.y; // Hauteur de départ
 
         // DESACTIVER PlayerPhysicsMovement completement
         playerMovement.enabled = false;
@@ -191,11 +195,29 @@ public class TestClimbDetection : MonoBehaviour
         rb.MovePosition(finalPos);
         rb.linearVelocity = Vector3.zero;
 
+        // Si VAULT : attendre la descente
+        if (isVault)
+        {
+            Debug.Log("[CLIMB] VAULT détecté, attente descente...");
+
+            // Attendre qu'on soit redescendu (proche de la hauteur initiale +/- 0.2m)
+            yield return new WaitUntil(() => Mathf.Abs(transform.position.y - startY) < 0.2f);
+
+            Debug.Log("[CLIMB] Descente terminée!");
+        }
+
         // RESTAURER TOUT
         rb.constraints = oldConstraints;
         playerMovement.enabled = true;
+        playerMovement.isClimbing = false;
 
         ReEnableMovement();
+
+        // AJOUT : Attendre que E soit relâché avant de permettre un nouveau climb
+        yield return new WaitUntil(() => !PlayerInputManager.Instance.InteractPressed);
+
+        isClimbing = false;
+        Debug.Log("[CLIMB] Climb terminé, E relâché, prêt pour prochain climb");
     }
     void OnDrawGizmos()
     {

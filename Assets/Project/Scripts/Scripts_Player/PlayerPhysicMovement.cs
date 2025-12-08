@@ -37,6 +37,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     private Material originalMaterial;
 
+    public bool isClimbing = false;
 
     public bool IsSprinting() => isSprinting;
 
@@ -196,8 +197,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void HandleInput()
     {
-        // Bloquer inputs si grabbed, en recoil, stun sentinelle, ou canMove desactive
-        if (grabState != GrabState.None || gameManager.stunBySentinel || !canMove)
+        // Bloquer inputs si grabbed, en recoil, stun sentinelle, canMove desactive, OU climbing
+        if (grabState != GrabState.None || gameManager.stunBySentinel || !canMove || isClimbing)
         {
             moveInput = Vector3.zero;
             return;

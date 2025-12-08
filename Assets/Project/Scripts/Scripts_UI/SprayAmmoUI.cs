@@ -100,10 +100,13 @@ public class SprayAmmoUI : MonoBehaviour
     {
         if (ammoCountText == null) return;
 
-        int currentAmmo = meleeSystem.GetCurrentSprayAmmo();
-        int shotsRemaining = totalShots - 10 + currentAmmo;
+        int currentInMag = meleeSystem.GetCurrentSprayAmmo();
+        int totalReserve = meleeSystem.GetTotalSprayAmmo();
 
-        ammoCountText.text = shotsRemaining + "/" + totalShots;
+        // Total disponible = réserve + ce qu'il y a dans le chargeur
+        int totalAvailable = totalReserve + currentInMag;
+
+        ammoCountText.text = totalAvailable + "/50";
     }
 
     public void PlayReloadSound()

@@ -14,7 +14,14 @@ public class SwarmStats : ScriptableObject
     [Header("Health")]
     [Tooltip("Health points of the swarm")]
     public float maxHealth = 50f;
-    
+
+    [Header("Damage Taken")]
+    [Tooltip("Dégâts pris par spray")]
+    public float sprayDamageTaken = 75f;  // 3x les dégâts normaux comme actuellement
+
+    [Tooltip("Dégâts pris par balai")]
+    public float broomDamageTaken = 0f;
+
     [Header("Movement")]
     [Tooltip("Movement speed of the swarm")]
     public float moveSpeed = 2f;

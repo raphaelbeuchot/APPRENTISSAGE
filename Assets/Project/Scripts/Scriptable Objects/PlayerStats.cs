@@ -51,13 +51,13 @@ public class PlayerStats : ScriptableObject
     public float meleeStaminaCost = 15f;
     [Tooltip("Angle du cône de l'attaque melee (en degrés)")]
     [Range(0f, 360f)]
-    public float meleeConeAngle = 180f;
+    public float meleeConeAngle = 140f;
     [Tooltip("Portee de l'attaque")]
-    public float attackRange = 2f;
-    [Tooltip("Degats infliges")]
-    public float attackDamage = 25f;
+    public float attackRange = 1.2f;
     [Tooltip("Force du knockback")]
     public float knockbackForce = 5f;
+    [Tooltip("Force du knockback backstab (coup de culot)")]
+    public float backstabKnockbackForce = 15f;
     [Tooltip("Duree de l'animation d'attaque (en secondes)")]
     public float attackDuration = 0.5f;
     [Tooltip("Cooldown entre deux attaques (en secondes)")]
@@ -68,6 +68,10 @@ public class PlayerStats : ScriptableObject
     public int maxSprayAmmo = 10;
     [Tooltip("Temps de rechargement automatique en secondes")]
     public float sprayReloadTime = 3f;
+    [Tooltip("Cadence de tir en maintien gachette (secondes entre chaque spray)")]
+    public float sprayFireRate = 0.3f;
+    [Tooltip("Reserve totale de munitions au depart")]
+    public int totalSprayAmmoStart = 40;
     [Tooltip("Particules effet spray")]
     public GameObject sprayVFX;
     [Tooltip("Son du spray pshit de face aware")]
@@ -80,8 +84,6 @@ public class PlayerStats : ScriptableObject
     [Header("BOTTLE THROW")]
     [Tooltip("Force de lancer de la bouteille")]
     public float bottleThrowForce = 15f;
-    [Tooltip("Degats de la bouteille jetee")]
-    public float bottleThrowDamage = 2f;
     [Tooltip("Duree du stun ennemi secondes")]
     public float bottleStunDuration = 0.5f;
     [Tooltip("Prefab de la bouteille jetee")]
@@ -101,8 +103,6 @@ public class PlayerStats : ScriptableObject
     public float broomConeAngle = 270f;
     [Tooltip("Cout en stamina de l'attaque balai")]
     public float broomStaminaCost = 15f;
-    [Tooltip("Degats du balai")]
-    public float broomDamage = 40f;
     [Tooltip("Duree du windup en secondes")]
     public float broomWindupTime = 0.8f;
     [Tooltip("Duree totale de l'attaque balai")]
@@ -170,13 +170,7 @@ public class PlayerStats : ScriptableObject
         return moveSpeed * (1f - speedReduction);
     }
 
-    /// <summary>
-    /// Calcule les degats reels en fonction du multiplicateur de force.
-    /// </summary>
-    public float GetAdjustedDamage()
-    {
-        return attackDamage * forceMultiplier;
-    }
+    
 
     /// <summary>
     /// Calcule le knockback reel en fonction du multiplicateur de force.

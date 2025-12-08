@@ -21,7 +21,8 @@ public class MeleeAttackSystem : MonoBehaviour
     private bool isGrabbed = false;
 
     // Spray ammo system
-    private int currentSprayAmmo;
+    private int currentSprayAmmo;  // Chargeur actuel
+    private int totalSprayAmmo;    // Réserve totale
     private bool isReloading = false;
     private float reloadStartTime;
 
@@ -36,6 +37,9 @@ public class MeleeAttackSystem : MonoBehaviour
     private bool bottleThrown = false;
     private int savedSprayAmmo = 0;
     private GameObject thrownBottleInstance;
+
+    private float lastSprayTime = 0f;
+
 
     void Start()
     {
@@ -58,7 +62,8 @@ public class MeleeAttackSystem : MonoBehaviour
         originalScale = transform.localScale;
 
         // Initialize spray ammo
-        currentSprayAmmo = stats.maxSprayAmmo;
+        currentSprayAmmo = stats.maxSprayAmmo;  // Chargeur plein
+        totalSprayAmmo = stats.totalSprayAmmoStart;
     }
 
     void OnDisable()
@@ -100,9 +105,16 @@ public class MeleeAttackSystem : MonoBehaviour
             }
         }
 
-        // === SPRAY = RB/R1 uniquement (SprayAttackPressed) ===
+        // === SPRAY = RB/R1 uniquement ===
+        // Tap simple
         if (PlayerInputManager.Instance.SprayAttackPressed && CanAttack())
         {
+            StartCoroutine(PerformAttack());
+        }
+        // Maintien continu
+        else if (PlayerInputManager.Instance.SprayAttackHeld && CanAttack() && Time.time >= lastSprayTime + stats.sprayFireRate)
+        {
+            lastSprayTime = Time.time;
             StartCoroutine(PerformAttack());
         }
 
@@ -135,8 +147,16 @@ public class MeleeAttackSystem : MonoBehaviour
     void CompleteReload()
     {
         isReloading = false;
-        currentSprayAmmo = stats.maxSprayAmmo;
-        Debug.Log("Spray reloaded!");
+
+        // Calculer combien on peut recharger
+        int neededAmmo = stats.maxSprayAmmo - currentSprayAmmo;  // Espace libre dans le chargeur
+        int ammoToReload = Mathf.Min(neededAmmo, totalSprayAmmo);  // Prend ce qui est dispo dans la réserve
+
+        // Transférer de la réserve au chargeur
+        currentSprayAmmo += ammoToReload;
+        totalSprayAmmo -= ammoToReload;
+
+        Debug.Log($"Reloaded! Chargeur: {currentSprayAmmo}/{stats.maxSprayAmmo}, Reserve: {totalSprayAmmo}");
     }
     bool CanAttack()
     {
@@ -150,7 +170,8 @@ public class MeleeAttackSystem : MonoBehaviour
         // Check spray ammo
         if (currentSprayAmmo <= 0)
         {
-            if (!isReloading)
+            // Rechargement auto si on a encore de la réserve
+            if (!isReloading && totalSprayAmmo > 0)
             {
                 StartReload();
             }
@@ -289,7 +310,11 @@ public class MeleeAttackSystem : MonoBehaviour
 
             float angleToTarget = Vector3.Angle(transform.forward, directionToTarget);
 
-            if (angleToTarget > stats.meleeConeAngle / 2f)
+            // MODIFIÉ : Autoriser spray cone (140°) OU backstab cone (60° derrière)
+            bool inSprayCone = angleToTarget <= stats.meleeConeAngle / 2f;
+            bool inBackstabCone = angleToTarget <= 30f; // 60° cone = ±30°
+
+            if (!inSprayCone && !inBackstabCone)
             {
                 continue;
             }
@@ -300,98 +325,74 @@ public class MeleeAttackSystem : MonoBehaviour
             {
                 hitSomething = true;
 
-                // CHECK SI ENNEMI AWARE DU PLAYER
-                bool isPshitAttack = false;
-
                 EnemyAI_AStar enemyAI_AStar = hit.GetComponent<EnemyAI_AStar>();
-                if (enemyAI_AStar != null)
-                {
-                    isPshitAttack = (enemyAI_AStar.currentState == EnemyAI_AStar.State.Chasing ||
-                                    enemyAI_AStar.currentState == EnemyAI_AStar.State.Attacking);
-                }
-
-                // Consume spray ammo logic...
-                if (isPshitAttack && !sprayUsed)
-                {
-                    currentSprayAmmo--;
-                    sprayUsed = true;
-                    wasFrontAttack = true;
-                    // ... logs
-                }
-                if (!isPshitAttack)
-                {
-                    wasFrontAttack = false;
-                    sprayUsed = true;
-                }
-
-                // DESACTIVER ZOMBIE AVANT KNOCKBACK
-                EnemyAI_AStar zombieAI_AStar_temp = hit.GetComponent<EnemyAI_AStar>();
-                if (zombieAI_AStar_temp != null)
-                {
-                    zombieAI_AStar_temp.enabled = false;
-                }
-
-                // Knockback
                 Rigidbody targetRb = hit.GetComponent<Rigidbody>();
-                if (targetRb != null)
+
+                // === CHECK BACKSTAB CONDITIONS ===
+                float distanceToEnemy = Vector3.Distance(transform.position, hit.transform.position);
+                bool isBackstab = false;
+
+                if (distanceToEnemy <= 1f) // Range backstab 1m
                 {
-                    Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
-                    knockbackDir.y = 0;
-                    Vector3 currentVel = targetRb.linearVelocity;
-                    Vector3 desiredVel = knockbackDir * stats.knockbackForce;
-                    Vector3 velocityChange = desiredVel - currentVel;
-                    targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
+                    // Check : Joueur dans les 60° du DOS de l'ennemi
+                    Vector3 dirPlayerFromEnemy = (transform.position - hit.transform.position).normalized;
+                    dirPlayerFromEnemy.y = 0f;
+                    float angleFromEnemyBack = Vector3.Angle(-hit.transform.forward, dirPlayerFromEnemy);
+
+                    if (angleFromEnemyBack <= 30f) // 60° cone = ±30°
+                    {
+                        isBackstab = true;
+                    }
                 }
 
-                // Degats
-                float damage = stats.GetAdjustedDamage();
-                enemyHealth.TakeMeleeDamage(damage);
-
-                // Notifier Blinders
-                MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
-
-                // Check Blinder
-                ChargeAttack chargeAttack = hit.GetComponent<ChargeAttack>();
-                if (chargeAttack != null)
+                if (isBackstab)
                 {
-                    chargeAttack.OnDirectHit(transform.position);
+                    // === BACKSTAB ===
+                    // PAS de consommation munition
+                    wasFrontAttack = false;
+
+                    // Knockback
+                    if (targetRb != null)
+                    {
+                        Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
+                        knockbackDir.y = 0;
+                        targetRb.AddForce(knockbackDir * stats.backstabKnockbackForce, ForceMode.Impulse);
+                    }
+
+                    // Désactiver AI temporairement
+                    if (enemyAI_AStar != null)
+                    {
+                        enemyAI_AStar.enabled = false;
+                        StartCoroutine(ReenableAIAfterBackstab(enemyAI_AStar, enemyHealth.stats.backstabStunDuration));
+                    }
+
+                    // Dégâts
+                    enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Spray);
+
+                    // Son backstab
+                    if (audioSource != null && stats.sprayBackSound != null)
+                    {
+                        audioSource.PlayOneShot(stats.sprayBackSound);
+                    }
+
+                    Debug.Log($"BACKSTAB: {hit.gameObject.name} (no ammo used)");
                 }
                 else
                 {
-                    StartCoroutine(KnockdownTarget(hit.gameObject));
-                }
+                    // === SPRAY NORMAL ===
 
-                Debug.Log(gameObject.name + " hit " + hit.gameObject.name + " for " + damage + " damage!");
-            }
+                    // NOUVEAU : Check si joueur dans dos ennemi (même à distance > 1m)
+                    Vector3 dirPlayerFromEnemy = (transform.position - hit.transform.position).normalized;
+                    dirPlayerFromEnemy.y = 0f;
+                    float angleFromEnemyBack = Vector3.Angle(-hit.transform.forward, dirPlayerFromEnemy);
 
-            // GESTION NUEES (support A* et NavMesh) - TOUJOURS PSHIT
-            SwarmController_AStar swarmAStar = hit.GetComponent<SwarmController_AStar>();
-            if (swarmAStar != null)
-            {
-                hitSomething = true;
-
-                // Toujours consommer munition (pshit obligatoire)
-                if (!sprayUsed)
-                {
-                    currentSprayAmmo--;
-                    sprayUsed = true;
-                    wasFrontAttack = true;
-                }
-
-                // Degats eleves contre swarms
-                float damage = stats.attackDamage * 3f;
-                swarmAStar.TakeDamage(damage);
-
-                Debug.Log(gameObject.name + " PSHIT swarm (A*) for " + damage + " damage!");
-            }
-            else
-            {
-                SwarmController swarm = hit.GetComponent<SwarmController>();
-                if (swarm != null)
-                {
-                    hitSomething = true;
-
-                    // Toujours consommer munition (pshit obligatoire)
+                    if (angleFromEnemyBack <= 30f) // Dans le dos de l'ennemi (60° cone)
+                    {
+                        // MISS - skip cet ennemi
+                        Debug.Log($"MISS: {hit.gameObject.name} - player in enemy back cone but too far for backstab");
+                        continue; // Skip au prochain ennemi
+                    }
+                    // Consommer munition
                     if (!sprayUsed)
                     {
                         currentSprayAmmo--;
@@ -399,11 +400,77 @@ public class MeleeAttackSystem : MonoBehaviour
                         wasFrontAttack = true;
                     }
 
-                    // Degats eleves contre swarms
-                    float damage = stats.attackDamage * 3f;
-                    swarm.TakeDamage(damage);
+                    // CHECK ÉTAT ACTUEL DU ZOMBIE
+                    if (enemyAI_AStar != null)
+                    {
+                        if (enemyAI_AStar.currentState == EnemyAI_AStar.State.Chasing)
+                        {
+                            // === CAS 1 : ENNEMI EN CHASE ===
+                            // Stop brutal, pas de recul
+                            if (targetRb != null)
+                            {
+                                targetRb.linearVelocity = new Vector3(0, targetRb.linearVelocity.y, 0);
+                            }
 
-                    Debug.Log(gameObject.name + " PSHIT swarm for " + damage + " damage!");
+                            // Passe en StunBySpray
+                            enemyAI_AStar.currentState = EnemyAI_AStar.State.StunBySpray;
+                            enemyHealth.SetSprayStunTime(enemyHealth.stats.stunSprayDuration);
+
+                            Debug.Log($"SPRAY CHASE: {hit.gameObject.name} -> StunBySpray (no recoil)");
+                        }
+                        else if (enemyAI_AStar.currentState == EnemyAI_AStar.State.StunBySpray)
+                        {
+                            // === CAS 2 : ENNEMI DÉJÀ EN STUNBYSPRAY ===
+                            // Recul + Cumul timer
+                            if (targetRb != null)
+                            {
+                                Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
+                                knockbackDir.y = 0;
+                                Vector3 currentVel = targetRb.linearVelocity;
+                                Vector3 desiredVel = knockbackDir * stats.knockbackForce;
+                                Vector3 velocityChange = desiredVel - currentVel;
+                                targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
+                            }
+
+                            // Cumul timer
+                            enemyHealth.AddSprayStunTime(enemyHealth.stats.stunSprayDuration);
+
+                            Debug.Log($"SPRAY STUN: {hit.gameObject.name} recoil + cumul timer ({enemyHealth.GetSprayStunTimeRemaining()}s)");
+                        }
+                        else
+                        {
+                            // === CAS 3 : ENNEMI EN IDLE/WANDERING ===
+                            // Recul + Passe en StunBySpray
+                            if (targetRb != null)
+                            {
+                                Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
+                                knockbackDir.y = 0;
+                                Vector3 currentVel = targetRb.linearVelocity;
+                                Vector3 desiredVel = knockbackDir * stats.knockbackForce;
+                                Vector3 velocityChange = desiredVel - currentVel;
+                                targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
+                            }
+
+                            // Passe en StunBySpray
+                            enemyAI_AStar.currentState = EnemyAI_AStar.State.StunBySpray;
+                            enemyHealth.SetSprayStunTime(enemyHealth.stats.stunSprayDuration);
+
+                            Debug.Log($"SPRAY IDLE: {hit.gameObject.name} -> StunBySpray (with recoil)");
+                        }
+                    }
+
+                    // Dégâts
+                    enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Spray);
+                }
+
+                // Notifier Blinders (commun spray/backstab)
+                MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
+
+                // Check Blinder
+                ChargeAttack chargeAttack = hit.GetComponent<ChargeAttack>();
+                if (chargeAttack != null)
+                {
+                    chargeAttack.OnDirectHit(transform.position);
                 }
             }
 
@@ -591,7 +658,7 @@ public class MeleeAttackSystem : MonoBehaviour
             EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
             if (enemyHealth != null && stats != null)
             {
-                enemyHealth.TakeMeleeDamage(stats.bottleThrowDamage);
+                enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Bottle);
             }
 
             // Stun + force chase
@@ -659,6 +726,15 @@ public class MeleeAttackSystem : MonoBehaviour
 
     public bool IsBottleThrown() => bottleThrown;
 
+    IEnumerator ReenableAIAfterBackstab(EnemyAI_AStar ai, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (ai != null)
+        {
+            ai.enabled = true;
+        }
+    }
+
     void PickupBottle()
     {
         if (thrownBottleInstance == null) return;
@@ -675,5 +751,6 @@ public class MeleeAttackSystem : MonoBehaviour
     }
 
     public GameObject GetThrownBottle() => thrownBottleInstance;
+    public int GetTotalSprayAmmo() => totalSprayAmmo;
 
 }

@@ -191,7 +191,7 @@ public class BroomAttackSystem : MonoBehaviour
                 }
 
                 // Degats
-                enemyHealth.TakeMeleeDamage(stats.broomDamage);
+                enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Broom);
                 // Son d'impact individuel
                 if (audioSource != null && stats.broomHitSound != null)
                 {
@@ -207,23 +207,24 @@ public class BroomAttackSystem : MonoBehaviour
                     StartCoroutine(KnockdownTarget(hit.gameObject));
                 }
 
-                Debug.Log(gameObject.name + " BROOM hit " + hit.gameObject.name + " for " + stats.broomDamage + " damage!");
             }
 
             // SWARMS
             SwarmController_AStar swarmAStar = hit.GetComponent<SwarmController_AStar>();
             if (swarmAStar != null)
             {
-                swarmAStar.TakeDamage(stats.broomDamage);
-                Debug.Log(gameObject.name + " BROOM hit swarm (A*) for " + stats.broomDamage + " damage!");
+                // AVANT : swarmAStar.TakeDamage(stats.broomDamage);
+                // APRÈS :
+                swarmAStar.TakeDamage(swarmAStar.stats.broomDamageTaken);
+                Debug.Log(gameObject.name + " BROOM hit swarm (A*) for " + swarmAStar.stats.broomDamageTaken + " damage!");
             }
             else
             {
                 SwarmController swarm = hit.GetComponent<SwarmController>();
                 if (swarm != null)
                 {
-                    swarm.TakeDamage(stats.broomDamage);
-                    Debug.Log(gameObject.name + " BROOM hit swarm for " + stats.broomDamage + " damage!");
+                    swarm.TakeDamage(swarm.stats.broomDamageTaken);
+                    Debug.Log(gameObject.name + " BROOM hit swarm for " + swarm.stats.broomDamageTaken + " damage!");
                 }
             }
 

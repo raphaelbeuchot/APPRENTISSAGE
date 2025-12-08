@@ -50,7 +50,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
     private bool isBlinder = false;
 
-    public enum State { Idle, Wandering, Chasing, Attacking, Dead }
+    public enum State { Idle, Wandering, Chasing, Attacking, StunBySpray, Dead }
     public State currentState = State.Idle;
 
     protected virtual void Start()
@@ -170,6 +170,9 @@ public class EnemyAI_AStar : MonoBehaviour
             case State.Attacking:
                 HandleAttackingState();
                 break;
+            case State.StunBySpray:
+                HandleStunBySprayState();
+                break;
             case State.Dead:
                 StopMovement();
                 break;
@@ -190,6 +193,10 @@ public class EnemyAI_AStar : MonoBehaviour
 
     protected virtual void DetectHumans()
     {
+        // Ignorer détection si en StunBySpray
+        if (currentState == State.StunBySpray)
+            return;
+
         PlayerHealth player = FindObjectOfType<PlayerHealth>();
         if (player == null || player.IsDead())
             return;
@@ -592,7 +599,19 @@ public class EnemyAI_AStar : MonoBehaviour
         Debug.Log($"[EnemyAI] {gameObject.name} PitMode disabled");
     }
 
+    protected virtual void HandleStunBySprayState()
+    {
+        // Stop le zombie
+        StopMovement();
 
+        // Check si le stun est terminé
+        if (health != null && health.GetSprayStunTimeRemaining() <= 0f)
+        {
+            // Retour à l'état Idle
+            currentState = State.Idle;
+            Debug.Log($"{gameObject.name} exited StunBySpray state");
+        }
+    }
 
     protected virtual void OnDrawGizmosSelected()
     {

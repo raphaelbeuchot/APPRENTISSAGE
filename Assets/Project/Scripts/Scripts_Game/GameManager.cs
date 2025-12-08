@@ -305,9 +305,14 @@ public class GameManager : MonoBehaviour
 
             bool playerImmune = (col.gameObject == player.gameObject && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed);
 
+            //Punition si meleeattack, spray
             Rigidbody rb = col.GetComponent<Rigidbody>();
             MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
             bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
+
+            // AJOUT : Check broom attack aussi
+            BroomAttackSystem broomSystem = col.GetComponent<BroomAttackSystem>();
+            bool isBroomAttacking = broomSystem != null && broomSystem.IsAttacking();
 
             bool isMoving = false;
             if (rb != null)
@@ -372,7 +377,7 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            bool shouldBeShot = (isMoving || isAttacking || isInBourrade || isFakeGrabber) && !playerImmune;
+            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber) && !playerImmune;
 
             EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isInShallowWater)

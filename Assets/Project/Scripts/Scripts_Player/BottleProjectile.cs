@@ -45,7 +45,7 @@ public class BottleProjectile : MonoBehaviour
         EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
         if (enemyHealth != null && stats != null)
         {
-            enemyHealth.TakeMeleeDamage(stats.bottleThrowDamage);
+            enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Bottle);
         }
 
         // Essayer nouveau systeme A* d'abord

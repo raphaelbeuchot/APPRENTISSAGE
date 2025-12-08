@@ -6,6 +6,9 @@ using Pathfinding;
 
 public class EnemyHealth : MonoBehaviour
 {
+    public enum AttackType { Spray, Broom, Bottle }
+
+
     [Header("Enemy Stats")]
     public EnemyStats stats;
 
@@ -33,6 +36,9 @@ public class EnemyHealth : MonoBehaviour
     // Health bar
     public EnemyHealthBarUI healthBarUI;
     private EnemyHealthBarManager healthBarManager;
+
+    // Spray stun system
+    private float sprayStunTimeRemaining = 0f;
 
     void Awake()
     {
@@ -107,6 +113,17 @@ public class EnemyHealth : MonoBehaviour
     {
         if (isDead) return;
 
+        // Décompte spray stun timer
+        if (sprayStunTimeRemaining > 0f)
+        {
+            sprayStunTimeRemaining -= Time.deltaTime;
+            if (sprayStunTimeRemaining <= 0f)
+            {
+                sprayStunTimeRemaining = 0f;
+                Debug.Log($"{gameObject.name} spray stun timer ended");
+            }
+        }
+
         if (isRecovering && Time.time >= recoverUntilTime)
         {
             isRecovering = false;
@@ -142,9 +159,10 @@ public class EnemyHealth : MonoBehaviour
         transform.localScale = originalScale;
     }
 
-    public void TakeMeleeDamage(float damage)
+    // Version pour dégâts directs (pits, environnement, etc.)
+    // VERSION 1 : Pour attaques joueur (spray/broom/bottle)
+    public void TakeMeleeDamage(AttackType attackType)
     {
-
         // Check si Bright Eyes et pas awake
         BrightEyesController brightEyes = GetComponent<BrightEyesController>();
         if (brightEyes != null && !brightEyes.IsAwake())
@@ -161,12 +179,28 @@ public class EnemyHealth : MonoBehaviour
         {
             lastImpactDirection = (transform.position - player.transform.position).normalized;
         }
+
+        // Déterminer les dégâts selon le type d'attaque
+        float damage = 0f;
+        switch (attackType)
+        {
+            case AttackType.Spray:
+                damage = stats.sprayDamageTaken;
+                break;
+            case AttackType.Broom:
+                damage = stats.broomDamageTaken;
+                break;
+            case AttackType.Bottle:
+                damage = stats.bottleDamageTaken;
+                break;
+        }
+
         lastImpactForce = damage;
 
         currentHealth -= damage;
         currentHealth = Mathf.Max(0f, currentHealth);
 
-        Debug.Log($"{gameObject.name} took {damage} melee damage! Health: {currentHealth}/{stats.maxHealth}");
+        Debug.Log($"{gameObject.name} took {damage} {attackType} damage! Health: {currentHealth}/{stats.maxHealth}");
 
         OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
         if (healthBarUI != null)
@@ -181,6 +215,43 @@ public class EnemyHealth : MonoBehaviour
         }
     }
 
+    // VERSION 2 : Pour dégâts directs (pits, environnement)
+    public void TakeMeleeDamage(float damage)
+    {
+        // Check si Bright Eyes et pas awake
+        BrightEyesController brightEyes = GetComponent<BrightEyesController>();
+        if (brightEyes != null && !brightEyes.IsAwake())
+        {
+            Debug.Log($"{gameObject.name} is sleeping, immune to damage");
+            return;
+        }
+
+        if (isDead) return;
+
+        lastDeathType = DeathContext.DeathType.Other;
+        lastImpactDirection = Vector3.down;
+        lastImpactForce = damage;
+
+        currentHealth -= damage;
+        currentHealth = Mathf.Max(0f, currentHealth);
+
+        Debug.Log($"{gameObject.name} took {damage} damage! Health: {currentHealth}/{stats.maxHealth}");
+
+        OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
+        if (healthBarUI != null)
+        {
+            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
+        }
+        UpdateSpeed();
+
+        if (currentHealth <= 0f)
+        {
+            Die();
+        }
+    }
+
+    // Démarre un stun spray (Chase mode - pas de cumul)
+    
     public void TakeSentinelShot(bool isHeadshot = false)
     {
         if (isDead) return;
@@ -424,6 +495,21 @@ public class EnemyHealth : MonoBehaviour
     public bool IsAlive()
     {
         return currentHealth > 0f;
+    }
+
+    public float GetSprayStunTimeRemaining()
+    {
+        return sprayStunTimeRemaining;
+    }
+
+    public void SetSprayStunTime(float time)
+    {
+        sprayStunTimeRemaining = time;
+    }
+
+    public void AddSprayStunTime(float time)
+    {
+        sprayStunTimeRemaining += time;
     }
     public bool IsRecovering() => isRecovering;
     public float GetCurrentHealth() => currentHealth;

@@ -75,6 +75,9 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Duree en secondes pendant laquelle le zombie continue de chercher apres avoir perdu le joueur de vue")]
     public float chasePersistenceDuration = 2f;
 
+
+
+
     [Header("ATTAQUE - PARAMÈTRES GÉNÉRAUX")]
     [Tooltip("Portée d'attaque")]
     public float attackRange = 1.5f;
@@ -117,7 +120,13 @@ public class EnemyStats : ScriptableObject
     public float bourradeDuration = 1.5f;
     [Tooltip("Durée du cooldown après bourrade")]
     public float bourradeCooldown = 2f;
-    
+
+    [Header("SPRAY STUN")]
+    [Tooltip("Durée du stun causé par spray (secondes)")]
+    public float stunSprayDuration = 0.5f;
+    [Tooltip("Durée d'immobilisation après backstab (secondes)")]
+    public float backstabStunDuration = 0.8f;
+
 
     [Header("SYSTÈME DE MEMBRES")]
     [Tooltip("Nombre de bras au départ")]
@@ -145,11 +154,18 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Prefab de l'arme")]
     public GameObject weaponPrefab;
 
-    [Header("DÉGÂTS REÇUS")]
-    [Tooltip("Dégâts reçus par melee attack joueur")]
-    public float meleeDamageTaken = 25f;
-    [Tooltip("Dégâts reçus par tir de sentinelle")]
-    public float sentinelDamageTaken = 60f;
+    [Header("DAMAGE TAKEN")]
+    [Tooltip("Dégâts pris par tir sentinelle")]
+    public float sentinelDamageTaken = 50f;  // existant
+
+    [Tooltip("Dégâts pris par spray")]
+    public float sprayDamageTaken = 25f;
+
+    [Tooltip("Dégâts pris par balai")]
+    public float broomDamageTaken = 40f;
+
+    [Tooltip("Dégâts pris par bouteille")]
+    public float bottleDamageTaken = 2f;
 
     [Header("SONS")]
     public AudioClip[] idleSounds;

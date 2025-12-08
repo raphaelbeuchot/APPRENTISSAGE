@@ -13,19 +13,15 @@ public class PlayerInputManager : MonoBehaviour
     public Vector2 LookInput { get; private set; }
     public bool SprintPressed { get; private set; }
     public bool SprayAttackPressed { get; private set; }
+    public bool SprayAttackHeld { get; private set; }
     public bool BroomAttackPressed { get; private set; }
     public bool LockOnHeld { get; private set; }
     public bool ThrowBottlePressed { get; private set; }
     public bool InteractPressed { get; private set; }
     public bool ReloadPressed { get; private set; }
-
     public bool MashEscapePressed { get; private set; }
-
     public bool CrouchPressed { get; private set; }
-
     public bool SentinelCameraPressed { get; private set; }
-
-
 
     private void Awake()
     {
@@ -43,7 +39,7 @@ public class PlayerInputManager : MonoBehaviour
         // Initialiser l'Input Action Asset
         inputActions = new PlayerInputActions();
     }
-    
+
     private void OnEnable()
     {
         // Activer l'action map Player
@@ -59,8 +55,8 @@ public class PlayerInputManager : MonoBehaviour
         inputActions.Player.Sprint.performed += ctx => SprintPressed = true;
         inputActions.Player.Sprint.canceled += ctx => SprintPressed = false;
 
-        inputActions.Player.SprayAttack.performed += ctx => SprayAttackPressed = true;
-        inputActions.Player.SprayAttack.canceled += ctx => SprayAttackPressed = false;
+        inputActions.Player.SprayAttack.performed += OnSprayAttack;
+        inputActions.Player.SprayAttack.canceled += OnSprayAttack;
 
         inputActions.Player.BroomAttack.performed += ctx => BroomAttackPressed = true;
         inputActions.Player.BroomAttack.canceled += ctx => BroomAttackPressed = false;
@@ -86,8 +82,8 @@ public class PlayerInputManager : MonoBehaviour
         {
             Debug.Log("INPUT SENTINEL CAMERA PERFORMED!");
             SentinelCameraPressed = true;
-        }; inputActions.Player.SentinelCamera.canceled += ctx => SentinelCameraPressed = false;
-
+        };
+        inputActions.Player.SentinelCamera.canceled += ctx => SentinelCameraPressed = false;
     }
 
     private void OnDisable()
@@ -99,13 +95,16 @@ public class PlayerInputManager : MonoBehaviour
         inputActions.Player.Look.performed -= OnLook;
         inputActions.Player.Look.canceled -= OnLook;
 
-        // Désactiver l'action map
-        inputActions.Player.Disable();
+        inputActions.Player.SprayAttack.performed -= OnSprayAttack;
+        inputActions.Player.SprayAttack.canceled -= OnSprayAttack;
 
         inputActions.Player.Crouch.performed -= ctx => CrouchPressed = true;
 
         inputActions.Player.SentinelCamera.performed -= ctx => SentinelCameraPressed = true;
         inputActions.Player.SentinelCamera.canceled -= ctx => SentinelCameraPressed = false;
+
+        // Désactiver l'action map
+        inputActions.Player.Disable();
     }
 
     private void OnMovement(InputAction.CallbackContext context)
@@ -118,10 +117,19 @@ public class PlayerInputManager : MonoBehaviour
         LookInput = context.ReadValue<Vector2>();
     }
 
+    private void OnSprayAttack(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+            SprayAttackPressed = true;
+
+        SprayAttackHeld = context.ReadValueAsButton();
+    }
+
     private void LateUpdate()
     {
         // Reset des inputs "pressed" pour frame suivante
         SprayAttackPressed = false;
+        // NE PAS reset SprayAttackHeld ici
         BroomAttackPressed = false;
         ThrowBottlePressed = false;
         InteractPressed = false;
@@ -129,7 +137,5 @@ public class PlayerInputManager : MonoBehaviour
         MashEscapePressed = false;
         CrouchPressed = false;
         SentinelCameraPressed = false;
-
-
     }
 }
