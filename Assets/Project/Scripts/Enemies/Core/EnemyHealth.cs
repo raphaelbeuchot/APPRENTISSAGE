@@ -16,7 +16,7 @@ public class EnemyHealth : MonoBehaviour
     private Vector3 lastImpactDirection = Vector3.forward;
     private float lastImpactForce = 1f;
 
-    public bool deathByPit = false;
+    [HideInInspector] public bool deathByPit = false;
 
     private float currentHealth;
     private bool isDead = false;
@@ -425,14 +425,21 @@ public class EnemyHealth : MonoBehaviour
         }
 
         // SINON: Mort normale avec ragdoll
+        Debug.Log($"========== {gameObject.name} DIE() - MORT NORMALE ==========");
+
         Rigidbody rbNormal = GetComponent<Rigidbody>();
         if (rbNormal != null)
         {
+            Debug.Log($"[Before] isKinematic={rbNormal.isKinematic}, constraints={rbNormal.constraints}");
+
             rbNormal.isKinematic = false;
+            rbNormal.constraints = RigidbodyConstraints.None;
             rbNormal.linearDamping = originalLinearDamping;
             rbNormal.angularDamping = originalAngularDamping;
             rbNormal.mass = originalMass;
             rbNormal.detectCollisions = true;
+
+            Debug.Log($"[After] isKinematic={rbNormal.isKinematic}, constraints={rbNormal.constraints}");
         }
 
         Collider colNormal = GetComponent<Collider>();
@@ -441,8 +448,12 @@ public class EnemyHealth : MonoBehaviour
             colNormal.isTrigger = false;
         }
 
+        Debug.Log($"About to call IDeathEffect on {gameObject.name}");
+
         // Appliquer les effets de mort (ragdoll, explosion, etc.)
         IDeathEffect[] deathEffects = GetComponents<IDeathEffect>();
+        Debug.Log($"Found {deathEffects.Length} death effects");
+
         DeathContext context = new DeathContext
         {
             deathType = lastDeathType,
@@ -451,6 +462,24 @@ public class EnemyHealth : MonoBehaviour
         };
 
         bool hasExplosionEffect = false;
+
+        if (deathEffects != null && deathEffects.Length > 0)
+        {
+            foreach (IDeathEffect effect in deathEffects)
+            {
+                Debug.Log($"Calling OnDeath on {effect.GetType().Name}");
+                effect.OnDeath(transform.position, context);
+
+                if (effect is ExplosionDeathEffect)
+                {
+                    hasExplosionEffect = true;
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"NO DEATH EFFECTS FOUND on {gameObject.name}!");
+        }
 
         if (deathEffects != null && deathEffects.Length > 0)
         {

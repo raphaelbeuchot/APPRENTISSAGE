@@ -222,17 +222,25 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
 
         isClimbingOut = true;
 
-        // Désactiver le contrôle du joueur
+        // === BLOCAGE COMPLET INPUTS ===
         if (playerMovement != null)
+        {
             playerMovement.enabled = false;
+            playerMovement.canMove = false;
+            playerMovement.ResetAllInputs(); // Vide la mémoire des inputs
+        }
 
-        // Normaliser la direction (juste au cas où)
+        // === FREEZE ROTATION ===
+        RigidbodyConstraints oldConstraints = rb.constraints;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+
+        // Normaliser la direction
         exitDirection.y = 0;
         if (exitDirection.sqrMagnitude > 0.01f)
         {
             exitDirection.Normalize();
         }
-        Debug.Log($"[PlayerPit] Manually normalized exitDirection: {exitDirection}");
+        Debug.Log($"[PlayerPit] Normalized exitDirection: {exitDirection}");
 
         Vector3 startPos = transform.position;
 
@@ -245,19 +253,26 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         float elapsedTime = 0f;
         while (elapsedTime < tractionDuration)
         {
-            elapsedTime += Time.deltaTime;
+            elapsedTime += Time.fixedDeltaTime; // FIXE AU LIEU DE deltaTime
             float t = elapsedTime / tractionDuration;
-            transform.position = Vector3.Lerp(startPos, topPos, t);
-            yield return null;
+
+            Vector3 targetPos = Vector3.Lerp(startPos, topPos, t);
+            rb.MovePosition(targetPos); // RIGIDBODY AU LIEU DE transform.position
+
+            // FORCE VELOCITY ZERO
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+
+            yield return new WaitForFixedUpdate(); // FIXED AU LIEU DE null
         }
 
         // Force position exacte après traction
-        transform.position = topPos;
+        rb.MovePosition(topPos);
         Debug.Log($"[PlayerPit] Phase 1 complete, position: {transform.position}");
 
         // --- PHASE 2 : PAS EN AVANT (avance horizontalement) ---
         float stepDuration = 0.4f;
-        float stepDistance = 0.5f; // Distance du pas
+        float stepDistance = 0.5f;
         Vector3 finalPos = topPos + exitDirection * stepDistance;
 
         Debug.Log($"[PlayerPit] Phase 2 - Step: from {topPos} to {finalPos}");
@@ -265,28 +280,41 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         elapsedTime = 0f;
         while (elapsedTime < stepDuration)
         {
-            elapsedTime += Time.deltaTime;
+            elapsedTime += Time.fixedDeltaTime; // FIXE
             float t = elapsedTime / stepDuration;
-            transform.position = Vector3.Lerp(topPos, finalPos, t);
-            yield return null;
+
+            Vector3 targetPos = Vector3.Lerp(topPos, finalPos, t);
+            rb.MovePosition(targetPos); // RIGIDBODY
+
+            // FORCE VELOCITY ZERO
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+
+            yield return new WaitForFixedUpdate(); // FIXED
         }
 
         // Force position finale exacte
-        transform.position = finalPos;
+        rb.MovePosition(finalPos);
         Debug.Log($"[PlayerPit] Phase 2 complete, final position: {transform.position}");
+
+        // === RESTAURATION ===
+        rb.constraints = oldConstraints;
 
         // Sortie du pit
         ExitPit();
 
         // Réactiver le contrôle
         if (playerMovement != null)
+        {
             playerMovement.enabled = true;
+            playerMovement.canMove = true;
+        }
 
         // Immunité temporaire
         StartCoroutine(ExitImmunityCoroutine());
 
         isClimbingOut = false;
-        lastClimbOutTime = Time.time; // Cooldown
+        lastClimbOutTime = Time.time;
 
         Debug.Log("[PlayerPit] Climb out complete");
     }

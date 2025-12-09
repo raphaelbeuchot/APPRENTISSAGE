@@ -9,16 +9,22 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
 
     public void OnDeath(Vector3 deathPosition, DeathContext context)
     {
+        Debug.Log($"========== RAGDOLL ONDEATH on {gameObject.name} ==========");
+
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb == null)
         {
-            Debug.LogWarning($"RagdollDeathEffect: No Rigidbody on {gameObject.name}");
+            Debug.LogError($"NO RIGIDBODY on {gameObject.name}!");
             return;
         }
+
+        Debug.Log($"[Ragdoll Before] isKinematic={rb.isKinematic}, constraints={rb.constraints}");
 
         rb.isKinematic = false;
         rb.useGravity = true;
         rb.constraints = RigidbodyConstraints.None;
+
+        Debug.Log($"[Ragdoll After] isKinematic={rb.isKinematic}, constraints={rb.constraints}");
 
         float force = baseRagdollForce;
         switch (context.deathType)
@@ -34,9 +40,11 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
         Vector3 direction = context.impactDirection.normalized + Vector3.up * 0.5f;
         direction.Normalize();
 
+        Debug.Log($"Applying force: {force}, direction: {direction}");
+
         rb.AddForce(direction * force, ForceMode.VelocityChange);
         rb.AddTorque(Random.insideUnitSphere * ragdollTorque, ForceMode.VelocityChange);
 
-        Debug.Log($"Ragdoll applied: {context.deathType}, Force: {force}");
+        Debug.Log($"Force applied! Velocity: {rb.linearVelocity}");
     }
 }
