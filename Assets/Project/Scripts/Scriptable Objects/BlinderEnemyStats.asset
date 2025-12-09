@@ -18,6 +18,9 @@ MonoBehaviour:
   attackType: 5
   maxHealth: 100
   limbLossThreshold: 0.5
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
   walkSpeed: 1
   chaseSpeed: 2
   rotationSpeed: 30
@@ -51,6 +54,8 @@ MonoBehaviour:
   spitProjectilePrefab: {fileID: 0}
   bourradeDuration: 1.5
   bourradeCooldown: 2
+  stunSprayDuration: 0.5
+  backstabStunDuration: 0.8
   startingArmCount: 2
   startingLegCount: 2
   swellDuration: 1.5
@@ -60,8 +65,10 @@ MonoBehaviour:
   forceMultiplier: 1
   hasWeapon: 0
   weaponPrefab: {fileID: 0}
-  meleeDamageTaken: 25
-  sentinelDamageTaken: 60
+  sentinelDamageTaken: 25
+  sprayDamageTaken: 0
+  broomDamageTaken: 0
+  bottleDamageTaken: 0
   idleSounds: []
   chaseSounds: []
   attackSound: {fileID: 0}

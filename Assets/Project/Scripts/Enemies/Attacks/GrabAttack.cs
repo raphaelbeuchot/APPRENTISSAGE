@@ -104,6 +104,13 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         if (player != null && player.IsSprinting())
             return;
 
+        // === CHECK IMMUNITÉ GRABS ===
+        if (player != null && player.isImmuneToGrab)
+        {
+            Debug.Log($"{gameObject.name} cannot grab - player is immune (climbing/falling)");
+            return;
+        }
+
         float dist = Vector3.Distance(transform.position, player.transform.position);
         if (dist > stats.attackRange) return;
 
@@ -232,17 +239,17 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             if (player != null && player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
             {
                 player.grabState = PlayerPhysicsMovement.GrabState.None;
+                player.lastGrabEndTime = Time.time; //  AJOUTE ÇA
             }
 
             if (playerMelee) playerMelee.OnGrabEnd();
 
-            // AJOUTE CES LIGNES :
             BroomAttackSystem playerBroom = player.GetComponent<BroomAttackSystem>();
             if (playerBroom) playerBroom.OnGrabEnd();
         }
     }
 
-    void EndGrab(bool givePlayerRecoil = true)
+        void EndGrab(bool givePlayerRecoil = true)
     {
         grabElapsedTime = 0f;
         nextDamageIndex = 0;

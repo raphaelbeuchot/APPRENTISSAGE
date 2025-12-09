@@ -11,14 +11,23 @@ public class TestClimbDetection : MonoBehaviour
     [SerializeField] private float rotationDuration = 0.3f;
 
     private bool isClimbing = false;
-    
+
     void Update()
     {
         if (isClimbing)
             return;
 
+        // === BLOQUER CLIMB SI GRABBED ===
+        if (playerMovement.grabState != PlayerPhysicsMovement.GrabState.None)
+        {
+            Debug.LogWarning($"[Climb] BLOQUÉ - grabState = {playerMovement.grabState}");
+            return;
+        }
+
         if (!PlayerInputManager.Instance.InteractPressed)
             return;
+
+        Debug.LogWarning("[Climb] E PRESSÉ - grabState = " + playerMovement.grabState);
 
         Vector2 input = PlayerInputManager.Instance.MoveInput;
         if (input.magnitude < 0.1f)
@@ -186,6 +195,19 @@ public class TestClimbDetection : MonoBehaviour
 
         while (elapsed < rotationDuration)
         {
+            // === CHECK SI GRABBED PENDANT LA ROTATION ===
+            if (playerMovement.grabState != PlayerPhysicsMovement.GrabState.None)
+            {
+                Debug.LogWarning("[CLIMB] ANNULÉ - Player grabbed pendant la rotation!");
+
+                // Annuler tout
+                isClimbing = false;
+                playerMovement.isClimbing = false;
+                playerMovement.enabled = true;
+                playerMovement.canMove = true;
+                yield break; // SORTIR de la coroutine
+            }
+
             elapsed += Time.deltaTime;
             float t = elapsed / rotationDuration;
             transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
@@ -203,10 +225,20 @@ public class TestClimbDetection : MonoBehaviour
     {
         Rigidbody rb = GetComponent<Rigidbody>();
         bool isVault = climbType.obstacleDepth < vaultDepthThreshold;
-
         float startY = transform.position.y;
-
         startPos = transform.position;
+
+        // === BLOQUER GRABS PENDANT TOUT LE CLIMB ===
+        playerMovement.isImmuneToGrab = true;
+
+        // === DÉSACTIVER COLLISIONS ZOMBIES SI VAULT ===
+        int playerLayer = gameObject.layer;
+        int zombieLayer = LayerMask.NameToLayer("Zombie");
+        if (isVault)
+        {
+            Physics.IgnoreLayerCollision(playerLayer, zombieLayer, true);
+            Debug.Log("[CLIMB] Vault détecté - collisions zombies désactivées");
+        }
 
         RigidbodyConstraints oldConstraints = rb.constraints;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
@@ -214,8 +246,6 @@ public class TestClimbDetection : MonoBehaviour
         rb.angularVelocity = Vector3.zero;
 
         // PHASE 1 : MONTEE VERTICALE
-
-
         Vector3 topPos = startPos + Vector3.up * height;
         float phase1Duration = climbType.phase1Duration;
         float elapsed = 0f;
@@ -230,12 +260,11 @@ public class TestClimbDetection : MonoBehaviour
             rb.angularVelocity = Vector3.zero;
             yield return new WaitForFixedUpdate();
         }
+
         rb.MovePosition(topPos);
         rb.linearVelocity = Vector3.zero;
 
         // PHASE 2 : AVANCEE HORIZONTALE
-
-
         Vector3 finalPos = topPos + transform.forward * distance;
         float phase2Duration = climbType.phase2Duration;
         elapsed = 0f;
@@ -250,6 +279,7 @@ public class TestClimbDetection : MonoBehaviour
             rb.angularVelocity = Vector3.zero;
             yield return new WaitForFixedUpdate();
         }
+
         rb.MovePosition(finalPos);
         rb.linearVelocity = Vector3.zero;
 
@@ -257,14 +287,39 @@ public class TestClimbDetection : MonoBehaviour
         if (isVault)
         {
             Debug.Log("[CLIMB] VAULT detecte, attente descente...");
-            yield return new WaitUntil(() => Mathf.Abs(transform.position.y - startY) < 0.2f);
+
+            // Timeout de 3 secondes au cas où
+            float descenteTimer = 0f;
+            float maxDescenteTime = 3f;
+
+            while (Mathf.Abs(transform.position.y - startY) >= 0.2f && descenteTimer < maxDescenteTime)
+            {
+                descenteTimer += Time.deltaTime;
+                yield return null;
+            }
+
+            if (descenteTimer >= maxDescenteTime)
+            {
+                Debug.LogWarning("[CLIMB] Timeout descente vault - forçage au sol");
+            }
+
             Debug.Log("[CLIMB] Descente terminee!");
+        }
+
+        // === RÉACTIVER COLLISIONS ZOMBIES ===
+        if (isVault)
+        {
+            Physics.IgnoreLayerCollision(playerLayer, zombieLayer, false);
+            Debug.Log("[CLIMB] Collisions zombies réactivées");
         }
 
         // RESTAURER TOUT
         rb.constraints = oldConstraints;
         playerMovement.enabled = true;
         playerMovement.isClimbing = false;
+
+        // === RETIRER IMMUNITÉ GRABS ===
+        playerMovement.isImmuneToGrab = false;
 
         ReEnableMovement();
 
@@ -273,9 +328,7 @@ public class TestClimbDetection : MonoBehaviour
 
         isClimbing = false;
         Debug.Log("[CLIMB] Climb termine, E relache, pret pour prochain climb");
-        
     }
-
     public bool IsClimbing()
     {
         return isClimbing;

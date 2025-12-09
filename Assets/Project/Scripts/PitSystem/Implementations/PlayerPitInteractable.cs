@@ -212,6 +212,35 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         exitDirection.y = 0;
         exitDirection.Normalize();
 
+        // === NOUVEAU CHECK 4 : Bloquer si mur climbable ===
+        Vector3 checkPosition = new Vector3(transform.position.x, 0.1f, transform.position.z);
+        RaycastHit hit;
+        float rayDistance = 1.5f;
+
+        // Debug visuel du raycast (rouge = rayon, vert = hit si trouvé)
+        Debug.DrawRay(checkPosition, exitDirection * rayDistance, Color.red, 2f);
+
+        if (Physics.Raycast(checkPosition, exitDirection, out hit, rayDistance, LayerMask.GetMask("Obstacle")))
+        {
+            Debug.Log($"[PlayerPit] Raycast HIT something: {hit.collider.name} at distance {hit.distance}");
+            Debug.DrawLine(checkPosition, hit.point, Color.green, 2f);
+
+            ClimbableObject climbable = hit.collider.GetComponent<ClimbableObject>();
+            if (climbable != null)
+            {
+                Debug.Log("[PlayerPit] Cannot exit here - climbable wall blocking. Use climb system instead.");
+                return; // BLOQUE la sortie
+            }
+            else
+            {
+                Debug.Log($"[PlayerPit] Hit obstacle but no ClimbableObject component");
+            }
+        }
+        else
+        {
+            Debug.Log("[PlayerPit] Raycast found NO obstacle in exit direction");
+        }
+
         Debug.Log($"[PlayerPit] Starting climb out, wall normal: {pitWallNormal}, exit direction: {exitDirection}");
         StartCoroutine(ClimbOutAnimation(exitDirection));
     }

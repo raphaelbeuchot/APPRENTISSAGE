@@ -470,13 +470,17 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8095700942093542910, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1802407244412773648, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 605902518451999242}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
+      insertIndex: 2
+      addedObject: {fileID: -8733405034966855353}
     - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1897056354708244938}
@@ -495,12 +499,38 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5969453713487826695}
+    - targetCorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6160754788573647881}
   m_SourcePrefab: {fileID: 100100000, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
 --- !u!1 &485149489708715402 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1317513423010938794, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}
   m_PrefabInstance: {fileID: 1509593841276875296}
   m_PrefabAsset: {fileID: 0}
+--- !u!136 &-8733405034966855353
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485149489708715402}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.3
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &1897056354708244938
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -515,7 +545,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: bddc9e55d177f5645a3dd8485befb1ca, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
+  isInPitMode: 0
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
@@ -672,6 +704,24 @@ MonoBehaviour:
   slowWhenNotFacingTarget: 1
   preventMovingBackwards: 0
   constrainInsideGraph: 0
+--- !u!114 &6160754788573647881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485149489708715402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d36065851de262743ac229c33d0e77b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPitInteractable
+  pitDamageMultiplier: 1
+  characterCenterHeight: 1
+  isFallingInPit: 0
+  shouldIgnoreHealthbarDistance: 0
+  waterSlowdownMultiplier: 0.1
+  isInShallowWater: 0
 --- !u!4 &1004382222917867312 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1802407244412773648, guid: dbb879ff5be92c546bef58dba4d6800c, type: 3}

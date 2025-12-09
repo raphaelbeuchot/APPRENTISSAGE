@@ -9,6 +9,11 @@ public class EnemyAI_AStar : MonoBehaviour
     public EnemyStats stats;
     public PlayerStats playerStats;
 
+    // Wall staring detection
+    private float wallStaringTimer = 0f;
+    private float wallStaringThreshold = 5f; // Temps avant rotation
+    private float wallDetectionDistance = 1f; // Distance de détection mur
+
     private Vector3 lastKnownPlayerPosition;
     private bool isGoingToLastKnownPosition = false;
     [SerializeField] private float arrivalThreshold = 0.5f;
@@ -115,6 +120,44 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         if (stats == null || isDead) return;
 
+        // Debug zombie coincé devant un mur
+        if (currentState == State.Idle)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(transform.position + Vector3.up * 0.5f, transform.forward, out hit, wallDetectionDistance, LayerMask.GetMask("Obstacle")))
+            {
+                wallStaringTimer += Time.deltaTime;
+
+                if (wallStaringTimer >= wallStaringThreshold)
+                {
+                    // Rotation fluide au lieu de snap
+                    float randomAngle = Random.Range(90f, 270f);
+                    StartCoroutine(SmoothRotateAway(randomAngle));
+                    wallStaringTimer = 0f;
+                }
+            }
+            else
+            {
+                wallStaringTimer = 0f;
+            }
+        }
+        else
+        {
+            wallStaringTimer = 0f;
+        }
+
+        // === DEBUG ROTATION FOLLE ===
+        if (rb != null && rb.angularVelocity.magnitude > 10f)
+        {
+            Debug.LogError($"[ROTATION FOLLE] {gameObject.name} - Angular velocity: {rb.angularVelocity.magnitude:F2}");
+            Debug.LogError($"State: {currentState}, Constraints: {rb.constraints}");
+            Debug.LogError($"AIPath enabled: {aiPath?.enabled}, canMove: {canMove}");
+
+            // FORCE STOP
+            rb.angularVelocity = Vector3.zero;
+            rb.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+
         if (isStunnedBySentinel)
         {
             StopMovement();
@@ -191,6 +234,25 @@ public class EnemyAI_AStar : MonoBehaviour
         }
     }
 
+    private IEnumerator SmoothRotateAway(float angle)
+    {
+        Quaternion startRotation = transform.rotation;
+        Quaternion targetRotation = startRotation * Quaternion.Euler(0, angle, 0);
+
+        float elapsed = 0f;
+        float rotationDuration = 1f; // 1 seconde pour la rotation
+
+        while (elapsed < rotationDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / rotationDuration;
+            transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            yield return null;
+        }
+
+        transform.rotation = targetRotation; // Force la rotation finale
+        Debug.Log($"{gameObject.name} finished smooth rotation away from wall");
+    }
     protected virtual void DetectHumans()
     {
         // Ignorer détection si en StunBySpray

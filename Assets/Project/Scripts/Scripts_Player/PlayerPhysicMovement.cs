@@ -8,6 +8,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
     [Header("Player Stats")]
     public PlayerStats stats;
 
+    [Header("Grab Immunity")]
+    [HideInInspector] public bool isImmuneToGrab = false;
+    [HideInInspector] public float lastGrabEndTime = -999f; 
+
+
     [Header("Camera")]
     public Transform cameraTransform;
     public TargetLockSystem lockSystem;
@@ -178,6 +183,12 @@ public class PlayerPhysicsMovement : MonoBehaviour
         else if (isSprinting && currentStamina > 0)
         {
             targetSpeed *= stats.sprintSpeedMultiplier;
+        }
+
+        // === IMMUNITÉ GRABS SI EN L'AIR ===
+        if (!isClimbing) // Ne pas override l'immunité du climb
+        {
+            isImmuneToGrab = !IsGrounded(); // Simple : en l'air = immune, au sol = vulnérable
         }
     }
 
@@ -540,6 +551,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
         Debug.Log("Player UNFROZEN");
     }
 
-
+    private bool IsGrounded()
+    {
+        float rayLength = 0.3f;
+        Vector3 rayStart = transform.position + Vector3.up * 0.1f; // Légèrement au-dessus des pieds
+        return Physics.Raycast(rayStart, Vector3.down, rayLength, LayerMask.GetMask("Ground"));
+    }
 
 }
