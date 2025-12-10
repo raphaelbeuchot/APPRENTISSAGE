@@ -7,6 +7,8 @@ public class CountdownManager : MonoBehaviour
 {
     public MetalShutter shutter;
     public GameManager gameManager;
+    [HideInInspector]
+    public bool countdownFinished = false;
 
     public void StartCountdown()
     {
@@ -38,6 +40,8 @@ public class CountdownManager : MonoBehaviour
         {
             shutter.Open();
         }
+
+        countdownFinished = true;
 
         // Demarrer le jeu
         if (gameManager != null)

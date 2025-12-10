@@ -22,6 +22,8 @@ public class PlayerInputManager : MonoBehaviour
     public bool MashEscapePressed { get; private set; }
     public bool CrouchPressed { get; private set; }
     public bool SentinelCameraPressed { get; private set; }
+    public bool ToggleCameraViewPressed { get; private set; }
+
 
     private void Awake()
     {
@@ -78,6 +80,9 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.Crouch.performed += ctx => CrouchPressed = true;
 
+        inputActions.Player.ToggleCameraView.performed += OnToggleCameraView;
+
+
         inputActions.Player.SentinelCamera.performed += ctx =>
         {
             Debug.Log("INPUT SENTINEL CAMERA PERFORMED!");
@@ -103,10 +108,17 @@ public class PlayerInputManager : MonoBehaviour
         inputActions.Player.SentinelCamera.performed -= ctx => SentinelCameraPressed = true;
         inputActions.Player.SentinelCamera.canceled -= ctx => SentinelCameraPressed = false;
 
+        inputActions.Player.ToggleCameraView.performed -= OnToggleCameraView;
+
+
         // Désactiver l'action map
         inputActions.Player.Disable();
     }
 
+    private void OnToggleCameraView(InputAction.CallbackContext context)
+    {
+        ToggleCameraViewPressed = true;
+    }
     private void OnMovement(InputAction.CallbackContext context)
     {
         MoveInput = context.ReadValue<Vector2>();
@@ -137,5 +149,7 @@ public class PlayerInputManager : MonoBehaviour
         MashEscapePressed = false;
         CrouchPressed = false;
         SentinelCameraPressed = false;
+        ToggleCameraViewPressed = false;
+
     }
 }

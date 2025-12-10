@@ -199,6 +199,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ToggleCameraView"",
+                    ""type"": ""Button"",
+                    ""id"": ""a8c0b38e-c31d-47b0-943c-b86f0226eaf9"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -509,6 +518,28 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""SentinelCamera"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3131215c-6b9c-4b0a-a1e3-a44063fb974b"",
+                    ""path"": ""<Keyboard>/l"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleCameraView"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8fd177f9-6928-4414-9456-e0ce959b6685"",
+                    ""path"": ""<Gamepad>/rightStickPress"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleCameraView"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -529,6 +560,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_MashEscape = m_Player.FindAction("MashEscape", throwIfNotFound: true);
         m_Player_Crouch = m_Player.FindAction("Crouch", throwIfNotFound: true);
         m_Player_SentinelCamera = m_Player.FindAction("SentinelCamera", throwIfNotFound: true);
+        m_Player_ToggleCameraView = m_Player.FindAction("ToggleCameraView", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -621,6 +653,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_MashEscape;
     private readonly InputAction m_Player_Crouch;
     private readonly InputAction m_Player_SentinelCamera;
+    private readonly InputAction m_Player_ToggleCameraView;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -680,6 +713,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/SentinelCamera".
         /// </summary>
         public InputAction @SentinelCamera => m_Wrapper.m_Player_SentinelCamera;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/ToggleCameraView".
+        /// </summary>
+        public InputAction @ToggleCameraView => m_Wrapper.m_Player_ToggleCameraView;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -742,6 +779,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @SentinelCamera.started += instance.OnSentinelCamera;
             @SentinelCamera.performed += instance.OnSentinelCamera;
             @SentinelCamera.canceled += instance.OnSentinelCamera;
+            @ToggleCameraView.started += instance.OnToggleCameraView;
+            @ToggleCameraView.performed += instance.OnToggleCameraView;
+            @ToggleCameraView.canceled += instance.OnToggleCameraView;
         }
 
         /// <summary>
@@ -789,6 +829,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @SentinelCamera.started -= instance.OnSentinelCamera;
             @SentinelCamera.performed -= instance.OnSentinelCamera;
             @SentinelCamera.canceled -= instance.OnSentinelCamera;
+            @ToggleCameraView.started -= instance.OnToggleCameraView;
+            @ToggleCameraView.performed -= instance.OnToggleCameraView;
+            @ToggleCameraView.canceled -= instance.OnToggleCameraView;
         }
 
         /// <summary>
@@ -913,5 +956,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSentinelCamera(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ToggleCameraView" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnToggleCameraView(InputAction.CallbackContext context);
     }
 }
