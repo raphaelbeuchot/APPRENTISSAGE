@@ -3052,11 +3052,11 @@ MonoBehaviour:
   verticalPanSpeed: 2
   initialRiseDuration: 2
   lowCameraOffset: -5
-  stickDownDuration: 2
-  stickThreshold: 0.7
+  viewToggleDuration: 2
   lateralOffset: 5
   lateralPanDuration: 1
   lateralThreshold: 0.7
+  countdownManager: {fileID: 0}
 --- !u!4 &279559866 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: ff49c1d99179227478761ec917125f49, type: 3}
@@ -8309,6 +8309,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CountdownManager
   shutter: {fileID: 1803505161}
   gameManager: {fileID: 1801742136}
+  countdownFinished: 0
 --- !u!1001 &510282793
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -19568,11 +19569,11 @@ MonoBehaviour:
   verticalPanSpeed: 5
   initialRiseDuration: 1.5
   lowCameraOffset: -0.5
-  stickDownDuration: 0.2
-  stickThreshold: 0.7
+  viewToggleDuration: 0.5
   lateralOffset: 3
   lateralPanDuration: 1
   lateralThreshold: 0.7
+  countdownManager: {fileID: 0}
 --- !u!1 &1236789411
 GameObject:
   m_ObjectHideFlags: 0
@@ -23022,7 +23023,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1361275052}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.014002154, y: 0.050238445, z: 0.00066292303, w: 0.9986389}
+  m_LocalRotation: {x: 0.014008273, y: 0.039881237, z: 0.0005177043, w: 0.9991061}
   m_LocalPosition: {x: 3.676022, y: 2.4291208, z: -7.8542833}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -28935,6 +28936,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetalShutter
   openHeight: 10
   openSpeed: 5
+  destroyDelay: 0.5
 --- !u!1001 &1803785953
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33513,6 +33515,69 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!1 &2103414915
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2103414917}
+  - component: {fileID: 2103414916}
+  m_Layer: 0
+  m_Name: SentinelCycleManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2103414916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2103414915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f10f21fbc34920f4fadcc816ee0b03f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelCycleManager
+  sentinelSettings: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
+  sentinelLightRenderer: {fileID: 887716754}
+  greenMaterial: {fileID: 2100000, guid: c3f62546bd148f542a6789f719c0c83c, type: 2}
+  redMaterial: {fileID: 2100000, guid: 23d8ea2022ab1654c87fc6d911610a35, type: 2}
+  yellowMaterial: {fileID: 2100000, guid: 9c0666d93dcf41740ba7ff45298dcdcd, type: 2}
+  alertSound1: {fileID: 0}
+  alertSound2: {fileID: 0}
+  alertSound3: {fileID: 0}
+  finalAlertSound: {fileID: 0}
+  minAlertDistance: 5
+  startZoneTransform: {fileID: 1547379118}
+  minTotalAlertDuration: 0.5
+  maxTotalAlertDuration: 3
+  soundDurationRandomnessMin: -0.05
+  soundDurationRandomnessMax: 0.1
+  finalDelayMin: 0.2
+  finalDelayMax: 1.5
+  playerTransform: {fileID: 882987295}
+  currentState: 0
+--- !u!4 &2103414917
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2103414915}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.78797, y: 0, z: 17.06657}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &2109287430 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: ff49c1d99179227478761ec917125f49, type: 3}
@@ -34477,6 +34542,7 @@ SceneRoots:
   - {fileID: 882987295}
   - {fileID: 1095670247}
   - {fileID: 1801742137}
+  - {fileID: 2103414917}
   - {fileID: 543040775}
   - {fileID: 510246360}
   - {fileID: 1551312464}

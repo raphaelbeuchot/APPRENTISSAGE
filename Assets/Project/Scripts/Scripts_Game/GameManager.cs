@@ -7,8 +7,8 @@ using Pathfinding;
 
 public class GameManager : MonoBehaviour
 {
-    public enum GameState { GreenLight, Alert, RedLight, Release }
-
+    [Header("Cycle Manager")]
+    public SentinelCycleManager sentinelCycleManager;
     [Header("Sentinel Settings")]
     public SentinelSettings sentinelSettings;
 
@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
     public PlayerPhysicsMovement player;
     public SentinelSettings sentinel;
     public PlayerHealth playerHealth;
+
     public Renderer sentinelLightRenderer;
     public Material greenMaterial;
     public Material redMaterial;
@@ -32,10 +33,7 @@ public class GameManager : MonoBehaviour
     public bool stunBySentinel = false;
     public bool zombieStunBySentinel = false;
 
-    public GameState currentState = GameState.GreenLight;
-    private float cycleTimer;
-    private float targetDuration;
-    private bool gameStarted = false;
+    
     private bool playerAlarmTriggered = false;
     private HashSet<GameObject> alreadyShot = new HashSet<GameObject>();
     private float detectionTimer = 0f;
@@ -108,50 +106,36 @@ public class GameManager : MonoBehaviour
     {
         if (sentinelSettings == null)
         {
-            Debug.LogError("GameManager: SentinelSettings non assigne!");
+            Debug.LogError("GameManager: SentinelSettings non assigné!");
             return;
         }
 
         if (player == null)
-            Debug.LogError("GameManager: PlayerPhysicsMovement non assigne!");
+            Debug.LogError("GameManager: PlayerPhysicsMovement non assigné!");
 
         if (playerHealth == null)
         {
             playerHealth = player != null ? player.GetComponent<PlayerHealth>() : null;
             if (playerHealth == null)
-                Debug.LogError("GameManager: PlayerHealth non trouve sur le joueur!");
+                Debug.LogError("GameManager: PlayerHealth non trouvé sur le joueur!");
+        }
+
+        if (sentinelCycleManager == null)
+        {
+            Debug.LogError("GameManager: SentinelCycleManager non assigné!");
         }
 
         audioSource = GetComponent<AudioSource>();
         Time.timeScale = 1f;
-
-        if (waitForStart)
-            gameStarted = false;
-        else
-        {
-            gameStarted = true;
-            StartNewCycle(GameState.GreenLight);
-        }
     }
 
     void Update()
     {
-        if (!gameStarted || sentinelSettings == null) return;
-
-        cycleTimer += Time.deltaTime;
-
-        if (currentState == GameState.Alert)
-        {
-            bool audioFinished = (audioSource != null && !audioSource.isPlaying) || (audioSource == null || sentinelSettings.alertSound == null);
-            if (audioFinished || cycleTimer >= sentinelSettings.alertDuration)
-            {
-                StartNewCycle(GameState.RedLight);
-                return;
-            }
+        if (sentinelCycleManager == null || !sentinelCycleManager.IsGameStarted() || sentinelSettings == null)
             return;
-        }
 
-        if (currentState == GameState.RedLight)
+        // Détection uniquement en RedLight
+        if (sentinelCycleManager.IsInRedLight())
         {
             detectionTimer += Time.deltaTime;
             if (detectionTimer >= sentinelSettings.redlightScanInterval)
@@ -159,24 +143,6 @@ public class GameManager : MonoBehaviour
                 detectionTimer = 0f;
                 CheckForMovingTargetsWithRaycast();
             }
-        }
-
-        if (currentState == GameState.Release)
-        {
-            if (cycleTimer >= sentinelSettings.releaseDuration)
-            {
-                StartNewCycle(GameState.GreenLight);
-                return;
-            }
-            return;
-        }
-
-        if (cycleTimer >= targetDuration)
-        {
-            if (currentState == GameState.GreenLight)
-                StartNewCycle(GameState.Alert);
-            else if (currentState == GameState.RedLight)
-                StartNewCycle(GameState.Release);
         }
     }
 
@@ -693,74 +659,10 @@ public class GameManager : MonoBehaviour
     // CYCLES DE JEU
     // ============================================
 
-    void StartNewCycle(GameState newState)
-    {
-        SetState(newState);
-        cycleTimer = 0f;
+    
+    
 
-        if (newState == GameState.GreenLight)
-        {
-            if (player != null) player.enabled = true;
-            targetDuration = sentinelSettings.GetRandomGreenlightDuration();
-            playerAlarmTriggered = false;
-            alreadyShot.Clear();
-            detectionTimer = 0f;
-            trackedTargets.Clear();
-            HideAllCircles();
-        }
-        else if (newState == GameState.Alert)
-        {
-            targetDuration = sentinelSettings.alertDuration;
-            if (audioSource != null && sentinelSettings.alertSound != null)
-                audioSource.PlayOneShot(sentinelSettings.alertSound);
-        }
-        else if (newState == GameState.RedLight)
-        {
-            targetDuration = sentinelSettings.GetRandomRedlightDuration();
-            alreadyShot.Clear();
-            playerAlarmTriggered = false;
-            if (audioSource != null && sentinelSettings.redlightSound != null)
-                audioSource.PlayOneShot(sentinelSettings.redlightSound);
-        }
-        else if (newState == GameState.Release)
-        {
-            targetDuration = sentinelSettings.releaseDuration;
-            if (audioSource != null && sentinelSettings.releaseSound != null)
-                audioSource.PlayOneShot(sentinelSettings.releaseSound);
-            FadeOutAllCircles();
-        }
-    }
-
-    void HideAllCircles()
-    {
-        foreach (SentinelTarget target in FindObjectsOfType<SentinelTarget>())
-            target.HideCircle();
-    }
-
-    void FadeOutAllCircles()
-    {
-        foreach (SentinelTarget target in FindObjectsOfType<SentinelTarget>())
-            target.FadeOutCircle(sentinelSettings.laserFadeOutDuration);
-    }
-
-    void SetState(GameState newState)
-    {
-        currentState = newState;
-        if (player != null)
-            player.isRedLight = (newState == GameState.RedLight);
-
-        if (sentinelLightRenderer != null)
-        {
-            if (newState == GameState.GreenLight)
-                sentinelLightRenderer.material = greenMaterial;
-            else if (newState == GameState.Alert)
-                sentinelLightRenderer.material = yellowMaterial != null ? yellowMaterial : redMaterial;
-            else if (newState == GameState.RedLight)
-                sentinelLightRenderer.material = redMaterial;
-            else if (newState == GameState.Release)
-                sentinelLightRenderer.material = greenMaterial;
-        }
-    }
+    
 
     public void RemoveFromAlreadyShot(GameObject target)
     {
@@ -769,13 +671,14 @@ public class GameManager : MonoBehaviour
 
     public void StartGameCycle()
     {
-        if (gameStarted) return;
-        gameStarted = true;
-        StartNewCycle(GameState.GreenLight);
+        if (sentinelCycleManager != null)
+        {
+            sentinelCycleManager.StartGameCycle();
+        }
     }
 
     public bool IsInRedLight()
     {
-        return currentState == GameState.RedLight;
+        return sentinelCycleManager != null && sentinelCycleManager.IsInRedLight();
     }
 }

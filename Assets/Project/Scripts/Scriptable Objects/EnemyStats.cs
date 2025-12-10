@@ -58,6 +58,7 @@ public class EnemyStats : ScriptableObject
     [Range(0.5f, 2f)]
     public float stealthDetectionMultiplier = 1f;
 
+
     [Header("BLINDER SETTINGS")]
     [Tooltip("Distance à laquelle le Blinder affiche sa barre de vie")]
     public float blinderHealthBarRange = 5f;
@@ -126,6 +127,7 @@ public class EnemyStats : ScriptableObject
     public float stunSprayDuration = 0.5f;
     [Tooltip("Durée d'immobilisation après backstab (secondes)")]
     public float backstabStunDuration = 0.8f;
+   
 
 
     [Header("SYSTÈME DE MEMBRES")]
