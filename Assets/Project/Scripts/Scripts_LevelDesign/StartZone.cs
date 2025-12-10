@@ -39,6 +39,10 @@ public class StartZone : MonoBehaviour
         if (other.GetComponent<PlayerPhysicsMovement>() != null)
         {
             playerInZone = false;
+            Debug.Log("Joueur sorti de la zone!");
+
+            // Activer montée caméra
+            FindObjectOfType<CameraPanningExtension>()?.OnPlayerExitStartZone();
         }
     }
 }

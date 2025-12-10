@@ -3,23 +3,41 @@ using Unity.Cinemachine;
 
 public class CameraPanningExtension : CinemachineExtension
 {
-    [Header("Lateral Panning")]
-    [SerializeField] private float lateralOffset = 2f;
-    [SerializeField] private float panSpeed = 10f;
-    [SerializeField] private float returnSpeed = 0f;
-
     [Header("Vertical Panning")]
     [SerializeField] private float verticalOffset = 5f;
     [SerializeField] private float verticalPanSpeed = 10f;
-    [SerializeField] private float verticalReturnSpeed = 0f;
+    [SerializeField] private float initialRiseDuration = 2f; // Durée montée initiale
 
-    [Header("Manual Reset")]
-    [SerializeField] private float resetSpeed = 5f;
-
-    [Header("Detection")]
+    [Header("Stick Down Settings")]
+    [SerializeField] private float lowCameraOffset = -5f; // Offset quand stick vers le bas
+    [SerializeField] private float stickDownDuration = 2f;
     [SerializeField] private float stickThreshold = 0.7f;
 
     private Vector3 currentPanOffset;
+    private bool isHighPosition = false;
+    private Transform playerTransform;
+
+    private void Start()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            playerTransform = player.transform;
+        }
+
+        // Initialiser à position normale (0)
+        currentPanOffset = Vector3.zero;
+        isHighPosition = false;
+
+        Debug.Log($"[CameraPanning] START - isHighPosition: {isHighPosition}, currentPanOffset: {currentPanOffset}");
+    }
+
+    // Méthode appelée par StartZone
+    public void OnPlayerExitStartZone()
+    {
+        Debug.Log("[CameraPanning] Player sorti de startzone - Montée caméra !");
+        isHighPosition = true;
+    }
 
     protected override void PostPipelineStageCallback(
         CinemachineVirtualCameraBase vcam,
@@ -30,56 +48,30 @@ public class CameraPanningExtension : CinemachineExtension
         if (stage == CinemachineCore.Stage.Body)
         {
             Vector2 lookInput = PlayerInputManager.Instance.LookInput;
-            Vector3 targetOffset = Vector3.zero;
-            bool isManualReset = false;
+            Vector3 targetOffset;
+            float speed;
 
-            // Detection directions discretes
-            if (lookInput.magnitude > stickThreshold)
+            if (isHighPosition)
             {
-                // BAS : stick en bas - reset position normale
+                targetOffset = Vector3.up * verticalOffset; // +5 par défaut
+
+                // Stick BAS = descendre vers offset bas
                 if (lookInput.y < -stickThreshold && Mathf.Abs(lookInput.x) < 0.5f)
                 {
-                    targetOffset = Vector3.zero;
-                    isManualReset = true;
-                }
-                // HAUT : stick en haut - camera monte de 5 en Y
-                else if (lookInput.y > stickThreshold && Mathf.Abs(lookInput.x) < 0.5f)
-                {
-                    targetOffset = Vector3.up * verticalOffset;
-                }
-                // GAUCHE : stick a gauche - camera va a DROITE
-                else if (lookInput.x < -stickThreshold && Mathf.Abs(lookInput.y) < 0.5f)
-                {
-                    Vector3 cameraRight = state.RawOrientation * Vector3.right;
-                    targetOffset = cameraRight * lateralOffset;
-                }
-                // DROITE : stick a droite - camera va a GAUCHE
-                else if (lookInput.x > stickThreshold && Mathf.Abs(lookInput.y) < 0.5f)
-                {
-                    Vector3 cameraRight = state.RawOrientation * Vector3.right;
-                    targetOffset = -cameraRight * lateralOffset;
-                }
-            }
-
-            // Choix de la vitesse
-            float speed;
-            if (isManualReset)
-            {
-                speed = resetSpeed;
-            }
-            else
-            {
-                bool isVerticalMovement = Mathf.Abs(targetOffset.y) > 0.01f;
-                bool isMoving = targetOffset.magnitude > 0.01f;
-
-                if (isVerticalMovement)
-                {
-                    speed = isMoving ? verticalPanSpeed : verticalReturnSpeed;
+                    targetOffset = Vector3.up * lowCameraOffset; // Vers offset bas (ex: -5)
+                    speed = 1f / stickDownDuration;
                 }
                 else
                 {
-                    speed = isMoving ? panSpeed : returnSpeed;
+                    // Montée initiale OU retour à position haute
+                    speed = 1f / initialRiseDuration;
                 }
+            }
+            else
+            {
+                // Avant de quitter startzone : position normale (0)
+                targetOffset = Vector3.zero;
+                speed = verticalPanSpeed;
             }
 
             currentPanOffset = Vector3.Lerp(currentPanOffset, targetOffset, speed * deltaTime);
