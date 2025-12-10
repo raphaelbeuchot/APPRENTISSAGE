@@ -26,8 +26,8 @@ MonoBehaviour:
   rotationSpeed: 3
   crawlSpeed: 0.2
   speedReductionPerHealthPercent: 0.3
-  detectionRadius: 5
-  detectionAngle: 120
+  detectionRadius: 4
+  detectionAngle: 170
   detectionCheckInterval: 0.5
   targetLayer:
     serializedVersion: 2
@@ -54,7 +54,9 @@ MonoBehaviour:
   spitProjectilePrefab: {fileID: 0}
   bourradeDuration: 2
   bourradeCooldown: 1
+  cumulativeStunPerSpray: 0.3
   stunSprayDuration: 0.5
+  sprayWindowDuration: 0.7
   backstabStunDuration: 0.8
   startingArmCount: 2
   startingLegCount: 2
