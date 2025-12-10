@@ -335,7 +335,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 376458153215030046, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.3052187
+      value: 8.47
       objectReference: {fileID: 0}
     - target: {fileID: 376458153215030046, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
       propertyPath: m_LocalPosition.y
@@ -343,7 +343,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 376458153215030046, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.6203554
+      value: 3.47
       objectReference: {fileID: 0}
     - target: {fileID: 376458153215030046, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
       propertyPath: m_LocalRotation.w
@@ -379,7 +379,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1041072715850459556, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2088849389000439517, guid: fad2940ea92745e4fb4a4db2c08af968, type: 3}
       propertyPath: deathByPit
@@ -2565,6 +2565,10 @@ PrefabInstance:
     - target: {fileID: 485149489708715402, guid: 52c40c7023c607e448890dc1ea4ed9c0, type: 3}
       propertyPath: m_Name
       value: BlinderZombie01
+      objectReference: {fileID: 0}
+    - target: {fileID: 485149489708715402, guid: 52c40c7023c607e448890dc1ea4ed9c0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1004382222917867312, guid: 52c40c7023c607e448890dc1ea4ed9c0, type: 3}
       propertyPath: m_LocalPosition.x
@@ -23023,7 +23027,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1361275052}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.014008273, y: 0.039881237, z: 0.0005177043, w: 0.9991061}
+  m_LocalRotation: {x: 0.013998304, y: 0.055718448, z: 0.00073976006, w: 0.9983481}
   m_LocalPosition: {x: 3.676022, y: 2.4291208, z: -7.8542833}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -28548,6 +28552,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56d5810ad60215d41995cf7955fd9429, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  sentinelCycleManager: {fileID: 2103414916}
   sentinelSettings: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
   player: {fileID: 882987306}
   sentinel: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
@@ -28560,7 +28565,6 @@ MonoBehaviour:
   waitForStart: 1
   stunBySentinel: 0
   zombieStunBySentinel: 0
-  currentState: 0
 --- !u!4 &1801742137
 Transform:
   m_ObjectHideFlags: 0
@@ -33549,18 +33553,18 @@ MonoBehaviour:
   greenMaterial: {fileID: 2100000, guid: c3f62546bd148f542a6789f719c0c83c, type: 2}
   redMaterial: {fileID: 2100000, guid: 23d8ea2022ab1654c87fc6d911610a35, type: 2}
   yellowMaterial: {fileID: 2100000, guid: 9c0666d93dcf41740ba7ff45298dcdcd, type: 2}
-  alertSound1: {fileID: 0}
-  alertSound2: {fileID: 0}
-  alertSound3: {fileID: 0}
-  finalAlertSound: {fileID: 0}
+  alertSound1: {fileID: 8300000, guid: df2188598ec6e8e41b2eb5932f8f06d4, type: 3}
+  alertSound2: {fileID: 8300000, guid: df2188598ec6e8e41b2eb5932f8f06d4, type: 3}
+  alertSound3: {fileID: 8300000, guid: df2188598ec6e8e41b2eb5932f8f06d4, type: 3}
+  finalAlertSound: {fileID: 8300000, guid: be69f9297e20a4e47b523cdb2db62d45, type: 3}
   minAlertDistance: 5
   startZoneTransform: {fileID: 1547379118}
-  minTotalAlertDuration: 0.5
-  maxTotalAlertDuration: 3
-  soundDurationRandomnessMin: -0.05
-  soundDurationRandomnessMax: 0.1
-  finalDelayMin: 0.2
-  finalDelayMax: 1.5
+  minBaseDelay: 0.3
+  maxBaseDelay: 1.5
+  delayRandomnessMin: -0.1
+  delayRandomnessMax: 0.2
+  delay3MinRandom: 0
+  delay3MaxRandom: 0.4
   playerTransform: {fileID: 882987295}
   currentState: 0
 --- !u!4 &2103414917

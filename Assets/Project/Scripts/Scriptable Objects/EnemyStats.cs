@@ -122,9 +122,11 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Durée du cooldown après bourrade")]
     public float bourradeCooldown = 2f;
 
-    [Header("SPRAY STUN")]
-    [Tooltip("Durée du stun causé par spray (secondes)")]
+    [Header("Spray Stun System")]
+    public float cumulativeStunPerSpray = 0.3f;
     public float stunSprayDuration = 0.5f;
+    public float sprayWindowDuration = 0.7f; // Durée fenêtre pour cumuler sprays
+
     [Tooltip("Durée d'immobilisation après backstab (secondes)")]
     public float backstabStunDuration = 0.8f;
    

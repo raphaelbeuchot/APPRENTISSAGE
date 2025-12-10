@@ -37,8 +37,12 @@ public class EnemyHealth : MonoBehaviour
     public EnemyHealthBarUI healthBarUI;
     private EnemyHealthBarManager healthBarManager;
 
-    // Spray stun system
-    private float sprayStunTimeRemaining = 0f;
+    // NOUVEAU : Spray stun system 2 phases
+    private bool isInSprayWindow = false;
+    private float sprayWindowTimer = 0f;
+    private int sprayCount = 0;
+    private float finalStunTimer = 0f;
+    private float cumulativeStunPerSpray;
 
     void Awake()
     {
@@ -60,6 +64,7 @@ public class EnemyHealth : MonoBehaviour
         }
 
         currentHealth = stats.maxHealth;
+        cumulativeStunPerSpray = stats.cumulativeStunPerSpray; // AJOUTE CETTE LIGNE
         SetupDeathEffect();
         SetupHealthBar();
     }
@@ -113,14 +118,31 @@ public class EnemyHealth : MonoBehaviour
     {
         if (isDead) return;
 
-        // Décompte spray stun timer
-        if (sprayStunTimeRemaining > 0f)
+        // NOUVEAU : Système spray 2 phases
+        if (isInSprayWindow)
         {
-            sprayStunTimeRemaining -= Time.deltaTime;
-            if (sprayStunTimeRemaining <= 0f)
+            // Phase 1 : Fenêtre de spray
+            sprayWindowTimer -= Time.deltaTime;
+
+            if (sprayWindowTimer <= 0f)
             {
-                sprayStunTimeRemaining = 0f;
-                Debug.Log($"{gameObject.name} spray stun timer ended");
+                // Timer expiré : passer en phase 2 (stun final)
+                sprayWindowTimer = 0f;
+                isInSprayWindow = false;
+                finalStunTimer = sprayCount * cumulativeStunPerSpray;
+
+                Debug.Log($"{gameObject.name} fenêtre expirée - {sprayCount} sprays reçus  Stun final {finalStunTimer}s");
+            }
+        }
+        else if (finalStunTimer > 0f)
+        {
+            // Phase 2 : Stun final
+            finalStunTimer -= Time.deltaTime;
+
+            if (finalStunTimer <= 0f)
+            {
+                finalStunTimer = 0f;
+                Debug.Log($"{gameObject.name} stun final terminé");
             }
         }
 
@@ -306,7 +328,7 @@ public class EnemyHealth : MonoBehaviour
 
         isRecovering = true;
 
-        // NOUVEAU : Utiliser A* AIPath au lieu de NavMeshAgent
+        // NOUVEAU : Utiliser A AIPath au lieu de NavMeshAgent
         Pathfinding.AIPath aiPath = GetComponent<Pathfinding.AIPath>();
         EnemyAI_AStar zombieAI = GetComponent<EnemyAI_AStar>(); // CORRIGE : _AStar
 
@@ -320,7 +342,7 @@ public class EnemyHealth : MonoBehaviour
         if (aiPath != null)
         {
             originalSpeed = aiPath.maxSpeed;
-            aiPath.canMove = false;   // Stop la navigation A*
+            aiPath.canMove = false;   // Stop la navigation A
         }
 
         if (zombieAI != null)
@@ -526,23 +548,44 @@ public class EnemyHealth : MonoBehaviour
         return currentHealth > 0f;
     }
 
-    public float GetSprayStunTimeRemaining()
+    public void StartSprayWindow(float windowDuration)
     {
-        return sprayStunTimeRemaining;
+        isInSprayWindow = true;
+        sprayWindowTimer = windowDuration;
+        sprayCount = 1;
+        finalStunTimer = 0f;
+
+        Debug.Log($"{gameObject.name} START spray window - count=1, window={windowDuration}s");
     }
 
-    public void SetSprayStunTime(float time)
+    public void ExtendSprayWindow(float windowDuration)
     {
-        sprayStunTimeRemaining = time;
-    }
+        if (isInSprayWindow)
+        {
+            sprayWindowTimer = windowDuration; // Repousse le timer
+            sprayCount++;
 
-    public void AddSprayStunTime(float time)
-    {
-        sprayStunTimeRemaining += time;
+            Debug.Log($"{gameObject.name} EXTEND spray window - count={sprayCount}, window reset to {windowDuration}s");
+        }
+        else
+        {
+            // Au cas où on spray pendant le stun final (edge case)
+            StartSprayWindow(windowDuration);
+        }
     }
     public bool IsRecovering() => isRecovering;
     public float GetCurrentHealth() => currentHealth;
     public float GetMaxHealth() => stats.maxHealth;
     public float GetHealthPercentage() => currentHealth / stats.maxHealth;
+
+    public float GetSprayStunTimeRemaining()
+    {
+        if (isInSprayWindow)
+            return sprayWindowTimer;
+        else
+            return finalStunTimer;
+    }
+
+    
     public int GetArmCount() => 2;
 }

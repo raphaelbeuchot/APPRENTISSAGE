@@ -37,17 +37,14 @@ public class PitGridData : ScriptableObject
         cells.Clear();
         cellOwnership.Clear();
 
-        Debug.Log("=== LOADING GRID DATA ==="); // DEBUG
-        Debug.Log("Serialized cells count: " + serializedCells.Count); // DEBUG
+        
 
         foreach (CellData data in serializedCells)
         {
             cells[data.position] = data.depth;
             cellOwnership[data.position] = data.ownerZoneID;
-            Debug.Log("Loaded cell " + data.position + " owner: " + data.ownerZoneID); // DEBUG
         }
 
-        Debug.Log("Total ownership entries: " + cellOwnership.Count); // DEBUG
     }
 
     private void SaveToSerialized()

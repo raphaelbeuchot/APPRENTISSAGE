@@ -63,6 +63,9 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Cooldown entre deux attaques (en secondes)")]
     public float attackCooldown = 0.5f;
 
+    [Header("Backstab")]
+    public float backstabConeAngle = 60f; // Cone arrière (en degrés)
+
     [Header("SPRAY SYSTEM")]
     [Tooltip("Munitions max du spray")]
     public int maxSprayAmmo = 10;
