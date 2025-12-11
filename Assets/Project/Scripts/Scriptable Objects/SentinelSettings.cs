@@ -138,6 +138,29 @@ public class SentinelSettings : ScriptableObject
     [Tooltip("Distance a laquelle on commence a reduire les offsets")]
     public float cameraTransitionRange = 20f;
 
+    [Header("Alert Sounds - Beethoven Pattern")]
+    public AudioClip alertSound1;      // Son 1 "pam"
+    public AudioClip alertSound2;      // Son 2 "pam"
+    public AudioClip alertSound3;      // Son 3 "pam"
+    public AudioClip finalAlertSound;  // Son 4 "PAAAAM"
+
+    [Header("Alert Delays - Tranche 1 (75-100% Dmax) - Loin")]
+    public float tranche1_delay = 1.5f;  // Les 3 délais identiques
+
+    [Header("Alert Delays - Tranche 2 (50-75% Dmax)")]
+    public float tranche2_delay12 = 1.0f;        // Délais 1 et 2 fixes
+    public float tranche2_delay3Min = 0.7f;      // Délai 3 random min
+    public float tranche2_delay3Max = 1.2f;      // Délai 3 random max
+
+    [Header("Alert Delays - Tranche 3 (25-50% Dmax)")]
+    public float tranche3_delay12Min = 0.5f;     // Délais 1&2 random min
+    public float tranche3_delay12Max = 1.0f;     // Délais 1&2 random max
+    public float tranche3_delay3Min = 0.5f;      // Délai 3 random min
+    public float tranche3_delay3Max = 1.0f;      // Délai 3 random max
+
+    [Header("Alert Delays - Tranche 4 (0-25% Dmax) - Proche")]
+    public float tranche4_delay = 0.5f;  // Les 3 délais identiques
+
     public enum SentinelType { Main, Small, Multiple }
 
     public float GetRandomGreenlightDuration()

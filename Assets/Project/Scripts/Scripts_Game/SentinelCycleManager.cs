@@ -17,35 +17,13 @@ public class SentinelCycleManager : MonoBehaviour
     [Header("Audio")]
     private AudioSource audioSource;
 
-    [Header("Alert System - Beethoven Pattern")]
-    [SerializeField] private AudioClip alertSound1;      // Son 1 "pam"
-    [SerializeField] private AudioClip alertSound2;      // Son 2 "pam"
-    [SerializeField] private AudioClip alertSound3;      // Son 3 "pam"
-    [SerializeField] private AudioClip finalAlertSound;  // Son 4 "PAAAAM"
-
-    [Header("Alert Distance System - 4 Tranches")]
-    [SerializeField] private Transform startZoneTransform;  // Point Dmax
-
-    [Header("Tranche 1 (0-25% Dmax) - Loin sentinelle")]
-    [SerializeField] private float tranche1_delay = 1.5f;  // Les 3 délais identiques
-
-    [Header("Tranche 2 (25-50% Dmax)")]
-    [SerializeField] private float tranche2_delay12 = 1.0f;        // Délais 1 et 2 fixes
-    [SerializeField] private float tranche2_delay3Min = 0.7f;      // Délai 3 random min
-    [SerializeField] private float tranche2_delay3Max = 1.2f;      // Délai 3 random max
-
-    [Header("Tranche 3 (50-75% Dmax)")]
-    [SerializeField] private float tranche3_delay12Min = 0.5f;     // Délais 1&2 random min
-    [SerializeField] private float tranche3_delay12Max = 1.0f;     // Délais 1&2 random max
-    [SerializeField] private float tranche3_delay3Min = 0.5f;      // Délai 3 random min
-    [SerializeField] private float tranche3_delay3Max = 1.0f;      // Délai 3 random max
-
-    [Header("Tranche 4 (75-100% Dmax) - Très proche sentinelle")]
-    [SerializeField] private float tranche4_delay = 0.5f;  // Les 3 délais identiques
+      
 
     [Header("References")]
     public Transform playerTransform;
     public Transform sentinelTransform;
+    [SerializeField] private Transform startZoneTransform;
+
 
     [Header("State")]
     public GameState currentState = GameState.GreenLight;
@@ -166,67 +144,65 @@ public class SentinelCycleManager : MonoBehaviour
 
         if (percentage >= 75f)
         {
-            // TRANCHE 1 (75-100%) - Loin sentinelle, début niveau
-            delay1 = tranche1_delay;
-            delay2 = tranche1_delay;
-            delay3 = tranche1_delay;
+            // AVANT : delay1 = tranche1_delay;
+            // APRES :
+            delay1 = sentinelSettings.tranche1_delay;
+            delay2 = sentinelSettings.tranche1_delay;
+            delay3 = sentinelSettings.tranche1_delay;
             Debug.Log($"[BEETHOVEN] TRANCHE 1 (loin) - Délais identiques: {delay1}s");
         }
         else if (percentage >= 50f)
         {
-            // TRANCHE 2 (50-75%)
-            delay1 = tranche2_delay12;
-            delay2 = tranche2_delay12;
-            delay3 = Random.Range(tranche2_delay3Min, tranche2_delay3Max);
+            delay1 = sentinelSettings.tranche2_delay12;
+            delay2 = sentinelSettings.tranche2_delay12;
+            delay3 = Random.Range(sentinelSettings.tranche2_delay3Min, sentinelSettings.tranche2_delay3Max);
             Debug.Log($"[BEETHOVEN] TRANCHE 2 - Délai 1&2: {delay1}s, Délai 3 random: {delay3:F2}s");
         }
         else if (percentage >= 25f)
         {
-            // TRANCHE 3 (25-50%)
-            float randomDelay12 = Random.Range(tranche3_delay12Min, tranche3_delay12Max);
+            float randomDelay12 = Random.Range(sentinelSettings.tranche3_delay12Min, sentinelSettings.tranche3_delay12Max);
             delay1 = randomDelay12;
             delay2 = randomDelay12;
-            delay3 = Random.Range(tranche3_delay3Min, tranche3_delay3Max);
+            delay3 = Random.Range(sentinelSettings.tranche3_delay3Min, sentinelSettings.tranche3_delay3Max);
             Debug.Log($"[BEETHOVEN] TRANCHE 3 - Délai 1&2 random: {delay1:F2}s, Délai 3 random: {delay3:F2}s");
         }
         else
         {
-            // TRANCHE 4 (0-25%) - Très proche sentinelle
-            delay1 = tranche4_delay;
-            delay2 = tranche4_delay;
-            delay3 = tranche4_delay;
+            delay1 = sentinelSettings.tranche4_delay;
+            delay2 = sentinelSettings.tranche4_delay;
+            delay3 = sentinelSettings.tranche4_delay;
             Debug.Log($"[BEETHOVEN] TRANCHE 4 (proche) - Délais identiques: {delay1}s");
         }
 
         // 6. Jouer la séquence Beethoven
-        // SON 1 - PAM
-        if (alertSound1 != null)
+        // SON 1
+        if (sentinelSettings.alertSound1 != null)
         {
-            audioSource.PlayOneShot(alertSound1);
+            audioSource.PlayOneShot(sentinelSettings.alertSound1);
             Debug.Log($"[BEETHOVEN] Son 1 - Attente {delay1:F2}s");
             yield return new WaitForSeconds(delay1);
         }
 
-        // SON 2 - PAM
-        if (alertSound2 != null)
+        // SON 2
+        if (sentinelSettings.alertSound2 != null)
         {
-            audioSource.PlayOneShot(alertSound2);
+            audioSource.PlayOneShot(sentinelSettings.alertSound2);
             Debug.Log($"[BEETHOVEN] Son 2 - Attente {delay2:F2}s");
             yield return new WaitForSeconds(delay2);
         }
 
-        // SON 3 - PAM
-        if (alertSound3 != null)
+        // SON 3
+        if (sentinelSettings.alertSound3 != null)
         {
-            audioSource.PlayOneShot(alertSound3);
+            audioSource.PlayOneShot(sentinelSettings.alertSound3);
             Debug.Log($"[BEETHOVEN] Son 3 - Attente {delay3:F2}s");
             yield return new WaitForSeconds(delay3);
         }
 
-        // SON 4 LONG - PAAAAM - DEBUT REDLIGHT
-        if (finalAlertSound != null)
+        // SON 4 FINAL
+        if (sentinelSettings.finalAlertSound != null)
         {
-            audioSource.PlayOneShot(finalAlertSound);
+            audioSource.PlayOneShot(sentinelSettings.finalAlertSound);
             Debug.Log("[BEETHOVEN] Son final - PAAAAM !");
         }
 
