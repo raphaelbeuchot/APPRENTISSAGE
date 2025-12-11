@@ -170,6 +170,24 @@ public class BroomAttackSystem : MonoBehaviour
                 continue;
             }
 
+            // ========== LINE-OF-SIGHT CHECK ==========
+            Vector3 rayOrigin = transform.position + Vector3.up * 0.5f; // Depuis ton torse
+            Vector3 targetPoint = hit.bounds.center; // Vers le centre du collider
+            Vector3 directionToTarget3D = (targetPoint - rayOrigin).normalized;
+            float distance = Vector3.Distance(rayOrigin, targetPoint);
+
+            RaycastHit hitInfo;
+            if (Physics.Raycast(rayOrigin,
+                                directionToTarget3D,
+                                out hitInfo,
+                                distance,
+                                LayerMask.GetMask("Obstacle")))
+            {
+                Debug.Log($"[BROOM] {hit.name} est derrière un obstacle, ignoré");
+                continue;
+            }
+            // ========== FIN LINE-OF-SIGHT CHECK ==========
+
             // ZOMBIES
             EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
             if (enemyHealth != null && !enemyHealth.IsDead())

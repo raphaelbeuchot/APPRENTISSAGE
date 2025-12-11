@@ -23,22 +23,29 @@ public class SentinelCycleManager : MonoBehaviour
     [SerializeField] private AudioClip alertSound3;      // Son 3 "pam"
     [SerializeField] private AudioClip finalAlertSound;  // Son 4 "PAAAAM"
 
-    [Header("Alert Distance Scaling")]
-    [SerializeField] private float minAlertDistance = 5f;              // Distance min sentinelle
-    [SerializeField] private Transform startZoneTransform;             // Distance max
+    [Header("Alert Distance System - 4 Tranches")]
+    [SerializeField] private Transform startZoneTransform;  // Point Dmax
 
-    [Header("Alert Delay 1 & 2 - Distance Based")]
-    [SerializeField] private float minBaseDelay = 0.3f;           // Delai si proche sentinelle
-    [SerializeField] private float maxBaseDelay = 1.5f;           // Delai si loin sentinelle
-    [SerializeField] private float delayRandomnessMin = -0.1f;    // Petite variation
-    [SerializeField] private float delayRandomnessMax = 0.2f;     // Petite variation
+    [Header("Tranche 1 (0-25% Dmax) - Loin sentinelle")]
+    [SerializeField] private float tranche1_delay = 1.5f;  // Les 3 délais identiques
 
-    [Header("Alert Delay 3 - Psycho Random")]
-    [SerializeField] private float delay3MinRandom = 0.5f;   // Delai 3 min si proche
-    [SerializeField] private float delay3MaxRandom = 2.0f;   // Delai 3 max si proche
+    [Header("Tranche 2 (25-50% Dmax)")]
+    [SerializeField] private float tranche2_delay12 = 1.0f;        // Délais 1 et 2 fixes
+    [SerializeField] private float tranche2_delay3Min = 0.7f;      // Délai 3 random min
+    [SerializeField] private float tranche2_delay3Max = 1.2f;      // Délai 3 random max
+
+    [Header("Tranche 3 (50-75% Dmax)")]
+    [SerializeField] private float tranche3_delay12Min = 0.5f;     // Délais 1&2 random min
+    [SerializeField] private float tranche3_delay12Max = 1.0f;     // Délais 1&2 random max
+    [SerializeField] private float tranche3_delay3Min = 0.5f;      // Délai 3 random min
+    [SerializeField] private float tranche3_delay3Max = 1.0f;      // Délai 3 random max
+
+    [Header("Tranche 4 (75-100% Dmax) - Très proche sentinelle")]
+    [SerializeField] private float tranche4_delay = 0.5f;  // Les 3 délais identiques
 
     [Header("References")]
     public Transform playerTransform;
+    public Transform sentinelTransform;
 
     [Header("State")]
     public GameState currentState = GameState.GreenLight;
@@ -138,58 +145,81 @@ public class SentinelCycleManager : MonoBehaviour
     {
         Debug.Log("[BEETHOVEN ALERT] Debut de la sequence");
 
-        // Calcul distance joueur-sentinelle
-        float distanceToPlayer = playerTransform != null
-            ? Vector3.Distance(transform.position, playerTransform.position)
-            : 25f;
+        // 1. Calculer Ps (projection sentinelle au sol)
+        Vector3 sentinelGroundPos = new Vector3(sentinelTransform.position.x, 0f, sentinelTransform.position.z);
 
-        float maxDistance = startZoneTransform != null
-            ? Vector3.Distance(transform.position, startZoneTransform.position)
-            : 50f;
+        // 2. Calculer D (distance player - Ps)
+        Vector3 playerGroundPos = new Vector3(playerTransform.position.x, 0f, playerTransform.position.z);
+        float D = Vector3.Distance(playerGroundPos, sentinelGroundPos);
 
-        // Normaliser distance entre 0 (proche) et 1 (loin)
-        float normalizedDistance = Mathf.InverseLerp(minAlertDistance, maxDistance, distanceToPlayer);
-        normalizedDistance = Mathf.Clamp01(normalizedDistance);
+        // 3. Calculer Dmax (distance startZone - Ps)
+        Vector3 startZoneGroundPos = new Vector3(startZoneTransform.position.x, 0f, startZoneTransform.position.z);
+        float Dmax = Vector3.Distance(startZoneGroundPos, sentinelGroundPos);
 
-        // Calculer delai de base selon distance
-        // Proche (0) = minBaseDelay, Loin (1) = maxBaseDelay
-        float baseDelay = Mathf.Lerp(minBaseDelay, maxBaseDelay, normalizedDistance);
+        // 4. Calculer pourcentage (0% = loin sentinelle, 100% = collé sentinelle)
+        float percentage = (D / Dmax) * 100f;
 
-        Debug.Log($"[BEETHOVEN] Distance: {distanceToPlayer:F1}m, Normalized: {normalizedDistance:F2}, Base Delay: {baseDelay:F2}s");
+        Debug.Log($"[BEETHOVEN] D={D:F1}m, Dmax={Dmax:F1}m, Pourcentage={percentage:F1}%");
 
-        // DELAIS 1 et 2 : Identiques, bases sur distance + petite variation
-        float delay1and2 = baseDelay;
+        // 5. Déterminer les délais selon la tranche
+        float delay1, delay2, delay3;
 
-        // DELAI 3 : Mixe entre stable (loin) et tres random (proche)
-        float stableDelay3 = baseDelay + Random.Range(delayRandomnessMin, delayRandomnessMax);
-        float randomDelay3 = Random.Range(delay3MinRandom, delay3MaxRandom);
+        if (percentage >= 75f)
+        {
+            // TRANCHE 1 (75-100%) - Loin sentinelle, début niveau
+            delay1 = tranche1_delay;
+            delay2 = tranche1_delay;
+            delay3 = tranche1_delay;
+            Debug.Log($"[BEETHOVEN] TRANCHE 1 (loin) - Délais identiques: {delay1}s");
+        }
+        else if (percentage >= 50f)
+        {
+            // TRANCHE 2 (50-75%)
+            delay1 = tranche2_delay12;
+            delay2 = tranche2_delay12;
+            delay3 = Random.Range(tranche2_delay3Min, tranche2_delay3Max);
+            Debug.Log($"[BEETHOVEN] TRANCHE 2 - Délai 1&2: {delay1}s, Délai 3 random: {delay3:F2}s");
+        }
+        else if (percentage >= 25f)
+        {
+            // TRANCHE 3 (25-50%)
+            float randomDelay12 = Random.Range(tranche3_delay12Min, tranche3_delay12Max);
+            delay1 = randomDelay12;
+            delay2 = randomDelay12;
+            delay3 = Random.Range(tranche3_delay3Min, tranche3_delay3Max);
+            Debug.Log($"[BEETHOVEN] TRANCHE 3 - Délai 1&2 random: {delay1:F2}s, Délai 3 random: {delay3:F2}s");
+        }
+        else
+        {
+            // TRANCHE 4 (0-25%) - Très proche sentinelle
+            delay1 = tranche4_delay;
+            delay2 = tranche4_delay;
+            delay3 = tranche4_delay;
+            Debug.Log($"[BEETHOVEN] TRANCHE 4 (proche) - Délais identiques: {delay1}s");
+        }
 
-        // normalizedDistance = 1 (loin) = stable, 0 (proche) = random
-        float delay3 = Mathf.Lerp(randomDelay3, stableDelay3, normalizedDistance);
-
-        Debug.Log($"[BEETHOVEN] Delay1&2: {delay1and2:F2}s, Delay3: {delay3:F2}s (stable={stableDelay3:F2}s, random={randomDelay3:F2}s)");
-
+        // 6. Jouer la séquence Beethoven
         // SON 1 - PAM
         if (alertSound1 != null)
         {
             audioSource.PlayOneShot(alertSound1);
-            Debug.Log($"[BEETHOVEN] Son 1 - Delai 1: {delay1and2:F2}s");
-            yield return new WaitForSeconds(delay1and2);
+            Debug.Log($"[BEETHOVEN] Son 1 - Attente {delay1:F2}s");
+            yield return new WaitForSeconds(delay1);
         }
 
         // SON 2 - PAM
         if (alertSound2 != null)
         {
             audioSource.PlayOneShot(alertSound2);
-            Debug.Log($"[BEETHOVEN] Son 2 - Delai 2: {delay1and2:F2}s (identique au delai 1)");
-            yield return new WaitForSeconds(delay1and2);
+            Debug.Log($"[BEETHOVEN] Son 2 - Attente {delay2:F2}s");
+            yield return new WaitForSeconds(delay2);
         }
 
         // SON 3 - PAM
         if (alertSound3 != null)
         {
             audioSource.PlayOneShot(alertSound3);
-            Debug.Log($"[BEETHOVEN] Son 3 - Delai 3 PSYCHO: {delay3:F2}s");
+            Debug.Log($"[BEETHOVEN] Son 3 - Attente {delay3:F2}s");
             yield return new WaitForSeconds(delay3);
         }
 
