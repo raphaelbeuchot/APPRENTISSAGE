@@ -49,19 +49,11 @@ public class StaminaBarFollower : MonoBehaviour
 
     void Update()
     {
-        FaceCamera();
         UpdateStaminaBar();
         UpdateVisibility();
     }
 
-    void FaceCamera()
-    {
-        if (mainCamera == null) return;
-
-        // Faire face a la camera
-        transform.LookAt(transform.position + mainCamera.transform.rotation * Vector3.forward,
-                         mainCamera.transform.rotation * Vector3.up);
-    }
+    
 
     void UpdateStaminaBar()
     {
