@@ -72,13 +72,17 @@ public class EnemyHealth : MonoBehaviour
     void SetupHealthBar()
     {
         healthBarManager = FindObjectOfType<EnemyHealthBarManager>();
-        if (healthBarManager != null)
+        if (healthBarManager != null && healthBarManager.canvas != null && healthBarManager.healthBarPrefab != null)
         {
-            GameObject barGO = Instantiate(healthBarManager.healthBarPrefab, healthBarManager.transform);
+            GameObject barGO = Instantiate(healthBarManager.healthBarPrefab, healthBarManager.canvas.transform);
             healthBarUI = barGO.GetComponent<EnemyHealthBarUI>();
             healthBarManager.RegisterEnemy(transform, healthBarUI);
             healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
-            healthBarUI.gameObject.SetActive(false);
+            healthBarUI.Hide();
+        }
+        else
+        {
+            Debug.LogWarning($"SetupHealthBar failed on {gameObject.name}");
         }
     }
 
