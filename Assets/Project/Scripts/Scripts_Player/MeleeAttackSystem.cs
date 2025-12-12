@@ -625,6 +625,8 @@ public class MeleeAttackSystem : MonoBehaviour
 
     bool CanThrowBottle()
     {
+        Debug.Log($"CanThrowBottle check: bottleThrown={bottleThrown}, lockSystem={lockSystem != null}, IsLocked={lockSystem?.IsLocked}, grabState={movement?.grabState}");
+
         if (bottleThrown)
         {
             Debug.Log("Cannot throw: bottle already thrown!");
@@ -691,10 +693,10 @@ public class MeleeAttackSystem : MonoBehaviour
             }
 
             // Stun + force chase
-            EnemyAI enemyAI = enemy.GetComponent<EnemyAI>();
-            if (enemyAI != null)
+            EnemyAI_AStar enemyAI_AStar = enemy.GetComponent<EnemyAI_AStar>();
+            if (enemyAI_AStar != null)
             {
-                StartCoroutine(StunAndChaseEnemy(enemyAI));
+                StartCoroutine(StunAndChaseEnemy_AStar(enemyAI_AStar));
             }
 
             // Spawn bottle au sol pres de l'ennemi
@@ -748,6 +750,38 @@ public class MeleeAttackSystem : MonoBehaviour
         {
             agent.isStopped = false;
             agent.SetDestination(player.transform.position);
+        }
+
+        Debug.Log(enemyAI.gameObject.name + " is now chasing after bottle hit!");
+    }
+
+    System.Collections.IEnumerator StunAndChaseEnemy_AStar(EnemyAI_AStar enemyAI)
+    {
+        enemyAI.canMove = false;
+        Pathfinding.AIPath aiPath = enemyAI.GetComponent<Pathfinding.AIPath>();
+        if (aiPath != null)
+        {
+            aiPath.canMove = false;
+        }
+
+        yield return new WaitForSeconds(stats.bottleStunDuration);
+
+        PlayerPhysicsMovement player = FindObjectOfType<PlayerPhysicsMovement>();
+        if (player != null)
+        {
+            enemyAI.targetHuman = player.transform;
+            enemyAI.currentState = EnemyAI_AStar.State.Chasing;
+            enemyAI.isForcedChase = true;
+        }
+
+        enemyAI.canMove = true;
+        if (aiPath != null)
+        {
+            aiPath.canMove = true;
+            if (player != null)
+            {
+                aiPath.destination = player.transform.position;
+            }
         }
 
         Debug.Log(enemyAI.gameObject.name + " is now chasing after bottle hit!");
