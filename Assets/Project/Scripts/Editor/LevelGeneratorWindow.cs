@@ -389,6 +389,24 @@ public class LevelGeneratorWindow : EditorWindow
         // Assigner gameManager au CountdownManager (on le fera après avoir créé GameManager)
         // Pour l'instant on note qu'il faudra le faire
 
+        // === CAMERA SYSTEM ===
+
+        // Charger le prefab Camera
+        GameObject cameraPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+            "Assets/Project/Prefabs/Camera/Camera_Prefab.prefab");
+
+        if (cameraPrefab != null)
+        {
+            GameObject cameraSystem = PrefabUtility.InstantiatePrefab(cameraPrefab) as GameObject;
+            cameraSystem.transform.SetParent(cameraFolder.transform);
+            cameraSystem.transform.position = Vector3.zero;
+
+            Debug.Log("<color=cyan>Camera System instancié</color>");
+        }
+        else
+        {
+            Debug.LogWarning("Prefab Camera_Prefab non trouvé dans Prefabs/Camera/ !");
+        }
 
         // === UI ===
 

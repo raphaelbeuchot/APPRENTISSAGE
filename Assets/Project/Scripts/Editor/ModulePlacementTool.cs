@@ -13,9 +13,11 @@ public class ModulePlacementTool
         Area
     }
 
-    // État du tool
+    // Etat du tool
     private static bool isActive = false;
-    private static GameObject selectedPrefab = null;
+
+    private static List<GameObject> selectedPrefabs = new List<GameObject>();
+    private static GameObject currentPrefab = null; // Prefab utilise pour le preview
     private static GameObject previewInstance = null;
     private static PlacementMode currentMode = PlacementMode.Single;
 
@@ -37,18 +39,43 @@ public class ModulePlacementTool
         SceneView.duringSceneGui += OnSceneGUI;
     }
 
-    public static void ActivateTool(GameObject prefab, PlacementMode mode = PlacementMode.Single)
+    public static void ActivateTool(List<GameObject> prefabs, PlacementMode mode = PlacementMode.Single)
     {
-        if (prefab == null) return;
+        if (prefabs == null || prefabs.Count == 0) return;
 
-        selectedPrefab = prefab;
+        selectedPrefabs = new List<GameObject>(prefabs);
+        currentPrefab = prefabs[0]; // Utilise le premier pour le preview
         currentMode = mode;
         isActive = true;
         currentRotation = 0;
 
         CreatePreview();
 
-        Debug.Log("Placement Tool activated: " + prefab.name + " (Mode: " + mode + ")");
+        Debug.Log("Placement Tool activated with " + prefabs.Count + " prefabs (Mode: " + mode + ")");
+    }
+
+    // GARDE AUSSI l'ancienne signature pour compatibilite
+    public static void ActivateTool(GameObject prefab, PlacementMode mode = PlacementMode.Single)
+    {
+        List<GameObject> list = new List<GameObject>();
+        list.Add(prefab);
+        ActivateTool(list, mode);
+    }
+
+    private static GameObject GetRandomPrefab()
+    {
+        if (selectedPrefabs == null || selectedPrefabs.Count == 0)
+            return null;
+
+        int randomIndex = Random.Range(0, selectedPrefabs.Count);
+        return selectedPrefabs[randomIndex];
+    }
+
+    private static int GetRandomRotation()
+    {
+        int[] rotations = { 0, 90, 180, 270 };
+        int randomIndex = Random.Range(0, rotations.Length);
+        return rotations[randomIndex];
     }
 
     public static void DeactivateTool()
@@ -56,7 +83,8 @@ public class ModulePlacementTool
         isActive = false;
         DestroyPreview();
         ClearDragPreviews();
-        selectedPrefab = null;
+        selectedPrefabs.Clear();
+        currentPrefab = null;
 
         Debug.Log("Placement Tool deactivated");
     }
@@ -74,7 +102,7 @@ public class ModulePlacementTool
 
     private static void OnSceneGUI(SceneView sceneView)
     {
-        if (!isActive || selectedPrefab == null)
+        if (!isActive || selectedPrefabs == null || selectedPrefabs.Count == 0)
         {
             return;
         }
@@ -197,13 +225,13 @@ public class ModulePlacementTool
 
     private static bool CheckValidPlacement(Vector3 position)
     {
-        if (selectedPrefab == null) return true;
+        if (currentPrefab == null) return true;
 
-        ModulePiece modulePiece = selectedPrefab.GetComponent<ModulePiece>();
+        ModulePiece modulePiece = currentPrefab.GetComponent<ModulePiece>();
         if (modulePiece == null) return true;
 
         // Recupere les bounds du prefab
-        Bounds prefabBounds = GetCombinedBounds(selectedPrefab);
+        Bounds prefabBounds = GetCombinedBounds(currentPrefab);
 
         if (prefabBounds.size == Vector3.zero)
         {
@@ -343,28 +371,28 @@ public class ModulePlacementTool
     }
 
     private static Vector3 SnapToGrid(Vector3 position)
-    {
-        if (selectedPrefab == null) return position;
+{
+    if (currentPrefab == null) return position;
 
-        ModulePiece modulePiece = selectedPrefab.GetComponent<ModulePiece>();
-        float snapSize = modulePiece != null ? modulePiece.snapSize : 1f;
+    ModulePiece modulePiece = currentPrefab.GetComponent<ModulePiece>();
+    float snapSize = modulePiece != null ? modulePiece.snapSize : 1f;
 
-        // Snap au COIN de la grille
-        return new Vector3(
-            Mathf.Round(position.x / snapSize) * snapSize,
-            Mathf.Round(position.y / snapSize) * snapSize,
-            Mathf.Round(position.z / snapSize) * snapSize
-        );
-    }
+    // Snap UNIQUEMENT X et Z, garde Y = 0
+    return new Vector3(
+        Mathf.Round(position.x / snapSize) * snapSize,
+        0f,  // <-- FORCE Y = 0
+        Mathf.Round(position.z / snapSize) * snapSize
+    );
+}
 
     private static void CreatePreview()
     {
-        if (selectedPrefab == null) return;
+        if (currentPrefab == null) return;
 
         DestroyPreview();
 
-        previewInstance = Object.Instantiate(selectedPrefab);
-        previewInstance.name = "[PREVIEW] " + selectedPrefab.name;
+        previewInstance = Object.Instantiate(currentPrefab);
+        previewInstance.name = "[PREVIEW] " + currentPrefab.name;
         previewInstance.hideFlags = HideFlags.HideAndDontSave;
 
         UpdatePreviewRotation();
@@ -455,7 +483,7 @@ public class ModulePlacementTool
 
         foreach (Vector3 pos in positions)
         {
-            GameObject preview = Object.Instantiate(selectedPrefab);
+            GameObject preview = Object.Instantiate(currentPrefab);
             preview.name = "[DRAG_PREVIEW]";
             preview.hideFlags = HideFlags.HideAndDontSave;
             preview.transform.position = pos;
@@ -470,9 +498,9 @@ public class ModulePlacementTool
     {
         List<Vector3> positions = new List<Vector3>();
 
-        if (selectedPrefab == null) return positions;
+        if (currentPrefab == null) return positions;
 
-        ModulePiece modulePiece = selectedPrefab.GetComponent<ModulePiece>();
+        ModulePiece modulePiece = currentPrefab.GetComponent<ModulePiece>();
         float snapSize = modulePiece != null ? modulePiece.snapSize : 1f;
 
         if (currentMode == PlacementMode.Line)
@@ -543,14 +571,15 @@ public class ModulePlacementTool
 
     private static void PlaceModule(Vector3 position)
     {
-        if (selectedPrefab == null) return;
+        GameObject prefabToPlace = GetRandomPrefab();
+        if (prefabToPlace == null) return;
 
-        GameObject parent = GetOrCreateParent();
-        GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(selectedPrefab, parent.transform);
+        GameObject parent = GetOrCreateParent(prefabToPlace);
+        GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefabToPlace, parent.transform);
         instance.transform.position = position;
-        instance.transform.rotation = Quaternion.Euler(0, currentRotation, 0);
+        instance.transform.rotation = Quaternion.Euler(0, GetRandomRotation(), 0);
 
-        AssignLayerIfFloor(instance);
+        AssignLayerIfFloor(instance, prefabToPlace);
 
         Undo.RegisterCreatedObjectUndo(instance, "Place Module");
     }
@@ -562,13 +591,17 @@ public class ModulePlacementTool
 
         foreach (Vector3 pos in positions)
         {
-            PlaceModule(pos);
+            // NOUVEAU : Vérifie qu'il n'y a pas déjà une dalle à cette position
+            if (CheckValidPlacement(pos))
+            {
+                PlaceModule(pos);
+            }
         }
 
         ClearDragPreviews();
     }
 
-    private static GameObject GetOrCreateParent()
+    private static GameObject GetOrCreateParent(GameObject prefab)
     {
         GameObject parent = GameObject.Find("LevelModules");
 
@@ -578,9 +611,9 @@ public class ModulePlacementTool
             Undo.RegisterCreatedObjectUndo(parent, "Create LevelModules");
         }
 
-        if (selectedPrefab != null)
+        if (prefab != null)
         {
-            ModulePiece modulePiece = selectedPrefab.GetComponent<ModulePiece>();
+            ModulePiece modulePiece = prefab.GetComponent<ModulePiece>();
             if (modulePiece != null && !string.IsNullOrEmpty(modulePiece.category))
             {
                 Transform categoryParent = parent.transform.Find(modulePiece.category);
@@ -598,11 +631,11 @@ public class ModulePlacementTool
         return parent;
     }
 
-    private static void AssignLayerIfFloor(GameObject obj)
+    private static void AssignLayerIfFloor(GameObject obj, GameObject prefab)
     {
-        if (selectedPrefab == null) return;
+        if (prefab == null) return;
 
-        ModulePiece modulePiece = selectedPrefab.GetComponent<ModulePiece>();
+        ModulePiece modulePiece = prefab.GetComponent<ModulePiece>();
         if (modulePiece != null && modulePiece.category == "Floors")
         {
             int groundLayer = LayerMask.NameToLayer("Ground");
@@ -623,7 +656,7 @@ public class ModulePlacementTool
     {
         Handles.BeginGUI();
 
-        GUILayout.BeginArea(new Rect(10, 10, 350, 180));
+        GUILayout.BeginArea(new Rect(10, 10, 350, 200));
 
         GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
         boxStyle.normal.background = MakeTex(2, 2, new Color(0, 0, 0, 0.8f));
@@ -636,10 +669,15 @@ public class ModulePlacementTool
 
         GUILayout.Label("MODULE PLACEMENT TOOL", labelStyle);
 
-        if (selectedPrefab != null)
+        if (selectedPrefabs != null && selectedPrefabs.Count > 0)
         {
             labelStyle.normal.textColor = Color.cyan;
-            GUILayout.Label("Module: " + selectedPrefab.name, labelStyle);
+            GUILayout.Label("Modules: " + selectedPrefabs.Count + " selected", labelStyle);
+            if (currentPrefab != null)
+            {
+                labelStyle.normal.textColor = Color.white;
+                GUILayout.Label("Preview: " + currentPrefab.name, labelStyle);
+            }
         }
 
         labelStyle.normal.textColor = Color.yellow;

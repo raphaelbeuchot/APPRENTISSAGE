@@ -12,6 +12,7 @@ public class ModulePlacementWindow : EditorWindow
 
     private ModulePlacementTool.PlacementMode selectedMode = ModulePlacementTool.PlacementMode.Single;
     private GameObject selectedPrefab = null;
+    private Dictionary<GameObject, bool> selectedPrefabs = new Dictionary<GameObject, bool>();
 
     private string basePrefabPath = "Assets/Project/LevelDesign/Modules/Prefabs";
 
@@ -238,21 +239,51 @@ public class ModulePlacementWindow : EditorWindow
             }
             else
             {
+                // Bouton pour activer avec les prefabs sélectionnés
+                int selectedCount = 0;
+                foreach (GameObject prefab in prefabs)
+                {
+                    if (selectedPrefabs.ContainsKey(prefab) && selectedPrefabs[prefab])
+                        selectedCount++;
+                }
+
+                if (selectedCount > 0)
+                {
+                    GUI.backgroundColor = Color.cyan;
+                    if (GUILayout.Button("Activate with " + selectedCount + " selected", GUILayout.Height(30)))
+                    {
+                        List<GameObject> toActivate = new List<GameObject>();
+                        foreach (GameObject prefab in prefabs)
+                        {
+                            if (selectedPrefabs.ContainsKey(prefab) && selectedPrefabs[prefab])
+                                toActivate.Add(prefab);
+                        }
+
+                        selectedMode = suggestedMode;
+                        ModulePlacementTool.ActivateTool(toActivate, selectedMode);
+                    }
+                    GUI.backgroundColor = Color.white;
+                    GUILayout.Space(5);
+                }
+
+                // Liste des prefabs avec checkboxes
                 foreach (GameObject prefab in prefabs)
                 {
                     GUILayout.BeginHorizontal();
 
-                    bool isSelected = selectedPrefab == prefab && ModulePlacementTool.IsActive();
-                    GUI.backgroundColor = isSelected ? Color.green : Color.white;
+                    // Checkbox
+                    if (!selectedPrefabs.ContainsKey(prefab))
+                        selectedPrefabs[prefab] = false;
 
-                    if (GUILayout.Button(prefab.name, GUILayout.Height(25)))
+                    bool wasChecked = selectedPrefabs[prefab];
+                    bool isChecked = EditorGUILayout.Toggle(wasChecked, GUILayout.Width(20));
+                    selectedPrefabs[prefab] = isChecked;
+
+                    // Nom du prefab (cliquable aussi pour toggle)
+                    if (GUILayout.Button(prefab.name, EditorStyles.label, GUILayout.Height(20)))
                     {
-                        selectedPrefab = prefab;
-                        selectedMode = suggestedMode; // Auto-selectionne le mode suggere
-                        ModulePlacementTool.ActivateTool(prefab, selectedMode);
+                        selectedPrefabs[prefab] = !selectedPrefabs[prefab];
                     }
-
-                    GUI.backgroundColor = Color.white;
 
                     GUILayout.EndHorizontal();
                 }
@@ -262,7 +293,6 @@ public class ModulePlacementWindow : EditorWindow
         GUILayout.EndVertical();
         GUILayout.Space(5);
     }
-
     private void OnDestroy()
     {
         ModulePlacementTool.DeactivateTool();
