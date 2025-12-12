@@ -1,5 +1,6 @@
-using UnityEngine;
+using System.Collections.Generic;
 using Unity.Cinemachine;
+using UnityEngine;
 
 public class CameraPanningExtension : CinemachineExtension
 {
@@ -20,18 +21,27 @@ public class CameraPanningExtension : CinemachineExtension
     [Header("Start Zone")]
     [SerializeField] private CountdownManager countdownManager;
 
+    [Header("Obstacle Hiding")]
+    [SerializeField] private float playerHeightOffset = 0.5f;
+
     private Vector3 currentPanOffset;
     private Vector3 currentLateralOffset = Vector3.zero;
     private bool isHighPosition = false;
     private bool isLowView = false;
     private Transform playerTransform;
-
+    private HashSet<Renderer> hiddenRenderers = new HashSet<Renderer>();
+    private Camera mainCamera;
     private void Start()
     {
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
             playerTransform = player.transform;
+        }
+        mainCamera = Camera.main;
+        if (mainCamera == null)
+        {
+            mainCamera = FindObjectOfType<Camera>();
         }
 
         if (countdownManager == null)
@@ -55,10 +65,79 @@ public class CameraPanningExtension : CinemachineExtension
 
     private void Update()
     {
+        
+
         if (isHighPosition && PlayerInputManager.Instance.ToggleCameraViewPressed)
         {
             isLowView = !isLowView;
             Debug.Log($"[CameraPanning] Toggle view - isLowView: {isLowView}");
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (isHighPosition && isLowView && playerTransform != null && Camera.main != null)
+        {
+            Vector3 cameraPos = Camera.main.transform.position;
+            Vector3 playerPos = playerTransform.position + Vector3.up * playerHeightOffset;
+            Vector3 direction = playerPos - cameraPos;
+            float distance = direction.magnitude;
+
+            Debug.DrawRay(cameraPos, direction, Color.red, 0.1f);
+
+            HashSet<Renderer> currentlyBlocking = new HashSet<Renderer>();
+
+            RaycastHit[] hits = Physics.RaycastAll(cameraPos, direction.normalized, distance);
+
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider.gameObject != playerTransform.gameObject)
+                {
+                    Renderer rend = hit.collider.GetComponent<Renderer>();
+                    if (rend != null)
+                    {
+                        currentlyBlocking.Add(rend);
+
+                        if (!hiddenRenderers.Contains(rend))
+                        {
+                            rend.enabled = false;
+                            hiddenRenderers.Add(rend);
+                        }
+                    }
+                }
+            }
+
+            List<Renderer> toRestore = new List<Renderer>();
+            foreach (Renderer rend in hiddenRenderers)
+            {
+                if (rend != null && !currentlyBlocking.Contains(rend))
+                {
+                    rend.enabled = true;
+                    toRestore.Add(rend);
+                }
+            }
+
+            foreach (Renderer rend in toRestore)
+            {
+                hiddenRenderers.Remove(rend);
+            }
+        }
+        else
+        {
+            List<Renderer> toRestore = new List<Renderer>();
+            foreach (Renderer rend in hiddenRenderers)
+            {
+                if (rend != null)
+                {
+                    rend.enabled = true;
+                    toRestore.Add(rend);
+                }
+            }
+
+            foreach (Renderer rend in toRestore)
+            {
+                hiddenRenderers.Remove(rend);
+            }
         }
     }
 
@@ -94,7 +173,7 @@ public class CameraPanningExtension : CinemachineExtension
             }
 
 
-            Vector3 targetLateralOffset = Vector3.zero;
+            Vector3 targetLateralOffset = currentLateralOffset;
 
             // Pan actif seulement si countdown termine OU sorti de startzone
             bool canPan = isHighPosition || (countdownManager != null && countdownManager.countdownFinished);

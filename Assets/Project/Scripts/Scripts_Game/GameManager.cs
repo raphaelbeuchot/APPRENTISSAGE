@@ -59,6 +59,13 @@ public class GameManager : MonoBehaviour
         public bool isHeadshot = false;
         public Vector3 lastKnownPosition;
         public bool wasInHeadshotMode = false;
+
+        // NOUVEAU : Stand-up grace period
+        public bool isInStandUpGracePeriod = false;
+
+        public bool wasPlayerCrouched = false;
+
+
     }
 
     // ============================================
@@ -225,8 +232,50 @@ public class GameManager : MonoBehaviour
             trackData.isHeadshot = isHeadshot;
             trackData.lastKnownPosition = finalTargetPos;
 
-            // NOUVEAU : Grace period avec RICOCHET
-            if (!hasLOS && trackData.wasInHeadshotMode)
+            // Check état crouch du player
+            bool isPlayerCrouched = false;
+            if (col.gameObject == player.gameObject)
+            {
+                isPlayerCrouched = player.IsCrouching();
+            }
+
+            // NOUVEAU : Detection STAND UP depuis CROUCH caché
+            if (hasLOS && !trackData.wasInLOS && trackData.wasPlayerCrouched && !isPlayerCrouched && !trackData.isBeingShot && !trackData.isInStandUpGracePeriod)
+            {
+                // Le joueur vient de se lever depuis une position crouch cachée
+                Debug.Log($"[STAND UP FROM CROUCH] {col.name} - grace period starts!");
+
+                trackData.isInStandUpGracePeriod = true;
+                trackData.isBeingShot = true;
+
+                PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
+
+                if (enemyHealth != null && !enemyHealth.IsDead())
+                {
+                    alreadyShot.Add(col.gameObject);
+                    StartCoroutine(ShootTargetAfterStandUpGrace(col.gameObject, enemyHealth, null, sentinelPos, finalTargetPos, trackData, isHeadshot));
+                }
+                else if (humanHealth != null && !humanHealth.IsDead())
+                {
+                    alreadyShot.Add(col.gameObject);
+                    if (col.gameObject == player.gameObject)
+                    {
+                        playerAlarmTriggered = true;
+                        StartCoroutine(ShootTargetAfterStandUpGrace(col.gameObject, null, humanHealth, sentinelPos, finalTargetPos, trackData, isHeadshot));
+                    }
+                }
+
+                // Update état pour prochain scan
+                trackData.wasPlayerCrouched = isPlayerCrouched;
+
+                continue;
+            }
+
+            // Update état crouch pour prochain scan (si pas en stand up grace)
+            trackData.wasPlayerCrouched = isPlayerCrouched;
+
+            // Grace period avec RICOCHET
+                if (!hasLOS && trackData.wasInHeadshotMode && !trackData.isBeingShot)
             {
                 // Le joueur était en headshot mode et est devenu invisible (a crouch)
                 //  Tir immédiat qui va automatiquement ricochet
@@ -680,5 +729,74 @@ public class GameManager : MonoBehaviour
     public bool IsInRedLight()
     {
         return sentinelCycleManager != null && sentinelCycleManager.IsInRedLight();
+    }
+    IEnumerator ShootTargetAfterStandUpGrace(GameObject target, EnemyHealth enemyHealth, PlayerHealth playerHealth, Vector3 sentinelPos, Vector3 targetPos, TargetTrackingData trackData, bool wasHeadshot)
+    {
+        // Attendre la grace period
+        yield return new WaitForSeconds(sentinelSettings.shootDelay);
+
+        // Revérifier le LOS au moment du tir
+        Vector3 eyePosition = (sentinelEye != null) ? sentinelEye.position : transform.position;
+        Vector3 actualSentinelPos = eyePosition + sentinelSettings.raycastOffset;
+
+        Vector3 currentTargetPos = wasHeadshot ? GetHeadPosition(target) : GetTargetCenter(target);
+        Vector3 direction = (currentTargetPos - actualSentinelPos).normalized;
+        float distance = Vector3.Distance(actualSentinelPos, currentTargetPos);
+
+        RaycastHit hit;
+        bool stillHasLOS = !Physics.Raycast(actualSentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers);
+
+        if (!stillHasLOS)
+        {
+            // RICOCHET : le joueur s'est rebaissé à temps !
+            Debug.Log($"[STAND UP GRACE SUCCESS] {target.name} crouched back in time! RICOCHET on {hit.collider.name}");
+
+            if (audioSource != null && sentinelSettings.ricochetSound != null)
+                audioSource.PlayOneShot(sentinelSettings.ricochetSound);
+
+            if (sentinelSettings.ricochetVFX != null)
+            {
+                GameObject vfx = Instantiate(sentinelSettings.ricochetVFX, hit.point, Quaternion.LookRotation(hit.normal));
+                Destroy(vfx, sentinelSettings.ricochetVFXDuration);
+            }
+
+            StartCoroutine(ShowShootLaser(actualSentinelPos, hit.point, sentinelSettings.shootLaserFadeDuration));
+
+            trackData.isBeingShot = false;
+            trackData.isInStandUpGracePeriod = false;
+            trackData.lastShotTime = Time.time;
+            alreadyShot.Remove(target);
+            if (target == player.gameObject) playerAlarmTriggered = false;
+
+            yield break;
+        }
+
+        // TIR REUSSI : le joueur n'a pas crouché assez vite
+        Debug.Log($"[STAND UP GRACE FAILED] {target.name} too slow! {(wasHeadshot ? "HEADSHOT" : "HIT")}");
+
+        if (enemyHealth != null && !enemyHealth.IsDead())
+        {
+            ShootEnemy(target, enemyHealth, "STAND UP TOO SLOW", actualSentinelPos, currentTargetPos, wasHeadshot);
+        }
+        else if (playerHealth != null && !playerHealth.IsDead())
+        {
+            ShootPlayer(target, playerHealth, "STAND UP TOO SLOW", actualSentinelPos, currentTargetPos, wasHeadshot);
+        }
+
+        trackData.isBeingShot = false;
+        trackData.isInStandUpGracePeriod = false;
+        trackData.lastShotTime = Time.time;
+    }
+
+    public void ResetAllTracking()
+    {
+        foreach (var kvp in trackedTargets)
+        {
+            kvp.Value.wasInLOS = false;
+            kvp.Value.wasPlayerCrouched = false;
+            kvp.Value.wasInHeadshotMode = false;
+            kvp.Value.consecutiveLOSScans = 0;
+        }
+        Debug.Log("[TRACKING RESET] All tracking data cleared for new cycle");
     }
 }

@@ -23,6 +23,7 @@ public class SentinelCycleManager : MonoBehaviour
     public Transform playerTransform;
     public Transform sentinelTransform;
     [SerializeField] private Transform startZoneTransform;
+    public GameManager gameManager;
 
 
     [Header("State")]
@@ -101,6 +102,10 @@ public class SentinelCycleManager : MonoBehaviour
         }
         else if (newState == GameState.RedLight)
         {
+            // NOUVEAU : Reset tracking au début du RedLight
+            if (gameManager != null)
+                gameManager.ResetAllTracking();
+
             targetDuration = sentinelSettings.GetRandomRedlightDuration();
 
             if (audioSource != null && sentinelSettings.redlightSound != null)
