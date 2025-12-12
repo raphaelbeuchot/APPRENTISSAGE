@@ -5,12 +5,6 @@ using Pathfinding; // AJOUT A*
 [RequireComponent(typeof(Rigidbody))]
 public class EnemyAI_AStar : MonoBehaviour
 {
-
-    private bool hasCalculatedAnticipatedPosition = false;
-    private Vector3 lastChaseDirection = Vector3.zero; // NOUVEAU
-    private bool isLookingAround = false; // NOUVEAU
-
-
     [Header("Enemy Stats")]
     public EnemyStats stats;
     public PlayerStats playerStats;
@@ -259,62 +253,6 @@ public class EnemyAI_AStar : MonoBehaviour
         transform.rotation = targetRotation; // Force la rotation finale
         Debug.Log($"{gameObject.name} finished smooth rotation away from wall");
     }
-
-    private IEnumerator LookAroundCoroutine()
-    {
-        isLookingAround = true;
-        StopMovement();
-
-        Debug.Log($"{gameObject.name} lastChaseDirection = {lastChaseDirection}");
-
-        // S'assurer que la direction est horizontale et valide
-        Vector3 lookDirection = lastChaseDirection;
-        lookDirection.y = 0;
-
-        if (lookDirection.magnitude < 0.1f)
-        {
-            Debug.LogWarning($"{gameObject.name} lastChaseDirection invalide, abandon rotation");
-            wasChasing = false;
-            isGoingToLastKnownPosition = false;
-            isLookingAround = false;
-            currentState = State.Idle;
-            yield break;
-        }
-
-        lookDirection.Normalize();
-
-        // Rotation vers la direction où le player se déplaçait
-        Quaternion startRotation = transform.rotation;
-        Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
-
-        Debug.Log($"{gameObject.name} startRotation = {startRotation.eulerAngles}, targetRotation = {targetRotation.eulerAngles}");
-
-        float elapsed = 0f;
-        float rotationDuration = 1f;
-
-        while (elapsed < rotationDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / rotationDuration;
-            transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
-            yield return null;
-        }
-
-        transform.rotation = targetRotation;
-
-        // Pause pour "scanner"
-        yield return new WaitForSeconds(0.8f);
-
-        // Retour Idle
-        wasChasing = false;
-        isGoingToLastKnownPosition = false;
-        isLookingAround = false;
-        currentState = State.Idle;
-
-        Debug.Log($"{gameObject.name} finished looking around, returning to Idle");
-    }
-
-
     protected virtual void DetectHumans()
     {
         // Ignorer détection si en StunBySpray
@@ -411,7 +349,6 @@ public class EnemyAI_AStar : MonoBehaviour
             isGoingToLastKnownPosition = false; // On le voit = pas besoin de la derniere position
             wasChasing = true;
             lostTargetTime = -999f;
-            hasCalculatedAnticipatedPosition = false;
 
             if (closestDistance <= stats.attackRange)
                 currentState = State.Attacking;
@@ -422,39 +359,11 @@ public class EnemyAI_AStar : MonoBehaviour
         {
             if (wasChasing && !isForcedChase)
             {
-                targetHuman = null;
+                // On perd la vue : on va vers la derniere position connue
+                targetHuman = null; // On ne le voit plus
+                isGoingToLastKnownPosition = true; // Mode "chercher a la derniere position"
+                currentState = State.Chasing; // On reste en chase (mais vers lastKnownPlayerPosition)
 
-                // NOUVEAU : Calcul offset anticipation (UNE SEULE FOIS)
-                if (!hasCalculatedAnticipatedPosition)
-                {
-                    // 1. Position anticipée (COMME AVANT) : zombie->player
-                    Vector3 directionToLastPos = (lastKnownPlayerPosition - transform.position).normalized;
-                    lastKnownPlayerPosition = lastKnownPlayerPosition + directionToLastPos * 0.75f;
-
-                    // 2. Direction mouvement player (NOUVEAU) : pour rotation finale uniquement
-                    Rigidbody playerRb = player.GetComponent<Rigidbody>();
-                    if (playerRb != null)
-                    {
-                        Vector3 playerVelocity = playerRb.linearVelocity;
-                        playerVelocity.y = 0;
-
-                        if (playerVelocity.magnitude > 0.5f)
-                        {
-                            lastChaseDirection = playerVelocity.normalized;
-                            Debug.Log($"{gameObject.name} Mémorise direction mouvement player : {lastChaseDirection}");
-                        }
-                        else
-                        {
-                            lastChaseDirection = directionToLastPos; // Fallback si immobile
-                        }
-                    }
-
-                    hasCalculatedAnticipatedPosition = true;
-                    Debug.Log($"{gameObject.name} position anticipée calculée : {lastKnownPlayerPosition}");
-                }
-
-                isGoingToLastKnownPosition = true;
-                currentState = State.Chasing;
                 Debug.Log($"{gameObject.name} a perdu le joueur, va chercher a {lastKnownPlayerPosition}");
             }
             else if (!isForcedChase)
@@ -511,13 +420,6 @@ public class EnemyAI_AStar : MonoBehaviour
     protected virtual void HandleChasingState()
     {
         if (isBlinder) return;
-        
-        // NOUVEAU : Bloquer si en train de regarder autour
-        if (isLookingAround)
-        {
-            StopMovement();
-            return;
-        }
 
         if (wanderBehavior != null) wanderBehavior.StopWandering();
 
@@ -544,12 +446,14 @@ public class EnemyAI_AStar : MonoBehaviour
         {
             float distanceToLastPos = Vector3.Distance(transform.position, lastKnownPlayerPosition);
 
-            // Arrive a la derniere position : rotation puis abandon
+            // Arrive a la derniere position : abandon, retour Idle
             if (distanceToLastPos <= arrivalThreshold)
             {
-                Debug.Log($"{gameObject.name} arrive a la derniere position, rotation de recherche...");
-                StartCoroutine(LookAroundCoroutine());
-                return; // IMPORTANT : ne pas modifier les flags ici
+                Debug.Log($"{gameObject.name} arrive a la derniere position, rien trouve -> Idle");
+                wasChasing = false;
+                isGoingToLastKnownPosition = false;
+                currentState = State.Idle;
+                return;
             }
 
             // Avancer vers la derniere position connue
