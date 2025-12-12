@@ -192,13 +192,6 @@ public class BroomAttackSystem : MonoBehaviour
             EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
             if (enemyHealth != null && !enemyHealth.IsDead())
             {
-                // DESACTIVER ZOMBIE AVANT KNOCKBACK
-                EnemyAI_AStar zombieAI_AStar_temp = hit.GetComponent<EnemyAI_AStar>();
-                if (zombieAI_AStar_temp != null)
-                {
-                    zombieAI_AStar_temp.enabled = false;
-                }
-
                 // Knockback (applique a TOUS les zombies, Blinder inclus)
                 Rigidbody targetRb = hit.GetComponent<Rigidbody>();
                 if (targetRb != null)
@@ -210,21 +203,27 @@ public class BroomAttackSystem : MonoBehaviour
 
                 // Degats
                 enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Broom);
+
                 // Son d'impact individuel
                 if (audioSource != null && stats.broomHitSound != null)
                 {
                     audioSource.PlayOneShot(stats.broomHitSound);
                 }
 
-
                 // Knockdown (sauf Blinders)
                 ChargeAttack chargeAttack = hit.GetComponent<ChargeAttack>();
-                if (chargeAttack == null)
+                if (chargeAttack == null)  // Si pas Blinder
                 {
+                    // SEULEMENT ICI on désactive le zombie
+                    EnemyAI_AStar zombieAI_AStar_temp = hit.GetComponent<EnemyAI_AStar>();
+                    if (zombieAI_AStar_temp != null)
+                    {
+                        zombieAI_AStar_temp.enabled = false;
+                    }
+
                     MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
                     StartCoroutine(KnockdownTarget(hit.gameObject));
                 }
-
             }
 
             // SWARMS
