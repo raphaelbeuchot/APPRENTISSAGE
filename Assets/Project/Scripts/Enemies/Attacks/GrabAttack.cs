@@ -5,7 +5,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 {
     public Material redMaterial;
 
-    private EnemyAI enemy;
+    private EnemyAI_AStar enemy; 
     private PlayerPhysicsMovement player;
     private Rigidbody playerRb;
     private Rigidbody enemyRb;
@@ -26,18 +26,18 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     public bool isInBourradeDuration = false;
     public bool isInBourradeCooldown = false;
     public bool isFakeGrabbing = false;
-    private System.Collections.Generic.List<EnemyAI> fakeGrabbers = new System.Collections.Generic.List<EnemyAI>();
+    private System.Collections.Generic.List<EnemyAI_AStar> fakeGrabbers = new System.Collections.Generic.List<EnemyAI_AStar>();
     public bool IsInBourrade() => isInBourradeDuration || isInBourradeCooldown;
 
     public void Initialize(EnemyStats stats, PlayerStats playerStats, Transform enemyTransform, Rigidbody enemyRigidbody)
     {
-        fakeGrabbers = new System.Collections.Generic.List<EnemyAI>();
+        fakeGrabbers = new System.Collections.Generic.List<EnemyAI_AStar>();
 
         this.stats = stats;
         this.playerStats = playerStats;
         this.enemyTransform = enemyTransform;
         this.enemyRb = enemyRigidbody;
-        enemy = GetComponent<EnemyAI>();
+        enemy = GetComponent<EnemyAI_AStar>();
         enemyHealth = GetComponent<EnemyHealth>();
         player = FindFirstObjectByType<PlayerPhysicsMovement>();
         if (player) playerRb = player.GetComponent<Rigidbody>();
@@ -70,7 +70,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         {
             if (col.gameObject == gameObject) continue;
 
-            EnemyAI zombie = col.GetComponent<EnemyAI>();
+            EnemyAI_AStar zombie = col.GetComponent<EnemyAI_AStar>();
 
             GrabAttack zombieGrab = col.GetComponent<GrabAttack>();
             ChargeAttack chargeAttack = col.GetComponent<ChargeAttack>();
@@ -99,7 +99,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     {
         if (!player || IsInBourrade() || isGrabbing) return;
 
-        EnemyAI ai = GetComponent<EnemyAI>();
+        EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
 
         if (player != null && player.IsSprinting())
             return;
@@ -271,7 +271,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         isGrabbing = false;
         StartCoroutine(BourradeZombie());
 
-        foreach (EnemyAI fakeZombie in fakeGrabbers)
+        foreach (EnemyAI_AStar fakeZombie in fakeGrabbers)
         {
             if (fakeZombie != null)
             {
@@ -300,11 +300,11 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         if (gameManager != null)
             gameManager.RemoveFromAlreadyShot(gameObject);
 
-        UnityEngine.AI.NavMeshAgent agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
-        bool hadAgent = agent != null;
-        if (hadAgent && agent.isOnNavMesh)
+        Pathfinding.AIPath aiPath = GetComponent<Pathfinding.AIPath>();
+        bool hadAIPath = aiPath != null;
+        if (hadAIPath)
         {
-            agent.enabled = false;
+            aiPath.enabled = false;
         }
 
         enemyRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
@@ -337,9 +337,9 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             enemyRb.linearVelocity = Vector3.zero;
             enemyRb.constraints = RigidbodyConstraints.FreezeRotation;
 
-            if (hadAgent && agent != null)
+            if (hadAIPath && aiPath != null)
             {
-                agent.enabled = true;
+                aiPath.enabled = true;
             }
 
             Debug.Log(gameObject.name + " > Bourrade ended cleanly");

@@ -20,7 +20,7 @@ MonoBehaviour:
   limbLossThreshold: 0.5
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8
   walkSpeed: 1
   chaseSpeed: 2
   rotationSpeed: 30
@@ -52,9 +52,24 @@ MonoBehaviour:
   spitSpeed: 10
   spitRange: 15
   spitProjectilePrefab: {fileID: 0}
+  blinderWanderSpeed: 2
+  blinderChargeSpeed: 3
+  blinderWalkDuration: 1
+  blinderStopDuration: 1.2
+  blinderWanderRadius: 4
+  audioDetectionRange: 6
+  blinderKnockbackForce: 5
+  blinderAttackRange: 2
+  lookAroundDuration: 2
+  knockdownDuration: 2
+  aoeKnockbackRadius: 3
+  recoilStunDuration: 3
+  rechargeDelayAfterHit: 1
   bourradeDuration: 1.5
   bourradeCooldown: 2
+  cumulativeStunPerSpray: 0.3
   stunSprayDuration: 0.5
+  sprayWindowDuration: 0.7
   backstabStunDuration: 0.8
   startingArmCount: 2
   startingLegCount: 2

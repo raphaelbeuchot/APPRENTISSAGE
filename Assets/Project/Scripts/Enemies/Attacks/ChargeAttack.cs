@@ -6,8 +6,7 @@ using Pathfinding;
 public class ChargeAttack : MonoBehaviour, IAttackBehavior
 {
     [Header("References")]
-    public BlinderStats stats;
-
+    public EnemyStats stats;
     private EnemyAI_AStar enemyAI;
     private BlinderWanderBehavior wanderBehavior;
     private AIPath aiPath;
@@ -33,10 +32,13 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
     {
         if (stats == null)
         {
-            Debug.LogError($"ChargeAttack on {gameObject.name}: BlinderStats not assigned!");
-            return;
+            Debug.LogError($"ChargeAttack on {gameObject.name}: EnemyStats not assigned!"); return;
         }
-
+        // Vérifier que c'est bien un Blinder
+        if (stats.attackType != EnemyStats.AttackType.Blinder)
+        {
+            Debug.LogWarning($"ChargeAttack on {gameObject.name}: EnemyStats attackType should be Blinder!");
+        }
         enemyAI = GetComponent<EnemyAI_AStar>();
         wanderBehavior = GetComponent<BlinderWanderBehavior>();
         aiPath = GetComponent<AIPath>();
@@ -151,7 +153,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             transform.rotation = Quaternion.LookRotation(lockedDirection);
 
             float t = elapsed / accelerateDuration;
-            float speed = Mathf.Lerp(stats.wanderSpeed, stats.chargeSpeed, t);
+            float speed = Mathf.Lerp(stats.blinderWanderSpeed, stats.blinderChargeSpeed, t);
             if (rb != null)
             {
                 Vector3 vel = lockedDirection * speed;
@@ -164,7 +166,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
         if (rb != null)
         {
-            Vector3 vel = lockedDirection * stats.chargeSpeed;
+            Vector3 vel = lockedDirection * stats.blinderChargeSpeed;
             vel.y = Mathf.Min(rb.linearVelocity.y, 0f);
             rb.linearVelocity = vel;
         }
@@ -189,7 +191,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
             if (rb != null)
             {
-                Vector3 vel = forwardDir * stats.chargeSpeed;
+                Vector3 vel = forwardDir * stats.blinderChargeSpeed;
                 vel.y = Mathf.Min(rb.linearVelocity.y, 0f);
                 rb.linearVelocity = vel;
             }
@@ -265,7 +267,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
             if (pm != null)
             {
-                Vector3 knockbackVel = pushDir * stats.knockbackForce;
+                Vector3 knockbackVel = pushDir * stats.blinderKnockbackForce;
                 knockbackVel.y = 0;
                 pm.ApplyKnockback(knockbackVel, 0.3f);
             }
@@ -286,11 +288,11 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
             if (otherRb != null)
             {
-                otherRb.AddForce(pushDir * stats.knockbackForce, ForceMode.VelocityChange);
+                otherRb.AddForce(pushDir * stats.blinderKnockbackForce, ForceMode.VelocityChange);
 
                 if (rb != null)
                 {
-                    Vector3 vel = transform.forward * stats.chargeSpeed;
+                    Vector3 vel = transform.forward * stats.blinderChargeSpeed;
                     vel.y = Mathf.Min(rb.linearVelocity.y, 0f);
                     rb.linearVelocity = vel;
                 }

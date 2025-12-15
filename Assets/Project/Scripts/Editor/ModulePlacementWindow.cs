@@ -95,6 +95,7 @@ public class ModulePlacementWindow : EditorWindow
     private void OnGUI()
     {
         GUILayout.Label("Module Placement Tool", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox(" case cochée = Rotation aléatoire au placement (vert=ON, gris=OFF)", MessageType.Info);
         GUILayout.Space(5);
 
         DrawToolControls();
@@ -266,12 +267,14 @@ public class ModulePlacementWindow : EditorWindow
                     GUILayout.Space(5);
                 }
 
-                // Liste des prefabs avec checkboxes
+                // Liste des prefabs avec checkboxes et toggle rotation
                 foreach (GameObject prefab in prefabs)
                 {
+                    ModulePiece modulePiece = prefab.GetComponent<ModulePiece>();
+
                     GUILayout.BeginHorizontal();
 
-                    // Checkbox
+                    // Checkbox sélection
                     if (!selectedPrefabs.ContainsKey(prefab))
                         selectedPrefabs[prefab] = false;
 
@@ -283,6 +286,26 @@ public class ModulePlacementWindow : EditorWindow
                     if (GUILayout.Button(prefab.name, EditorStyles.label, GUILayout.Height(20)))
                     {
                         selectedPrefabs[prefab] = !selectedPrefabs[prefab];
+                    }
+
+                    // NOUVEAU : Toggle rotation aléatoire
+                    GUILayout.FlexibleSpace();
+
+                    GUIContent rotationIcon = new GUIContent("rot", "Rotation aléatoire au placement");
+
+                    if (modulePiece != null)
+                    {
+                        GUI.backgroundColor = modulePiece.allowRandomRotation ? Color.green : Color.gray;
+                        bool newRandomRotation = GUILayout.Toggle(modulePiece.allowRandomRotation, rotationIcon, GUI.skin.button, GUILayout.Width(30));
+                        GUI.backgroundColor = Color.white;
+
+                        if (newRandomRotation != modulePiece.allowRandomRotation)
+                        {
+                            Undo.RecordObject(prefab, "Toggle Random Rotation");
+                            modulePiece.allowRandomRotation = newRandomRotation;
+                            EditorUtility.SetDirty(prefab);
+                            PrefabUtility.RecordPrefabInstancePropertyModifications(prefab);
+                        }
                     }
 
                     GUILayout.EndHorizontal();

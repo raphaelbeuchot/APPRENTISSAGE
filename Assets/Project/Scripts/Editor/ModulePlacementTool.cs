@@ -577,7 +577,17 @@ public class ModulePlacementTool
         GameObject parent = GetOrCreateParent(prefabToPlace);
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefabToPlace, parent.transform);
         instance.transform.position = position;
-        instance.transform.rotation = Quaternion.Euler(0, GetRandomRotation(), 0);
+
+        // NOUVEAU : Rotation aléatoire ou manuelle selon le toggle
+        ModulePiece modulePiece = prefabToPlace.GetComponent<ModulePiece>();
+        if (modulePiece != null && modulePiece.allowRandomRotation)
+        {
+            instance.transform.rotation = Quaternion.Euler(0, GetRandomRotation(), 0);
+        }
+        else
+        {
+            instance.transform.rotation = Quaternion.Euler(0, currentRotation, 0); // Rotation manuelle (molette)
+        }
 
         AssignLayerIfFloor(instance, prefabToPlace);
 

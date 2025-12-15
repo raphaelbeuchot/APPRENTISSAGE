@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine.Samples;
 using UnityEngine;
-using UnityEngine.AI;
 using Pathfinding;
 
 public class GameManager : MonoBehaviour
@@ -167,7 +166,7 @@ public class GameManager : MonoBehaviour
         // Réinitialiser la détection
         foreach (var kvp in trackedTargets)
         {
-            EnemyAI ai = kvp.Key != null ? kvp.Key.GetComponent<EnemyAI>() : null;
+            EnemyAI_AStar ai = kvp.Key != null ? kvp.Key.GetComponent<EnemyAI_AStar>() : null;
             if (ai != null)
                 ai.isDetectedBySentinel = false;
         }
@@ -370,29 +369,15 @@ public class GameManager : MonoBehaviour
 
                         isMoving = aiPath.velocity.magnitude > effectiveThreshold;
                     }
-                    else
-                    {
-                        // Fallback NavMesh (ancien systeme)
-                        NavMeshAgent agent = col.GetComponent<NavMeshAgent>();
-                        if (agent != null && agent.isOnNavMesh)
-                        {
-                            float effectiveThreshold = sentinelSettings.movementThreshold;
-
-                            EnemyPitInteractable enemyPit = col.GetComponent<EnemyPitInteractable>();
-                            if (enemyPit != null && enemyPit.isInShallowWater)
-                            {
-                                effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
-                            }
-
-                            isMoving = agent.velocity.magnitude > effectiveThreshold;
-                        }
+                    
+                        
                         else
                         {
                             // Dernier fallback : Rigidbody
                             float effectiveThreshold = sentinelSettings.movementThreshold;
                             isMoving = rb.linearVelocity.magnitude > effectiveThreshold;
                         }
-                    }
+                    
                 }
             }
 

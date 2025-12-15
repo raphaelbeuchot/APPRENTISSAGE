@@ -726,35 +726,6 @@ public class MeleeAttackSystem : MonoBehaviour
         Debug.Log("Bottle thrown! Ammo saved: " + savedSprayAmmo);
     }
 
-    System.Collections.IEnumerator StunAndChaseEnemy(EnemyAI enemyAI)
-    {
-        enemyAI.canMove = false;
-        UnityEngine.AI.NavMeshAgent agent = enemyAI.GetComponent<UnityEngine.AI.NavMeshAgent>();
-        if (agent != null && agent.isOnNavMesh)
-        {
-            agent.isStopped = true;
-        }
-
-        yield return new WaitForSeconds(stats.bottleStunDuration);
-
-        PlayerPhysicsMovement player = FindObjectOfType<PlayerPhysicsMovement>();
-        if (player != null)
-        {
-            enemyAI.targetHuman = player.transform;
-            enemyAI.currentState = EnemyAI.State.Chasing;
-            enemyAI.isForcedChase = true;
-        }
-
-        enemyAI.canMove = true;
-        if (agent != null && agent.isOnNavMesh)
-        {
-            agent.isStopped = false;
-            agent.SetDestination(player.transform.position);
-        }
-
-        Debug.Log(enemyAI.gameObject.name + " is now chasing after bottle hit!");
-    }
-
     System.Collections.IEnumerator StunAndChaseEnemy_AStar(EnemyAI_AStar enemyAI)
     {
         enemyAI.canMove = false;

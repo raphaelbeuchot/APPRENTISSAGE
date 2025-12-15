@@ -5,18 +5,28 @@ using System.Collections;
 public class BlinderWanderBehavior : MonoBehaviour
 {
     [Header("References")]
-    public BlinderStats stats;
-    private AIPath aiPath; // CHANGEMENT: NavMeshAgent -> AIPath
+    public EnemyStats stats; private AIPath aiPath; 
     private bool isWandering = false;
     private Coroutine wanderCoroutine;
 
     void Start()
     {
-        aiPath = GetComponent<AIPath>(); // CHANGEMENT: GetComponent<AIPath>()
+        aiPath = GetComponent<AIPath>();
         if (aiPath == null)
         {
-            Debug.LogError("BlinderWanderBehavior needs AIPath!"); // CHANGEMENT: message erreur
+            Debug.LogError("BlinderWanderBehavior needs AIPath!");
             return;
+        }
+
+        if (stats == null)
+        {
+            Debug.LogError($"BlinderWanderBehavior on {gameObject.name}: EnemyStats not assigned!");
+            return;
+        }
+
+        if (stats.attackType != EnemyStats.AttackType.Blinder)
+        {
+            Debug.LogWarning($"BlinderWanderBehavior on {gameObject.name}: EnemyStats attackType should be Blinder!");
         }
     }
 
@@ -48,7 +58,7 @@ public class BlinderWanderBehavior : MonoBehaviour
         while (isWandering)
         {
             // CHANGEMENT: A* utilise des positions directes, pas NavMesh.SamplePosition
-            Vector3 randomDirection = Random.insideUnitSphere * stats.wanderRadius;
+            Vector3 randomDirection = Random.insideUnitSphere * stats.blinderWanderRadius;
             randomDirection += transform.position;
             randomDirection.y = transform.position.y; // Garder Y constant
 
@@ -60,18 +70,18 @@ public class BlinderWanderBehavior : MonoBehaviour
                 if (node != null && node.Walkable)
                 {
                     aiPath.canMove = true; // CHANGEMENT
-                    aiPath.maxSpeed = stats.wanderSpeed; // CHANGEMENT: speed -> maxSpeed
+                    aiPath.maxSpeed = stats.blinderWanderSpeed; // CHANGEMENT: speed -> maxSpeed
                     aiPath.destination = (Vector3)node.position; // CHANGEMENT: SetDestination -> destination
 
                     // 2. Marcher pendant walkDuration
-                    yield return new WaitForSeconds(stats.walkDuration);
+                    yield return new WaitForSeconds(stats.blinderWalkDuration);
 
                     // 3. S'arrêter (animation "chasse mouches")
                     aiPath.canMove = false; // CHANGEMENT
 
                     // TODO: Trigger animation "swat flies" ici
                     Debug.Log("Blinder swatting flies...");
-                    yield return new WaitForSeconds(stats.stopDuration);
+                    yield return new WaitForSeconds(stats.blinderStopDuration);
                 }
                 else
                 {

@@ -78,6 +78,10 @@ public class PlayerPhysicsMovement : MonoBehaviour
     [SerializeField] private Material normalMaterial;
     [SerializeField] private Material freezeMaterial;
 
+    //Animations
+    private Animator animator;
+
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -120,6 +124,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void Start()
     {
+        animator = GetComponentInChildren<Animator>();
+
         if (gameManager == null)
         {
             gameManager = FindObjectOfType<GameManager>();
@@ -183,6 +189,13 @@ public class PlayerPhysicsMovement : MonoBehaviour
         else if (isSprinting && currentStamina > 0)
         {
             targetSpeed *= stats.sprintSpeedMultiplier;
+        }
+
+        if (animator != null)
+        {
+            float speed = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z).magnitude;
+            animator.SetFloat("Speed", speed);
+            Debug.Log("Speed sent to animator: " + speed); // <-- AJOUTE ÇA TEMPORAIREMENT
         }
 
         // === IMMUNITÉ GRABS SI EN L'AIR ===

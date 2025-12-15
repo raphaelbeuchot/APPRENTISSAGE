@@ -1,6 +1,5 @@
 using UnityEngine;
 using System;
-using UnityEngine.AI;
 using System.Collections;
 using Pathfinding;
 

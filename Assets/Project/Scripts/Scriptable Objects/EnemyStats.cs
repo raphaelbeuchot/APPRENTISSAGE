@@ -116,6 +116,34 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Prefab du projectile")]
     public GameObject spitProjectilePrefab;
 
+    [Header("BLINDER SPECIFIC")]
+    [Tooltip("Vitesse de wander du Blinder")]
+    public float blinderWanderSpeed = 2f;
+    [Tooltip("Vitesse de charge du Blinder")]
+    public float blinderChargeSpeed = 3f;
+    [Tooltip("Durée marche tout droit")]
+    public float blinderWalkDuration = 2.5f;
+    [Tooltip("Durée arrêt chasse mouches")]
+    public float blinderStopDuration = 1.2f;
+    [Tooltip("Rayon destinations random")]
+    public float blinderWanderRadius = 4f;
+    [Tooltip("Distance détection sons melee")]
+    public float audioDetectionRange = 6f;
+    [Tooltip("Force knockback charge")]
+    public float blinderKnockbackForce = 10f;
+    [Tooltip("Distance trigger knockback")]
+    public float blinderAttackRange = 2f;
+    [Tooltip("Durée look around")]
+    public float lookAroundDuration = 2f;
+    [Tooltip("Durée knockdown")]
+    public float knockdownDuration = 2f;
+    [Tooltip("Rayon AOE knockback")]
+    public float aoeKnockbackRadius = 3f;
+    [Tooltip("Durée recoil stun")]
+    public float recoilStunDuration = 3f;
+    [Tooltip("Délai avant re-charge après hit")]
+    public float rechargeDelayAfterHit = 1f;
+
     [Header("BOURRADE")]
     [Tooltip("Durée de la projection en arrière")]
     public float bourradeDuration = 1.5f;

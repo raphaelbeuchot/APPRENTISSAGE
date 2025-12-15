@@ -272,9 +272,7 @@ public class BroomAttackSystem : MonoBehaviour
     }
     IEnumerator KnockdownTarget(GameObject target)
     {
-        // Support A* et NavMesh
         EnemyAI_AStar zombieAI_AStar = target.GetComponent<EnemyAI_AStar>();
-        EnemyAI zombieAI = target.GetComponent<EnemyAI>();
 
         // Desactiver pathfinding A* (sauf si en PitMode)
         if (zombieAI_AStar != null && !zombieAI_AStar.isInPitMode)
@@ -285,16 +283,6 @@ public class BroomAttackSystem : MonoBehaviour
                 aiPath.enabled = false;
             }
             zombieAI_AStar.enabled = false;
-        }
-        // Desactiver NavMesh
-        else if (zombieAI != null)
-        {
-            UnityEngine.AI.NavMeshAgent agent = target.GetComponent<UnityEngine.AI.NavMeshAgent>();
-            if (agent != null && agent.isOnNavMesh)
-            {
-                agent.enabled = false;
-            }
-            zombieAI.enabled = false;
         }
 
         yield return new WaitForSeconds(2f);
@@ -317,17 +305,6 @@ public class BroomAttackSystem : MonoBehaviour
                 zombieAI_AStar.enabled = true;
             }
         }
-        /*
-        // Reactiver NavMesh
-        else if (zombieAI != null && target != null)
-        {
-            UnityEngine.AI.NavMeshAgent agent = target.GetComponent<UnityEngine.AI.NavMeshAgent>();
-            if (agent != null)
-            {
-                agent.enabled = true;
-            }
-            zombieAI.enabled = true;
-        }*/
     }
 
     public void OnGrabStart()
