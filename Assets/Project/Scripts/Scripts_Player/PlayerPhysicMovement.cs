@@ -126,6 +126,13 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         animator = GetComponentInChildren<Animator>();
 
+        // AJOUTE CES 2 LIGNES :
+        if (animator != null)
+            Debug.Log("ANIMATOR FOUND: " + animator.gameObject.name);
+        else
+            Debug.LogError("ANIMATOR NOT FOUND!");
+
+
         if (gameManager == null)
         {
             gameManager = FindObjectOfType<GameManager>();
@@ -152,6 +159,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     void Update()
     {
         if (stats == null) return;
+        Debug.Log("UPDATE RUNNING");
 
         HandleInput();
         HandleStamina();
@@ -193,9 +201,13 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         if (animator != null)
         {
-            float speed = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z).magnitude;
-            animator.SetFloat("Speed", speed);
-            Debug.Log("Speed sent to animator: " + speed); // <-- AJOUTE ÇA TEMPORAIREMENT
+            // Calculer la vitesse dans le référentiel LOCAL du personnage
+            Vector3 localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
+
+            // SpeedX = vitesse latérale (gauche/droite)
+            // SpeedZ = vitesse avant/arrière
+            animator.SetFloat("SpeedX", localVelocity.x);
+            animator.SetFloat("SpeedZ", localVelocity.z);
         }
 
         // === IMMUNITÉ GRABS SI EN L'AIR ===
@@ -221,23 +233,28 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void HandleInput()
     {
-        // Bloquer inputs si grabbed, en recoil, stun sentinelle, canMove desactive, OU climbing
         if (grabState != GrabState.None || gameManager.stunBySentinel || !canMove || isClimbing)
         {
             moveInput = Vector3.zero;
             return;
         }
 
-        // Bloquer mouvement si freeze actif
         if (isFrozen)
         {
             moveInput = Vector3.zero;
             return;
         }
 
-        // Utiliser PlayerInputManager
         Vector2 inputVector = PlayerInputManager.Instance.MoveInput;
-        moveInput = new Vector3(inputVector.x, 0f, inputVector.y).normalized;
+
+        // NOUVEAU : Garder la magnitude AVANT de normaliser
+        float inputMagnitude = inputVector.magnitude;
+
+        // Normaliser juste pour la direction
+        Vector3 direction = new Vector3(inputVector.x, 0f, inputVector.y).normalized;
+
+        // Multiplier par la magnitude originale pour garder l'intensité du stick
+        moveInput = direction * Mathf.Clamp01(inputMagnitude);
 
         // Sprint
         if (PlayerInputManager.Instance.SprintPressed && currentStamina > 0f && moveInput.magnitude > 0.1f)
@@ -324,14 +341,17 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         if (moveInput.magnitude < 0.1f)
         {
-            currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, 5f * stats.moveSpeed * Time.fixedDeltaTime);
+            // Arret plus rapide
+            currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, 15f * Time.fixedDeltaTime);
         }
         else
         {
             moveDirection = GetCameraRelativeMovement(moveInput);
             float targetSpeed = CalculateSpeed();
             Vector3 targetVelocity = moveDirection * targetSpeed;
-            currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, stats.moveSpeed * Time.fixedDeltaTime);
+
+            // Acceleration plus reactive pour eviter le drift
+            currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, 20f * Time.fixedDeltaTime);
         }
 
         if (lockSystem != null && lockSystem.IsLocked)
@@ -340,7 +360,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             if (targetDirection != Vector3.zero)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 15f * Time.fixedDeltaTime);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 40f * Time.fixedDeltaTime);
             }
         }
         else
@@ -348,7 +368,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             if (moveInput.magnitude > 0.1f)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.fixedDeltaTime);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 40f * Time.fixedDeltaTime);
             }
         }
 
@@ -365,17 +385,23 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         rb.linearVelocity = finalVelocity;
     }
-
     float CalculateSpeed()
     {
         float baseSpeed = stats.GetAdjustedSpeed(currentHealth);
+
+        // NOUVEAU : Magnitude du stick (0-1) pour vitesse variable
+        float stickMagnitude = moveInput.magnitude; // 0 = immobile, 1 = stick à fond
+        baseSpeed *= stickMagnitude; // Vitesse proportionnelle au stick
+
         if (isSprinting)
         {
             baseSpeed *= stats.sprintSpeedMultiplier;
         }
+
         baseSpeed *= swarmSlowdownMultiplier;
         baseSpeed *= brightEyesSlowdown;
         baseSpeed *= waterSlowdownMultiplier;
+
         return baseSpeed;
     }
 

@@ -16,7 +16,7 @@ public class BroomAttackSystem : MonoBehaviour
     private bool isInWindup = false;
     private float lastAttackTime = 0f;
     private bool isGrabbed = false;
-
+    private Animator animator;
     void Start()
     {
         if (stats == null)
@@ -24,10 +24,12 @@ public class BroomAttackSystem : MonoBehaviour
             Debug.LogError("PlayerStats non assigne sur " + gameObject.name);
             return;
         }
+        
 
         rb = GetComponent<Rigidbody>();
         health = GetComponent<PlayerHealth>();
         movement = GetComponent<PlayerPhysicsMovement>();
+        animator = GetComponentInChildren<Animator>();
 
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
@@ -96,11 +98,18 @@ public class BroomAttackSystem : MonoBehaviour
         isAttacking = true;
         isInWindup = true;
 
-        //Sortir du crouch si actif
-
+        // Sortir du crouch si actif
         if (movement != null)
         {
             movement.ExitCrouch();
+        }
+
+        // ACTIVER LE LAYER UPPER BODY
+        if (animator != null)
+        {
+            animator.SetLayerWeight(1, 1f);
+            animator.SetTrigger("BroomAttack");
+            Debug.Log("LAYER WEIGHT SET TO 1, TRIGGER FIRED");
         }
 
         try
@@ -145,6 +154,12 @@ public class BroomAttackSystem : MonoBehaviour
         {
             isAttacking = false;
             isInWindup = false;
+
+            // DÉSACTIVER LE LAYER UPPER BODY
+            if (animator != null)
+            {
+                animator.SetLayerWeight(1, 0f);
+            }
         }
     }
 
