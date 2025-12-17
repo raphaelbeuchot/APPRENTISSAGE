@@ -40,6 +40,10 @@ public class GameManager : MonoBehaviour
     // Système de raycasts et LOS
     private Dictionary<GameObject, TargetTrackingData> trackedTargets = new Dictionary<GameObject, TargetTrackingData>();
 
+    // Systeme anti-tirs simultanes
+    private List<float> scheduledShotTimes = new List<float>();
+    private const float SHOT_SPACING_WINDOW = 0.07f;
+
     private class TargetTrackingData
     {
         public bool wasInLOS;
@@ -102,6 +106,25 @@ public class GameManager : MonoBehaviour
 
         // Fallback
         return obj.transform.position + Vector3.up * 1.8f;
+    }
+
+    float GetSafeShootTime(float baseRandomDelay)
+    {
+        // Nettoyer les tirs passes
+        scheduledShotTimes.RemoveAll(t => t < Time.time);
+
+        float proposedTime = Time.time + sentinelSettings.shootDelay + baseRandomDelay;
+
+        // Checker si un tir existe deja proche de ce timing
+        while (scheduledShotTimes.Exists(t => Mathf.Abs(t - proposedTime) < SHOT_SPACING_WINDOW))
+        {
+            proposedTime += SHOT_SPACING_WINDOW;
+        }
+
+        scheduledShotTimes.Add(proposedTime);
+
+        // Retourner le delai final ajuste
+        return proposedTime - Time.time - sentinelSettings.shootDelay;
     }
 
     // ============================================
@@ -408,7 +431,7 @@ public class GameManager : MonoBehaviour
                         {
                             alreadyShot.Add(col.gameObject);
                             string reason = isAttacking ? "ATTAQUE" : (isInBourrade ? "BOURRADE" : "MOUVEMENT");
-                            float randomOffset = Random.Range(0.1f, 0.4f);
+                            float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
                             StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, finalTargetPos, trackData, randomOffset));
                         }
                         else if (humanHealth != null && !humanHealth.IsDead())
@@ -434,7 +457,7 @@ public class GameManager : MonoBehaviour
                     {
                         alreadyShot.Add(col.gameObject);
                         string reason = isAttacking ? "ATTAQUE" : (isInBourrade ? "BOURRADE" : "MOUVEMENT");
-                        float randomOffset = Random.Range(0.1f, 0.4f);
+                        float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
                         StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, finalTargetPos, trackData, randomOffset));
                     }
                     else if (humanHealth != null && !humanHealth.IsDead())

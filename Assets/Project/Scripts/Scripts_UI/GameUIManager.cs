@@ -29,12 +29,26 @@ public class GameUIManager : MonoBehaviour
     {
         zombies = FindObjectsOfType<GrabAttack>();
 
+        // === FIX : Trouver PlayerHealth automatiquement si non assigné ===
+        if (playerHealth == null)
+        {
+            playerHealth = FindObjectOfType<PlayerHealth>();
+            if (playerHealth == null)
+            {
+                Debug.LogError("GameUIManager: PlayerHealth non trouvé!");
+            }
+        }
+
         // Setup initial
         if (damageVignette != null)
         {
             Color c = damageVignette.color;
             c.a = 0f;
             damageVignette.color = c;
+        }
+        else
+        {
+            Debug.LogError("GameUIManager: damageVignette non assignée!");
         }
 
         if (mashText != null)
@@ -51,9 +65,9 @@ public class GameUIManager : MonoBehaviour
         if (playerHealth != null)
         {
             playerHealth.OnHealthChanged += OnPlayerDamaged;
+            Debug.Log("GameUIManager: Abonné aux events PlayerHealth");
         }
     }
-
     void Update()
     {
         CheckGrabStatus();
