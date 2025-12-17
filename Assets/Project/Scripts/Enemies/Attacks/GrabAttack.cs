@@ -321,6 +321,12 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             Vector3 vel = enemyRb.linearVelocity;
             vel.y = 0;
             enemyRb.linearVelocity = vel;
+            
+            // ACTIVER LE FLAG KNOCKBACK
+            if (enemyHealth != null)
+            {
+                enemyHealth.SetKnockbackState(stats.bourradeDuration);
+            }
 
             yield return new WaitForSeconds(stats.bourradeDuration);
 

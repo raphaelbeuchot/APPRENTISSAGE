@@ -11,6 +11,10 @@ public class EnemyHealth : MonoBehaviour
     [Header("Enemy Stats")]
     public EnemyStats stats;
 
+    [Header("Knockback State")]
+    public bool isInKnockback = false;
+    private float knockbackEndTime = 0f;
+
     private DeathContext.DeathType lastDeathType = DeathContext.DeathType.Other;
     private Vector3 lastImpactDirection = Vector3.forward;
     private float lastImpactForce = 1f;
@@ -154,36 +158,84 @@ public class EnemyHealth : MonoBehaviour
             isRecovering = false;
             Debug.Log($"{gameObject.name} recovered from gunshot!");
         }
+
+        // Désactiver knockback state quand timer expiré
+        if (isInKnockback && Time.time >= knockbackEndTime)
+        {
+            isInKnockback = false;
+        }
     }
 
+    public void SetKnockbackState(float duration)
+    {
+        isInKnockback = true;
+        knockbackEndTime = Time.time + duration;
+    }
     private void OnCollisionEnter(Collision collision)
     {
+        Debug.Log($"[ENEMYHEALTH] {gameObject.name} collided with {collision.gameObject.name} (layer: {collision.gameObject.layer})");
+
         if (isDead) return;
 
-        // Check si c'est un obstacle
+        // Check layer obstacle
         if (collision.gameObject.layer != LayerMask.NameToLayer("Obstacle"))
+        {
+            Debug.Log("[ENEMYHEALTH] Not obstacle layer, returning");
+            return;
+        }
+
+        Debug.Log("[ENEMYHEALTH] Is obstacle layer!");
+
+        // CHECK : Seulement si en état forcé
+        bool shouldBounce = false;
+
+        // 1. Check knockback
+        if (isInKnockback)
+        {
+            Debug.Log("[ENEMYHEALTH] isInKnockback = TRUE");
+            shouldBounce = true;
+        }
+
+        /*// 2. Check Blinder
+        ChargeAttack chargeAttack = GetComponent<ChargeAttack>();
+        if (chargeAttack != null)
+        {
+            Debug.Log($"[ENEMYHEALTH] ChargeAttack found, isStraightRunning = {chargeAttack.isStraightRunning}");
+            if (chargeAttack.isStraightRunning)
+                shouldBounce = true;
+        }
+        else
+        {
+            Debug.Log("[ENEMYHEALTH] No ChargeAttack component");
+        }*/
+
+        // 3. Check bourrade
+        GrabAttack grabAttack = GetComponent<GrabAttack>();
+        if (grabAttack != null && grabAttack.isInBourradeDuration)
+        {
+            Debug.Log("[ENEMYHEALTH] isInBourradeDuration = TRUE");
+            shouldBounce = true;
+        }
+
+        Debug.Log($"[ENEMYHEALTH] shouldBounce = {shouldBounce}");
+
+        if (!shouldBounce)
             return;
 
-        /*// Check état AI (pas en Chase)
-        EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
-        if (ai != null && ai.currentState == EnemyAI_AStar.State.Chasing)
-            return;
-        */
-        // Check vitesse
+        Debug.Log("[ENEMYHEALTH] APPLYING WALL BOUNCE!");
+
         float velocity = rb.linearVelocity.magnitude;
-        Debug.Log($"{gameObject.name} collision obstacle - velocity={velocity}");
+        Debug.Log($"[ENEMYHEALTH] velocity = {velocity}");
 
         if (velocity > 0f && collision.contacts.Length > 0)
         {
-            // Calculer direction repousse (normale du mur)
             Vector3 pushDirection = collision.contacts[0].normal;
-            pushDirection.y = 0; // Garder horizontal
+            pushDirection.y = 0;
             pushDirection.Normalize();
 
-            // Appliquer force
-            rb.AddForce(pushDirection * 100f, ForceMode.Impulse);
+            Debug.Log($"[ENEMYHEALTH] pushDirection = {pushDirection}");
 
-            Debug.Log($"{gameObject.name} REPOUSSÉ par obstacle! Force={pushDirection * 100f}");
+            rb.AddForce(pushDirection * 100f, ForceMode.Impulse);
         }
     }
     private Coroutine pulseCoroutine;

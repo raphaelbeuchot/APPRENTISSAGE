@@ -12,6 +12,8 @@ public class BroomAttackSystem : MonoBehaviour
     private PlayerPhysicsMovement movement;
     private AudioSource audioSource;
 
+
+
     private bool isAttacking = false;
     private bool isInWindup = false;
     private float lastAttackTime = 0f;
@@ -214,6 +216,10 @@ public class BroomAttackSystem : MonoBehaviour
                     Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
                     knockbackDir.y = 0;
                     targetRb.AddForce(knockbackDir * stats.broomKnockbackForce, ForceMode.VelocityChange);
+                    targetRb.AddForce(knockbackDir * stats.broomKnockbackForce, ForceMode.VelocityChange);
+
+                    // ACTIVER LE FLAG KNOCKBACK
+                    enemyHealth.SetKnockbackState(0.8f); // Durée = celle du knockdown (2s) ou moins
                 }
 
                 // Degats

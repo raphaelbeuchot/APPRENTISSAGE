@@ -433,11 +433,6 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
         return isCharging || isStraightRunning;
     }
 
-    public bool IsCharging()
-    {
-        return isCharging || isStraightRunning;
-    }
-
     public bool IsInSpecialState()
     {
         return isCharging || isStraightRunning;

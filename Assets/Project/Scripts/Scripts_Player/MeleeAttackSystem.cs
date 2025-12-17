@@ -376,6 +376,8 @@ public class MeleeAttackSystem : MonoBehaviour
                         Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
                         knockbackDir.y = 0;
                         targetRb.AddForce(knockbackDir * stats.backstabKnockbackForce, ForceMode.Impulse);
+                        // ACTIVER LE FLAG KNOCKBACK
+                        enemyHealth.SetKnockbackState(enemyHealth.stats.backstabStunDuration);
                     }
 
                     // Désactiver AI temporairement
@@ -455,6 +457,8 @@ public class MeleeAttackSystem : MonoBehaviour
                                 Vector3 desiredVel = knockbackDir * stats.knockbackForce;
                                 Vector3 velocityChange = desiredVel - currentVel;
                                 targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
+                                // ACTIVER LE FLAG KNOCKBACK
+                                enemyHealth.SetKnockbackState(enemyHealth.stats.backstabStunDuration);
                             }
 
                             // EXTEND fenêtre (repousse timer + incrémente compteur)
@@ -476,6 +480,8 @@ public class MeleeAttackSystem : MonoBehaviour
                                 Vector3 desiredVel = knockbackDir * stats.knockbackForce;
                                 Vector3 velocityChange = desiredVel - currentVel;
                                 targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
+                                // ACTIVER LE FLAG KNOCKBACK
+                                enemyHealth.SetKnockbackState(enemyHealth.stats.backstabStunDuration);
                             }
 
                             // Passe en StunBySpray + START fenêtre
