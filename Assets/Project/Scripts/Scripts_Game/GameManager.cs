@@ -355,6 +355,10 @@ public class GameManager : MonoBehaviour
             TestClimbDetection climbSystem = col.GetComponent<TestClimbDetection>();
             bool isClimbing = climbSystem != null && climbSystem.IsClimbing();
 
+            // NOUVEAU : Check sortie de pit
+            PlayerPitInteractable pitInteractable = col.GetComponent<PlayerPitInteractable>();
+            bool isClimbingOutOfPit = pitInteractable != null && pitInteractable.IsClimbingOut();
+
             bool isMoving = false;
             if (rb != null)
             {
@@ -404,7 +408,7 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing) && !playerImmune;
+            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit) && !playerImmune;
             EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isInShallowWater)
             {
