@@ -156,6 +156,36 @@ public class EnemyHealth : MonoBehaviour
         }
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (isDead) return;
+
+        // Check si c'est un obstacle
+        if (collision.gameObject.layer != LayerMask.NameToLayer("Obstacle"))
+            return;
+
+        /*// Check état AI (pas en Chase)
+        EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
+        if (ai != null && ai.currentState == EnemyAI_AStar.State.Chasing)
+            return;
+        */
+        // Check vitesse
+        float velocity = rb.linearVelocity.magnitude;
+        Debug.Log($"{gameObject.name} collision obstacle - velocity={velocity}");
+
+        if (velocity > 0f && collision.contacts.Length > 0)
+        {
+            // Calculer direction repousse (normale du mur)
+            Vector3 pushDirection = collision.contacts[0].normal;
+            pushDirection.y = 0; // Garder horizontal
+            pushDirection.Normalize();
+
+            // Appliquer force
+            rb.AddForce(pushDirection * 100f, ForceMode.Impulse);
+
+            Debug.Log($"{gameObject.name} REPOUSSÉ par obstacle! Force={pushDirection * 100f}");
+        }
+    }
     private Coroutine pulseCoroutine;
     public float pulseScaleMultiplier = 1.2f;
     public float pulseDuration = 0.3f;
