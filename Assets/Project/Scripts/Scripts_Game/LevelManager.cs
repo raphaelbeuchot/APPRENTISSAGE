@@ -191,6 +191,8 @@ public class LevelManager : MonoBehaviour
     public void RestartLevel()
     {
         Debug.Log("Redémarrage du niveau...");
+        // NOUVEAU : Flag pour auto-start le countdown après reload
+        PlayerPrefs.SetInt("AutoStartCountdown", 1);
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }

@@ -261,6 +261,18 @@ public class GameManager : MonoBehaviour
                 isPlayerCrouched = player.IsCrouching();
             }
 
+            // NOUVEAU : Détecter changement d'état crouch
+            bool hasCrouchStateChanged = false;
+            if (col.gameObject == player.gameObject)
+            {
+                hasCrouchStateChanged = (trackData.wasPlayerCrouched != isPlayerCrouched);
+
+                if (hasCrouchStateChanged)
+                {
+                    Debug.Log($"[CROUCH STATE CHANGE] Player changed from {(trackData.wasPlayerCrouched ? "CROUCHED" : "STANDING")} to {(isPlayerCrouched ? "CROUCHED" : "STANDING")}");
+                }
+            }
+
             // NOUVEAU : Detection STAND UP depuis CROUCH caché
             if (hasLOS && !trackData.wasInLOS && trackData.wasPlayerCrouched && !isPlayerCrouched && !trackData.isBeingShot && !trackData.isInStandUpGracePeriod)
             {
@@ -408,7 +420,10 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit) && !playerImmune;
+            // Punir changement crouch SAUF si c'est le cas de la grace period (stand up depuis caché)
+            bool shouldPunishCrouchChange = hasCrouchStateChanged && !trackData.isInStandUpGracePeriod;
+
+            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit || shouldPunishCrouchChange) && !playerImmune;
             EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isInShallowWater)
             {

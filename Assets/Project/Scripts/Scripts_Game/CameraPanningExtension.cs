@@ -12,6 +12,7 @@ public class CameraPanningExtension : CinemachineExtension
     [Header("View Toggle")]
     [SerializeField] private float lowCameraOffset = -5f;
     [SerializeField] private float viewToggleDuration = 2f;
+    [SerializeField] private float lowCameraOffsetInWater = 2f;
 
     [Header("Lateral Panning")]
     [SerializeField] private float lateralOffset = 5f;
@@ -23,6 +24,7 @@ public class CameraPanningExtension : CinemachineExtension
 
     [Header("Obstacle Hiding")]
     [SerializeField] private float playerHeightOffset = 0.5f;
+    [SerializeField] private LayerMask obstacleHidingLayers;
 
     private Vector3 currentPanOffset;
     private Vector3 currentLateralOffset = Vector3.zero;
@@ -87,7 +89,7 @@ public class CameraPanningExtension : CinemachineExtension
 
             HashSet<Renderer> currentlyBlocking = new HashSet<Renderer>();
 
-            RaycastHit[] hits = Physics.RaycastAll(cameraPos, direction.normalized, distance);
+            RaycastHit[] hits = Physics.RaycastAll(cameraPos, direction.normalized, distance, obstacleHidingLayers);
 
             foreach (RaycastHit hit in hits)
             {
@@ -149,15 +151,27 @@ public class CameraPanningExtension : CinemachineExtension
     {
         if (stage == CinemachineCore.Stage.Body)
         {
+            
+
             Vector2 lookInput = PlayerInputManager.Instance.LookInput;
-            Vector3 targetOffset;
-            float speed;
+            Vector3 targetOffset = Vector3.zero;  //  INITIALISATION
+            float speed = verticalPanSpeed;        //  INITIALISATION
 
             if (isHighPosition)
             {
                 if (isLowView)
                 {
-                    targetOffset = Vector3.up * lowCameraOffset;
+                    // NOUVEAU : Détecter si dans l'eau
+                    bool isInWater = false;
+                    if (playerTransform != null)
+                    {
+                        PlayerPitInteractable pitInteractable = playerTransform.GetComponent<PlayerPitInteractable>();
+                        isInWater = pitInteractable != null && pitInteractable.IsInWater();
+                    }
+
+                    // Utiliser offset adapté selon si dans l'eau ou non
+                    float offsetToUse = isInWater ? lowCameraOffsetInWater : lowCameraOffset;
+                    targetOffset = Vector3.up * offsetToUse;
                     speed = 1f / viewToggleDuration;
                 }
                 else
