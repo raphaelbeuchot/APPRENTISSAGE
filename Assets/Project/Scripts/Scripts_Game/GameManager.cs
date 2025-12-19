@@ -69,6 +69,9 @@ public class GameManager : MonoBehaviour
         // NOUVEAU : Detection changement crouch
         public bool crouchStateChangeInProgress = false;
         public float crouchStateChangeScheduledTime = -1f;
+
+        // NOUVEAU : Flag premier scan
+        public bool hasBeenTrackedBefore = false;
     }
 
     // ============================================
@@ -201,6 +204,12 @@ public class GameManager : MonoBehaviour
 
             TargetTrackingData trackData = trackedTargets[col.gameObject];
 
+            // NOUVEAU : Initialisation etat crouch si nouvelle entree
+            if (col.gameObject == player.gameObject && !trackData.hasBeenTrackedBefore)
+            {
+                trackData.wasPlayerCrouched = player.IsCrouching();
+            }
+
             EnemyHealth enemyHealth = col.GetComponent<EnemyHealth>();
             if (enemyHealth != null && enemyHealth.IsRecovering()) continue;
 
@@ -261,9 +270,10 @@ public class GameManager : MonoBehaviour
                 isPlayerCrouched = player.IsCrouching();
             }
 
-            // NOUVEAU : Detection changement d'etat crouch
+
+            // Detection changement d'etat crouch (seulement si deja tracke avant)
             bool hasCrouchStateChanged = false;
-            if (col.gameObject == player.gameObject)
+            if (col.gameObject == player.gameObject && trackData.hasBeenTrackedBefore)
             {
                 hasCrouchStateChanged = (trackData.wasPlayerCrouched != isPlayerCrouched);
             }
@@ -356,9 +366,8 @@ public class GameManager : MonoBehaviour
                 continue;
             }
 
-            // Update etat crouch pour prochain scan
-            trackData.wasPlayerCrouched = isPlayerCrouched;
-            trackData.wasInLOS = hasLOS;
+             
+
 
             // PENDANT LE DELAI : Si cache : RICOCHET IMMEDIAT
             if (trackData.isBeingShot && !hasLOS)
@@ -571,7 +580,12 @@ public class GameManager : MonoBehaviour
             {
                 trackData.consecutiveLOSScans = 0;
             }
+            // NOUVEAU : Update etat crouch pour prochain scan (A LA FIN)
+            trackData.wasPlayerCrouched = isPlayerCrouched;
+            trackData.wasInLOS = hasLOS;
+            trackData.hasBeenTrackedBefore = true;
         }
+
     }
 
     // ============================================

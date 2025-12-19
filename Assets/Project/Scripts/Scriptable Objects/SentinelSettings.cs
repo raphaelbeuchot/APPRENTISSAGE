@@ -12,8 +12,6 @@ public class SentinelSettings : ScriptableObject
     public LayerMask targetLayers;
     public float movementThreshold = 0.1f;
 
-
-
     [Header("DEGATS")]
     public float playerDamage = 25f;
     public float zombieDamage = 60f;
@@ -30,9 +28,20 @@ public class SentinelSettings : ScriptableObject
     public AudioClip greenlightAmbientSound;
 
     [Header("ETAT : ALERT")]
-    public float alertDuration = 3f;
     public AnimationClip alertAnimation;
+
+    [Header("Alert Sound - Single Shot")]
+    [Tooltip("Son joue une fois, vitesse selon distance")]
     public AudioClip alertSound;
+
+    [Tooltip("Pitch minimum (loin du sentinel)")]
+    [Range(0.5f, 2f)]
+    public float minPitch = 0.7f;
+
+    [Tooltip("Pitch maximum (proche du sentinel)")]
+    [Range(0.5f, 2f)]
+    public float maxPitch = 1.5f;
+
     public Color alertLightColor = Color.yellow;
     public GameObject alertParticlesPrefab;
 
@@ -45,45 +54,44 @@ public class SentinelSettings : ScriptableObject
     public Color redlightLightColor = Color.red;
     public GameObject redlightParticlesPrefab;
     public float redlightScanInterval = 0.2f;
+
     [Header("Exposure Detection")]
     [Tooltip("Nombre de scans consecutifs requis avant tir (si cible etait cachee)")]
     public int minimumExposureScans = 4;
 
-    public float shootDelay = 0.2f;       // délai avant tir
-    public float shootCooldown = 2f;      // cooldown entre tirs pour une même cible
+    public float shootDelay = 0.2f;
+    public float shootCooldown = 2f;
 
     [Header("LINE OF SIGHT & RAYCASTS")]
     [Tooltip("Layers qui bloquent la vision (murs, obstacles, ennemis)")]
     public LayerMask obstacleLayers;
     [Tooltip("Offset en hauteur pour l'origine des raycasts")]
     public Vector3 raycastOffset = new Vector3(0, 3, 0);
-    //[Tooltip("Délai avant de pouvoir tirer après réacquisition de cible")]
-    //public float reacquisitionDelay = 0.3f;
-    [Tooltip("Afficher les lasers de visée (debug)")]
+    [Tooltip("Afficher les lasers de visee (debug)")]
     public bool showLasers = true;
-    [Tooltip("Épaisseur des lasers")]
+    [Tooltip("Epaisseur des lasers")]
     public float laserWidth = 0.05f;
     [Tooltip("Couleur des lasers")]
     public Color laserColor = Color.red;
-    [Tooltip("Durée du fade-in des lasers")]
+    [Tooltip("Duree du fade-in des lasers")]
     public float laserFadeInDuration = 0.5f;
-    [Tooltip("Durée du fade-out des lasers en Release")]
+    [Tooltip("Duree du fade-out des lasers en Release")]
     public float laserFadeOutDuration = 1f;
 
     [Header("LASERS DE TIR")]
-    [Tooltip("Durée du fade-out du laser de tir")]
+    [Tooltip("Duree du fade-out du laser de tir")]
     public float shootLaserFadeDuration = 0.5f;
 
-    [Header("FLASH DE DÉTECTION")]
-    [Tooltip("Délai avant le début des flashs en Alert")]
+    [Header("FLASH DE DETECTION")]
+    [Tooltip("Delai avant le debut des flashs en Alert")]
     public float flashStartDelay = 2f;
-    [Tooltip("Durée du flash blanc")]
+    [Tooltip("Duree du flash blanc")]
     public float flashDuration = 0.5f;
-    [Tooltip("Écart entre chaque flash")]
+    [Tooltip("Ecart entre chaque flash")]
     public float flashInterval = 0.2f;
-    [Tooltip("Son de détection radar")]
+    [Tooltip("Son de detection radar")]
     public AudioClip detectionSound;
-    [Tooltip("Durée du fade des lasers en Release")]
+    [Tooltip("Duree du fade des lasers en Release")]
     public float laserFadeDuration = 1f;
 
     [Header("Ricochet System")]
@@ -138,29 +146,6 @@ public class SentinelSettings : ScriptableObject
     [Tooltip("Distance a laquelle on commence a reduire les offsets")]
     public float cameraTransitionRange = 20f;
 
-    [Header("Alert Sounds - Beethoven Pattern")]
-    public AudioClip alertSound1;      // Son 1 "pam"
-    public AudioClip alertSound2;      // Son 2 "pam"
-    public AudioClip alertSound3;      // Son 3 "pam"
-    public AudioClip finalAlertSound;  // Son 4 "PAAAAM"
-
-    [Header("Alert Delays - Tranche 1 (75-100% Dmax) - Loin")]
-    public float tranche1_delay = 1.5f;  // Les 3 délais identiques
-
-    [Header("Alert Delays - Tranche 2 (50-75% Dmax)")]
-    public float tranche2_delay12 = 1.0f;        // Délais 1 et 2 fixes
-    public float tranche2_delay3Min = 0.7f;      // Délai 3 random min
-    public float tranche2_delay3Max = 1.2f;      // Délai 3 random max
-
-    [Header("Alert Delays - Tranche 3 (25-50% Dmax)")]
-    public float tranche3_delay12Min = 0.5f;     // Délais 1&2 random min
-    public float tranche3_delay12Max = 1.0f;     // Délais 1&2 random max
-    public float tranche3_delay3Min = 0.5f;      // Délai 3 random min
-    public float tranche3_delay3Max = 1.0f;      // Délai 3 random max
-
-    [Header("Alert Delays - Tranche 4 (0-25% Dmax) - Proche")]
-    public float tranche4_delay = 0.5f;  // Les 3 délais identiques
-
     public enum SentinelType { Main, Small, Multiple }
 
     public float GetRandomGreenlightDuration()
@@ -176,6 +161,6 @@ public class SentinelSettings : ScriptableObject
     public float GetFullCycleDuration()
     {
         float avgGreenlight = (greenlightMinDuration + greenlightMaxDuration) / 2f;
-        return avgGreenlight + alertDuration + (redlightMinDuration + redlightMaxDuration) / 2f + releaseDuration;
+        return avgGreenlight + (redlightMinDuration + redlightMaxDuration) / 2f + releaseDuration;
     }
 }

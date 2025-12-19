@@ -54,7 +54,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         Debug.Log(string.Format("[EnemyPit] {0} entered pit: {1}", name, pitZone.name));
 
         // NOUVEAU : Forcer healthbar visible et marquer flag pour Empty pits
-        PitFill pitFill = pitZone.GetComponent<PitFill>();
+        PitFill pitFill = pitZone.GetComponentInChildren<PitFill>();
         if (pitFill != null && pitFill.fillType != null)
         {
             if (pitFill.fillType.category == PitContentType.ContentCategory.Empty)
@@ -77,10 +77,10 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
                 ApplyWaterSlowdown();
                 isInWaterShallow = true;
 
-                // Son splash spatialise
+                // Son splash non spatialise
                 if (waterSplashSound != null)
                 {
-                    AudioSource.PlayClipAtPoint(waterSplashSound, transform.position);
+                    AudioSource.PlayClipAtPoint(waterSplashSound, Camera.main.transform.position);  //  NON-SPATIALISÉ
                     Debug.Log(string.Format("[AUDIO] {0} water splash (shallow)", name));
                 }
 
@@ -95,7 +95,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
                 // Son splash pour deep water AVANT de desactiver AI
                 if (pitFill.fillType.category == PitContentType.ContentCategory.Water && waterSplashSound != null)
                 {
-                    AudioSource.PlayClipAtPoint(waterSplashSound, transform.position);
+                    AudioSource.PlayClipAtPoint(waterSplashSound, Camera.main.transform.position);  //  NON-SPATIALISÉ
                     Debug.Log(string.Format("[AUDIO] {0} water splash (deep)", name));
                 }
 

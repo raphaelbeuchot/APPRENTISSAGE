@@ -515,15 +515,18 @@ public class EnemyHealth : MonoBehaviour
             aiPath.canMove = false;
             aiPath.enabled = false;
         }
+        
         // SI MORT PAR PIT: Pas de ragdoll, comportement selon type de pit
         if (deathByPit)
         {
-            Debug.Log(string.Format("[EnemyHealth] {0} died in pit - no ragdoll", gameObject.name));
+
 
             // Check si mort par noyade pour jouer crowd laughter
             if (pitInt != null && pitInt.GetCurrentPitZone() != null)
             {
-                PitFill pitFill = pitInt.GetCurrentPitZone().GetComponent<PitFill>();
+                // CORRIGÉ : Chercher PitFill dans les enfants
+                PitFill pitFill = pitInt.GetCurrentPitZone().GetComponentInChildren<PitFill>();
+
                 if (pitFill != null && pitFill.fillType != null)
                 {
                     if (pitFill.fillType.category == PitContentType.ContentCategory.Water)
@@ -532,14 +535,11 @@ public class EnemyHealth : MonoBehaviour
                         if (crowdLaughterSound != null)
                         {
                             AudioSource.PlayClipAtPoint(crowdLaughterSound, Camera.main.transform.position);
-                            Debug.Log(string.Format("[AUDIO] {0} drowned - crowd laughter", gameObject.name));
                         }
-                        else
-                        {
-                            Debug.LogWarning(string.Format("[AUDIO] {0} crowdLaughterSound is NULL!", gameObject.name));
-                        }
+                        
                     }
                 }
+                
             }
 
             Rigidbody rb = GetComponent<Rigidbody>();

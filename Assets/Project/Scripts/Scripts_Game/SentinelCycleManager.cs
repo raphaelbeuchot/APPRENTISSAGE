@@ -17,14 +17,11 @@ public class SentinelCycleManager : MonoBehaviour
     [Header("Audio")]
     private AudioSource audioSource;
 
-      
-
     [Header("References")]
     public Transform playerTransform;
     public Transform sentinelTransform;
     [SerializeField] private Transform startZoneTransform;
     public GameManager gameManager;
-
 
     [Header("State")]
     public GameState currentState = GameState.GreenLight;
@@ -57,7 +54,6 @@ public class SentinelCycleManager : MonoBehaviour
 
         cycleTimer += Time.deltaTime;
 
-        // Alert gere par coroutine, on ne fait rien ici
         if (currentState == GameState.Alert)
         {
             return;
@@ -90,129 +86,106 @@ public class SentinelCycleManager : MonoBehaviour
         if (newState == GameState.GreenLight)
         {
             targetDuration = sentinelSettings.GetRandomGreenlightDuration();
-            Debug.Log($"[CYCLE] GreenLight - Duree: {targetDuration:F1}s");
+            Debug.Log(string.Format("[CYCLE] GreenLight - Duree: {0:F1}s", targetDuration));
         }
         else if (newState == GameState.Alert)
         {
-            // Lancer la coroutine Beethoven
+            // ARRETER le son GreenLight en boucle
+            if (audioSource != null && audioSource.loop)
+            {
+                audioSource.loop = false;
+                audioSource.Stop();
+            }
+
             if (alertCoroutine != null)
                 StopCoroutine(alertCoroutine);
 
             alertCoroutine = StartCoroutine(BeethovenAlertCoroutine());
+            Debug.Log("[CYCLE] Alert - duree = duree du son");
         }
         else if (newState == GameState.RedLight)
         {
-            // NOUVEAU : Reset tracking au début du RedLight
             if (gameManager != null)
                 gameManager.ResetAllTracking();
 
             targetDuration = sentinelSettings.GetRandomRedlightDuration();
 
+            // NOUVEAU : Son en boucle
             if (audioSource != null && sentinelSettings.redlightSound != null)
-                audioSource.PlayOneShot(sentinelSettings.redlightSound);
+            {
+                audioSource.clip = sentinelSettings.redlightSound;
+                audioSource.loop = true;
+                audioSource.Play();
+            }
 
-            Debug.Log($"[CYCLE] RedLight - Duree: {targetDuration:F1}s");
+            Debug.Log(string.Format("[CYCLE] RedLight - Duree: {0:F1}s", targetDuration));
         }
         else if (newState == GameState.Release)
         {
             targetDuration = sentinelSettings.releaseDuration;
 
-            if (audioSource != null && sentinelSettings.releaseSound != null)
-                audioSource.PlayOneShot(sentinelSettings.releaseSound);
+            // ARRETER le son RedLight
+            if (audioSource != null)
+            {
+                audioSource.Stop();
+            }
 
-            Debug.Log($"[CYCLE] Release - Duree: {targetDuration:F1}s");
+            // DEMARRER le son GreenLight en boucle (Release -> GreenLight -> Alert)
+            if (audioSource != null && sentinelSettings.greenlightAmbientSound != null)
+            {
+                audioSource.clip = sentinelSettings.greenlightAmbientSound;
+                audioSource.loop = false;
+                audioSource.volume = 1f;
+                audioSource.spatialBlend = 0f;  // 2D NON-SPATIALISE
+                audioSource.Play();
+                Debug.Log("[AUDIO] GreenLight loop started (Release)");
+            }
+
+            Debug.Log(string.Format("[CYCLE] Release - Duree: {0:F1}s", targetDuration));
         }
     }
 
     private IEnumerator BeethovenAlertCoroutine()
     {
-        Debug.Log("[BEETHOVEN ALERT] Debut de la sequence");
+        Debug.Log("[ALERT] Debut - son unique avec pitch variable");
 
-        // 1. Calculer Ps (projection sentinelle au sol)
-        Vector3 sentinelGroundPos = new Vector3(sentinelTransform.position.x, 0f, sentinelTransform.position.z);
-
-        // 2. Calculer D (distance player - Ps)
-        Vector3 playerGroundPos = new Vector3(playerTransform.position.x, 0f, playerTransform.position.z);
-        float D = Vector3.Distance(playerGroundPos, sentinelGroundPos);
-
-        // 3. Calculer Dmax (distance startZone - Ps)
-        Vector3 startZoneGroundPos = new Vector3(startZoneTransform.position.x, 0f, startZoneTransform.position.z);
-        float Dmax = Vector3.Distance(startZoneGroundPos, sentinelGroundPos);
-
-        // 4. Calculer pourcentage (0% = loin sentinelle, 100% = collé sentinelle)
-        float percentage = (D / Dmax) * 100f;
-
-        Debug.Log($"[BEETHOVEN] D={D:F1}m, Dmax={Dmax:F1}m, Pourcentage={percentage:F1}%");
-
-        // 5. Déterminer les délais selon la tranche
-        float delay1, delay2, delay3;
-
-        if (percentage >= 75f)
+        if (sentinelSettings.alertSound == null)
         {
-            // AVANT : delay1 = tranche1_delay;
-            // APRES :
-            delay1 = sentinelSettings.tranche1_delay;
-            delay2 = sentinelSettings.tranche1_delay;
-            delay3 = sentinelSettings.tranche1_delay;
-            Debug.Log($"[BEETHOVEN] TRANCHE 1 (loin) - Délais identiques: {delay1}s");
-        }
-        else if (percentage >= 50f)
-        {
-            delay1 = sentinelSettings.tranche2_delay12;
-            delay2 = sentinelSettings.tranche2_delay12;
-            delay3 = Random.Range(sentinelSettings.tranche2_delay3Min, sentinelSettings.tranche2_delay3Max);
-            Debug.Log($"[BEETHOVEN] TRANCHE 2 - Délai 1&2: {delay1}s, Délai 3 random: {delay3:F2}s");
-        }
-        else if (percentage >= 25f)
-        {
-            float randomDelay12 = Random.Range(sentinelSettings.tranche3_delay12Min, sentinelSettings.tranche3_delay12Max);
-            delay1 = randomDelay12;
-            delay2 = randomDelay12;
-            delay3 = Random.Range(sentinelSettings.tranche3_delay3Min, sentinelSettings.tranche3_delay3Max);
-            Debug.Log($"[BEETHOVEN] TRANCHE 3 - Délai 1&2 random: {delay1:F2}s, Délai 3 random: {delay3:F2}s");
-        }
-        else
-        {
-            delay1 = sentinelSettings.tranche4_delay;
-            delay2 = sentinelSettings.tranche4_delay;
-            delay3 = sentinelSettings.tranche4_delay;
-            Debug.Log($"[BEETHOVEN] TRANCHE 4 (proche) - Délais identiques: {delay1}s");
+            Debug.LogWarning("[ALERT] alertSound est NULL!");
+            StartNewCycle(GameState.RedLight);
+            yield break;
         }
 
-        // 6. Jouer la séquence Beethoven
-        // SON 1
-        if (sentinelSettings.alertSound1 != null)
-        {
-            audioSource.PlayOneShot(sentinelSettings.alertSound1);
-            Debug.Log($"[BEETHOVEN] Son 1 - Attente {delay1:F2}s");
-            yield return new WaitForSeconds(delay1);
-        }
+        float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
 
-        // SON 2
-        if (sentinelSettings.alertSound2 != null)
-        {
-            audioSource.PlayOneShot(sentinelSettings.alertSound2);
-            Debug.Log($"[BEETHOVEN] Son 2 - Attente {delay2:F2}s");
-            yield return new WaitForSeconds(delay2);
-        }
+        float normalizedDistance = Mathf.Clamp01(1f - (distance / 50f));
 
-        // SON 3
-        if (sentinelSettings.alertSound3 != null)
-        {
-            audioSource.PlayOneShot(sentinelSettings.alertSound3);
-            Debug.Log($"[BEETHOVEN] Son 3 - Attente {delay3:F2}s");
-            yield return new WaitForSeconds(delay3);
-        }
+        float pitch = Mathf.Lerp(sentinelSettings.minPitch, sentinelSettings.maxPitch, normalizedDistance);
 
-        // SON 4 FINAL
-        if (sentinelSettings.finalAlertSound != null)
-        {
-            audioSource.PlayOneShot(sentinelSettings.finalAlertSound);
-            Debug.Log("[BEETHOVEN] Son final - PAAAAM !");
-        }
+        PlaySoundAtPitch(sentinelSettings.alertSound, pitch);
 
-        // Transition immediate vers RedLight
+        Debug.Log(string.Format("[ALERT] Son joue - Distance: {0:F1}m, Pitch: {1:F2}", distance, pitch));
+
+        float soundDuration = sentinelSettings.alertSound.length / pitch;
+        yield return new WaitForSeconds(soundDuration);
+
+        Debug.Log("[ALERT] Son termine - transition RedLight");
         StartNewCycle(GameState.RedLight);
+    }
+
+    private void PlaySoundAtPitch(AudioClip clip, float pitch)
+    {
+        if (clip == null || audioSource == null) return;
+
+        GameObject tempGO = new GameObject("TempAudio_Alert");
+        tempGO.transform.position = sentinelTransform.position;
+        AudioSource tempAS = tempGO.AddComponent<AudioSource>();
+        tempAS.clip = clip;
+        tempAS.pitch = pitch;
+        tempAS.spatialBlend = 0f;
+        tempAS.volume = audioSource.volume;
+        tempAS.Play();
+        Destroy(tempGO, clip.length / pitch + 0.1f);
     }
 
     void SetState(GameState newState)
