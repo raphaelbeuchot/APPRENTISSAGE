@@ -11,6 +11,10 @@ public class EnemyHealth : MonoBehaviour
     [Header("Enemy Stats")]
     public EnemyStats stats;
 
+    [Header("Audio")]
+    [Tooltip("Son joue quand le zombie meurt noye (non spatialise)")]
+    public AudioClip crowdLaughterSound;
+
     [Header("Knockback State")]
     public bool isInKnockback = false;
     private float knockbackEndTime = 0f;
@@ -516,6 +520,28 @@ public class EnemyHealth : MonoBehaviour
         {
             Debug.Log(string.Format("[EnemyHealth] {0} died in pit - no ragdoll", gameObject.name));
 
+            // Check si mort par noyade pour jouer crowd laughter
+            if (pitInt != null && pitInt.GetCurrentPitZone() != null)
+            {
+                PitFill pitFill = pitInt.GetCurrentPitZone().GetComponent<PitFill>();
+                if (pitFill != null && pitFill.fillType != null)
+                {
+                    if (pitFill.fillType.category == PitContentType.ContentCategory.Water)
+                    {
+                        // Mort par noyade : crowd laughter non spatialise
+                        if (crowdLaughterSound != null)
+                        {
+                            AudioSource.PlayClipAtPoint(crowdLaughterSound, Camera.main.transform.position);
+                            Debug.Log(string.Format("[AUDIO] {0} drowned - crowd laughter", gameObject.name));
+                        }
+                        else
+                        {
+                            Debug.LogWarning(string.Format("[AUDIO] {0} crowdLaughterSound is NULL!", gameObject.name));
+                        }
+                    }
+                }
+            }
+
             Rigidbody rb = GetComponent<Rigidbody>();
             if (rb != null)
             {
@@ -530,6 +556,8 @@ public class EnemyHealth : MonoBehaviour
             // Detruire apres un delai (gere par PitFillDamageController)
             return;
         }
+
+        
 
         // SINON: Mort normale avec ragdoll
         Debug.Log($"========== {gameObject.name} DIE() - MORT NORMALE ==========");

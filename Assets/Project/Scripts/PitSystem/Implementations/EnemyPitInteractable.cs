@@ -19,6 +19,10 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
     [Tooltip("Multiplicateur de vitesse dans l'eau shallow")]
     public float waterSlowdownMultiplier = 0.5f;
 
+    [Header("Audio")]
+    [Tooltip("Son joue quand le zombie tombe dans l'eau")]
+    public AudioClip waterSplashSound;
+
     // References
     private EnemyHealth enemyHealth;
     private EnemyAI_AStar enemyAI; // MODIFIE : _AStar
@@ -72,6 +76,14 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
                 // Water shallow: ralentissement mais AI active
                 ApplyWaterSlowdown();
                 isInWaterShallow = true;
+
+                // Son splash spatialise
+                if (waterSplashSound != null)
+                {
+                    AudioSource.PlayClipAtPoint(waterSplashSound, transform.position);
+                    Debug.Log(string.Format("[AUDIO] {0} water splash (shallow)", name));
+                }
+
                 Debug.Log(string.Format("[EnemyPit] {0} in shallow water - slowed down", name));
             }
             else
@@ -79,6 +91,13 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
                 // Tous les autres cas (deep water, lava, acid): desactive AI
                 bool shouldDisableAI = (pitFill.fillType.category == PitContentType.ContentCategory.InstantKill) ||
                                        (pitFill.fillType.category == PitContentType.ContentCategory.Water && !isShallowPit);
+
+                // Son splash pour deep water AVANT de desactiver AI
+                if (pitFill.fillType.category == PitContentType.ContentCategory.Water && waterSplashSound != null)
+                {
+                    AudioSource.PlayClipAtPoint(waterSplashSound, transform.position);
+                    Debug.Log(string.Format("[AUDIO] {0} water splash (deep)", name));
+                }
 
                 if (shouldDisableAI && enemyAI != null)
                 {

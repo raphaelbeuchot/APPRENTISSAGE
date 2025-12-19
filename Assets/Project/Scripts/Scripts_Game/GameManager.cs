@@ -32,17 +32,18 @@ public class GameManager : MonoBehaviour
     public bool stunBySentinel = false;
     public bool zombieStunBySentinel = false;
 
-    
+
     private bool playerAlarmTriggered = false;
     private HashSet<GameObject> alreadyShot = new HashSet<GameObject>();
     private float detectionTimer = 0f;
 
-    // Système de raycasts et LOS
+    // Systeme de raycasts et LOS
     private Dictionary<GameObject, TargetTrackingData> trackedTargets = new Dictionary<GameObject, TargetTrackingData>();
 
     // Systeme anti-tirs simultanes
     private List<float> scheduledShotTimes = new List<float>();
-    private const float SHOT_SPACING_WINDOW = 0.07f;
+    private const float SHOT_SPACING_WINDOW = 0.05f;
+    private float lastActualShotTime = -999f;
 
     private class TargetTrackingData
     {
@@ -54,21 +55,20 @@ public class GameManager : MonoBehaviour
         // Variables pour securiser les tirs
         public bool isBeingShot = false;
         public float lastShotTime = -999f;
+        public float shootScheduledTime = -1f;
 
         // Compteur de scans consecutifs avec LOS
         public int consecutiveLOSScans = 0;
 
-        // NOUVEAU : Headshot system
+        // Headshot system
         public bool isHeadshot = false;
         public Vector3 lastKnownPosition;
-        public bool wasInHeadshotMode = false;
-
-        // NOUVEAU : Stand-up grace period
-        public bool isInStandUpGracePeriod = false;
 
         public bool wasPlayerCrouched = false;
 
-
+        // NOUVEAU : Detection changement crouch
+        public bool crouchStateChangeInProgress = false;
+        public float crouchStateChangeScheduledTime = -1f;
     }
 
     // ============================================
@@ -93,7 +93,7 @@ public class GameManager : MonoBehaviour
 
     Vector3 GetHeadPosition(Collider col)
     {
-        // Tête = 90% de la hauteur totale du collider
+        // Tete = 90% de la hauteur totale du collider
         float headHeight = col.bounds.min.y + (col.bounds.size.y * 0.9f);
         return new Vector3(col.bounds.center.x, headHeight, col.bounds.center.z);
     }
@@ -135,23 +135,23 @@ public class GameManager : MonoBehaviour
     {
         if (sentinelSettings == null)
         {
-            Debug.LogError("GameManager: SentinelSettings non assigné!");
+            Debug.LogError("GameManager: SentinelSettings non assigne!");
             return;
         }
 
         if (player == null)
-            Debug.LogError("GameManager: PlayerPhysicsMovement non assigné!");
+            Debug.LogError("GameManager: PlayerPhysicsMovement non assigne!");
 
         if (playerHealth == null)
         {
             playerHealth = player != null ? player.GetComponent<PlayerHealth>() : null;
             if (playerHealth == null)
-                Debug.LogError("GameManager: PlayerHealth non trouvé sur le joueur!");
+                Debug.LogError("GameManager: PlayerHealth non trouve sur le joueur!");
         }
 
         if (sentinelCycleManager == null)
         {
-            Debug.LogError("GameManager: SentinelCycleManager non assigné!");
+            Debug.LogError("GameManager: SentinelCycleManager non assigne!");
         }
 
         audioSource = GetComponent<AudioSource>();
@@ -163,7 +163,7 @@ public class GameManager : MonoBehaviour
         if (sentinelCycleManager == null || !sentinelCycleManager.IsGameStarted() || sentinelSettings == null)
             return;
 
-        // Détection uniquement en RedLight
+        // Detection uniquement en RedLight
         if (sentinelCycleManager.IsInRedLight())
         {
             detectionTimer += Time.deltaTime;
@@ -176,7 +176,7 @@ public class GameManager : MonoBehaviour
     }
 
     // ============================================
-    // SYSTÈME DE DÉTECTION AVEC RAYCASTS
+    // SYSTEME DE DETECTION AVEC RAYCASTS
     // ============================================
 
     void CheckForMovingTargetsWithRaycast()
@@ -186,7 +186,7 @@ public class GameManager : MonoBehaviour
 
         Collider[] targets = Physics.OverlapSphere(sentinelPos, sentinelSettings.detectionRadius, sentinelSettings.targetLayers);
 
-        // Réinitialiser la détection
+        // Reinitialiser la detection
         foreach (var kvp in trackedTargets)
         {
             EnemyAI_AStar ai = kvp.Key != null ? kvp.Key.GetComponent<EnemyAI_AStar>() : null;
@@ -212,7 +212,7 @@ public class GameManager : MonoBehaviour
             Vector3 direction = (targetPos - sentinelPos).normalized;
             float distance = Vector3.Distance(sentinelPos, targetPos);
 
-            // NOUVEAU SYSTÈME DE LOS AVEC HEADSHOT
+            // SYSTEME DE LOS AVEC HEADSHOT
             RaycastHit hit;
             bool hasLOS = true;
             bool isHeadshot = false;
@@ -221,7 +221,7 @@ public class GameManager : MonoBehaviour
             // Raycast 1 : vers centre
             if (Physics.Raycast(sentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers))
             {
-                // Centre caché, vérifier si la tête dépasse
+                // Centre cache, verifier si la tete depasse
                 Vector3 headPos = GetHeadPosition(col);
                 Vector3 directionToHead = (headPos - sentinelPos).normalized;
                 float distanceToHead = Vector3.Distance(sentinelPos, headPos);
@@ -229,19 +229,19 @@ public class GameManager : MonoBehaviour
                 RaycastHit headHit;
                 if (Physics.Raycast(sentinelPos, directionToHead, out headHit, distanceToHead, sentinelSettings.obstacleLayers))
                 {
-                    // Tête aussi cachée : vraiment safe
+                    // Tete aussi cachee : vraiment safe
                     hasLOS = false;
                     Debug.DrawLine(sentinelPos, hit.point, Color.red, 0.2f);
                     Debug.DrawLine(sentinelPos, headHit.point, Color.red, 0.1f);
                 }
                 else
                 {
-                    // TÊTE VISIBLE = HEADSHOT !
+                    // TETE VISIBLE = HEADSHOT !
                     hasLOS = true;
                     isHeadshot = true;
                     finalTargetPos = headPos;
                     Debug.DrawLine(sentinelPos, headPos, Color.yellow, 0.2f);
-                    Debug.Log($"[HEADSHOT OPPORTUNITY] {col.name} - tête visible à {headPos.y}m");
+                    Debug.Log($"[HEADSHOT OPPORTUNITY] {col.name} - tete visible a {headPos.y}m");
                 }
             }
             else
@@ -254,40 +254,33 @@ public class GameManager : MonoBehaviour
             trackData.isHeadshot = isHeadshot;
             trackData.lastKnownPosition = finalTargetPos;
 
-            // Check état crouch du player
+            // Check etat crouch du player
             bool isPlayerCrouched = false;
             if (col.gameObject == player.gameObject)
             {
                 isPlayerCrouched = player.IsCrouching();
             }
 
-            // NOUVEAU : Détecter changement d'état crouch
+            // NOUVEAU : Detection changement d'etat crouch
             bool hasCrouchStateChanged = false;
             if (col.gameObject == player.gameObject)
             {
                 hasCrouchStateChanged = (trackData.wasPlayerCrouched != isPlayerCrouched);
-
-                if (hasCrouchStateChanged)
-                {
-                    Debug.Log($"[CROUCH STATE CHANGE] Player changed from {(trackData.wasPlayerCrouched ? "CROUCHED" : "STANDING")} to {(isPlayerCrouched ? "CROUCHED" : "STANDING")}");
-                }
             }
 
-            // NOUVEAU : Detection STAND UP depuis CROUCH caché
-            if (hasLOS && !trackData.wasInLOS && trackData.wasPlayerCrouched && !isPlayerCrouched && !trackData.isBeingShot && !trackData.isInStandUpGracePeriod)
+            // LANCEMENT TIMER CROUCH si changement detecte ET (visible maintenant OU etait visible avant)
+            if (hasCrouchStateChanged && (hasLOS || trackData.wasInLOS) && !trackData.crouchStateChangeInProgress && !trackData.isBeingShot)
             {
-                // Le joueur vient de se lever depuis une position crouch cachée
-                Debug.Log($"[STAND UP FROM CROUCH] {col.name} - grace period starts!");
+                Debug.Log($"[CROUCH STATE CHANGE] {col.name} - Timer 0.3s lance!");
 
-                trackData.isInStandUpGracePeriod = true;
-                trackData.isBeingShot = true;
+                trackData.crouchStateChangeInProgress = true;
+                trackData.crouchStateChangeScheduledTime = Time.time + 0.3f;
 
                 PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
                 if (enemyHealth != null && !enemyHealth.IsDead())
                 {
                     alreadyShot.Add(col.gameObject);
-                    StartCoroutine(ShootTargetAfterStandUpGrace(col.gameObject, enemyHealth, null, sentinelPos, finalTargetPos, trackData, isHeadshot));
                 }
                 else if (humanHealth != null && !humanHealth.IsDead())
                 {
@@ -295,58 +288,116 @@ public class GameManager : MonoBehaviour
                     if (col.gameObject == player.gameObject)
                     {
                         playerAlarmTriggered = true;
-                        StartCoroutine(ShootTargetAfterStandUpGrace(col.gameObject, null, humanHealth, sentinelPos, finalTargetPos, trackData, isHeadshot));
                     }
                 }
+            }
 
-                // Update état pour prochain scan
+            // PENDANT LE TIMER CROUCH : Si perd LOS de la tete = RICOCHET
+            if (trackData.crouchStateChangeInProgress && !hasLOS)
+            {
+                Vector3 lastSeenPos = trackData.lastKnownPosition;
+                Vector3 dirToLastSeen = (lastSeenPos - sentinelPos).normalized;
+
+                RaycastHit obstacleHit;
+                if (Physics.Raycast(sentinelPos, dirToLastSeen, out obstacleHit, 100f, sentinelSettings.obstacleLayers))
+                {
+                    Debug.Log($"[RICOCHET CROUCH] {col.name} cache pendant timer crouch, hit {obstacleHit.collider.name}");
+
+                    // Son ricochet
+                    if (audioSource != null && sentinelSettings.ricochetSound != null)
+                        audioSource.PlayOneShot(sentinelSettings.ricochetSound);
+
+                    // VFX au point d'impact
+                    if (sentinelSettings.ricochetVFX != null)
+                    {
+                        GameObject vfx = Instantiate(sentinelSettings.ricochetVFX, obstacleHit.point, Quaternion.LookRotation(obstacleHit.normal));
+                        Destroy(vfx, sentinelSettings.ricochetVFXDuration);
+                    }
+
+                    // Laser vers obstacle
+                    StartCoroutine(ShowShootLaser(sentinelPos, obstacleHit.point, sentinelSettings.shootLaserFadeDuration));
+                }
+
+                // RESET immediat
+                trackData.crouchStateChangeInProgress = false;
+                trackData.crouchStateChangeScheduledTime = -1f;
+                trackData.consecutiveLOSScans = 0;
+                trackData.wasInLOS = false;
+                trackData.wasPlayerCrouched = isPlayerCrouched;
+                alreadyShot.Remove(col.gameObject);
+                if (col.gameObject == player.gameObject)
+                    playerAlarmTriggered = false;
+
+                continue;
+            }
+
+            // FIN TIMER CROUCH : Re-check visibilite et tirer
+            if (trackData.crouchStateChangeInProgress && Time.time >= trackData.crouchStateChangeScheduledTime && hasLOS)
+            {
+                Debug.Log($"[FIN TIMER CROUCH] {col.name} - tete={trackData.isHeadshot}, corps={!trackData.isHeadshot}");
+
+                PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
+
+                if (enemyHealth != null && !enemyHealth.IsDead())
+                {
+                    ShootEnemy(col.gameObject, enemyHealth, "CROUCH CHANGE", sentinelPos, finalTargetPos, trackData.isHeadshot);
+                }
+                else if (humanHealth != null && !humanHealth.IsDead())
+                {
+                    ShootPlayer(col.gameObject, humanHealth, "CROUCH CHANGE", sentinelPos, finalTargetPos, trackData.isHeadshot);
+                }
+
+                // RESET apres tir
+                trackData.crouchStateChangeInProgress = false;
+                trackData.crouchStateChangeScheduledTime = -1f;
+                trackData.lastShotTime = Time.time;
                 trackData.wasPlayerCrouched = isPlayerCrouched;
 
                 continue;
             }
 
-            // Update état crouch pour prochain scan (si pas en stand up grace)
+            // Update etat crouch pour prochain scan
             trackData.wasPlayerCrouched = isPlayerCrouched;
+            trackData.wasInLOS = hasLOS;
 
-            // Grace period avec RICOCHET
-                if (!hasLOS && trackData.wasInHeadshotMode && !trackData.isBeingShot)
+            // PENDANT LE DELAI : Si cache : RICOCHET IMMEDIAT
+            if (trackData.isBeingShot && !hasLOS)
             {
-                // Le joueur était en headshot mode et est devenu invisible (a crouch)
-                //  Tir immédiat qui va automatiquement ricochet
-                Debug.Log($"[GRACE PERIOD RICOCHET] {col.name} crouched from headshot!");
+                // Raycast vers DERNIERE POSITION CONNUE (ou la tete etait)
+                Vector3 lastSeenPos = trackData.lastKnownPosition;
+                Vector3 dirToLastSeen = (lastSeenPos - sentinelPos).normalized;
 
-                PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
+                RaycastHit obstacleHit;
+                if (Physics.Raycast(sentinelPos, dirToLastSeen, out obstacleHit, 100f, sentinelSettings.obstacleLayers))
+                {
+                    Debug.Log($"[RICOCHET IMMEDIAT] {col.name} cache pendant delai, hit {obstacleHit.collider.name}");
 
-                if (enemyHealth != null && !enemyHealth.IsDead())
-                {
-                    alreadyShot.Add(col.gameObject);
-                    string reason = "CROUCH ESCAPE";
-                    // Utiliser la coroutine existante avec délai 0.1s
-                    StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, GetTargetCenter(col), trackData, 0.1f));
-                }
-                else if (humanHealth != null && !humanHealth.IsDead())
-                {
-                    alreadyShot.Add(col.gameObject);
-                    string reason = "CROUCH ESCAPE";
-                    if (col.gameObject == player.gameObject)
+                    // Son ricochet
+                    if (audioSource != null && sentinelSettings.ricochetSound != null)
+                        audioSource.PlayOneShot(sentinelSettings.ricochetSound);
+
+                    // VFX au point d'impact
+                    if (sentinelSettings.ricochetVFX != null)
                     {
-                        playerAlarmTriggered = true;
-                        // Utiliser la coroutine existante
-                        StartCoroutine(ShootPlayerWithAlarm(col.gameObject, humanHealth, reason, sentinelPos, GetTargetCenter(col), trackData));
+                        GameObject vfx = Instantiate(sentinelSettings.ricochetVFX, obstacleHit.point, Quaternion.LookRotation(obstacleHit.normal));
+                        Destroy(vfx, sentinelSettings.ricochetVFXDuration);
                     }
+
+                    // Laser vers obstacle
+                    StartCoroutine(ShowShootLaser(sentinelPos, obstacleHit.point, sentinelSettings.shootLaserFadeDuration));
                 }
 
-                // Reset tracking
+                // RESET immediat
+                trackData.isBeingShot = false;
+                trackData.shootScheduledTime = -1f;
                 trackData.consecutiveLOSScans = 0;
                 trackData.wasInLOS = false;
-                trackData.wasInHeadshotMode = false;
+                alreadyShot.Remove(col.gameObject);
+                if (col.gameObject == player.gameObject)
+                    playerAlarmTriggered = false;
 
                 continue;
             }
-
-            // Update tracking state pour prochain scan
-            trackData.wasInLOS = hasLOS;
-            trackData.wasInHeadshotMode = isHeadshot;  // NOUVEAU
 
             EnemyAI_AStar ai = col.GetComponent<EnemyAI_AStar>();
             if (ai != null && hasLOS)
@@ -359,7 +410,7 @@ public class GameManager : MonoBehaviour
             MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
             bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
 
-            // AJOUT : Check broom attack aussi
+            // Check broom attack aussi
             BroomAttackSystem broomSystem = col.GetComponent<BroomAttackSystem>();
             bool isBroomAttacking = broomSystem != null && broomSystem.IsAttacking();
 
@@ -367,14 +418,14 @@ public class GameManager : MonoBehaviour
             TestClimbDetection climbSystem = col.GetComponent<TestClimbDetection>();
             bool isClimbing = climbSystem != null && climbSystem.IsClimbing();
 
-            // NOUVEAU : Check sortie de pit
+            // Check sortie de pit
             PlayerPitInteractable pitInteractable = col.GetComponent<PlayerPitInteractable>();
             bool isClimbingOutOfPit = pitInteractable != null && pitInteractable.IsClimbingOut();
 
             bool isMoving = false;
             if (rb != null)
             {
-                // NOUVEAU : Check pit mode en premier
+                // Check pit mode en premier
                 EnemyAI_AStar zombieAI = col.GetComponent<EnemyAI_AStar>();
                 bool isInPitMode = zombieAI != null && zombieAI.isInPitMode;
 
@@ -408,26 +459,57 @@ public class GameManager : MonoBehaviour
 
                         isMoving = aiPath.velocity.magnitude > effectiveThreshold;
                     }
-                    
-                        
-                        else
-                        {
-                            // Dernier fallback : Rigidbody
-                            float effectiveThreshold = sentinelSettings.movementThreshold;
-                            isMoving = rb.linearVelocity.magnitude > effectiveThreshold;
-                        }
-                    
+
+
+                    else
+                    {
+                        // Dernier fallback : Rigidbody
+                        float effectiveThreshold = sentinelSettings.movementThreshold;
+                        isMoving = rb.linearVelocity.magnitude > effectiveThreshold;
+                    }
+
                 }
             }
 
-            // Punir changement crouch SAUF si c'est le cas de la grace period (stand up depuis caché)
-            bool shouldPunishCrouchChange = hasCrouchStateChanged && !trackData.isInStandUpGracePeriod;
-
-            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit || shouldPunishCrouchChange) && !playerImmune;
+            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit) && !playerImmune;
             EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isInShallowWater)
             {
                 Debug.Log($"[WATER] {col.name} - isMoving: {isMoving}, hasLOS: {hasLOS}, shouldShoot: {shouldBeShot}");
+            }
+
+            // FIN DU DELAI : Si toujours visible : TIR REUSSI
+            if (trackData.isBeingShot && Time.time >= trackData.shootScheduledTime && hasLOS)
+            {
+                // NOUVEAU : Verifier qu'on n'a pas tire trop recemment dans ce scan
+                if (Time.time - lastActualShotTime < SHOT_SPACING_WINDOW)
+                {
+                    // Trop proche, reporter au prochain scan
+                    trackData.shootScheduledTime += SHOT_SPACING_WINDOW;
+                    continue;
+                }
+
+                Debug.Log($"[TIR REUSSI] {col.name} toujours visible apres delai");
+
+                PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
+
+                if (enemyHealth != null && !enemyHealth.IsDead())
+                {
+                    ShootEnemy(col.gameObject, enemyHealth, "MOUVEMENT", sentinelPos, finalTargetPos, trackData.isHeadshot);
+                    lastActualShotTime = Time.time;
+                }
+                else if (humanHealth != null && !humanHealth.IsDead())
+                {
+                    ShootPlayer(col.gameObject, humanHealth, "MOUVEMENT", sentinelPos, finalTargetPos, trackData.isHeadshot);
+                    lastActualShotTime = Time.time;
+                }
+
+                // RESET apres tir reussi
+                trackData.isBeingShot = false;
+                trackData.shootScheduledTime = -1f;
+                trackData.lastShotTime = Time.time;
+
+                continue;
             }
 
             // TIR SUR LA CIBLE SI ELLE EST EN MOUVEMENT ET VISIBLE
@@ -442,6 +524,8 @@ public class GameManager : MonoBehaviour
                     if (trackData.consecutiveLOSScans >= sentinelSettings.minimumExposureScans)
                     {
                         trackData.isBeingShot = true;
+                        float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
+                        trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
                         trackData.lastShotTime = Time.time;
 
                         PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
@@ -449,18 +533,13 @@ public class GameManager : MonoBehaviour
                         if (enemyHealth != null && !enemyHealth.IsDead())
                         {
                             alreadyShot.Add(col.gameObject);
-                            string reason = isAttacking ? "ATTAQUE" : (isInBourrade ? "BOURRADE" : "MOUVEMENT");
-                            float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
-                            StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, finalTargetPos, trackData, randomOffset));
                         }
                         else if (humanHealth != null && !humanHealth.IsDead())
                         {
                             alreadyShot.Add(col.gameObject);
-                            string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
                             if (col.gameObject == player.gameObject && !playerAlarmTriggered)
                             {
                                 playerAlarmTriggered = true;
-                                StartCoroutine(ShootPlayerWithAlarm(col.gameObject, humanHealth, reason, sentinelPos, finalTargetPos, trackData));
                             }
                         }
                     }
@@ -468,6 +547,8 @@ public class GameManager : MonoBehaviour
                 else
                 {
                     trackData.isBeingShot = true;
+                    float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
+                    trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
                     trackData.lastShotTime = Time.time;
 
                     PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
@@ -475,18 +556,13 @@ public class GameManager : MonoBehaviour
                     if (enemyHealth != null && !enemyHealth.IsDead())
                     {
                         alreadyShot.Add(col.gameObject);
-                        string reason = isAttacking ? "ATTAQUE" : (isInBourrade ? "BOURRADE" : "MOUVEMENT");
-                        float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
-                        StartCoroutine(ShootEnemyWithDelay(col.gameObject, enemyHealth, reason, sentinelPos, finalTargetPos, trackData, randomOffset));
                     }
                     else if (humanHealth != null && !humanHealth.IsDead())
                     {
                         alreadyShot.Add(col.gameObject);
-                        string reason = isAttacking ? "ATTAQUE" : "MOUVEMENT";
                         if (col.gameObject == player.gameObject && !playerAlarmTriggered)
                         {
                             playerAlarmTriggered = true;
-                            StartCoroutine(ShootPlayerWithAlarm(col.gameObject, humanHealth, reason, sentinelPos, finalTargetPos, trackData));
                         }
                     }
                 }
@@ -535,102 +611,8 @@ public class GameManager : MonoBehaviour
     }
 
     // ============================================
-    // COROUTINES DE TIR SÉCURISÉES
+    // METHODES DE TIR
     // ============================================
-
-    IEnumerator ShootEnemyWithDelay(GameObject enemy, EnemyHealth enemyHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, TargetTrackingData trackData, float extraDelay = 0f)
-    {
-        yield return new WaitForSeconds(sentinelSettings.shootDelay + extraDelay);
-
-        if (enemyHealth != null && !enemyHealth.IsDead())
-        {
-            // LIGNE MODIFIEE : Viser la tête si headshot, sinon le centre
-            Vector3 currentEnemyPos = trackData.isHeadshot ? GetHeadPosition(enemy) : GetTargetCenter(enemy);
-
-            Vector3 eyePosition = (sentinelEye != null) ? sentinelEye.position : transform.position;
-            Vector3 actualSentinelPos = eyePosition + sentinelSettings.raycastOffset;
-            Vector3 direction = (currentEnemyPos - actualSentinelPos).normalized;
-            float distance = Vector3.Distance(actualSentinelPos, currentEnemyPos);
-
-            RaycastHit hit;
-            bool hasLOS = true;
-
-            if (Physics.Raycast(actualSentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers))
-            {
-                hasLOS = false;
-
-                Debug.Log($"RICOCHET! {enemy.name} s'est cache, tir touche {hit.collider.name}");
-
-                if (audioSource != null && sentinelSettings.ricochetSound != null)
-                    audioSource.PlayOneShot(sentinelSettings.ricochetSound);
-
-                if (sentinelSettings.ricochetVFX != null)
-                {
-                    GameObject vfx = Instantiate(sentinelSettings.ricochetVFX, hit.point, Quaternion.LookRotation(hit.normal));
-                    Destroy(vfx, sentinelSettings.ricochetVFXDuration);
-                }
-
-                StartCoroutine(ShowShootLaser(actualSentinelPos, hit.point, sentinelSettings.shootLaserFadeDuration));
-
-                trackData.isBeingShot = false;
-                trackData.lastShotTime = Time.time;
-                alreadyShot.Remove(enemy);
-
-                yield break;
-            }
-
-            ShootEnemy(enemy, enemyHealth, reason, actualSentinelPos, currentEnemyPos, trackData.isHeadshot);
-            trackData.isBeingShot = false;
-            trackData.lastShotTime = Time.time;
-        }
-    }
-    IEnumerator ShootPlayerWithAlarm(GameObject playerObject, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, TargetTrackingData trackData)
-    {
-        yield return new WaitForSeconds(sentinelSettings.shootDelay);
-
-        if (humanHealth != null && !humanHealth.IsDead())
-        {
-            // LIGNE MODIFIEE : Viser la tête si headshot, sinon le centre
-            Vector3 currentPlayerPos = trackData.isHeadshot ? GetHeadPosition(playerObject) : GetTargetCenter(playerObject);
-
-            Vector3 eyePosition = (sentinelEye != null) ? sentinelEye.position : transform.position;
-            Vector3 actualSentinelPos = eyePosition + sentinelSettings.raycastOffset;
-            Vector3 direction = (currentPlayerPos - actualSentinelPos).normalized;
-            float distance = Vector3.Distance(actualSentinelPos, currentPlayerPos);
-
-            RaycastHit hit;
-            bool hasLOS = true;
-
-            if (Physics.Raycast(actualSentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers))
-            {
-                hasLOS = false;
-
-                Debug.Log($"RICOCHET! Player s'est cache, tir touche {hit.collider.name}");
-
-                if (audioSource != null && sentinelSettings.ricochetSound != null)
-                    audioSource.PlayOneShot(sentinelSettings.ricochetSound);
-
-                if (sentinelSettings.ricochetVFX != null)
-                {
-                    GameObject vfx = Instantiate(sentinelSettings.ricochetVFX, hit.point, Quaternion.LookRotation(hit.normal));
-                    Destroy(vfx, sentinelSettings.ricochetVFXDuration);
-                }
-
-                StartCoroutine(ShowShootLaser(actualSentinelPos, hit.point, sentinelSettings.shootLaserFadeDuration));
-
-                trackData.isBeingShot = false;
-                trackData.lastShotTime = Time.time;
-                playerAlarmTriggered = false;
-                alreadyShot.Remove(playerObject);
-
-                yield break;
-            }
-
-            ShootPlayer(playerObject, humanHealth, reason, actualSentinelPos, currentPlayerPos, trackData.isHeadshot);
-            trackData.isBeingShot = false;
-            trackData.lastShotTime = Time.time;
-        }
-    }
 
     void ShootEnemy(GameObject enemy, EnemyHealth enemyHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, bool isHeadshot = false)
     {
@@ -685,10 +667,9 @@ public class GameManager : MonoBehaviour
 
         StartCoroutine(PlayerStunBySentinel());
 
-        // Headshot sur player = double degats ou instakill selon ton choix
         if (isHeadshot)
         {
-            humanHealth.TakeSentinelShot(); // Tu peux doubler les degats ici si tu veux
+            humanHealth.TakeSentinelShot();
         }
         humanHealth.TakeSentinelShot();
     }
@@ -735,11 +716,6 @@ public class GameManager : MonoBehaviour
     // CYCLES DE JEU
     // ============================================
 
-    
-    
-
-    
-
     public void RemoveFromAlreadyShot(GameObject target)
     {
         alreadyShot.Remove(target);
@@ -757,63 +733,6 @@ public class GameManager : MonoBehaviour
     {
         return sentinelCycleManager != null && sentinelCycleManager.IsInRedLight();
     }
-    IEnumerator ShootTargetAfterStandUpGrace(GameObject target, EnemyHealth enemyHealth, PlayerHealth playerHealth, Vector3 sentinelPos, Vector3 targetPos, TargetTrackingData trackData, bool wasHeadshot)
-    {
-        // Attendre la grace period
-        yield return new WaitForSeconds(sentinelSettings.shootDelay);
-
-        // Revérifier le LOS au moment du tir
-        Vector3 eyePosition = (sentinelEye != null) ? sentinelEye.position : transform.position;
-        Vector3 actualSentinelPos = eyePosition + sentinelSettings.raycastOffset;
-
-        Vector3 currentTargetPos = wasHeadshot ? GetHeadPosition(target) : GetTargetCenter(target);
-        Vector3 direction = (currentTargetPos - actualSentinelPos).normalized;
-        float distance = Vector3.Distance(actualSentinelPos, currentTargetPos);
-
-        RaycastHit hit;
-        bool stillHasLOS = !Physics.Raycast(actualSentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers);
-
-        if (!stillHasLOS)
-        {
-            // RICOCHET : le joueur s'est rebaissé à temps !
-            Debug.Log($"[STAND UP GRACE SUCCESS] {target.name} crouched back in time! RICOCHET on {hit.collider.name}");
-
-            if (audioSource != null && sentinelSettings.ricochetSound != null)
-                audioSource.PlayOneShot(sentinelSettings.ricochetSound);
-
-            if (sentinelSettings.ricochetVFX != null)
-            {
-                GameObject vfx = Instantiate(sentinelSettings.ricochetVFX, hit.point, Quaternion.LookRotation(hit.normal));
-                Destroy(vfx, sentinelSettings.ricochetVFXDuration);
-            }
-
-            StartCoroutine(ShowShootLaser(actualSentinelPos, hit.point, sentinelSettings.shootLaserFadeDuration));
-
-            trackData.isBeingShot = false;
-            trackData.isInStandUpGracePeriod = false;
-            trackData.lastShotTime = Time.time;
-            alreadyShot.Remove(target);
-            if (target == player.gameObject) playerAlarmTriggered = false;
-
-            yield break;
-        }
-
-        // TIR REUSSI : le joueur n'a pas crouché assez vite
-        Debug.Log($"[STAND UP GRACE FAILED] {target.name} too slow! {(wasHeadshot ? "HEADSHOT" : "HIT")}");
-
-        if (enemyHealth != null && !enemyHealth.IsDead())
-        {
-            ShootEnemy(target, enemyHealth, "STAND UP TOO SLOW", actualSentinelPos, currentTargetPos, wasHeadshot);
-        }
-        else if (playerHealth != null && !playerHealth.IsDead())
-        {
-            ShootPlayer(target, playerHealth, "STAND UP TOO SLOW", actualSentinelPos, currentTargetPos, wasHeadshot);
-        }
-
-        trackData.isBeingShot = false;
-        trackData.isInStandUpGracePeriod = false;
-        trackData.lastShotTime = Time.time;
-    }
 
     public void ResetAllTracking()
     {
@@ -821,8 +740,9 @@ public class GameManager : MonoBehaviour
         {
             kvp.Value.wasInLOS = false;
             kvp.Value.wasPlayerCrouched = false;
-            kvp.Value.wasInHeadshotMode = false;
             kvp.Value.consecutiveLOSScans = 0;
+            kvp.Value.isBeingShot = false;
+            kvp.Value.shootScheduledTime = -1f;
         }
         Debug.Log("[TRACKING RESET] All tracking data cleared for new cycle");
     }
