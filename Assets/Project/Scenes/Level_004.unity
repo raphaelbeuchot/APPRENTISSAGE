@@ -1427,7 +1427,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.67112416, z: -0, w: 0.74134505}
   m_LocalPosition: {x: 6.5897512, y: 0.6, z: 4.471561}
-  m_LocalScale: {x: 1, y: 1.2, z: 0.3}
+  m_LocalScale: {x: 1, y: 1.2, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -3580,7 +3580,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.1
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!136 &56338580
 CapsuleCollider:
@@ -17885,7 +17884,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.082606554, z: -0, w: 0.99658227}
   m_LocalPosition: {x: 1.1, y: 0.6, z: 5.21}
-  m_LocalScale: {x: 1.8133595, y: 1.2, z: 0.3}
+  m_LocalScale: {x: 1.8133595, y: 1.2, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -18868,7 +18867,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.1
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!136 &301849658
 CapsuleCollider:
@@ -33708,7 +33706,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.5
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!114 &493104675
 MonoBehaviour:
@@ -35859,7 +35856,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.07485551, z: -0, w: 0.99719447}
   m_LocalPosition: {x: 7.3253756, y: 0.6, z: 3.2819579}
-  m_LocalScale: {x: 1, y: 1.2, z: 0.3}
+  m_LocalScale: {x: 1, y: 1.2, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -48671,7 +48668,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.1
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!114 &736933122
 MonoBehaviour:
@@ -49627,63 +49623,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
   m_PrefabInstance: {fileID: 717395673}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &751001165
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4841243947222244815, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_Name
-      value: RicochetVFX (2)
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 4.788486
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.062934875
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -3.4811244
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
 --- !u!1 &751013844
 GameObject:
   m_ObjectHideFlags: 0
@@ -55936,7 +55875,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.1
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!136 &851951888
 CapsuleCollider:
@@ -55989,7 +55927,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
-  crowdLaughterSound: {fileID: 8300000, guid: eacabdfec25ac26448b894476c9f8e2e, type: 3}
+  crowdLaughterSound: {fileID: 0}
   isInKnockback: 0
   deathByPit: 0
   healthBarUI: {fileID: 0}
@@ -56384,7 +56322,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.1
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!136 &854945114
 CapsuleCollider:
@@ -64922,7 +64859,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.1
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!114 &986902266
 MonoBehaviour:
@@ -93304,7 +93240,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.5
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!114 &1429145128
 MonoBehaviour:
@@ -95628,7 +95563,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.1
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!136 &1457173660
 CapsuleCollider:
@@ -106497,63 +106431,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 8c6fa7ab62026104b805b357479e7e2d, type: 3}
   m_PrefabInstance: {fileID: 59099635}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &1628559871
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4841243947222244815, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_Name
-      value: RicochetVFX (3)
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 4.0192337
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.0629344
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -2.5180182
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
 --- !u!1001 &1629065290
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -107133,63 +107010,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
   m_PrefabInstance: {fileID: 1083205912}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &1633849891
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4841243947222244815, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_Name
-      value: RicochetVFX
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 4.239356
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.06293392
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -2.26015
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
 --- !u!1001 &1634070118
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -107885,7 +107705,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.1
-  waterSplashSound: {fileID: 8300000, guid: b5699cd7ea011b8408a255b3eda60068, type: 3}
   isInShallowWater: 0
 --- !u!136 &1647027119
 CapsuleCollider:
@@ -111132,7 +110951,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.1
-  waterSplashSound: {fileID: 8300000, guid: 3d103b5460f295c4696a4b29411e1468, type: 3}
   isInShallowWater: 0
 --- !u!136 &1692189068
 CapsuleCollider:
@@ -111208,7 +111026,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
-  crowdLaughterSound: {fileID: 8300000, guid: eacabdfec25ac26448b894476c9f8e2e, type: 3}
+  crowdLaughterSound: {fileID: 0}
   isInKnockback: 0
   deathByPit: 0
   healthBarUI: {fileID: 0}
@@ -122918,7 +122736,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.5
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!114 &1882385976
 MonoBehaviour:
@@ -126494,7 +126311,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.1
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!136 &1926071805
 CapsuleCollider:
@@ -132664,63 +132480,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
---- !u!1001 &2027896701
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4841243947222244815, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_Name
-      value: RicochetVFX (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 3.48991
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.06293392
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -3.2526467
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8737532702973596687, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
 --- !u!4 &2027925712 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
@@ -136283,7 +136042,6 @@ MonoBehaviour:
   isFallingInPit: 0
   shouldIgnoreHealthbarDistance: 0
   waterSlowdownMultiplier: 0.1
-  waterSplashSound: {fileID: 0}
   isInShallowWater: 0
 --- !u!136 &2084095815
 CapsuleCollider:
@@ -140278,7 +140036,3 @@ SceneRoots:
   - {fileID: 1298930525}
   - {fileID: 1093731450}
   - {fileID: 1461153831}
-  - {fileID: 1633849891}
-  - {fileID: 2027896701}
-  - {fileID: 751001165}
-  - {fileID: 1628559871}

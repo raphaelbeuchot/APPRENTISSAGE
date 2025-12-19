@@ -19,10 +19,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
     [Tooltip("Multiplicateur de vitesse dans l'eau shallow")]
     public float waterSlowdownMultiplier = 0.5f;
 
-    [Header("Audio")]
-    [Tooltip("Son joue quand le zombie tombe dans l'eau")]
-    public AudioClip waterSplashSound;
-
+    
     // References
     private EnemyHealth enemyHealth;
     private EnemyAI_AStar enemyAI; // MODIFIE : _AStar
@@ -53,57 +50,66 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         currentPitZone = pitZone;
         Debug.Log(string.Format("[EnemyPit] {0} entered pit: {1}", name, pitZone.name));
 
-        // NOUVEAU : Forcer healthbar visible et marquer flag pour Empty pits
         PitFill pitFill = pitZone.GetComponentInChildren<PitFill>();
-        if (pitFill != null && pitFill.fillType != null)
+        if (pitFill == null || pitFill.fillType == null)
         {
-            if (pitFill.fillType.category == PitContentType.ContentCategory.Empty)
+            Debug.LogWarning(string.Format("[EnemyPit] {0} - No PitFill found!", name));
+            return;
+        }
+
+        float pitDepth = Mathf.Abs(pitZone.GetMaxDepth());
+        bool isShallowPit = pitDepth <= 1f;
+
+        // EMPTY PIT
+        if (pitFill.fillType.category == PitContentType.ContentCategory.Empty)
+        {
+            isFallingInPit = true;
+            if (enemyHealth != null && enemyHealth.healthBarUI != null)
             {
-                isFallingInPit = true;
-                if (enemyHealth != null && enemyHealth.healthBarUI != null)
-                {
-                    enemyHealth.healthBarUI.Show();
-                    Debug.Log(string.Format("[EnemyPit] Forced healthbar show for {0} on Empty pit entry", name));
-                }
+                enemyHealth.healthBarUI.Show();
+                Debug.Log(string.Format("[EnemyPit] Forced healthbar show for {0} on Empty pit entry", name));
+            }
+        }
+        // WATER PIT - SHALLOW
+        else if (pitFill.fillType.category == PitContentType.ContentCategory.Water && isShallowPit)
+        {
+            ApplyWaterSlowdown();
+            isInWaterShallow = true;
+
+            // Son splash non spatialise
+            if (enemyHealth != null && enemyHealth.stats.waterSplashSound != null)
+            {
+                AudioSource.PlayClipAtPoint(enemyHealth.stats.waterSplashSound, Camera.main.transform.position);
+                Debug.Log(string.Format("[AUDIO] {0} water splash (shallow)", name));
             }
 
-            // Check si c'est water shallow
-            float pitDepth = Mathf.Abs(pitZone.GetMaxDepth());
-            bool isShallowPit = pitDepth <= 1f;
-
-            if (pitFill.fillType.category == PitContentType.ContentCategory.Water && isShallowPit)
+            Debug.Log(string.Format("[EnemyPit] {0} in shallow water - slowed down", name));
+        }
+        // WATER PIT - DEEP
+        else if (pitFill.fillType.category == PitContentType.ContentCategory.Water && !isShallowPit)
+        {
+            // Son splash AVANT de desactiver AI
+            if (enemyHealth != null && enemyHealth.stats.waterSplashSound != null)
             {
-                // Water shallow: ralentissement mais AI active
-                ApplyWaterSlowdown();
-                isInWaterShallow = true;
-
-                // Son splash non spatialise
-                if (waterSplashSound != null)
-                {
-                    AudioSource.PlayClipAtPoint(waterSplashSound, Camera.main.transform.position);  //  NON-SPATIALISÉ
-                    Debug.Log(string.Format("[AUDIO] {0} water splash (shallow)", name));
-                }
-
-                Debug.Log(string.Format("[EnemyPit] {0} in shallow water - slowed down", name));
+                AudioSource.PlayClipAtPoint(enemyHealth.stats.waterSplashSound, Camera.main.transform.position);
+                Debug.Log(string.Format("[AUDIO] {0} water splash (deep)", name));
             }
-            else
+
+            // Desactiver AI pour deep water
+            if (enemyAI != null)
             {
-                // Tous les autres cas (deep water, lava, acid): desactive AI
-                bool shouldDisableAI = (pitFill.fillType.category == PitContentType.ContentCategory.InstantKill) ||
-                                       (pitFill.fillType.category == PitContentType.ContentCategory.Water && !isShallowPit);
-
-                // Son splash pour deep water AVANT de desactiver AI
-                if (pitFill.fillType.category == PitContentType.ContentCategory.Water && waterSplashSound != null)
-                {
-                    AudioSource.PlayClipAtPoint(waterSplashSound, Camera.main.transform.position);  //  NON-SPATIALISÉ
-                    Debug.Log(string.Format("[AUDIO] {0} water splash (deep)", name));
-                }
-
-                if (shouldDisableAI && enemyAI != null)
-                {
-                    enemyAI.enabled = false;
-                    Debug.Log(string.Format("[EnemyPit] {0} AI disabled in {1}", name, pitFill.fillType.contentName));
-                }
+                enemyAI.enabled = false;
+                Debug.Log(string.Format("[EnemyPit] {0} AI disabled in deep water", name));
+            }
+        }
+        // INSTANT KILL (Lava, Acid, etc.)
+        else if (pitFill.fillType.category == PitContentType.ContentCategory.InstantKill)
+        {
+            // Desactiver AI
+            if (enemyAI != null)
+            {
+                enemyAI.enabled = false;
+                Debug.Log(string.Format("[EnemyPit] {0} AI disabled in {1}", name, pitFill.fillType.contentName));
             }
         }
     }

@@ -190,6 +190,10 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Dégâts pris par tir sentinelle")]
     public float sentinelDamageTaken = 50f;  // existant
 
+    [Header("AUDIO")]
+    [Tooltip("Son joue quand le zombie tombe dans l'eau")]
+    public AudioClip waterSplashSound;
+
     [Tooltip("Dégâts pris par spray")]
     public float sprayDamageTaken = 25f;
 
