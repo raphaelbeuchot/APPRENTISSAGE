@@ -757,6 +757,7 @@ public class GameManager : MonoBehaviour
             kvp.Value.consecutiveLOSScans = 0;
             kvp.Value.isBeingShot = false;
             kvp.Value.shootScheduledTime = -1f;
+            kvp.Value.hasBeenTrackedBefore = false;
         }
         Debug.Log("[TRACKING RESET] All tracking data cleared for new cycle");
     }
