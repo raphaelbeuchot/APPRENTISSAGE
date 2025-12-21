@@ -402,17 +402,17 @@ public class MeleeAttackSystem : MonoBehaviour
                 {
                     // === SPRAY NORMAL ===
 
-                    // NOUVEAU : Check si joueur dans dos ennemi (même à distance > 1m)
+                    // Check si joueur dans dos ennemi (protection)
                     Vector3 dirPlayerFromEnemy = (transform.position - hit.transform.position).normalized;
                     dirPlayerFromEnemy.y = 0f;
                     float angleFromEnemyBack = Vector3.Angle(-hit.transform.forward, dirPlayerFromEnemy);
 
                     if (angleFromEnemyBack <= stats.backstabConeAngle / 2f)
                     {
-                        // MISS - skip cet ennemi
-                        Debug.Log($"MISS: {hit.gameObject.name} - player in enemy back cone but too far for backstab");
-                        continue; // Skip au prochain ennemi
+                        Debug.Log($"MISS: {hit.gameObject.name} - player in enemy back cone");
+                        continue;
                     }
+
                     // Consommer munition
                     if (!sprayUsed)
                     {
@@ -421,81 +421,33 @@ public class MeleeAttackSystem : MonoBehaviour
                         wasFrontAttack = true;
                     }
 
-                    // CHECK ÉTAT ACTUEL DU ZOMBIE
+                    // TOUJOURS APPLIQUER RECUL
+                    if (targetRb != null && enemyAI_AStar != null)
+                    {
+                        Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
+                        knockbackDir.y = 0;
+                        targetRb.AddForce(knockbackDir * stats.knockbackForce, ForceMode.VelocityChange);
+                        enemyHealth.SetKnockbackState(enemyHealth.stats.backstabStunDuration);
+                    }
+
+                    // GESTION STUN
                     if (enemyAI_AStar != null)
                     {
-                        Debug.Log($"[SPRAY DEBUG] {hit.gameObject.name} - État actuel: {enemyAI_AStar.currentState}");
-
-                        if (enemyAI_AStar.currentState == EnemyAI_AStar.State.Chasing)
+                        if (enemyAI_AStar.currentState == EnemyAI_AStar.State.StunBySpray)
                         {
-                            // === CAS 1 : ENNEMI EN CHASE ===
-                            Debug.Log($"[SPRAY] CAS 1 - CHASE détecté");
-
-                            // Stop brutal, pas de recul
-                            if (targetRb != null)
-                            {
-                                targetRb.linearVelocity = new Vector3(0, targetRb.linearVelocity.y, 0);
-                            }
-
-                            // Passe en StunBySpray + START fenêtre
-                            enemyAI_AStar.currentState = EnemyAI_AStar.State.StunBySpray;
-                            enemyHealth.StartSprayWindow(enemyHealth.stats.sprayWindowDuration);
-
-                            Debug.Log($"SPRAY CHASE: {hit.gameObject.name} -> StunBySpray (no recoil)");
-                        }
-                        else if (enemyAI_AStar.currentState == EnemyAI_AStar.State.StunBySpray)
-                        {
-                            // === CAS 2 : ENNEMI DÉJÀ EN STUNBYSPRAY ===
-                            Debug.Log($"[SPRAY] CAS 2 - STUNBYSPRAY détecté - Timer avant: {enemyHealth.GetSprayStunTimeRemaining()}s");
-
-                            // Recul
-                            if (targetRb != null)
-                            {
-                                Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
-                                knockbackDir.y = 0;
-                                Vector3 currentVel = targetRb.linearVelocity;
-                                Vector3 desiredVel = knockbackDir * stats.knockbackForce;
-                                Vector3 velocityChange = desiredVel - currentVel;
-                                targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
-                                // ACTIVER LE FLAG KNOCKBACK
-                                enemyHealth.SetKnockbackState(enemyHealth.stats.backstabStunDuration);
-                            }
-
-                            // EXTEND fenêtre (repousse timer + incrémente compteur)
+                            // Déjà stun → extend window
                             enemyHealth.ExtendSprayWindow(enemyHealth.stats.sprayWindowDuration);
-
-                            Debug.Log($"[SPRAY] CAS 2 - Timer après extend: {enemyHealth.GetSprayStunTimeRemaining()}s");
                         }
                         else
                         {
-                            // === CAS 3 : ENNEMI EN IDLE/WANDERING ===
-                            Debug.Log($"[SPRAY] CAS 3 - IDLE/WANDERING détecté");
-
-                            // Recul + Passe en StunBySpray
-                            if (targetRb != null)
-                            {
-                                Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
-                                knockbackDir.y = 0;
-                                Vector3 currentVel = targetRb.linearVelocity;
-                                Vector3 desiredVel = knockbackDir * stats.knockbackForce;
-                                Vector3 velocityChange = desiredVel - currentVel;
-                                targetRb.AddForce(velocityChange, ForceMode.VelocityChange);
-                                // ACTIVER LE FLAG KNOCKBACK
-                                enemyHealth.SetKnockbackState(enemyHealth.stats.backstabStunDuration);
-                            }
-
-                            // Passe en StunBySpray + START fenêtre
+                            // Nouveau stun → start window
                             enemyAI_AStar.currentState = EnemyAI_AStar.State.StunBySpray;
                             enemyHealth.StartSprayWindow(enemyHealth.stats.sprayWindowDuration);
-
-                            Debug.Log($"SPRAY IDLE: {hit.gameObject.name} -> StunBySpray (with recoil)");
                         }
                     }
 
                     // Dégâts
                     enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Spray);
-
-                    
                 }
 
                 // Notifier Blinders (commun spray/backstab)

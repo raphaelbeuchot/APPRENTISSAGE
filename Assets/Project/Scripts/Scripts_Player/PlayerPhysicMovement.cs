@@ -208,6 +208,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             // SpeedZ = vitesse avant/arrière
             animator.SetFloat("SpeedX", localVelocity.x);
             animator.SetFloat("SpeedZ", localVelocity.z);
+            animator.SetBool("IsCrouching", isCrouching);
         }
 
         // === IMMUNITÉ GRABS SI EN L'AIR ===
@@ -388,14 +389,18 @@ public class PlayerPhysicsMovement : MonoBehaviour
     float CalculateSpeed()
     {
         float baseSpeed = stats.GetAdjustedSpeed(currentHealth);
-
-        // NOUVEAU : Magnitude du stick (0-1) pour vitesse variable
-        float stickMagnitude = moveInput.magnitude; // 0 = immobile, 1 = stick à fond
-        baseSpeed *= stickMagnitude; // Vitesse proportionnelle au stick
+        float stickMagnitude = moveInput.magnitude;
+        baseSpeed *= stickMagnitude;
 
         if (isSprinting)
         {
             baseSpeed *= stats.sprintSpeedMultiplier;
+        }
+
+        // AJOUTE CES LIGNES :
+        if (isCrouching)
+        {
+            baseSpeed *= stats.crouchSpeedMultiplier;
         }
 
         baseSpeed *= swarmSlowdownMultiplier;
@@ -492,44 +497,30 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         isCrouching = true;
 
-        // Réduire mesh Y à 50%
-        if (playerMesh != null)
-        {
-            playerMesh.localScale = new Vector3(
-                originalMeshScale.x,
-                originalMeshScale.y * 0.5f,
-                originalMeshScale.z
-            );
-        }
+        // SUPPRIME TOUTE LA PARTIE MESH (lignes playerMesh.localScale)
 
-        // Réduire collider à 50%
+        // GARDE ET CORRIGE le collider (détection sentinelle)
         if (capsuleCollider != null)
         {
-            float newHeight = originalColliderHeight;
+            float newHeight = originalColliderHeight * 0.5f; //  CORRIGE ICI
             capsuleCollider.height = newHeight;
-            // Center = moitié de la nouvelle hauteur (pieds restent au sol)
             capsuleCollider.center = new Vector3(
                 originalColliderCenter.x,
-                newHeight * 0.5f, // Si height=1.0, center=0.5
+                newHeight * 0.5f,
                 originalColliderCenter.z
             );
         }
-
-        Debug.Log($"CROUCH: height={capsuleCollider.height} center={capsuleCollider.center} (original: h={originalColliderHeight} c={originalColliderCenter})");
     }
+
     public void ExitCrouch()
     {
         if (!isCrouching) return;
 
         isCrouching = false;
 
-        // Restaurer mesh
-        if (playerMesh != null)
-        {
-            playerMesh.localScale = originalMeshScale;
-        }
+        // SUPPRIME TOUTE LA PARTIE MESH
 
-        // Restaurer collider
+        // GARDE la restauration collider
         if (capsuleCollider != null)
         {
             capsuleCollider.height = originalColliderHeight;
