@@ -126,10 +126,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f501b904d074a8448d058724a2c4313, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
-  bulbLight: {fileID: 259115921502890264}
   bulbRenderer: {fileID: 6152296217203656078}
-  maxIntensity: 0.1
-  lightColor: {r: 1, g: 1, b: 1, a: 1}
+  pointLight: {fileID: 0}
+  redLightMaterial: {fileID: 2100000, guid: 3431493930b5b364ebf087c98eed91e1, type: 2}
+  alertMaterial: {fileID: 2100000, guid: 3431493930b5b364ebf087c98eed91e1, type: 2}
+  greenLightMaterial: {fileID: 2100000, guid: d652b769af683b34ea37c58aed9ca0c0, type: 2}
+  lightOffMaterial: {fileID: 2100000, guid: 03701c57cb001804ba36e15f2d9664e6, type: 2}
+  redLightIntensity: 0.07
+  redLightColor: {r: 1, g: 0.19916257, b: 0, a: 1}
+  redEmissionIntensity: 10
+  alertIntensity: 0.07
+  alertColor: {r: 1, g: 0.21621177, b: 0, a: 1}
+  alertEmissionIntensity: 4
+  greenLightIntensity: 0.01
+  greenLightColor: {r: 0.9056604, g: 0.8172018, b: 0, a: 1}
+  greenEmissionIntensity: 1
 --- !u!108 &259115921502890264
 Light:
   m_ObjectHideFlags: 0
@@ -140,9 +151,9 @@ Light:
   m_Enabled: 1
   serializedVersion: 11
   m_Type: 2
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 0
-  m_Range: 1
+  m_Color: {r: 1, g: 0.65881014, b: 0, a: 1}
+  m_Intensity: 1
+  m_Range: 20
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
@@ -180,7 +191,7 @@ Light:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingLayerMask: 1
-  m_Lightmapping: 2
+  m_Lightmapping: 4
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1

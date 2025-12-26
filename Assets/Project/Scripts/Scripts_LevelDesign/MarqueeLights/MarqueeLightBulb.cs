@@ -3,74 +3,143 @@ using UnityEngine;
 public class MarqueeLightBulb : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Light bulbLight;
     [SerializeField] private MeshRenderer bulbRenderer;
+    [SerializeField] private Light pointLight;
 
-    [Header("Settings")]
-    [SerializeField] private float maxIntensity = 2f;
-    [SerializeField] private Color lightColor = Color.white;
+    [Header("Materials")]
+    [SerializeField] private Material redLightMaterial;
+    [SerializeField] private Material alertMaterial;
+    [SerializeField] private Material greenLightMaterial;
+    [SerializeField] private Material lightOffMaterial;
 
-    private Material bulbMaterial;
+    [Header("Light Settings - RedLight")]
+    [SerializeField] private float redLightIntensity = 2f;
+    [SerializeField] private Color redLightColor = Color.red;
+    [SerializeField] private float redEmissionIntensity = 2f;
+
+    [Header("Light Settings - Alert")]
+    [SerializeField] private float alertIntensity = 3f;
+    [SerializeField] private Color alertColor = Color.yellow;
+    [SerializeField] private float alertEmissionIntensity = 3f;
+
+    [Header("Light Settings - GreenLight")]
+    [SerializeField] private float greenLightIntensity = 1f;
+    [SerializeField] private Color greenLightColor = Color.green;
+    [SerializeField] private float greenEmissionIntensity = 1f;
+
+    private Material currentMaterialInstance;
     private static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
-    private bool isOn = false;
+    private Color currentBaseEmissionColor;
 
     void Awake()
     {
-        // Auto-detect si pas assigne
-        if (bulbLight == null)
-            bulbLight = GetComponentInChildren<Light>();
-
         if (bulbRenderer == null)
             bulbRenderer = GetComponentInChildren<MeshRenderer>();
 
-        // Creer instance material pour modifier emission
-        if (bulbRenderer != null)
-        {
-            bulbMaterial = bulbRenderer.material;
-        }
-
-        // Setup initial
-        if (bulbLight != null)
-        {
-            bulbLight.color = lightColor;
-            bulbLight.intensity = 0f;
-        }
+        if (pointLight == null)
+            pointLight = GetComponentInChildren<Light>();
 
         TurnOff();
     }
 
-    public void TurnOn()
+    public void SetRedLightMode()
     {
-        isOn = true;
-        SetIntensity(1f);
+        if (bulbRenderer != null && redLightMaterial != null)
+        {
+            currentMaterialInstance = new Material(redLightMaterial);
+            bulbRenderer.material = currentMaterialInstance;
+            currentBaseEmissionColor = redLightColor;
+            SetEmissionIntensity(redEmissionIntensity);
+        }
+
+        if (pointLight != null)
+        {
+            pointLight.intensity = redLightIntensity;
+            pointLight.color = redLightColor;
+            pointLight.enabled = true;
+        }
+    }
+
+    public void SetAlertMode()
+    {
+        if (bulbRenderer != null && alertMaterial != null)
+        {
+            currentMaterialInstance = new Material(alertMaterial);
+            bulbRenderer.material = currentMaterialInstance;
+            currentBaseEmissionColor = alertColor;
+            SetEmissionIntensity(alertEmissionIntensity);
+        }
+
+        if (pointLight != null)
+        {
+            pointLight.intensity = alertIntensity;
+            pointLight.color = alertColor;
+            pointLight.enabled = true;
+        }
+    }
+
+    public void SetGreenLightMode()
+    {
+        if (bulbRenderer != null && greenLightMaterial != null)
+        {
+            currentMaterialInstance = new Material(greenLightMaterial);
+            bulbRenderer.material = currentMaterialInstance;
+            currentBaseEmissionColor = greenLightColor;
+            SetEmissionIntensity(greenEmissionIntensity);
+        }
+
+        if (pointLight != null)
+        {
+            pointLight.intensity = greenLightIntensity;
+            pointLight.color = greenLightColor;
+            pointLight.enabled = true;
+        }
     }
 
     public void TurnOff()
     {
-        isOn = false;
-        SetIntensity(0f);
-    }
-
-    public void SetIntensity(float normalizedIntensity)
-    {
-        normalizedIntensity = Mathf.Clamp01(normalizedIntensity);
-
-        // Light component
-        if (bulbLight != null)
+        if (bulbRenderer != null && lightOffMaterial != null)
         {
-            bulbLight.intensity = normalizedIntensity * maxIntensity;
+            bulbRenderer.material = lightOffMaterial;
         }
 
-        // Material emission
-        if (bulbMaterial != null)
+        if (pointLight != null)
         {
-            Color emissionColor = lightColor * normalizedIntensity * 2f;
-            bulbMaterial.SetColor(EmissionColor, emissionColor);
+            pointLight.enabled = false;
         }
     }
 
-    public bool IsOn()
+    // Pour le fade
+    public void SetLightIntensity(float intensity)
     {
-        return isOn;
+        if (pointLight != null)
+        {
+            pointLight.intensity = intensity;
+        }
     }
+
+    public void SetLightColor(Color color)
+    {
+        if (pointLight != null)
+        {
+            pointLight.color = color;
+        }
+    }
+
+    public void SetEmissionIntensity(float intensity)
+    {
+        if (currentMaterialInstance != null)
+        {
+            Color emission = currentBaseEmissionColor * intensity;
+            currentMaterialInstance.SetColor(EmissionColor, emission);
+        }
+    }
+
+    // Getters
+    public float GetRedLightIntensity() => redLightIntensity;
+    public float GetGreenLightIntensity() => greenLightIntensity;
+    public Color GetRedLightColor() => redLightColor;
+    public Color GetGreenLightColor() => greenLightColor;
+    public float GetRedEmissionIntensity() => redEmissionIntensity;
+    public float GetGreenEmissionIntensity() => greenEmissionIntensity;
 }

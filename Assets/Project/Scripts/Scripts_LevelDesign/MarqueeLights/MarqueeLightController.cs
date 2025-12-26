@@ -7,12 +7,21 @@ public class MarqueeLightController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform bulbsContainer;
 
-    [Header("Pattern Settings")]
-    [SerializeField] private float patternSpeed = 0.1f;
-    [SerializeField] private bool playOnStart = true;
+    [Header("GreenLight Settings")]
+    [SerializeField] private float greenLightInterval = 2f;
+    [SerializeField] private float greenLightRatio = 0.25f;
 
-    private List<MarqueeLightBulb> bulbs = new List<MarqueeLightBulb>();
-    private Coroutine patternCoroutine;
+    [Header("Alert Settings")]
+    [SerializeField] private int alertFlashCount = 5;
+
+    [Header("RedLight Settings")]
+    [SerializeField] private int redLightChaseLength = 5;
+    [SerializeField] private float redLightRotationDuration = 6f;
+    [SerializeField] private float redLightFadeDuration = 1f;
+    [SerializeField] private int redLightOffsetPerCircle = 2;
+
+    private List<List<MarqueeLightBulb>> circles = new List<List<MarqueeLightBulb>>();
+    private Coroutine currentPatternCoroutine;
 
     void Start()
     {
@@ -21,82 +30,220 @@ public class MarqueeLightController : MonoBehaviour
 
     IEnumerator DelayedStart()
     {
-        yield return new WaitForSeconds(0.1f); // Laisser le Spawner créer le container
-
-        CollectBulbs();
-
-        if (playOnStart)
-        {
-            StartChasePattern();
-        }
+        yield return new WaitForSeconds(0.5f);
+        CollectBulbsByCircle();
     }
 
-    void CollectBulbs()
+    void CollectBulbsByCircle()
     {
-        // Auto-detecter BulbsContainer si pas assigne
-        if (bulbsContainer == null)
-        {
-            bulbsContainer = transform.Find("BulbsContainer");
-        }
+        bulbsContainer = transform.Find("CirclesRuntimeContainer");
 
         if (bulbsContainer == null)
         {
-            Debug.LogError("[MarqueeLightController] BulbsContainer introuvable !");
+            Debug.LogError("[MarqueeLightController] CirclesRuntimeContainer introuvable !");
             return;
         }
 
-        // Recuperer tous les MarqueeLightBulb du container
-        MarqueeLightBulb[] bulbArray = bulbsContainer.GetComponentsInChildren<MarqueeLightBulb>();
-        bulbs.AddRange(bulbArray);
+        circles.Clear();
 
-        Debug.Log($"[MarqueeLightController] {bulbs.Count} bulbs collectes");
-    }
-
-    public void StartChasePattern()
-    {
-        if (patternCoroutine != null)
-            StopCoroutine(patternCoroutine);
-
-        patternCoroutine = StartCoroutine(ChasePatternCoroutine());
-    }
-
-    public void StopPattern()
-    {
-        if (patternCoroutine != null)
+        for (int i = 0; i < bulbsContainer.childCount; i++)
         {
-            StopCoroutine(patternCoroutine);
-            patternCoroutine = null;
+            Transform circleTransform = bulbsContainer.GetChild(i);
+            MarqueeLightBulb[] circleBulbs = circleTransform.GetComponentsInChildren<MarqueeLightBulb>();
+
+            if (circleBulbs.Length > 0)
+            {
+                List<MarqueeLightBulb> circleList = new List<MarqueeLightBulb>(circleBulbs);
+                circles.Add(circleList);
+                Debug.Log($"[MarqueeLightController] Cercle {i} : {circleBulbs.Length} bulbs");
+            }
         }
 
-        // Eteindre toutes les bulbs
-        foreach (var bulb in bulbs)
-        {
-            bulb.TurnOff();
-        }
+        Debug.Log($"[MarqueeLightController] {circles.Count} cercles collectes");
     }
 
-    IEnumerator ChasePatternCoroutine()
-    {
-        int currentIndex = 0;
+    // ========== PUBLIC METHODS ==========
 
+    public void StartGreenLightPattern()
+    {
+        StopCurrentPattern();
+        currentPatternCoroutine = StartCoroutine(GreenLightCoroutine());
+    }
+
+    public void StartAlertPattern(float alertDuration)
+    {
+        StopCurrentPattern();
+        currentPatternCoroutine = StartCoroutine(AlertCoroutine(alertDuration));
+    }
+
+    public void StartRedLightPattern()
+    {
+        StopCurrentPattern();
+        currentPatternCoroutine = StartCoroutine(RedLightCoroutine());
+    }
+
+    public void StartReleaseFade(float duration)
+    {
+        StopCurrentPattern();
+        currentPatternCoroutine = StartCoroutine(ReleaseFadeCoroutine(duration));
+    }
+
+    public void StopAll()
+    {
+        StopCurrentPattern();
+        TurnOffAllBulbs();
+    }
+
+    // ========== PATTERN COROUTINES ==========
+
+    IEnumerator GreenLightCoroutine()
+    {
+        Debug.Log("[MarqueeLights] GreenLight pattern started");
+
+        // Allumer toutes en mode GreenLight
+        foreach (var circle in circles)
+        {
+            foreach (var bulb in circle)
+            {
+                bulb.SetGreenLightMode();
+            }
+        }
+
+        // Rester allume jusqu'a changement
         while (true)
         {
-            // Eteindre toutes
-            foreach (var bulb in bulbs)
+            yield return null;
+        }
+    }
+
+    IEnumerator AlertCoroutine(float totalDuration)
+    {
+        Debug.Log($"[MarqueeLights] Alert pattern - duration: {totalDuration}s, {alertFlashCount} flashes");
+
+        float flashInterval = totalDuration / alertFlashCount;
+
+        for (int i = 0; i < alertFlashCount; i++)
+        {
+            // Allumer en mode Alert
+            foreach (var circle in circles)
+            {
+                foreach (var bulb in circle)
+                {
+                    bulb.SetAlertMode();
+                }
+            }
+            yield return new WaitForSeconds(flashInterval * 0.5f);
+
+            // Eteindre
+            TurnOffAllBulbs();
+            yield return new WaitForSeconds(flashInterval * 0.5f);
+        }
+
+        Debug.Log("[MarqueeLights] Alert pattern finished");
+    }
+
+    IEnumerator RedLightCoroutine()
+    {
+        Debug.Log("[MarqueeLights] RedLight pattern started");
+
+        if (circles.Count == 0)
+        {
+            Debug.LogWarning("[MarqueeLights] No circles to animate");
+            yield break;
+        }
+
+        // Allumer toutes en mode RedLight
+        foreach (var circle in circles)
+        {
+            foreach (var bulb in circle)
+            {
+                bulb.SetRedLightMode();
+            }
+        }
+
+        // Rester allume jusqu'a Release
+        while (true)
+        {
+            yield return null;
+        }
+    }
+
+    IEnumerator ReleaseFadeCoroutine(float duration)
+    {
+        Debug.Log($"[MarqueeLights] Release fade started - {duration}s");
+
+        // Changer les materiaux tout de suite
+        foreach (var circle in circles)
+        {
+            foreach (var bulb in circle)
+            {
+                bulb.SetGreenLightMode();
+            }
+        }
+
+        // Fade progressif des Point Lights ET emissions RedLight -> GreenLight
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float linear = elapsed / duration;
+            float t = 1f - Mathf.Pow(1f - linear, 3f); // Exposant 3 = EaseOut doux
+            foreach (var circle in circles)
+            {
+                foreach (var bulb in circle)
+                {
+                    // Fade Point Light
+                    float intensity = Mathf.Lerp(bulb.GetRedLightIntensity(), bulb.GetGreenLightIntensity(), t);
+                    Color color = Color.Lerp(bulb.GetRedLightColor(), bulb.GetGreenLightColor(), t);
+                    bulb.SetLightIntensity(intensity);
+                    bulb.SetLightColor(color);
+
+                    // Fade Emission
+                    float emissionIntensity = Mathf.Lerp(bulb.GetRedEmissionIntensity(), bulb.GetGreenEmissionIntensity(), t);
+                    bulb.SetEmissionIntensity(emissionIntensity);
+                }
+            }
+
+            yield return null;
+        }
+
+        // S'assurer qu'on finit exactement sur GreenLight
+        foreach (var circle in circles)
+        {
+            foreach (var bulb in circle)
+            {
+                bulb.SetLightIntensity(bulb.GetGreenLightIntensity());
+                bulb.SetLightColor(bulb.GetGreenLightColor());
+                bulb.SetEmissionIntensity(bulb.GetGreenEmissionIntensity());
+            }
+        }
+
+        // Rester en GreenLight
+        while (true)
+        {
+            yield return null;
+        }
+    }
+
+    // ========== HELPERS ==========
+
+    void StopCurrentPattern()
+    {
+        if (currentPatternCoroutine != null)
+        {
+            StopCoroutine(currentPatternCoroutine);
+            currentPatternCoroutine = null;
+        }
+    }
+
+    void TurnOffAllBulbs()
+    {
+        foreach (var circle in circles)
+        {
+            foreach (var bulb in circle)
             {
                 bulb.TurnOff();
             }
-
-            // Allumer la courante
-            if (currentIndex < bulbs.Count)
-            {
-                bulbs[currentIndex].TurnOn();
-            }
-
-            // Passer a la suivante
-            currentIndex = (currentIndex + 1) % bulbs.Count;
-
-            yield return new WaitForSeconds(patternSpeed);
         }
     }
 }

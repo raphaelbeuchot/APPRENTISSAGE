@@ -1,6 +1,11 @@
 using UnityEngine;
 using UnityEngine.Splines;
+using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor; // NOUVEAU
+#endif
 
+[ExecuteInEditMode]
 public class MarqueeLightSpawner : MonoBehaviour
 {
     [Header("References")]
@@ -11,6 +16,8 @@ public class MarqueeLightSpawner : MonoBehaviour
     [SerializeField] private int bulbCount = 36;
 
     private Transform bulbsContainer;
+    private List<GameObject> previewBulbs = new List<GameObject>();
+    private Transform previewContainer;
 
     void Start()
     {
@@ -49,5 +56,78 @@ public class MarqueeLightSpawner : MonoBehaviour
         }
 
         Debug.Log($"[MarqueeLightSpawner] {bulbCount} bulbs spawned !");
+    }
+    // ========== PREVIEW EDITOR METHODS ==========
+
+    public void GeneratePreview()
+    {
+        ClearPreview();
+
+        if (splineContainer == null || bulbPrefab == null)
+        {
+            Debug.LogWarning("[MarqueeLightSpawner] Spline ou Prefab manquant !");
+            return;
+        }
+
+        // Creer container preview
+        GameObject containerObj = new GameObject("PreviewBulbsContainer");
+        containerObj.transform.SetParent(transform);
+        containerObj.transform.localPosition = Vector3.zero;
+        containerObj.hideFlags = HideFlags.DontSave; // Ne sera pas sauvegardé
+        previewContainer = containerObj.transform;
+
+        // Spawn bulbs preview
+        Spline spline = splineContainer.Spline;
+        for (int i = 0; i < bulbCount; i++)
+        {
+            float t = (float)i / bulbCount;
+            Vector3 position = splineContainer.EvaluatePosition(spline, t);
+
+            GameObject bulb = Instantiate(bulbPrefab, position, Quaternion.identity);
+            bulb.transform.SetParent(previewContainer);
+            bulb.name = $"PreviewBulb_{i:D2}";
+            bulb.hideFlags = HideFlags.DontSave; // Ne sera pas sauvegardé
+
+            previewBulbs.Add(bulb);
+        }
+
+        Debug.Log($"[MarqueeLightSpawner] Preview : {bulbCount} bulbs générées");
+    }
+
+    public void ClearPreview()
+    {
+        // Détruire les bulbs trackées
+        foreach (var bulb in previewBulbs)
+        {
+            if (bulb != null)
+            {
+#if UNITY_EDITOR
+                DestroyImmediate(bulb);
+#else
+            Destroy(bulb);
+#endif
+            }
+        }
+        previewBulbs.Clear();
+
+        // Détruire le container
+        if (previewContainer != null)
+        {
+#if UNITY_EDITOR
+            DestroyImmediate(previewContainer.gameObject);
+#else
+        Destroy(previewContainer.gameObject);
+#endif
+            previewContainer = null;
+        }
+    }
+
+    private void OnDisable()
+    {
+        // Auto-clear en quittant Play mode
+        if (!Application.isPlaying)
+        {
+            ClearPreview();
+        }
     }
 }
