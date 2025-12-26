@@ -25,13 +25,16 @@ public class CameraPanningExtension : CinemachineExtension
     [Header("Obstacle Hiding")]
     [SerializeField] private float playerHeightOffset = 0.5f;
     [SerializeField] private LayerMask obstacleHidingLayers;
+    [SerializeField] private Material wireframeMaterial;
 
     private Vector3 currentPanOffset;
     private Vector3 currentLateralOffset = Vector3.zero;
     private bool isHighPosition = false;
     private bool isLowView = false;
     private Transform playerTransform;
-    private HashSet<Renderer> hiddenRenderers = new HashSet<Renderer>();
+    // NOUVEAU
+    private Dictionary<Renderer, Material[]> originalMaterials = new Dictionary<Renderer, Material[]>();
+    private HashSet<Renderer> occludedRenderers = new HashSet<Renderer>();
     private Camera mainCamera;
     private void Start()
     {
@@ -78,9 +81,15 @@ public class CameraPanningExtension : CinemachineExtension
 
     private void LateUpdate()
     {
-        if (isHighPosition && isLowView && playerTransform != null && Camera.main != null)
+        if (isHighPosition && isLowView && playerTransform != null && mainCamera != null)
         {
-            Vector3 cameraPos = Camera.main.transform.position;
+            if (wireframeMaterial == null)
+            {
+                Debug.LogWarning("[Camera Occlusion] Wireframe material not assigned!");
+                return;
+            }
+
+            Vector3 cameraPos = mainCamera.transform.position;
             Vector3 playerPos = playerTransform.position + Vector3.up * playerHeightOffset;
             Vector3 direction = playerPos - cameraPos;
             float distance = direction.magnitude;
@@ -88,7 +97,6 @@ public class CameraPanningExtension : CinemachineExtension
             Debug.DrawRay(cameraPos, direction, Color.red, 0.1f);
 
             HashSet<Renderer> currentlyBlocking = new HashSet<Renderer>();
-
             RaycastHit[] hits = Physics.RaycastAll(cameraPos, direction.normalized, distance, obstacleHidingLayers);
 
             foreach (RaycastHit hit in hits)
@@ -100,46 +108,35 @@ public class CameraPanningExtension : CinemachineExtension
                     {
                         currentlyBlocking.Add(rend);
 
-                        if (!hiddenRenderers.Contains(rend))
+                        if (!occludedRenderers.Contains(rend))
                         {
-                            rend.enabled = false;
-                            hiddenRenderers.Add(rend);
+                            SaveAndSwapToWireframe(rend);
+                            occludedRenderers.Add(rend);
                         }
                     }
                 }
             }
 
+            // Restaurer les renderers qui n'occludent plus
             List<Renderer> toRestore = new List<Renderer>();
-            foreach (Renderer rend in hiddenRenderers)
+            foreach (Renderer rend in occludedRenderers)
             {
                 if (rend != null && !currentlyBlocking.Contains(rend))
                 {
-                    rend.enabled = true;
                     toRestore.Add(rend);
                 }
             }
 
             foreach (Renderer rend in toRestore)
             {
-                hiddenRenderers.Remove(rend);
+                RestoreMaterials(rend);
+                occludedRenderers.Remove(rend);
             }
         }
         else
         {
-            List<Renderer> toRestore = new List<Renderer>();
-            foreach (Renderer rend in hiddenRenderers)
-            {
-                if (rend != null)
-                {
-                    rend.enabled = true;
-                    toRestore.Add(rend);
-                }
-            }
-
-            foreach (Renderer rend in toRestore)
-            {
-                hiddenRenderers.Remove(rend);
-            }
+            // Restaurer tous les matériaux si pas en vue basse
+            RestoreAllMaterials();
         }
     }
 
@@ -232,5 +229,119 @@ public class CameraPanningExtension : CinemachineExtension
             currentPanOffset = Vector3.Lerp(currentPanOffset, targetOffset, speed * deltaTime);
             state.PositionCorrection += currentPanOffset + currentLateralOffset;
         }
+    }
+
+    private void SaveAndSwapToWireframe(Renderer renderer)
+{
+    if (!originalMaterials.ContainsKey(renderer))
+    {
+        // Sauvegarder les matériaux originaux
+        originalMaterials[renderer] = renderer.sharedMaterials;
+        
+        // Préparer le mesh avec barycentriques (NOUVEAU)
+        MeshFilter meshFilter = renderer.GetComponent<MeshFilter>();
+        if (meshFilter != null && meshFilter.mesh != null)
+        {
+            PrepareMeshForWireframe(meshFilter.mesh);
+        }
+    }
+
+    // Swapper tous les matériaux par le wireframe
+    Material[] wireframes = new Material[renderer.sharedMaterials.Length];
+    for (int i = 0; i < wireframes.Length; i++)
+    {
+        wireframes[i] = wireframeMaterial;
+    }
+    renderer.sharedMaterials = wireframes;
+}
+
+private void PrepareMeshForWireframe(Mesh mesh)
+{
+    // Vérifier si déjà préparé
+    if (mesh.uv2 != null && mesh.uv2.Length > 0)
+        return;
+    
+    int[] tris = mesh.triangles;
+    Vector3[] verts = mesh.vertices;
+    Vector3[] bary = new Vector3[mesh.vertexCount];
+
+    for (int i = 0; i < tris.Length; i += 3)
+    {
+        int i0 = tris[i];
+        int i1 = tris[i + 1];
+        int i2 = tris[i + 2];
+
+        Vector3 p0 = verts[i0];
+        Vector3 p1 = verts[i1];
+        Vector3 p2 = verts[i2];
+
+        float d01 = Vector3.Distance(p0, p1);
+        float d12 = Vector3.Distance(p1, p2);
+        float d20 = Vector3.Distance(p2, p0);
+
+        float maxDist = Mathf.Max(d01, Mathf.Max(d12, d20));
+
+        float maskZ = (d01 >= maxDist) ? 1f : 0f;
+        float maskX = (d12 >= maxDist) ? 1f : 0f;
+        float maskY = (d20 >= maxDist) ? 1f : 0f;
+
+        bary[i0] = new Vector3(1, maskY, maskZ);
+        bary[i1] = new Vector3(maskX, 1, maskZ);
+        bary[i2] = new Vector3(maskX, maskY, 1);
+    }
+
+    mesh.SetUVs(1, bary);
+}
+
+    private void RestoreMaterials(Renderer renderer)
+    {
+        // NULL CHECK
+        if (renderer == null)
+        {
+            originalMaterials.Remove(renderer);
+            return;
+        }
+
+        if (originalMaterials.TryGetValue(renderer, out Material[] original))
+        {
+            renderer.sharedMaterials = original;
+            originalMaterials.Remove(renderer);
+        }
+    }
+
+    private void RestoreAllMaterials()
+    {
+        // Copier la liste pour éviter modification pendant iteration
+        List<Renderer> toProcess = new List<Renderer>(occludedRenderers);
+
+        foreach (Renderer rend in toProcess)
+        {
+            if (rend != null)
+            {
+                RestoreMaterials(rend);
+            }
+        }
+
+        occludedRenderers.Clear();
+
+        // Cleanup des entrées null dans le dictionnaire
+        List<Renderer> nullKeys = new List<Renderer>();
+        foreach (var kvp in originalMaterials)
+        {
+            if (kvp.Key == null)
+            {
+                nullKeys.Add(kvp.Key);
+            }
+        }
+
+        foreach (var key in nullKeys)
+        {
+            originalMaterials.Remove(key);
+        }
+    }
+
+    private void OnDisable()
+    {
+        RestoreAllMaterials();
     }
 }
