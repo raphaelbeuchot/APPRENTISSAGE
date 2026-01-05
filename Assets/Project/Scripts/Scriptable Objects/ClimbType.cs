@@ -5,6 +5,8 @@ public class ClimbType : ScriptableObject
 {
     [Header("Identification")]
     public string climbName;
+    public bool isVault = true;
+
     [Header("Detection")]
     public float minHeight = 0f;
     public float maxHeight = 1f;
@@ -12,11 +14,10 @@ public class ClimbType : ScriptableObject
 
     [Header("Movement")]
     public float moveDistanceForward = 1f;
-    public float moveHeightUp = 1f; // Non utilise (hauteur calculee dynamiquement)
 
     [Header("Animation Phases")]
-    public float phase1Duration = 0.8f; // Montee verticale
-    public float phase2Duration = 0.4f; // Avancee horizontale
+    public float phase1Duration = 0.8f;
+    public float phase2Duration = 0.4f;
 
     [Header("Vulnerability")]
     public bool vulnerableToSentinel = true;

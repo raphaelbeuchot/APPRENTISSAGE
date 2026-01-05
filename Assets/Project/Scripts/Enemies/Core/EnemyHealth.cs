@@ -35,6 +35,11 @@ public class EnemyHealth : MonoBehaviour
     private float originalAngularDamping;
     private float originalMass;
 
+    private StunTimerUI stunTimerUI;
+    private float maxTheoreticalStun = 0f;
+    private float totalStunRemaining = 0f;
+
+
     private Rigidbody rb;
 
     public event Action OnDeath;
@@ -71,7 +76,8 @@ public class EnemyHealth : MonoBehaviour
         }
 
         currentHealth = stats.maxHealth;
-        cumulativeStunPerSpray = stats.cumulativeStunPerSpray; // AJOUTE CETTE LIGNE
+        cumulativeStunPerSpray = stats.cumulativeStunPerSpray;
+        maxTheoreticalStun = 10f * cumulativeStunPerSpray;
         SetupDeathEffect();
         SetupHealthBar();
     }
@@ -129,20 +135,20 @@ public class EnemyHealth : MonoBehaviour
     {
         if (isDead) return;
 
-        // NOUVEAU : Système spray 2 phases
+        // NOUVEAU : Systeme spray 2 phases
         if (isInSprayWindow)
         {
-            // Phase 1 : Fenêtre de spray
+            // Phase 1 : Fenetre de spray
             sprayWindowTimer -= Time.deltaTime;
 
             if (sprayWindowTimer <= 0f)
             {
-                // Timer expiré : passer en phase 2 (stun final)
+                // Timer expire : passer en phase 2 (stun final)
                 sprayWindowTimer = 0f;
                 isInSprayWindow = false;
                 finalStunTimer = sprayCount * cumulativeStunPerSpray;
 
-                Debug.Log($"{gameObject.name} fenêtre expirée - {sprayCount} sprays reçus  Stun final {finalStunTimer}s");
+                Debug.Log($"{gameObject.name} fenetre expiree - {sprayCount} sprays recus - Stun final {finalStunTimer}s");
             }
         }
         else if (finalStunTimer > 0f)
@@ -153,7 +159,7 @@ public class EnemyHealth : MonoBehaviour
             if (finalStunTimer <= 0f)
             {
                 finalStunTimer = 0f;
-                Debug.Log($"{gameObject.name} stun final terminé");
+                Debug.Log($"{gameObject.name} stun final termine");
             }
         }
 
@@ -163,10 +169,34 @@ public class EnemyHealth : MonoBehaviour
             Debug.Log($"{gameObject.name} recovered from gunshot!");
         }
 
-        // Désactiver knockback state quand timer expiré
+        // Desactiver knockback state quand timer expire
         if (isInKnockback && Time.time >= knockbackEndTime)
         {
             isInKnockback = false;
+        }
+
+        // Update UI timer
+        float stunToDisplay = isInSprayWindow ? (sprayCount * cumulativeStunPerSpray) : finalStunTimer;
+
+        if (stunTimerUI != null)
+        {
+            if (stunToDisplay > 0f)
+            {
+                stunTimerUI.UpdateTimer(stunToDisplay);
+                if (!stunTimerUI.gameObject.activeSelf)
+                    stunTimerUI.Show();
+            }
+            else
+            {
+                stunTimerUI.Hide();
+            }
+        }
+        else if (stunToDisplay > 0f && StunTimerManager.Instance != null)
+        {
+            GameObject timerObj = Instantiate(StunTimerManager.Instance.stunTimerPrefab, StunTimerManager.Instance.canvas.transform);
+            stunTimerUI = timerObj.GetComponent<StunTimerUI>();
+            StunTimerManager.Instance.RegisterEnemy(transform, stunTimerUI);
+            stunTimerUI.Initialize(maxTheoreticalStun);
         }
     }
 
@@ -668,6 +698,8 @@ public class EnemyHealth : MonoBehaviour
         sprayCount = 1;
         finalStunTimer = 0f;
 
+        totalStunRemaining += cumulativeStunPerSpray;  // AJOUTER 0.3s
+
         Debug.Log($"{gameObject.name} START spray window - count=1, window={windowDuration}s");
     }
 
@@ -675,14 +707,15 @@ public class EnemyHealth : MonoBehaviour
     {
         if (isInSprayWindow)
         {
-            sprayWindowTimer = windowDuration; // Repousse le timer
+            sprayWindowTimer = windowDuration;
             sprayCount++;
+
+            totalStunRemaining += cumulativeStunPerSpray;  // AJOUTER encore 0.3s
 
             Debug.Log($"{gameObject.name} EXTEND spray window - count={sprayCount}, window reset to {windowDuration}s");
         }
         else
         {
-            // Au cas où on spray pendant le stun final (edge case)
             StartSprayWindow(windowDuration);
         }
     }
@@ -701,4 +734,12 @@ public class EnemyHealth : MonoBehaviour
 
     
     public int GetArmCount() => 2;
+
+    private void OnDestroy()
+    {
+        if (stunTimerUI != null && StunTimerManager.Instance != null)
+        {
+            StunTimerManager.Instance.UnregisterEnemy(transform);
+        }
+    }
 }

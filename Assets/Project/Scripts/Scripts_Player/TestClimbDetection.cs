@@ -7,7 +7,6 @@ public class TestClimbDetection : MonoBehaviour
     [SerializeField] private LayerMask obstacleLayer;
     [SerializeField] private float alignmentThreshold = 0.3f;
     [SerializeField] private PlayerPhysicsMovement playerMovement;
-    [SerializeField] private float vaultDepthThreshold = 0.6f;
     [SerializeField] private float rotationDuration = 0.3f;
 
     private bool isClimbing = false;
@@ -17,17 +16,16 @@ public class TestClimbDetection : MonoBehaviour
         if (isClimbing)
             return;
 
-        // === BLOQUER CLIMB SI GRABBED ===
         if (playerMovement.grabState != PlayerPhysicsMovement.GrabState.None)
         {
-            Debug.LogWarning($"[Climb] BLOQUÉ - grabState = {playerMovement.grabState}");
+            Debug.LogWarning($"[Climb] BLOQUE - grabState = {playerMovement.grabState}");
             return;
         }
 
         if (!PlayerInputManager.Instance.InteractPressed)
             return;
 
-        Debug.LogWarning("[Climb] E PRESSÉ - grabState = " + playerMovement.grabState);
+        Debug.LogWarning("[Climb] E PRESSE - grabState = " + playerMovement.grabState);
 
         Vector2 input = PlayerInputManager.Instance.MoveInput;
         if (input.magnitude < 0.1f)
@@ -71,14 +69,11 @@ public class TestClimbDetection : MonoBehaviour
             }
 
             float obstacleHeight = GetObstacleHeight(bestCollider);
-            float obstacleDepth = bestMatch.climbType.obstacleDepth;
 
-            // Calculer direction vers obstacle
             Vector3 toObstacle = (bestCollider.bounds.center - transform.position).normalized;
             toObstacle.y = 0f;
             toObstacle.Normalize();
 
-            // RAYCAST POUR OBTENIR LA NORMALE DE LA FACE
             Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
             RaycastHit hitInfo;
 
@@ -95,9 +90,6 @@ public class TestClimbDetection : MonoBehaviour
                 climbDirection.Normalize();
                 Debug.Log("[CLIMB] Normale trouvee: " + hitInfo.normal);
 
-                Debug.Log("[CLIMB] Normale trouvee: " + hitInfo.normal);
-
-                // VERIFICATION FACE SI RESTRICTION
                 if (bestMatch.onlyClimbFromLongSide)
                 {
                     BoxCollider boxCol = bestCollider as BoxCollider;
@@ -105,14 +97,11 @@ public class TestClimbDetection : MonoBehaviour
                     {
                         Vector3 size = boxCol.size;
 
-                        // Déterminer axe long/court (ignorant Y)
                         bool xIsLonger = size.x > size.z;
 
-                        // Transformer la normale dans l'espace local de l'obstacle
                         Vector3 localNormal = bestCollider.transform.InverseTransformDirection(hitInfo.normal);
                         localNormal.y = 0f;
 
-                        // Vérifier si on tape la face courte
                         bool hittingShortSide = (xIsLonger && Mathf.Abs(localNormal.z) > Mathf.Abs(localNormal.x)) ||
                                                 (!xIsLonger && Mathf.Abs(localNormal.x) > Mathf.Abs(localNormal.z));
 
@@ -125,14 +114,13 @@ public class TestClimbDetection : MonoBehaviour
                         Debug.Log("[CLIMB] Face longue detectee, OK pour climb");
                     }
                 }
-                
+
             }
             else
             {
                 Debug.DrawRay(rayOrigin, toObstacle * detectionRadius, Color.red, 2f);
                 Debug.LogWarning("[CLIMB] Raycast rate, CLIMB ANNULE");
 
-                // RESTAURER TOUT
                 isClimbing = false;
                 playerMovement.isClimbing = false;
                 playerMovement.canMove = true;
@@ -140,21 +128,15 @@ public class TestClimbDetection : MonoBehaviour
                 return;
             }
 
-            // VAULT / PLATFORM distance
-            float distance = (obstacleDepth < vaultDepthThreshold)
-                ? obstacleDepth + 0.5f
-                : 0.3f;
-
+            float distance = bestMatch.climbType.moveDistanceForward;
             float height = obstacleHeight;
 
-            // TOUT DEBRANCHER IMMEDIATEMENT
             isClimbing = true;
             playerMovement.isClimbing = true;
             playerMovement.canMove = false;
             playerMovement.ResetAllInputs();
             playerMovement.enabled = false;
 
-            // ANNULER CROUCH SI ACTIF
             if (playerMovement.IsCrouching())
             {
                 playerMovement.ExitCrouch();
@@ -162,7 +144,6 @@ public class TestClimbDetection : MonoBehaviour
 
             playerMovement.enabled = false;
 
-            // LANCER ROTATION PUIS CLIMB
             StartCoroutine(RotateAndClimbCoroutine(climbDirection, transform.position, height, distance, bestMatch.climbType));
         }
         else if (bestMatch != null)
@@ -186,7 +167,6 @@ public class TestClimbDetection : MonoBehaviour
 
     private IEnumerator RotateAndClimbCoroutine(Vector3 targetDirection, Vector3 startPos, float height, float distance, ClimbType climbType)
     {
-        // PHASE ROTATION
         Quaternion startRotation = transform.rotation;
         Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
         float elapsed = 0f;
@@ -195,17 +175,15 @@ public class TestClimbDetection : MonoBehaviour
 
         while (elapsed < rotationDuration)
         {
-            // === CHECK SI GRABBED PENDANT LA ROTATION ===
             if (playerMovement.grabState != PlayerPhysicsMovement.GrabState.None)
             {
-                Debug.LogWarning("[CLIMB] ANNULÉ - Player grabbed pendant la rotation!");
+                Debug.LogWarning("[CLIMB] ANNULE - Player grabbed pendant la rotation!");
 
-                // Annuler tout
                 isClimbing = false;
                 playerMovement.isClimbing = false;
                 playerMovement.enabled = true;
                 playerMovement.canMove = true;
-                yield break; // SORTIR de la coroutine
+                yield break;
             }
 
             elapsed += Time.deltaTime;
@@ -217,27 +195,24 @@ public class TestClimbDetection : MonoBehaviour
         transform.rotation = targetRotation;
         Debug.Log("[CLIMB] Rotation terminee!");
 
-        // MAINTENANT LANCER LE CLIMB
         yield return StartCoroutine(ClimbCoroutine(startPos, height, distance, climbType));
     }
 
     private IEnumerator ClimbCoroutine(Vector3 startPos, float height, float distance, ClimbType climbType)
     {
         Rigidbody rb = GetComponent<Rigidbody>();
-        bool isVault = climbType.obstacleDepth < vaultDepthThreshold;
+        bool isVault = climbType.isVault;
         float startY = transform.position.y;
         startPos = transform.position;
 
-        // === BLOQUER GRABS PENDANT TOUT LE CLIMB ===
         playerMovement.isImmuneToGrab = true;
 
-        // === DÉSACTIVER COLLISIONS ZOMBIES SI VAULT ===
         int playerLayer = gameObject.layer;
         int zombieLayer = LayerMask.NameToLayer("Zombie");
         if (isVault)
         {
             Physics.IgnoreLayerCollision(playerLayer, zombieLayer, true);
-            Debug.Log("[CLIMB] Vault détecté - collisions zombies désactivées");
+            Debug.Log("[CLIMB] Vault detecte - collisions zombies desactivees");
         }
 
         RigidbodyConstraints oldConstraints = rb.constraints;
@@ -245,7 +220,6 @@ public class TestClimbDetection : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        // PHASE 1 : MONTEE VERTICALE
         Vector3 topPos = startPos + Vector3.up * height;
         float phase1Duration = climbType.phase1Duration;
         float elapsed = 0f;
@@ -264,7 +238,6 @@ public class TestClimbDetection : MonoBehaviour
         rb.MovePosition(topPos);
         rb.linearVelocity = Vector3.zero;
 
-        // PHASE 2 : AVANCEE HORIZONTALE
         Vector3 finalPos = topPos + transform.forward * distance;
         float phase2Duration = climbType.phase2Duration;
         elapsed = 0f;
@@ -283,12 +256,10 @@ public class TestClimbDetection : MonoBehaviour
         rb.MovePosition(finalPos);
         rb.linearVelocity = Vector3.zero;
 
-        // Si VAULT : attendre la descente
         if (isVault)
         {
             Debug.Log("[CLIMB] VAULT detecte, attente descente...");
 
-            // Timeout de 3 secondes au cas où
             float descenteTimer = 0f;
             float maxDescenteTime = 3f;
 
@@ -300,39 +271,37 @@ public class TestClimbDetection : MonoBehaviour
 
             if (descenteTimer >= maxDescenteTime)
             {
-                Debug.LogWarning("[CLIMB] Timeout descente vault - forçage au sol");
+                Debug.LogWarning("[CLIMB] Timeout descente vault - forcage au sol");
             }
 
             Debug.Log("[CLIMB] Descente terminee!");
         }
 
-        // === RÉACTIVER COLLISIONS ZOMBIES ===
         if (isVault)
         {
             Physics.IgnoreLayerCollision(playerLayer, zombieLayer, false);
-            Debug.Log("[CLIMB] Collisions zombies réactivées");
+            Debug.Log("[CLIMB] Collisions zombies reactivees");
         }
 
-        // RESTAURER TOUT
         rb.constraints = oldConstraints;
         playerMovement.enabled = true;
         playerMovement.isClimbing = false;
 
-        // === RETIRER IMMUNITÉ GRABS ===
         playerMovement.isImmuneToGrab = false;
 
         ReEnableMovement();
 
-        // Attendre que E soit relache
         yield return new WaitUntil(() => !PlayerInputManager.Instance.InteractPressed);
 
         isClimbing = false;
         Debug.Log("[CLIMB] Climb termine, E relache, pret pour prochain climb");
     }
+
     public bool IsClimbing()
     {
         return isClimbing;
     }
+
     public void CancelClimb()
     {
         if (!isClimbing)

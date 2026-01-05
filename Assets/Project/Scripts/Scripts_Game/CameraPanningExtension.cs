@@ -25,7 +25,8 @@ public class CameraPanningExtension : CinemachineExtension
     [Header("Obstacle Hiding")]
     [SerializeField] private float playerHeightOffset = 0.5f;
     [SerializeField] private LayerMask obstacleHidingLayers;
-    [SerializeField] private Material wireframeMaterial;
+    [SerializeField] private Material transparentMaterial;
+    [SerializeField] private float detectionRadius = 1f;
 
     private Vector3 currentPanOffset;
     private Vector3 currentLateralOffset = Vector3.zero;
@@ -83,35 +84,40 @@ public class CameraPanningExtension : CinemachineExtension
     {
         if (isHighPosition && isLowView && playerTransform != null && mainCamera != null)
         {
-            if (wireframeMaterial == null)
-            {
-                Debug.LogWarning("[Camera Occlusion] Wireframe material not assigned!");
-                return;
-            }
+
 
             Vector3 cameraPos = mainCamera.transform.position;
-            Vector3 playerPos = playerTransform.position + Vector3.up * playerHeightOffset;
-            Vector3 direction = playerPos - cameraPos;
+            Vector3 playerCenter = playerTransform.position + Vector3.up * playerHeightOffset;
+            Vector3 direction = playerCenter - cameraPos;
             float distance = direction.magnitude;
 
             Debug.DrawRay(cameraPos, direction, Color.red, 0.1f);
 
             HashSet<Renderer> currentlyBlocking = new HashSet<Renderer>();
-            RaycastHit[] hits = Physics.RaycastAll(cameraPos, direction.normalized, distance, obstacleHidingLayers);
+
+            // Un seul SphereCast avec petit rayon vers le centre du player
+            float smallRadius = 0.1f;  // Petite marge autour du player
+            RaycastHit[] hits = Physics.SphereCastAll(cameraPos, smallRadius, direction.normalized, distance, obstacleHidingLayers);
 
             foreach (RaycastHit hit in hits)
             {
                 if (hit.collider.gameObject != playerTransform.gameObject)
                 {
-                    Renderer rend = hit.collider.GetComponent<Renderer>();
-                    if (rend != null)
-                    {
-                        currentlyBlocking.Add(rend);
+                    // Verifier que l'obstacle est vraiment entre camera et player
+                    float distToObstacle = hit.distance;
 
-                        if (!occludedRenderers.Contains(rend))
+                    if (distToObstacle < distance)
+                    {
+                        Renderer rend = hit.collider.GetComponent<Renderer>();
+                        if (rend != null)
                         {
-                            SaveAndSwapToWireframe(rend);
-                            occludedRenderers.Add(rend);
+                            currentlyBlocking.Add(rend);
+
+                            if (!occludedRenderers.Contains(rend))
+                            {
+                                SaveAndSwapToTransparent(rend);
+                                occludedRenderers.Add(rend);
+                            }
                         }
                     }
                 }
@@ -231,67 +237,22 @@ public class CameraPanningExtension : CinemachineExtension
         }
     }
 
-    private void SaveAndSwapToWireframe(Renderer renderer)
-{
-    if (!originalMaterials.ContainsKey(renderer))
+    private void SaveAndSwapToTransparent(Renderer renderer)
     {
-        // Sauvegarder les matériaux originaux
-        originalMaterials[renderer] = renderer.sharedMaterials;
-        
-        // Préparer le mesh avec barycentriques (NOUVEAU)
-        MeshFilter meshFilter = renderer.GetComponent<MeshFilter>();
-        if (meshFilter != null && meshFilter.mesh != null)
+        if (!originalMaterials.ContainsKey(renderer))
         {
-            PrepareMeshForWireframe(meshFilter.mesh);
+            originalMaterials[renderer] = renderer.sharedMaterials;
         }
+
+        Material[] transparents = new Material[renderer.sharedMaterials.Length];
+        for (int i = 0; i < transparents.Length; i++)
+        {
+            transparents[i] = transparentMaterial;
+        }
+        renderer.sharedMaterials = transparents;
     }
 
-    // Swapper tous les matériaux par le wireframe
-    Material[] wireframes = new Material[renderer.sharedMaterials.Length];
-    for (int i = 0; i < wireframes.Length; i++)
-    {
-        wireframes[i] = wireframeMaterial;
-    }
-    renderer.sharedMaterials = wireframes;
-}
-
-private void PrepareMeshForWireframe(Mesh mesh)
-{
-    // Vérifier si déjà préparé
-    if (mesh.uv2 != null && mesh.uv2.Length > 0)
-        return;
     
-    int[] tris = mesh.triangles;
-    Vector3[] verts = mesh.vertices;
-    Vector3[] bary = new Vector3[mesh.vertexCount];
-
-    for (int i = 0; i < tris.Length; i += 3)
-    {
-        int i0 = tris[i];
-        int i1 = tris[i + 1];
-        int i2 = tris[i + 2];
-
-        Vector3 p0 = verts[i0];
-        Vector3 p1 = verts[i1];
-        Vector3 p2 = verts[i2];
-
-        float d01 = Vector3.Distance(p0, p1);
-        float d12 = Vector3.Distance(p1, p2);
-        float d20 = Vector3.Distance(p2, p0);
-
-        float maxDist = Mathf.Max(d01, Mathf.Max(d12, d20));
-
-        float maskZ = (d01 >= maxDist) ? 1f : 0f;
-        float maskX = (d12 >= maxDist) ? 1f : 0f;
-        float maskY = (d20 >= maxDist) ? 1f : 0f;
-
-        bary[i0] = new Vector3(1, maskY, maskZ);
-        bary[i1] = new Vector3(maskX, 1, maskZ);
-        bary[i2] = new Vector3(maskX, maskY, 1);
-    }
-
-    mesh.SetUVs(1, bary);
-}
 
     private void RestoreMaterials(Renderer renderer)
     {
