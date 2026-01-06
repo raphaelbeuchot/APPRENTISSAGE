@@ -461,6 +461,27 @@ public class MeleeAttackSystem : MonoBehaviour
                 }
             }
 
+            // GESTION SWARMS
+            SwarmController_AStar swarmController = hit.GetComponent<SwarmController_AStar>();
+            if (swarmController != null && swarmController.IsAlive())
+            {
+                hitSomething = true;
+
+                // Consommer munition si pas déjà fait
+                if (!sprayUsed)
+                {
+                    currentSprayAmmo--;
+                    sprayUsed = true;
+                    wasFrontAttack = true;
+                }
+
+                // Appliquer dégâts spray depuis SwarmStats
+                float damage = swarmController.stats.sprayDamageTaken;
+                swarmController.TakeDamage(damage);
+
+                Debug.Log($"SPRAY HIT SWARM: {hit.gameObject.name} for {damage} damage");
+            }
+
             // GESTION BRIGHT EYES
             BrightEyesController brightEyes = hit.GetComponent<BrightEyesController>();
             if (brightEyes != null && brightEyes.IsAlive() && !brightEyes.IsFlameExtinguished())

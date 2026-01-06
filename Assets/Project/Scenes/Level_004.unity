@@ -55739,7 +55739,7 @@ MonoBehaviour:
   iconContainer: {fileID: 265956970}
   sprayIconPrefab: {fileID: 2248125366128818721, guid: e6f979f1fac53774b9a591e11b19fb52, type: 3}
   ammoCountText: {fileID: 690185980}
-  fullColor: {r: 0, g: 0.835938, b: 1, a: 1}
+  fullColor: {r: 1, g: 1, b: 1, a: 1}
   emptyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   reloadingColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   reloadSound: {fileID: 0}
@@ -127289,7 +127289,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!65 &1803505157
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -128166,6 +128166,10 @@ PrefabInstance:
     - target: {fileID: 5277722503802776851, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
       propertyPath: m_Name
       value: Moquette_Rond01
+      objectReference: {fileID: 0}
+    - target: {fileID: 6327535762156930271, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
+      propertyPath: gizmoColor.r
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -137933,7 +137937,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1932135100
 RectTransform:
   m_ObjectHideFlags: 0
@@ -137948,11 +137952,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1262410461}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 40, y: -120}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 20}
   m_SizeDelta: {x: 380, y: 80}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1932135101
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137973,17 +137977,17 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: MASH SPACE !!!
+  m_text: Press X !
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8a89fa14b10d46a99122fd4f73fca9a2, type: 2}
-  m_sharedMaterial: {fileID: 2140474, guid: 8a89fa14b10d46a99122fd4f73fca9a2, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  m_sharedMaterial: {fileID: 2140032, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278238975
-  m_fontColor: {r: 1, g: 0.74702513, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -138007,8 +138011,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 2
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
