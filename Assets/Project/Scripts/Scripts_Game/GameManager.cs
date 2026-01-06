@@ -72,6 +72,10 @@ public class GameManager : MonoBehaviour
 
         // NOUVEAU : Flag premier scan
         public bool hasBeenTrackedBefore = false;
+
+        // NOUVEAU : Détection mouvement sur plateforme
+        public Vector3 lastCheckPosition;
+        public float lastCheckTime;
     }
 
     // ============================================
@@ -432,7 +436,38 @@ public class GameManager : MonoBehaviour
             bool isClimbingOutOfPit = pitInteractable != null && pitInteractable.IsClimbingOut();
 
             bool isMoving = false;
-            if (rb != null)
+
+            // CAS SPECIAL PLAYER : Check position world space (pour plateformes)
+            if (col.gameObject == player.gameObject && rb != null)
+            {
+                // Initialiser position si premier scan
+                if (trackData.lastCheckTime == 0f)
+                {
+                    trackData.lastCheckPosition = col.transform.position;
+                    trackData.lastCheckTime = Time.time;
+                }
+
+                // Calculer deplacement depuis dernier scan
+                float timeSinceLastCheck = Time.time - trackData.lastCheckTime;
+                if (timeSinceLastCheck > 0.01f) // Eviter division par zero
+                {
+                    float distanceMoved = Vector3.Distance(col.transform.position, trackData.lastCheckPosition);
+                    float worldSpaceVelocity = distanceMoved / timeSinceLastCheck;
+
+                    // Si vitesse world space depasse threshold : en mouvement
+                    if (worldSpaceVelocity > sentinelSettings.movementThreshold)
+                    {
+                        isMoving = true;
+                        Debug.Log($"[PLATFORM MOVEMENT] Player velocity world space: {worldSpaceVelocity:F3} m/s (threshold: {sentinelSettings.movementThreshold})");
+                    }
+
+                    // Update position tracking
+                    trackData.lastCheckPosition = col.transform.position;
+                    trackData.lastCheckTime = Time.time;
+                }
+            }
+            // CAS ZOMBIES : Logique existante
+            else if (rb != null)
             {
                 // Check pit mode en premier
                 EnemyAI_AStar zombieAI = col.GetComponent<EnemyAI_AStar>();
@@ -454,7 +489,7 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    // Mode normal : essayer A path
+                    // Mode normal : essayer AIPath
                     Pathfinding.AIPath aiPath = col.GetComponent<Pathfinding.AIPath>();
                     if (aiPath != null && aiPath.enabled && aiPath.canMove)
                     {
@@ -468,15 +503,12 @@ public class GameManager : MonoBehaviour
 
                         isMoving = aiPath.velocity.magnitude > effectiveThreshold;
                     }
-
-
                     else
                     {
                         // Dernier fallback : Rigidbody
                         float effectiveThreshold = sentinelSettings.movementThreshold;
                         isMoving = rb.linearVelocity.magnitude > effectiveThreshold;
                     }
-
                 }
             }
 

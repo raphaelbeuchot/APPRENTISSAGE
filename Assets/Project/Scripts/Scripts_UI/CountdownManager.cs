@@ -70,11 +70,11 @@ public class CountdownManager : MonoBehaviour
     IEnumerator CountdownCoroutine()
     {
         Debug.Log("3...");
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.6f);
         Debug.Log("2...");
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.6f);
         Debug.Log("1...");
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(3f);
         Debug.Log("GO!");
 
         if (shutter != null)

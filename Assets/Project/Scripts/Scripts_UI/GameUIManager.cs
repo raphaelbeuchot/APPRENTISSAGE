@@ -190,7 +190,7 @@ public class GameUIManager : MonoBehaviour
         countdownText.gameObject.SetActive(true);
         countdownText.fontSize = countdownFontSize;
 
-        string[] countdownNumbers = { "3", "2", "1", "GO!" };
+        string[] countdownNumbers = { "Let's", "Play", "Super Panopticon !", "" };
 
         foreach (string number in countdownNumbers)
         {
