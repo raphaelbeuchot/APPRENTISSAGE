@@ -185,6 +185,9 @@ public class GameOverUI : MonoBehaviour
     {
         isActive = true;
 
+        // NOUVEAU : Freeze le temps comme en pause
+        Time.timeScale = 0f;
+
         if (gameOverCanvasGroup != null)
         {
             gameOverCanvasGroup.alpha = 1f;
@@ -201,19 +204,6 @@ public class GameOverUI : MonoBehaviour
         if (audioSource != null && gameOverSound != null)
         {
             audioSource.PlayOneShot(gameOverSound);
-        }
-
-        // NOUVEAU : Desactiver les controles du joueur
-        PlayerPhysicsMovement playerMovement = FindObjectOfType<PlayerPhysicsMovement>();
-        if (playerMovement != null)
-        {
-            playerMovement.enabled = false;
-        }
-
-        CameraFollow cameraFollow = FindObjectOfType<CameraFollow>();
-        if (cameraFollow != null)
-        {
-            cameraFollow.enabled = false;
         }
 
         currentSelection = 0;
