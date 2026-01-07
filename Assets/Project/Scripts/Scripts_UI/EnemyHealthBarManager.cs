@@ -14,6 +14,11 @@ public class EnemyHealthBarManager : MonoBehaviour
     public float verticalOffset = 2f;
     public float maxDisplayDistance = 6f;
 
+    [Header("UI Masking")]
+    public Image tvFrameImage;
+    public float alphaThreshold = 0.5f;
+    private Texture2D vignetteTexture;
+
     private Transform playerTransform;
     private Dictionary<Transform, EnemyHealthBarUI> healthBars = new Dictionary<Transform, EnemyHealthBarUI>();
     private Camera mainCamera;
@@ -43,6 +48,17 @@ public class EnemyHealthBarManager : MonoBehaviour
         if (player != null)
         {
             playerTransform = player.transform;
+        }
+
+        // Recuperer la texture de la vignette
+        if (tvFrameImage != null && tvFrameImage.sprite != null)
+        {
+            vignetteTexture = tvFrameImage.sprite.texture;
+
+            if (!vignetteTexture.isReadable)
+            {
+                Debug.LogError("La texture de la vignette doit etre en Read/Write enabled dans les import settings!");
+            }
         }
     }
 
@@ -105,6 +121,13 @@ public class EnemyHealthBarManager : MonoBehaviour
                     null,
                     out localPoint);
                 barRect.localPosition = localPoint;
+
+                // Check alpha de la vignette a cette position
+                if (tvFrameImage != null && vignetteTexture != null && IsOccludedByVignette(screenPos))
+                {
+                    bar.Hide();
+                    continue;
+                }
             }
 
             // Check distance pour affichage
@@ -112,11 +135,11 @@ public class EnemyHealthBarManager : MonoBehaviour
 
             // Exceptions
             bool shouldIgnoreDistance = false;
+
             // Exception 1 : Blinder custom range
             ChargeAttack blinder = enemy.GetComponent<ChargeAttack>();
             if (blinder != null)
             {
-                // Range custom pour Blinders (10m au lieu de 6m)
                 float blinderRange = 10f;
                 if (distance <= blinderRange)
                 {
@@ -137,6 +160,13 @@ public class EnemyHealthBarManager : MonoBehaviour
                 shouldIgnoreDistance = true;
             }
 
+            // Exception 3 : Ennemi recemment touche par sentinelle
+            EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
+            if (enemyHealth != null && enemyHealth.recentlyHitBySentinel)
+            {
+                shouldIgnoreDistance = true;
+            }
+
             // Affichage normal selon distance
             if (shouldIgnoreDistance || distance <= maxDisplayDistance)
             {
@@ -147,5 +177,32 @@ public class EnemyHealthBarManager : MonoBehaviour
                 bar.Hide();
             }
         }
+    }
+
+    private bool IsOccludedByVignette(Vector3 screenPos)
+    {
+        if (vignetteTexture == null || tvFrameImage == null) return false;
+
+        // Convertir position screen en coordonnees UV (0-1)
+        float u = screenPos.x / Screen.width;
+        float v = screenPos.y / Screen.height;
+
+        // Clamper pour eviter out of bounds
+        u = Mathf.Clamp01(u);
+        v = Mathf.Clamp01(v);
+
+        // Convertir UV en coordonnees pixel de la texture
+        int x = Mathf.FloorToInt(u * vignetteTexture.width);
+        int y = Mathf.FloorToInt(v * vignetteTexture.height);
+
+        // Clamper aux limites de la texture
+        x = Mathf.Clamp(x, 0, vignetteTexture.width - 1);
+        y = Mathf.Clamp(y, 0, vignetteTexture.height - 1);
+
+        // Sampler l'alpha a cette position
+        Color pixelColor = vignetteTexture.GetPixel(x, y);
+
+        // Si alpha > seuil, la vignette est opaque la = masquer
+        return pixelColor.a > alphaThreshold;
     }
 }

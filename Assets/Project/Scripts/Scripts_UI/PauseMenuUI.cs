@@ -4,16 +4,17 @@ using UnityEngine.EventSystems;
 using TMPro;
 using System.Collections.Generic;
 
-public class GameOverUI : MonoBehaviour
+public class PauseMenuUI : MonoBehaviour
 {
     [Header("UI Elements")]
-    [SerializeField] private GameObject gameOverPanel;
-    [SerializeField] private CanvasGroup gameOverCanvasGroup;
-    [SerializeField] private TextMeshProUGUI gameOverText;
+    [SerializeField] private GameObject pausePanel;
+    [SerializeField] private CanvasGroup pauseCanvasGroup;
     [SerializeField] private Image backgroundOverlay;
 
     [Header("Menu Options")]
+    [SerializeField] private TextMeshProUGUI continueText;
     [SerializeField] private TextMeshProUGUI restartText;
+    [SerializeField] private TextMeshProUGUI optionsText;
     [SerializeField] private TextMeshProUGUI quitText;
 
     [Header("Visual Settings")]
@@ -22,56 +23,20 @@ public class GameOverUI : MonoBehaviour
     [SerializeField] private float selectedScale = 1.2f;
     [SerializeField] private float transitionSpeed = 10f;
 
-    [Header("Messages")]
-    [SerializeField]
-    private string[] deathMessages = new string[]
-    {
-        "YOU DIED",
-        "GAME OVER",
-        "CAUGHT!",
-        "ELIMINATED",
-        "TERMINATED"
-    };
-
-    [Header("Audio")]
-    [SerializeField] private AudioClip gameOverSound;
-    private AudioSource audioSource;
-
-    [Header("References")]
-    [SerializeField] private PlayerHealth playerHealth;
-
+    private bool isPaused = false;
     private List<TextMeshProUGUI> menuTexts = new List<TextMeshProUGUI>();
     private int currentSelection = 0;
     private Vector3 normalScale = Vector3.one;
+
     private float navigationCooldown = 0f;
     private float cooldownDuration = 0.2f;
-    private bool isActive = false;
 
     void Start()
     {
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-
-        if (playerHealth == null)
-        {
-            playerHealth = FindObjectOfType<PlayerHealth>();
-        }
-
-        if (playerHealth != null)
-        {
-            playerHealth.OnDeath += Show;
-            Debug.Log("GameOverUI subscribed to PlayerHealth.OnDeath");
-        }
-        else
-        {
-            Debug.LogError("GameOverUI: PlayerHealth not found!");
-        }
-
         // Setup liste textes menu
+        menuTexts.Add(continueText);
         menuTexts.Add(restartText);
+        menuTexts.Add(optionsText);
         menuTexts.Add(quitText);
 
         // Initialiser couleurs et scales
@@ -84,22 +49,34 @@ public class GameOverUI : MonoBehaviour
             }
         }
 
-        if (gameOverPanel != null)
+        // Cacher au demarrage
+        if (pausePanel != null)
         {
-            gameOverPanel.SetActive(true);
+            pausePanel.SetActive(true);
         }
-
         Hide();
     }
 
     void Update()
     {
-        if (isActive)
+        // Toggle pause avec Echap ou Start (manette)
+        if (Input.GetKeyDown(KeyCode.Escape) || PlayerInputManager.Instance.PausePressed)
+        {
+            if (isPaused)
+                Resume();
+            else
+                Pause();
+        }
+
+        // Si pause active, gerer navigation
+        if (isPaused)
         {
             HandleNavigation();
             UpdateVisuals();
         }
     }
+
+
 
     void HandleNavigation()
     {
@@ -139,16 +116,16 @@ public class GameOverUI : MonoBehaviour
                 currentSelection = 0;
         }
 
-        // Validation avec Entree ou A/X manette
+        // Validation avec Entree ou A/X manette - LIRE DIRECTEMENT L'INPUT
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetButtonDown("Submit"))
         {
             SelectCurrentOption();
         }
 
-        // Cancel direct vers Quit
-        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetButtonDown("Cancel"))
+        // Cancel avec B manette
+        if (Input.GetButtonDown("Cancel"))
         {
-            OnQuitClicked();
+            Resume();
         }
     }
 
@@ -172,70 +149,59 @@ public class GameOverUI : MonoBehaviour
     {
         switch (currentSelection)
         {
-            case 0: // Restart
-                OnRestartClicked();
+            case 0: // Continue
+                Resume();
                 break;
-            case 1: // Quit
-                OnQuitClicked();
+            case 1: // Restart
+                RestartLevel();
+                break;
+            case 2: // Options
+                OpenOptions();
+                break;
+            case 3: // Quit
+                QuitToMenu();
                 break;
         }
     }
 
-    public void Show()
+    public void Pause()
     {
-        isActive = true;
+        isPaused = true;
+        Time.timeScale = 0f;
 
-        if (gameOverCanvasGroup != null)
+        if (pauseCanvasGroup != null)
         {
-            gameOverCanvasGroup.alpha = 1f;
-            gameOverCanvasGroup.interactable = true;
-            gameOverCanvasGroup.blocksRaycasts = true;
-        }
-
-        if (gameOverText != null && deathMessages.Length > 0)
-        {
-            string randomMessage = deathMessages[Random.Range(0, deathMessages.Length)];
-            gameOverText.text = randomMessage;
-        }
-
-        if (audioSource != null && gameOverSound != null)
-        {
-            audioSource.PlayOneShot(gameOverSound);
-        }
-
-        // NOUVEAU : Desactiver les controles du joueur
-        PlayerPhysicsMovement playerMovement = FindObjectOfType<PlayerPhysicsMovement>();
-        if (playerMovement != null)
-        {
-            playerMovement.enabled = false;
-        }
-
-        CameraFollow cameraFollow = FindObjectOfType<CameraFollow>();
-        if (cameraFollow != null)
-        {
-            cameraFollow.enabled = false;
+            pauseCanvasGroup.alpha = 1f;
+            pauseCanvasGroup.interactable = true;
+            pauseCanvasGroup.blocksRaycasts = true;
         }
 
         currentSelection = 0;
-        Debug.Log("=== GAME OVER ===");
+        Debug.Log("Game paused");
     }
 
-    public void Hide()
+    public void Resume()
     {
-        isActive = false;
+        isPaused = false;
+        Time.timeScale = 1f;
+        Hide();
+        Debug.Log("Game resumed");
+    }
 
-        if (gameOverCanvasGroup != null)
+    void Hide()
+    {
+        if (pauseCanvasGroup != null)
         {
-            gameOverCanvasGroup.alpha = 0f;
-            gameOverCanvasGroup.interactable = false;
-            gameOverCanvasGroup.blocksRaycasts = false;
+            pauseCanvasGroup.alpha = 0f;
+            pauseCanvasGroup.interactable = false;
+            pauseCanvasGroup.blocksRaycasts = false;
         }
     }
 
-    void OnRestartClicked()
+    void RestartLevel()
     {
-        Debug.Log("Restart button clicked!");
         Time.timeScale = 1f;
+        isPaused = false;
 
         LevelManager levelManager = FindObjectOfType<LevelManager>();
         if (levelManager != null)
@@ -250,9 +216,16 @@ public class GameOverUI : MonoBehaviour
         }
     }
 
-    void OnQuitClicked()
+    void OpenOptions()
     {
-        Debug.Log("Quit button clicked!");
+        Debug.Log("Options menu - A implementer");
+        // TODO : Ouvrir menu options
+    }
+
+    void QuitToMenu()
+    {
+        Time.timeScale = 1f;
+        isPaused = false;
 
         LevelManager levelManager = FindObjectOfType<LevelManager>();
         if (levelManager != null)
@@ -268,11 +241,8 @@ public class GameOverUI : MonoBehaviour
         }
     }
 
-    void OnDestroy()
+    public bool IsPaused()
     {
-        if (playerHealth != null)
-        {
-            playerHealth.OnDeath -= Show;
-        }
+        return isPaused;
     }
 }

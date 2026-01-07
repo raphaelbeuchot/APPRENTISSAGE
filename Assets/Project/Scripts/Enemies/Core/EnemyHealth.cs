@@ -15,6 +15,11 @@ public class EnemyHealth : MonoBehaviour
     [Tooltip("Son joue quand le zombie meurt noye (non spatialise)")]
     public AudioClip crowdLaughterSound;
 
+    [Header("Healthbar Display")]
+    public bool recentlyHitBySentinel = false;
+    private float sentinelHitDisplayDuration = 3f; // Durée d'affichage après hit sentinelle
+    private Coroutine sentinelHitDisplayCoroutine;
+
     [Header("Knockback State")]
     public bool isInKnockback = false;
     private float knockbackEndTime = 0f;
@@ -392,7 +397,7 @@ public class EnemyHealth : MonoBehaviour
     }
 
     // Démarre un stun spray (Chase mode - pas de cumul)
-    
+
     public void TakeSentinelShot(bool isHeadshot = false)
     {
         if (isDead) return;
@@ -429,6 +434,11 @@ public class EnemyHealth : MonoBehaviour
         if (healthBarUI != null)
             healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
 
+        // NOUVEAU : Déclencher l'affichage temporaire de la barre de vie
+        if (sentinelHitDisplayCoroutine != null)
+            StopCoroutine(sentinelHitDisplayCoroutine);
+        sentinelHitDisplayCoroutine = StartCoroutine(SentinelHitDisplayCoroutine());
+
         if (currentHealth <= 0f)
         {
             Die();
@@ -439,6 +449,14 @@ public class EnemyHealth : MonoBehaviour
         StartCoroutine(StunCoroutine());
 
         UpdateSpeed();
+    }
+
+    // Coroutine pour reset le flag (déjà présente en haut du script)
+    private IEnumerator SentinelHitDisplayCoroutine()
+    {
+        recentlyHitBySentinel = true;
+        yield return new WaitForSeconds(sentinelHitDisplayDuration);
+        recentlyHitBySentinel = false;
     }
 
     private IEnumerator StunCoroutine()

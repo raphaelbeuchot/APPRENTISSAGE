@@ -23,6 +23,9 @@ public class PlayerInputManager : MonoBehaviour
     public bool CrouchPressed { get; private set; }
     public bool SentinelCameraPressed { get; private set; }
     public bool ToggleCameraViewPressed { get; private set; }
+    public bool CancelPressed { get; private set; }
+    public bool PausePressed { get; private set; }
+
 
 
     private void Awake()
@@ -82,18 +85,21 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.ToggleCameraView.performed += OnToggleCameraView;
 
-
         inputActions.Player.SentinelCamera.performed += ctx =>
         {
             Debug.Log("INPUT SENTINEL CAMERA PERFORMED!");
             SentinelCameraPressed = true;
         };
         inputActions.Player.SentinelCamera.canceled += ctx => SentinelCameraPressed = false;
+
+        // NOUVEAU : Brancher Pause et Cancel
+        inputActions.Player.Pause.performed += OnPause;
+        inputActions.Player.Cancel.performed += OnCancel;
     }
 
     private void OnDisable()
     {
-        // Se désabonner
+        // Se desabonner
         inputActions.Player.Movement.performed -= OnMovement;
         inputActions.Player.Movement.canceled -= OnMovement;
 
@@ -110,11 +116,19 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.ToggleCameraView.performed -= OnToggleCameraView;
 
+        // NOUVEAU : Debrancher Pause et Cancel
+        inputActions.Player.Pause.performed -= OnPause;
+        inputActions.Player.Cancel.performed -= OnCancel;
 
-        // Désactiver l'action map
+        // Desactiver l'action map
         inputActions.Player.Disable();
     }
 
+    private void OnCancel(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+            CancelPressed = true;
+    }
     private void OnToggleCameraView(InputAction.CallbackContext context)
     {
         ToggleCameraViewPressed = true;
@@ -136,6 +150,12 @@ public class PlayerInputManager : MonoBehaviour
 
         SprayAttackHeld = context.ReadValueAsButton();
     }
+    private void OnPause(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+            PausePressed = true;
+    }
+
 
     private void LateUpdate()
     {
@@ -150,6 +170,9 @@ public class PlayerInputManager : MonoBehaviour
         CrouchPressed = false;
         SentinelCameraPressed = false;
         ToggleCameraViewPressed = false;
+        CancelPressed = false;
+        PausePressed = false;
+
 
     }
 }
