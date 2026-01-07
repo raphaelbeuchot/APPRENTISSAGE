@@ -437,7 +437,7 @@ public class GameManager : MonoBehaviour
 
             bool isMoving = false;
 
-            // CAS SPECIAL PLAYER : Check position world space (pour plateformes)
+            // CAS PLAYER : World space uniquement
             if (col.gameObject == player.gameObject && rb != null)
             {
                 // Initialiser position si premier scan
@@ -449,65 +449,89 @@ public class GameManager : MonoBehaviour
 
                 // Calculer deplacement depuis dernier scan
                 float timeSinceLastCheck = Time.time - trackData.lastCheckTime;
-                if (timeSinceLastCheck > 0.01f) // Eviter division par zero
+                if (timeSinceLastCheck > 0.01f)
                 {
                     float distanceMoved = Vector3.Distance(col.transform.position, trackData.lastCheckPosition);
                     float worldSpaceVelocity = distanceMoved / timeSinceLastCheck;
 
-                    // Si vitesse world space depasse threshold : en mouvement
                     if (worldSpaceVelocity > sentinelSettings.movementThreshold)
                     {
                         isMoving = true;
-                        Debug.Log($"[PLATFORM MOVEMENT] Player velocity world space: {worldSpaceVelocity:F3} m/s (threshold: {sentinelSettings.movementThreshold})");
+                        Debug.Log($"[WORLD MOVEMENT] Player velocity: {worldSpaceVelocity:F3} m/s");
                     }
 
-                    // Update position tracking
                     trackData.lastCheckPosition = col.transform.position;
                     trackData.lastCheckTime = Time.time;
                 }
             }
-            // CAS ZOMBIES : Logique existante
+            // CAS ZOMBIES : Logique existante + world space en complement
             else if (rb != null)
             {
-                // Check pit mode en premier
+                // Detection classique d'abord
                 EnemyAI_AStar zombieAI = col.GetComponent<EnemyAI_AStar>();
                 bool isInPitMode = zombieAI != null && zombieAI.isInPitMode;
 
                 if (isInPitMode)
                 {
-                    // En pit mode : utiliser directement rb.linearVelocity
                     float effectiveThreshold = sentinelSettings.movementThreshold;
-
                     EnemyPitInteractable enemyPit = col.GetComponent<EnemyPitInteractable>();
                     if (enemyPit != null && enemyPit.isInShallowWater)
                     {
                         effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
                     }
-
                     isMoving = rb.linearVelocity.magnitude > effectiveThreshold;
                     Debug.Log($"[PIT MODE] {col.name} velocity={rb.linearVelocity.magnitude}, threshold={effectiveThreshold}, moving={isMoving}");
                 }
                 else
                 {
-                    // Mode normal : essayer AIPath
                     Pathfinding.AIPath aiPath = col.GetComponent<Pathfinding.AIPath>();
                     if (aiPath != null && aiPath.enabled && aiPath.canMove)
                     {
                         float effectiveThreshold = sentinelSettings.movementThreshold;
+                        EnemyPitInteractable enemyPit = col.GetComponent<EnemyPitInteractable>();
+                        if (enemyPit != null && enemyPit.isInShallowWater)
+                        {
+                            effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
+                        }
+                        isMoving = aiPath.velocity.magnitude > effectiveThreshold;
+                    }
+                    else
+                    {
+                        float effectiveThreshold = sentinelSettings.movementThreshold;
+                        isMoving = rb.linearVelocity.magnitude > effectiveThreshold;
+                    }
+                }
 
+                // AJOUT : World space detection EN COMPLEMENT (pour plateformes)
+                if (!isMoving)
+                {
+                    if (trackData.lastCheckTime == 0f)
+                    {
+                        trackData.lastCheckPosition = col.transform.position;
+                        trackData.lastCheckTime = Time.time;
+                    }
+
+                    float timeSinceLastCheck = Time.time - trackData.lastCheckTime;
+                    if (timeSinceLastCheck > 0.01f)
+                    {
+                        float distanceMoved = Vector3.Distance(col.transform.position, trackData.lastCheckPosition);
+                        float worldSpaceVelocity = distanceMoved / timeSinceLastCheck;
+
+                        float effectiveThreshold = sentinelSettings.movementThreshold;
                         EnemyPitInteractable enemyPit = col.GetComponent<EnemyPitInteractable>();
                         if (enemyPit != null && enemyPit.isInShallowWater)
                         {
                             effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
                         }
 
-                        isMoving = aiPath.velocity.magnitude > effectiveThreshold;
-                    }
-                    else
-                    {
-                        // Dernier fallback : Rigidbody
-                        float effectiveThreshold = sentinelSettings.movementThreshold;
-                        isMoving = rb.linearVelocity.magnitude > effectiveThreshold;
+                        if (worldSpaceVelocity > effectiveThreshold)
+                        {
+                            isMoving = true;
+                            Debug.Log($"[WORLD MOVEMENT] {col.name} velocity: {worldSpaceVelocity:F3} m/s (plateforme)");
+                        }
+
+                        trackData.lastCheckPosition = col.transform.position;
+                        trackData.lastCheckTime = Time.time;
                     }
                 }
             }

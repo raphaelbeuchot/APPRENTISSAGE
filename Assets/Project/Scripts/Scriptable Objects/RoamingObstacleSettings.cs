@@ -13,6 +13,10 @@ public class RoamingObstacleSettings : ScriptableObject
     [Tooltip("Si coche, parcourt la spline en sens inverse")]
     public bool reverseDirection = false;
 
+    // NOUVEAU
+    [Tooltip("Type de parcours : Loop (boucle fermee) ou PingPong (aller-retour)")]
+    public bool usePingPong = true;
+
     [Header("Audio")]
     [Tooltip("Son joue en boucle pendant le mouvement (optionnel)")]
     public AudioClip movementSound;

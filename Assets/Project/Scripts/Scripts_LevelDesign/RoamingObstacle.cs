@@ -12,6 +12,8 @@ public class RoamingObstacle : MonoBehaviour
     private float currentProgress = 0f;
     private AudioSource audioSource;
 
+    private float currentDirection = 1f;
+
     void Start()
     {
         if (settings == null)
@@ -51,7 +53,6 @@ public class RoamingObstacle : MonoBehaviour
     {
         if (splineContainer == null || settings == null) return;
 
-        // Calculer distance parcourue ce frame
         float splineLength = splineContainer.Spline.GetLength();
         float distanceThisFrame = settings.moveSpeed * Time.deltaTime;
         float progressIncrement = distanceThisFrame / splineLength;
@@ -60,16 +61,36 @@ public class RoamingObstacle : MonoBehaviour
         if (settings.reverseDirection)
             progressIncrement = -progressIncrement;
 
-        // Avancer sur la spline
+        // Appliquer direction ping-pong
+        progressIncrement *= currentDirection;
+
+        // Avancer
         currentProgress += progressIncrement;
 
-        // Boucler automatiquement
-        if (currentProgress > 1f)
-            currentProgress -= 1f;
-        else if (currentProgress < 0f)
-            currentProgress += 1f;
+        // Gestion boucle ou ping-pong
+        if (settings.usePingPong)
+        {
+            // Aller-retour
+            if (currentProgress >= 1f)
+            {
+                currentProgress = 1f;
+                currentDirection = -1f; // Inverser
+            }
+            else if (currentProgress <= 0f)
+            {
+                currentProgress = 0f;
+                currentDirection = 1f; // Inverser
+            }
+        }
+        else
+        {
+            // Boucle fermee
+            if (currentProgress > 1f)
+                currentProgress -= 1f;
+            else if (currentProgress < 0f)
+                currentProgress += 1f;
+        }
 
-        // Mettre a jour position
         UpdatePosition();
     }
 
@@ -77,10 +98,19 @@ public class RoamingObstacle : MonoBehaviour
     {
         // Evaluer position sur spline
         Vector3 position = splineContainer.EvaluatePosition(currentProgress);
-        transform.position = position;
 
-        // Optionnel : orienter l'obstacle dans la direction du mouvement
-        // (desactive pour l'instant, on garde rotation fixe)
+        // Offset pour que la BASE de l'obstacle touche la spline
+        // Calcule automatiquement selon la taille du collider
+        Collider col = GetComponent<Collider>();
+        float yOffset = 0f;
+
+        if (col != null)
+        {
+            yOffset = col.bounds.extents.y; // Moitie de la hauteur
+        }
+
+        position.y += yOffset;
+        transform.position = position;
     }
 
     void OnDestroy()
