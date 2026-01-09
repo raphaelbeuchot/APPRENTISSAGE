@@ -8,33 +8,41 @@ public class TestClimbDetection : MonoBehaviour
     [SerializeField] private float alignmentThreshold = 0.3f;
     [SerializeField] private PlayerPhysicsMovement playerMovement;
     [SerializeField] private float rotationDuration = 0.3f;
+    [Header("UI")]
+    public ClimbPromptUI climbPrompt;
 
     private bool isClimbing = false;
 
     void Update()
     {
         if (isClimbing)
-            return;
-
-        if (playerMovement.grabState != PlayerPhysicsMovement.GrabState.None)
         {
-            Debug.LogWarning($"[Climb] BLOQUE - grabState = {playerMovement.grabState}");
+            if (climbPrompt != null)
+                climbPrompt.Hide();
             return;
         }
 
-        if (!PlayerInputManager.Instance.InteractPressed)
+        if (playerMovement.grabState != PlayerPhysicsMovement.GrabState.None)
+        {
+            if (climbPrompt != null)
+                climbPrompt.Hide();
             return;
+        }
 
-        Debug.LogWarning("[Climb] E PRESSE - grabState = " + playerMovement.grabState);
-
+        // Input direction
         Vector2 input = PlayerInputManager.Instance.MoveInput;
         if (input.magnitude < 0.1f)
+        {
+            if (climbPrompt != null)
+                climbPrompt.Hide();
             return;
+        }
 
         Vector3 inputDirection = transform.forward;
         inputDirection.y = 0f;
         inputDirection.Normalize();
 
+        // Detection obstacle
         Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius, obstacleLayer);
 
         ClimbableObject bestMatch = null;
@@ -60,96 +68,112 @@ public class TestClimbDetection : MonoBehaviour
             }
         }
 
-        if (bestMatch != null && bestAlignment > alignmentThreshold)
+        // Check si climb possible
+        bool canClimb = (bestMatch != null && bestAlignment > alignmentThreshold);
+
+        // Afficher/cacher prompt
+        if (climbPrompt != null)
         {
-            if (bestMatch.climbType == null)
-            {
-                Debug.LogError("[CLIMB ERROR] " + bestMatch.name + " n'a pas de ClimbType SO assigne!");
-                return;
-            }
-
-            float obstacleHeight = GetObstacleHeight(bestCollider);
-
-            Vector3 toObstacle = (bestCollider.bounds.center - transform.position).normalized;
-            toObstacle.y = 0f;
-            toObstacle.Normalize();
-
-            Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
-            RaycastHit hitInfo;
-
-            int humanLayer = LayerMask.NameToLayer("Human");
-            int finalMask = obstacleLayer & ~(1 << humanLayer);
-
-            Vector3 climbDirection = toObstacle;
-
-            if (Physics.Raycast(rayOrigin, toObstacle, out hitInfo, detectionRadius, finalMask))
-            {
-                Debug.DrawRay(rayOrigin, toObstacle * hitInfo.distance, Color.green, 2f);
-                climbDirection = -hitInfo.normal;
-                climbDirection.y = 0f;
-                climbDirection.Normalize();
-                Debug.Log("[CLIMB] Normale trouvee: " + hitInfo.normal);
-
-                if (bestMatch.onlyClimbFromLongSide)
-                {
-                    BoxCollider boxCol = bestCollider as BoxCollider;
-                    if (boxCol != null)
-                    {
-                        Vector3 size = boxCol.size;
-
-                        bool xIsLonger = size.x > size.z;
-
-                        Vector3 localNormal = bestCollider.transform.InverseTransformDirection(hitInfo.normal);
-                        localNormal.y = 0f;
-
-                        bool hittingShortSide = (xIsLonger && Mathf.Abs(localNormal.z) > Mathf.Abs(localNormal.x)) ||
-                                                (!xIsLonger && Mathf.Abs(localNormal.x) > Mathf.Abs(localNormal.z));
-
-                        if (hittingShortSide)
-                        {
-                            Debug.LogWarning("[CLIMB] Face courte detectee, CLIMB REFUSE (onlyClimbFromLongSide = true)");
-                            return;
-                        }
-
-                        Debug.Log("[CLIMB] Face longue detectee, OK pour climb");
-                    }
-                }
-
-            }
+            if (canClimb)
+                climbPrompt.Show();
             else
-            {
-                Debug.DrawRay(rayOrigin, toObstacle * detectionRadius, Color.red, 2f);
-                Debug.LogWarning("[CLIMB] Raycast rate, CLIMB ANNULE");
-
-                isClimbing = false;
-                playerMovement.isClimbing = false;
-                playerMovement.canMove = true;
-                playerMovement.enabled = true;
-                return;
-            }
-
-            float distance = bestMatch.climbType.moveDistanceForward;
-            float height = obstacleHeight;
-
-            isClimbing = true;
-            playerMovement.isClimbing = true;
-            playerMovement.canMove = false;
-            playerMovement.ResetAllInputs();
-            playerMovement.enabled = false;
-
-            if (playerMovement.IsCrouching())
-            {
-                playerMovement.ExitCrouch();
-            }
-
-            playerMovement.enabled = false;
-
-            StartCoroutine(RotateAndClimbCoroutine(climbDirection, transform.position, height, distance, bestMatch.climbType));
+                climbPrompt.Hide();
         }
-        else if (bestMatch != null)
+
+        // Si pas possible, stop ici
+        if (!canClimb)
+            return;
+
+        // Si E pas presse, stop ici
+        if (!PlayerInputManager.Instance.InteractPressed)
+            return;
+
+        // === CLIMB DECLENCHE ===
+        Debug.LogWarning("[Climb] E PRESSE - grabState = " + playerMovement.grabState);
+
+        // Cacher prompt
+        if (climbPrompt != null)
+            climbPrompt.Hide();
+
+        // Verification ClimbType
+        if (bestMatch.climbType == null)
         {
-            Debug.Log("[CLIMB REFUSE] " + bestMatch.name + " - alignment: " + bestAlignment.ToString("F2"));
+            Debug.LogError("[CLIMB ERROR] " + bestMatch.name + " n'a pas de ClimbType SO assigne!");
+            return;
         }
+
+        float obstacleHeight = GetObstacleHeight(bestCollider);
+
+        Vector3 toObstacleRay = (bestCollider.bounds.center - transform.position).normalized;
+        toObstacleRay.y = 0f;
+        toObstacleRay.Normalize();
+
+        Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
+        RaycastHit hitInfo;
+
+        int humanLayer = LayerMask.NameToLayer("Human");
+        int finalMask = obstacleLayer & ~(1 << humanLayer);
+
+        Vector3 climbDirection = toObstacleRay;
+
+        if (Physics.Raycast(rayOrigin, toObstacleRay, out hitInfo, detectionRadius, finalMask))
+        {
+            Debug.DrawRay(rayOrigin, toObstacleRay * hitInfo.distance, Color.green, 2f);
+            climbDirection = -hitInfo.normal;
+            climbDirection.y = 0f;
+            climbDirection.Normalize();
+            Debug.Log("[CLIMB] Normale trouvee: " + hitInfo.normal);
+
+            if (bestMatch.onlyClimbFromLongSide)
+            {
+                BoxCollider boxCol = bestCollider as BoxCollider;
+                if (boxCol != null)
+                {
+                    Vector3 size = boxCol.size;
+                    bool xIsLonger = size.x > size.z;
+                    Vector3 localNormal = bestCollider.transform.InverseTransformDirection(hitInfo.normal);
+                    localNormal.y = 0f;
+
+                    bool hittingShortSide = (xIsLonger && Mathf.Abs(localNormal.z) > Mathf.Abs(localNormal.x)) ||
+                                            (!xIsLonger && Mathf.Abs(localNormal.x) > Mathf.Abs(localNormal.z));
+
+                    if (hittingShortSide)
+                    {
+                        Debug.LogWarning("[CLIMB] Face courte detectee, CLIMB REFUSE (onlyClimbFromLongSide = true)");
+                        return;
+                    }
+
+                    Debug.Log("[CLIMB] Face longue detectee, OK pour climb");
+                }
+            }
+        }
+        else
+        {
+            Debug.DrawRay(rayOrigin, toObstacleRay * detectionRadius, Color.red, 2f);
+            Debug.LogWarning("[CLIMB] Raycast rate, CLIMB ANNULE");
+
+            isClimbing = false;
+            playerMovement.isClimbing = false;
+            playerMovement.canMove = true;
+            playerMovement.enabled = true;
+            return;
+        }
+
+        float distance = bestMatch.climbType.moveDistanceForward;
+        float height = obstacleHeight;
+
+        isClimbing = true;
+        playerMovement.isClimbing = true;
+        playerMovement.canMove = false;
+        playerMovement.ResetAllInputs();
+        playerMovement.enabled = false;
+
+        if (playerMovement.IsCrouching())
+        {
+            playerMovement.ExitCrouch();
+        }
+
+        StartCoroutine(RotateAndClimbCoroutine(climbDirection, transform.position, height, distance, bestMatch.climbType));
     }
 
     private float GetObstacleHeight(Collider obstacleCollider)
