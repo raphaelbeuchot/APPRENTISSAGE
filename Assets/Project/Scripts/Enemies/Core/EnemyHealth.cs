@@ -529,8 +529,19 @@ public class EnemyHealth : MonoBehaviour
 
             OnDeath?.Invoke();
 
-            // NOUVEAU : Forcer la barre visible meme apres mort si en pit
-            EnemyPitInteractable pitInt = GetComponent<EnemyPitInteractable>();
+        // Notifier GameManager du kill (sauf si BrightEyes)
+        BrightEyesController brightEyes = GetComponent<BrightEyesController>();
+        if (brightEyes == null)
+        {
+            GameManager gm = FindObjectOfType<GameManager>();
+            if (gm != null)
+            {
+                gm.OnEnemyKilled();
+            }
+        }
+
+        // NOUVEAU : Forcer la barre visible meme apres mort si en pit
+        EnemyPitInteractable pitInt = GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isFallingInPit && healthBarUI != null)
             {
                 healthBarUI.Show();

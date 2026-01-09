@@ -12,6 +12,8 @@ public class LevelGeneratorWindow : EditorWindow
     private int levelNumber = 1;
     private float levelWidth = 20f;
     private float levelLength = 30f;
+    private LevelGeneratorConfig config;
+
 
     // Menu item pour ouvrir la fenetre
     [MenuItem("Tools/Level Generator")]
@@ -25,6 +27,74 @@ public class LevelGeneratorWindow : EditorWindow
         GUILayout.Label("Level Generator - Etape 1", EditorStyles.boldLabel);
         GUILayout.Space(10);
 
+        // Section Config
+        GUILayout.Label("Configuration", EditorStyles.boldLabel);
+
+        EditorGUILayout.BeginHorizontal();
+        config = (LevelGeneratorConfig)EditorGUILayout.ObjectField(
+            "Config Asset",
+            config,
+            typeof(LevelGeneratorConfig),
+            false
+        );
+
+        // Bouton editer config
+        GUI.enabled = config != null;
+        if (GUILayout.Button("Editer", GUILayout.Width(60)))
+        {
+            Selection.activeObject = config;
+        }
+        GUI.enabled = true;
+
+        EditorGUILayout.EndHorizontal();
+
+        // Bouton creer nouvelle config
+        if (config == null)
+        {
+            EditorGUILayout.HelpBox("Assignez une config ou creez-en une nouvelle.", MessageType.Warning);
+
+            if (GUILayout.Button("Creer Nouvelle Config"))
+            {
+                CreateNewConfig();
+            }
+            return;
+        }
+
+        GUILayout.Space(10);
+
+        // Validation et preview
+        int activePrefabs = 0;
+        int nullPrefabs = 0;
+
+        foreach (var entry in config.prefabsToSpawn)
+        {
+            if (entry.enabled)
+            {
+                if (entry.prefab != null)
+                    activePrefabs++;
+                else
+                    nullPrefabs++;
+            }
+        }
+
+        // Affichage preview
+        if (activePrefabs > 0)
+        {
+            EditorGUILayout.HelpBox($"{activePrefabs} prefab(s) recurrent(s) seront instancies", MessageType.Info);
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("Aucun prefab recurrent actif dans cette config", MessageType.None);
+        }
+
+        // Warning si prefabs null
+        if (nullPrefabs > 0)
+        {
+            EditorGUILayout.HelpBox($"ATTENTION: {nullPrefabs} prefab(s) actif(s) sont null !", MessageType.Warning);
+        }
+
+        GUILayout.Space(20);
+
         // Section Settings
         GUILayout.Label("Level Settings", EditorStyles.boldLabel);
         levelNumber = EditorGUILayout.IntField("Level Number", levelNumber);
@@ -33,10 +103,17 @@ public class LevelGeneratorWindow : EditorWindow
 
         GUILayout.Space(20);
 
-        // Bouton generation
+        // Bouton generation (desactive si problemes)
+        GUI.enabled = nullPrefabs == 0;
         if (GUILayout.Button("GENERATE LEVEL", GUILayout.Height(40)))
         {
             GenerateLevel();
+        }
+        GUI.enabled = true;
+
+        if (nullPrefabs > 0)
+        {
+            EditorGUILayout.HelpBox("Corrigez les prefabs null avant de generer", MessageType.Error);
         }
     }
 
@@ -372,6 +449,41 @@ public class LevelGeneratorWindow : EditorWindow
             Debug.LogWarning("Prefab MainSentinel non trouvé !");
         }
 
+        // === PREFABS RECURRENTS (depuis config SO) ===
+
+        Debug.Log($"<color=cyan>Instanciation de {config.prefabsToSpawn.Length} prefabs recurrents...</color>");
+
+        foreach (var entry in config.prefabsToSpawn)
+        {
+            if (!entry.enabled || entry.prefab == null)
+            {
+                if (entry.enabled && entry.prefab == null)
+                    Debug.LogWarning($"<color=yellow>Prefab '{entry.name}' active mais null !</color>");
+                continue;
+            }
+
+            // Trouver le parent
+            GameObject parentFolder = null;
+            switch (entry.parentFolder)
+            {
+                case "_Managers": parentFolder = managersFolder; break;
+                case "_Gameplay": parentFolder = gameplayFolder; break;
+                case "_Camera": parentFolder = cameraFolder; break;
+                case "_Lighting": parentFolder = lightingFolder; break;
+                case "_UI": parentFolder = uiFolder; break;
+                default: parentFolder = levelRoot; break;
+            }
+
+            // Instancier
+            GameObject instance = PrefabUtility.InstantiatePrefab(entry.prefab) as GameObject;
+            instance.transform.SetParent(parentFolder.transform);
+            instance.transform.localPosition = entry.position;
+            instance.transform.localRotation = Quaternion.Euler(entry.rotation);
+            instance.transform.localScale = entry.scale;
+
+            Debug.Log($"<color=green>Prefab '{entry.name}' instancie dans {entry.parentFolder}</color>");
+        }
+
         // === ASSIGNATION AUTOMATIQUE DES REFERENCES ===
 
         // CountdownManager references
@@ -469,5 +581,35 @@ public class LevelGeneratorWindow : EditorWindow
         {
             Debug.LogError("Erreur lors de la sauvegarde de la scene.");
         }
+    }
+    private void CreateNewConfig()
+    {
+        string folder = "Assets/Project/ScriptableObjects";
+
+        if (!System.IO.Directory.Exists(folder))
+        {
+            System.IO.Directory.CreateDirectory(folder);
+            AssetDatabase.Refresh();
+        }
+
+        // Trouver un nom unique
+        int counter = 1;
+        string path = $"{folder}/LevelGenConfig_{counter:D3}.asset";
+
+        while (System.IO.File.Exists(path))
+        {
+            counter++;
+            path = $"{folder}/LevelGenConfig_{counter:D3}.asset";
+        }
+
+        // Creer le SO
+        LevelGeneratorConfig newConfig = ScriptableObject.CreateInstance<LevelGeneratorConfig>();
+        AssetDatabase.CreateAsset(newConfig, path);
+        AssetDatabase.SaveAssets();
+
+        config = newConfig;
+        Selection.activeObject = newConfig;
+
+        Debug.Log($"<color=green>Config creee : {path}</color>");
     }
 }

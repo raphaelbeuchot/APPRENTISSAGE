@@ -32,6 +32,10 @@ public class GameManager : MonoBehaviour
     public bool stunBySentinel = false;
     public bool zombieStunBySentinel = false;
 
+    [Header("Enemy Tracking")]
+    public int totalEnemies = 0;
+    public int enemiesKilled = 0;
+
 
     private bool playerAlarmTriggered = false;
     private HashSet<GameObject> alreadyShot = new HashSet<GameObject>();
@@ -163,6 +167,9 @@ public class GameManager : MonoBehaviour
 
         audioSource = GetComponent<AudioSource>();
         Time.timeScale = 1f;
+
+        // Compter les ennemis au démarrage (SAUF BrightEyes)
+        CountEnemiesAtStart();
     }
 
     void Update()
@@ -817,4 +824,33 @@ public class GameManager : MonoBehaviour
         }
         Debug.Log("[TRACKING RESET] All tracking data cleared for new cycle");
     }
+
+    void CountEnemiesAtStart()
+    {
+        EnemyHealth[] allEnemies = FindObjectsOfType<EnemyHealth>();
+
+        foreach (EnemyHealth enemy in allEnemies)
+        {
+            // Exclure BrightEyes
+            BrightEyesController brightEyes = enemy.GetComponent<BrightEyesController>();
+            if (brightEyes != null)
+            {
+                continue; // Skip BrightEyes
+            }
+
+            totalEnemies++;
+        }
+
+        Debug.Log($"[KILLCOUNT] Total enemies to kill: {totalEnemies}");
+    }
+
+    public void OnEnemyKilled()
+    {
+        enemiesKilled++;
+        Debug.Log($"[KILLCOUNT] Enemy killed! {enemiesKilled}/{totalEnemies}");
+    }
+
+    // Getters pour VictoryUI
+    public int GetTotalEnemies() => totalEnemies;
+    public int GetEnemiesKilled() => enemiesKilled;
 }
