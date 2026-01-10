@@ -249,7 +249,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
     }
 
-        void EndGrab(bool givePlayerRecoil = true)
+    void EndGrab(bool givePlayerRecoil = true)
     {
         grabElapsedTime = 0f;
         nextDamageIndex = 0;
@@ -258,14 +258,10 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         {
             StartCoroutine(PlayerRecoilCoroutine());
         }
+        
         else
         {
-            if (playerMelee)
-            {
-                playerMelee.OnGrabEnd();
-            }
-            BroomAttackSystem playerBroom = player.GetComponent<BroomAttackSystem>();
-            if (playerBroom) playerBroom.OnGrabEnd();
+            StartCoroutine(PlayerReleaseRecoilCoroutine()); // Utilise la nouvelle coroutine
         }
 
         isGrabbing = false;
@@ -295,6 +291,39 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         fakeGrabbers.Clear();
     }
 
+    IEnumerator PlayerReleaseRecoilCoroutine()
+    {
+        player.grabState = PlayerPhysicsMovement.GrabState.Recoil;
+        Vector3 recoilDir = (player.transform.position - transform.position).normalized;
+        recoilDir.y = 0;
+
+        playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
+        try
+        {
+            yield return null;
+
+            playerRb.linearVelocity = recoilDir * 2f; // Force de 50 au lieu de 100
+            Vector3 vel = playerRb.linearVelocity;
+            vel.y = 0f;
+            playerRb.linearVelocity = vel;
+
+            yield return new WaitForSeconds(0.3f);
+        }
+        finally
+        {
+            if (player != null && player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
+            {
+                player.grabState = PlayerPhysicsMovement.GrabState.None;
+                player.lastGrabEndTime = Time.time;
+            }
+
+            if (playerMelee) playerMelee.OnGrabEnd();
+
+            BroomAttackSystem playerBroom = player.GetComponent<BroomAttackSystem>();
+            if (playerBroom) playerBroom.OnGrabEnd();
+        }
+    }
     IEnumerator BourradeZombie()
     {
         if (gameManager != null)
