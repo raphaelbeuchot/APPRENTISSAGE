@@ -52,7 +52,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3630615494597918022}
-  m_Mesh: {fileID: 8950947897166563805, guid: 0112b3ddf6b69f148b600356eb9c21a3, type: 3}
+  m_Mesh: {fileID: 0}
 --- !u!136 &8223565660897218921
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -165,7 +165,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   stats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
   settings: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
-  movement: {fileID: 0}
+  movement: {fileID: 3882219009807252739}
 --- !u!114 &8242834828431036537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -306,8 +306,8 @@ MonoBehaviour:
     m_Bits: 8
   alignmentThreshold: 0.3
   playerMovement: {fileID: 3882219009807252739}
-  vaultDepthThreshold: 0.6
   rotationDuration: 0.3
+  climbPrompt: {fileID: 0}
 --- !u!1001 &5691382084106743076
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -376,6 +376,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Y Bot
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d5c027045b0ec1240985ae2bd424e61c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -398,7 +402,7 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4772320303696662645}
   m_Enabled: 1
-  m_Avatar: {fileID: 0}
+  m_Avatar: {fileID: 9000000, guid: 2361262417a282441ab18e74fcd0272c, type: 3}
   m_Controller: {fileID: 9100000, guid: 93845a75461d2944ea9076a4104cfbe7, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
