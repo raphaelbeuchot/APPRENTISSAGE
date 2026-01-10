@@ -81,6 +81,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
     //Animations
     private Animator animator;
 
+    // === MOVING PLATFORM SUPPORT ===
+    private IMovingPlatform currentPlatform;
+    private Vector3 lastPlatformPosition;
 
     void Awake()
     {
@@ -384,6 +387,18 @@ public class PlayerPhysicsMovement : MonoBehaviour
             finalVelocity += directionToAttractor * brightEyesForce;
         }
 
+        // === MOVING PLATFORM SUPPORT ===
+        DetectMovingPlatform();
+        if (currentPlatform != null)
+        {
+            Vector3 platformCurrentPos = currentPlatform.GetTransform().position;
+            Vector3 platformDelta = platformCurrentPos - lastPlatformPosition;
+            platformDelta.y = 0f; // Ignorer mouvement vertical
+
+            transform.position += platformDelta;
+            lastPlatformPosition = platformCurrentPos;
+        }
+
         rb.linearVelocity = finalVelocity;
     }
     float CalculateSpeed()
@@ -586,6 +601,43 @@ public class PlayerPhysicsMovement : MonoBehaviour
         float rayLength = 0.3f;
         Vector3 rayStart = transform.position + Vector3.up * 0.1f; // Légèrement au-dessus des pieds
         return Physics.Raycast(rayStart, Vector3.down, rayLength, LayerMask.GetMask("Ground"));
+    }
+
+
+    void DetectMovingPlatform()
+    {
+        if (!IsGrounded())
+        {
+            currentPlatform = null;
+            return;
+        }
+
+        float rayLength = 0.3f;
+        Vector3 rayStart = transform.position + Vector3.up * 0.1f;
+        RaycastHit hit;
+
+        if (Physics.Raycast(rayStart, Vector3.down, out hit, rayLength, LayerMask.GetMask("Ground")))
+        {
+            IMovingPlatform platform = hit.collider.GetComponent<IMovingPlatform>();
+
+            if (platform != null)
+            {
+                if (currentPlatform != platform)
+                {
+                    // Nouvelle plateforme
+                    currentPlatform = platform;
+                    lastPlatformPosition = platform.GetTransform().position;
+                }
+            }
+            else
+            {
+                currentPlatform = null;
+            }
+        }
+        else
+        {
+            currentPlatform = null;
+        }
     }
 
 }

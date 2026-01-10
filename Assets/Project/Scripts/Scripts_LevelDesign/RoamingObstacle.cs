@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Splines;
 
-public class RoamingObstacle : MonoBehaviour
+public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 {
     [Header("Settings")]
     [SerializeField] private RoamingObstacleSettings settings;
@@ -11,8 +11,11 @@ public class RoamingObstacle : MonoBehaviour
 
     private float currentProgress = 0f;
     private AudioSource audioSource;
-
     private float currentDirection = 1f;
+
+    // NOUVEAU : Pour calculer la velocite
+    private Vector3 lastPosition;
+    private Vector3 currentVelocity;
 
     void Start()
     {
@@ -45,6 +48,9 @@ public class RoamingObstacle : MonoBehaviour
 
         // Position initiale sur la spline
         UpdatePosition();
+
+        // NOUVEAU : Initialiser lastPosition
+        lastPosition = transform.position;
 
         Debug.Log($"[RoamingObstacle] {settings.obstacleName} demarre sur spline");
     }
@@ -92,6 +98,9 @@ public class RoamingObstacle : MonoBehaviour
         }
 
         UpdatePosition();
+
+        // NOUVEAU : Calculer la velocite apres avoir bouge
+        CalculateVelocity();
     }
 
     private void UpdatePosition()
@@ -111,6 +120,24 @@ public class RoamingObstacle : MonoBehaviour
 
         position.y += yOffset;
         transform.position = position;
+    }
+
+    // NOUVEAU : Calculer la velocite de la plateforme
+    private void CalculateVelocity()
+    {
+        currentVelocity = (transform.position - lastPosition) / Time.deltaTime;
+        lastPosition = transform.position;
+    }
+
+    // IMPLEMENTATION INTERFACE IMovingPlatform
+    public Vector3 GetPlatformVelocity()
+    {
+        return currentVelocity;
+    }
+
+    public Transform GetTransform()
+    {
+        return transform;
     }
 
     void OnDestroy()

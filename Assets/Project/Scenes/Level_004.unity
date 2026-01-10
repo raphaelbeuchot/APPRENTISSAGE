@@ -1033,6 +1033,33 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5696600538603653172, guid: 6e6f8dad640cdd64aaf665f7ea1161a8, type: 3}
   m_PrefabInstance: {fileID: 6304901}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &6547626 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6551538502164727277, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 1399701674331303034}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &6547632
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6547626}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1001 &7000822
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -94099,7 +94126,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1361275052}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.010206034, y: 0.0162795, z: 0.00010906353, w: 0.99981534}
+  m_LocalRotation: {x: 0.010206636, y: 0.0162795, z: 0.00010906823, w: 0.99981534}
   m_LocalPosition: {x: 2.9208865, y: 2.2548661, z: -7.1629915}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -124129,7 +124156,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &1803505157
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -148348,10 +148375,14 @@ PrefabInstance:
     - target: {fileID: 1856036764109223138, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+      objectReference: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
     - target: {fileID: 6551538502164727277, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: m_Name
       value: TestRoamingObstacle
+      objectReference: {fileID: 0}
+    - target: {fileID: 6551538502164727277, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7942143001262699162, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -148361,10 +148392,14 @@ PrefabInstance:
       propertyPath: splineContainer
       value: 
       objectReference: {fileID: 1794010269}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8031456439814501052, guid: 265b95b0768b200439126120894c07a1, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6551538502164727277, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6547632}
   m_SourcePrefab: {fileID: 100100000, guid: 265b95b0768b200439126120894c07a1, type: 3}
 --- !u!1001 &2660273254925331838
 PrefabInstance:
