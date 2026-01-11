@@ -239,24 +239,26 @@ public class GameManager : MonoBehaviour
             Vector3 finalTargetPos = targetPos;
 
             // Raycast 1 : vers centre
-            if (Physics.Raycast(sentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers))
+            if (Physics.Raycast(sentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers)
+                && hit.collider.gameObject != col.gameObject)  // AJOUTE CETTE LIGNE
             {
-                // Centre cache, verifier si la tete depasse
+                // Centre caché, vérifier si la tête dépasse
                 Vector3 headPos = GetHeadPosition(col);
                 Vector3 directionToHead = (headPos - sentinelPos).normalized;
                 float distanceToHead = Vector3.Distance(sentinelPos, headPos);
 
                 RaycastHit headHit;
-                if (Physics.Raycast(sentinelPos, directionToHead, out headHit, distanceToHead, sentinelSettings.obstacleLayers))
+                if (Physics.Raycast(sentinelPos, directionToHead, out headHit, distanceToHead, sentinelSettings.obstacleLayers)
+                    && headHit.collider.gameObject != col.gameObject)  // AJOUTE CETTE LIGNE
                 {
-                    // Tete aussi cachee : vraiment safe
+                    // Tête aussi cachée : vraiment safe
                     hasLOS = false;
                     Debug.DrawLine(sentinelPos, hit.point, Color.red, 0.2f);
                     Debug.DrawLine(sentinelPos, headHit.point, Color.red, 0.1f);
                 }
                 else
                 {
-                    // TETE VISIBLE = HEADSHOT !
+                    // TÊTE VISIBLE = HEADSHOT !
                     hasLOS = true;
                     isHeadshot = true;
                     finalTargetPos = headPos;
@@ -269,6 +271,7 @@ public class GameManager : MonoBehaviour
                 // Centre visible : tir normal
                 Debug.DrawLine(sentinelPos, targetPos, Color.green, 0.2f);
             }
+
 
             trackData.canShoot = hasLOS;
             trackData.isHeadshot = isHeadshot;
@@ -313,7 +316,7 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            // PENDANT LE TIMER CROUCH : Si perd LOS de la tete = RICOCHET
+            // PENDANT LE TIMER CROUCH : Si perd LOS de la tete = RICOCHET ou ZOMBIE INTERCEPTE
             if (trackData.crouchStateChangeInProgress && !hasLOS)
             {
                 Vector3 lastSeenPos = trackData.lastKnownPosition;
@@ -322,6 +325,34 @@ public class GameManager : MonoBehaviour
                 RaycastHit obstacleHit;
                 if (Physics.Raycast(sentinelPos, dirToLastSeen, out obstacleHit, 100f, sentinelSettings.obstacleLayers))
                 {
+                    // NOUVEAU : Vérifier si l'obstacle est un zombie
+                    int enemyLayer = LayerMask.NameToLayer("Enemy");
+                    int zombieLayer = LayerMask.NameToLayer("Zombie");
+
+                    if (obstacleHit.collider.gameObject.layer == enemyLayer || obstacleHit.collider.gameObject.layer == zombieLayer)
+                    {
+                        // C'est un zombie qui cache le player - le zombie prend le tir
+                        EnemyHealth coverEnemyHealth = obstacleHit.collider.GetComponent<EnemyHealth>();
+                        if (coverEnemyHealth != null && !coverEnemyHealth.IsDead())
+                        {
+                            Debug.Log($"[INTERCEPT CROUCH] {obstacleHit.collider.name} intercepte le tir de crouch!");
+                            ShootEnemy(obstacleHit.collider.gameObject, coverEnemyHealth, "BOUCLIER CROUCH", sentinelPos, obstacleHit.point, trackData.isHeadshot);
+
+                            // RESET
+                            trackData.crouchStateChangeInProgress = false;
+                            trackData.crouchStateChangeScheduledTime = -1f;
+                            trackData.consecutiveLOSScans = 0;
+                            trackData.wasInLOS = false;
+                            trackData.wasPlayerCrouched = isPlayerCrouched;
+                            alreadyShot.Remove(col.gameObject);
+                            if (col.gameObject == player.gameObject)
+                                playerAlarmTriggered = false;
+
+                            continue;
+                        }
+                    }
+
+                    // Sinon c'est un vrai obstacle - ricochet normal
                     Debug.Log($"[RICOCHET CROUCH] {col.name} cache pendant timer crouch, hit {obstacleHit.collider.name}");
 
                     // Son ricochet
@@ -377,10 +408,10 @@ public class GameManager : MonoBehaviour
                 continue;
             }
 
-             
 
 
-            // PENDANT LE DELAI : Si cache : RICOCHET IMMEDIAT
+
+            // PENDANT LE DELAI : Si cache : RICOCHET IMMEDIAT ou ZOMBIE INTERCEPTE
             if (trackData.isBeingShot && !hasLOS)
             {
                 // Raycast vers DERNIERE POSITION CONNUE (ou la tete etait)
@@ -390,6 +421,33 @@ public class GameManager : MonoBehaviour
                 RaycastHit obstacleHit;
                 if (Physics.Raycast(sentinelPos, dirToLastSeen, out obstacleHit, 100f, sentinelSettings.obstacleLayers))
                 {
+                    // NOUVEAU : Vérifier si l'obstacle est un zombie
+                    int enemyLayer = LayerMask.NameToLayer("Enemy");
+                    int zombieLayer = LayerMask.NameToLayer("Zombie");
+
+                    if (obstacleHit.collider.gameObject.layer == enemyLayer || obstacleHit.collider.gameObject.layer == zombieLayer)
+                    {
+                        // C'est un zombie qui cache la cible - le zombie prend le tir
+                        EnemyHealth coverEnemyHealth = obstacleHit.collider.GetComponent<EnemyHealth>();
+                        if (coverEnemyHealth != null && !coverEnemyHealth.IsDead())
+                        {
+                            Debug.Log($"[INTERCEPT DELAI] {obstacleHit.collider.name} intercepte le tir pendant le délai!");
+                            ShootEnemy(obstacleHit.collider.gameObject, coverEnemyHealth, "BOUCLIER DELAI", sentinelPos, obstacleHit.point, trackData.isHeadshot);
+
+                            // RESET
+                            trackData.isBeingShot = false;
+                            trackData.shootScheduledTime = -1f;
+                            trackData.consecutiveLOSScans = 0;
+                            trackData.wasInLOS = false;
+                            alreadyShot.Remove(col.gameObject);
+                            if (col.gameObject == player.gameObject)
+                                playerAlarmTriggered = false;
+
+                            continue;
+                        }
+                    }
+
+                    // Sinon c'est un vrai obstacle - ricochet normal
                     Debug.Log($"[RICOCHET IMMEDIAT] {col.name} cache pendant delai, hit {obstacleHit.collider.name}");
 
                     // Son ricochet
@@ -693,6 +751,8 @@ public class GameManager : MonoBehaviour
 
     void ShootEnemy(GameObject enemy, EnemyHealth enemyHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, bool isHeadshot = false)
     {
+        // PAS de vérification d'interception pour les ennemis entre eux
+        // Tir normal direct
         string headshotTag = isHeadshot ? " [HEADSHOT]" : "";
         Debug.Log("BANG! " + enemy.name + " (" + reason + ")" + headshotTag);
 
@@ -718,6 +778,7 @@ public class GameManager : MonoBehaviour
             Debug.Log(enemy.name + " MORT!");
     }
 
+
     IEnumerator StunSpecificZombie(EnemyAI_AStar ai)
     {
         ai.isStunnedBySentinel = true;
@@ -729,13 +790,36 @@ public class GameManager : MonoBehaviour
 
     void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, bool isHeadshot = false)
     {
+        // NOUVEAU : Vérifier interception par un ennemi
+        Vector3 currentTargetPos = GetTargetCenter(human);
+        Vector3 direction = (currentTargetPos - sentinelPos).normalized;
+        float distance = Vector3.Distance(sentinelPos, currentTargetPos);
+
+        RaycastHit hit;
+        if (Physics.Raycast(sentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers))
+        {
+            // Si on tape un layer Enemy ou Zombie
+            int enemyLayer = LayerMask.NameToLayer("Enemy");
+            int zombieLayer = LayerMask.NameToLayer("Zombie");
+
+            if (hit.collider.gameObject.layer == enemyLayer || hit.collider.gameObject.layer == zombieLayer)
+            {
+                EnemyHealth coverEnemyHealth = hit.collider.GetComponent<EnemyHealth>();
+                if (coverEnemyHealth != null && !coverEnemyHealth.IsDead())
+                {
+                    Debug.Log($"[INTERCEPT] {hit.collider.name} intercepte le tir destiné au player!");
+                    ShootEnemy(hit.collider.gameObject, coverEnemyHealth, "BOUCLIER HUMAIN", sentinelPos, hit.point, isHeadshot);
+                    return;
+                }
+            }
+        }
+
+        // Tir normal
         string headshotTag = isHeadshot ? " [HEADSHOT]" : "";
         Debug.Log("BANG! " + human.name + " (" + reason + ")" + headshotTag);
 
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
-
-        Vector3 currentTargetPos = GetTargetCenter(human);
 
         SentinelTarget sentinelTarget = human.GetComponent<SentinelTarget>();
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
