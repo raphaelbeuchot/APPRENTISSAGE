@@ -38,13 +38,14 @@ MonoBehaviour:
   wanderInterval: 5
   wanderDuration: 2
   chasePersistenceDuration: 10
-  attackRange: 0.75
+  attackRange: 1.5
   attackCooldown: 2
   grabDuration: 5
   biteDamage: 5
   oneArmMashReduction: 0.5
   fakeGrabRange: 3
   biteTickDamage: 5
+  grabWindupDuration: 1
   meleeDamage: 20
   meleeKnockbackForce: 8
   meleeAttackDuration: 0.8
@@ -52,9 +53,24 @@ MonoBehaviour:
   spitSpeed: 10
   spitRange: 15
   spitProjectilePrefab: {fileID: 0}
+  blinderWanderSpeed: 2
+  blinderChargeSpeed: 3
+  blinderWalkDuration: 2.5
+  blinderStopDuration: 1.2
+  blinderWanderRadius: 4
+  audioDetectionRange: 6
+  blinderKnockbackForce: 10
+  blinderAttackRange: 2
+  lookAroundDuration: 2
+  knockdownDuration: 2
+  aoeKnockbackRadius: 3
+  recoilStunDuration: 3
+  rechargeDelayAfterHit: 1
   bourradeDuration: 2
   bourradeCooldown: 1
+  cumulativeStunPerSpray: 0.3
   stunSprayDuration: 0.3
+  sprayWindowDuration: 0.7
   backstabStunDuration: 0.8
   startingArmCount: 2
   startingLegCount: 2
@@ -66,6 +82,7 @@ MonoBehaviour:
   hasWeapon: 0
   weaponPrefab: {fileID: 0}
   sentinelDamageTaken: 25
+  waterSplashSound: {fileID: 0}
   sprayDamageTaken: 0
   broomDamageTaken: 0
   bottleDamageTaken: 0

@@ -5,7 +5,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 {
     public Material redMaterial;
 
-    private EnemyAI_AStar enemy; 
+    private EnemyAI_AStar enemy;
     private PlayerPhysicsMovement player;
     private Rigidbody playerRb;
     private Rigidbody enemyRb;
@@ -15,6 +15,14 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     private GameManager gameManager;
     private MeleeAttackSystem playerMelee;
     private EnemyHealth enemyHealth;
+
+    public bool isInWindup = false;
+    private Coroutine windupCoroutine;
+
+    // Visuel windup
+    private Renderer enemyRenderer;
+    private Material originalMaterial;
+    private Vector3 originalScale;
 
     // Nouveau systeme de timings fixes
     private float[] grabDamageTimes = { 2f, 3.5f, 4.5f };
@@ -48,6 +56,14 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         isInBourradeDuration = false;
         isInBourradeCooldown = false;
         isFakeGrabbing = false;
+
+        // Setup visuel
+        enemyRenderer = GetComponentInChildren<Renderer>();
+        if (enemyRenderer != null)
+        {
+            originalMaterial = enemyRenderer.material;
+        }
+        originalScale = transform.localScale;
     }
 
     void UpdateFakeGrabbers()
@@ -92,7 +108,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
     public bool CanAttack() => !isInBourradeDuration && !isInBourradeCooldown;
     public bool IsAttacking() => isGrabbing;
-    public bool IsInSpecialState() => isInBourradeDuration || isInBourradeCooldown;
+    public bool IsInSpecialState() => isInBourradeDuration || isInBourradeCooldown || isInWindup;
     public bool IsGrabbing() => isGrabbing;
 
     public void AttemptAttack(GameObject target)
@@ -104,7 +120,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         if (player != null && player.IsSprinting())
             return;
 
-        // === CHECK IMMUNITÉ GRABS ===
+        // === CHECK IMMUNITE GRABS ===
         if (player != null && player.isImmuneToGrab)
         {
             Debug.Log($"{gameObject.name} cannot grab - player is immune (climbing/falling)");
@@ -120,6 +136,143 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
     }
 
+    public void StartWindup()
+    {
+        if (isInWindup || isGrabbing || IsInBourrade()) return;
+
+        windupCoroutine = StartCoroutine(WindupCoroutine());
+    }
+
+    IEnumerator WindupCoroutine()
+    {
+        isInWindup = true;
+        float elapsed = 0f;
+
+        Debug.Log($"{gameObject.name} START WINDUP");
+
+        // Demarrer pulse visuel
+        Coroutine pulseCoroutine = StartCoroutine(WindupPulseEffect(stats.grabWindupDuration));
+
+        while (elapsed < stats.grabWindupDuration)
+        {
+            // Check annulation si zombie meurt
+            if (enemyHealth == null || enemyHealth.IsDead())
+            {
+                StopCoroutine(pulseCoroutine);
+                CancelWindup();
+                yield break;
+            }
+
+            // Check si player sort de range
+            if (player == null)
+            {
+                StopCoroutine(pulseCoroutine);
+                CancelWindup();
+                yield break;
+            }
+
+            float dist = Vector3.Distance(transform.position, player.transform.position);
+            if (dist > stats.attackRange * 1.2f) // 20% marge
+            {
+                Debug.Log($"{gameObject.name} WINDUP CANCELLED - player too far");
+                StopCoroutine(pulseCoroutine);
+                CancelWindup();
+                yield break;
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // Windup complete - restaurer visuel
+        RestoreVisual();
+
+        isInWindup = false;
+
+        // Verification finale avant grab reel
+        if (player != null && player.grabState == PlayerPhysicsMovement.GrabState.None)
+        {
+            float finalDist = Vector3.Distance(transform.position, player.transform.position);
+            if (finalDist <= stats.attackRange)
+            {
+                Debug.Log($"{gameObject.name} WINDUP COMPLETE - starting grab");
+                StartCoroutine(GrabCoroutine());
+            }
+            else
+            {
+                Debug.Log($"{gameObject.name} WINDUP COMPLETE but player escaped");
+                enemy.currentState = EnemyAI_AStar.State.Chasing;
+            }
+        }
+        else
+        {
+            enemy.currentState = EnemyAI_AStar.State.Chasing;
+        }
+    }
+
+    IEnumerator WindupPulseEffect(float duration)
+    {
+        float elapsed = 0f;
+        float pulseSpeed = 3f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration; // 0 -> 1
+
+            // Pulse scale (subtil)
+            float scaleMultiplier = 1f + Mathf.Sin(elapsed * pulseSpeed) * 0.1f;
+            transform.localScale = originalScale * scaleMultiplier;
+
+            // Rougir progressif
+            if (enemyRenderer != null)
+            {
+                Color lerpedColor = Color.Lerp(Color.white, Color.red, t);
+                enemyRenderer.material.color = lerpedColor;
+            }
+
+            yield return null;
+        }
+
+        // Force final state
+        RestoreVisual();
+    }
+
+    void RestoreVisual()
+    {
+        // Restaurer scale
+        transform.localScale = originalScale;
+
+        // Restaurer couleur
+        if (enemyRenderer != null && originalMaterial != null)
+        {
+            enemyRenderer.material.color = originalMaterial.color;
+        }
+    }
+
+    public void CancelWindup()
+    {
+        if (!isInWindup) return;
+
+        isInWindup = false;
+        if (windupCoroutine != null)
+        {
+            StopCoroutine(windupCoroutine);
+            windupCoroutine = null;
+        }
+
+        // Restaurer visuel
+        RestoreVisual();
+
+        Debug.Log($"{gameObject.name} WINDUP CANCELLED");
+
+        // Retour Chase
+        if (enemy != null)
+        {
+            enemy.currentState = EnemyAI_AStar.State.Chasing;
+        }
+    }
+
     void StartGrab()
     {
         GameUIManager ui = FindObjectOfType<GameUIManager>();
@@ -130,14 +283,14 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     IEnumerator GrabCoroutine()
     {
         isGrabbing = true;
-        
 
-            // NOUVEAU : Enregistrer le grab pour l'UI
-            StartGrab();
 
-            player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
-            player.ForceStop();
-            player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
+        // NOUVEAU : Enregistrer le grab pour l'UI
+        StartGrab();
+
+        player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
+        player.ForceStop();
+        player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
         player.ForceStop();
 
         playerRb.constraints = RigidbodyConstraints.FreezeAll;
@@ -153,7 +306,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         float elapsed = 0f;
 
-        // Timings des dégâts intermédiaires
+        // Timings des degats intermediaires
         float[] damageTimes = { 2f, 3.5f, 4f };
         int nextDamageIndex = 0;
 
@@ -177,7 +330,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 player.grabProgress = (float)mashCount / required;
                 elapsed += Time.deltaTime;
 
-                // Dégâts intermédiaires
+                // Degats intermediaires
                 if (nextDamageIndex < damageTimes.Length && elapsed >= damageTimes[nextDamageIndex])
                 {
                     PlayerHealth ph = player.GetComponent<PlayerHealth>();
@@ -188,7 +341,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 yield return null;
             }
 
-            // Morsure finale à la fin du grab si le joueur n'a pas échappé
+            // Morsure finale a la fin du grab si le joueur n'a pas echappe
             if (mashCount < required)
             {
                 PlayerHealth ph = player.GetComponent<PlayerHealth>();
@@ -239,7 +392,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             if (player != null && player.grabState == PlayerPhysicsMovement.GrabState.Recoil)
             {
                 player.grabState = PlayerPhysicsMovement.GrabState.None;
-                player.lastGrabEndTime = Time.time; //  AJOUTE ÇA
+                player.lastGrabEndTime = Time.time;
             }
 
             if (playerMelee) playerMelee.OnGrabEnd();
@@ -258,7 +411,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         {
             StartCoroutine(PlayerRecoilCoroutine());
         }
-        
+
         else
         {
             StartCoroutine(PlayerReleaseRecoilCoroutine()); // Utilise la nouvelle coroutine
@@ -324,6 +477,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             if (playerBroom) playerBroom.OnGrabEnd();
         }
     }
+
     IEnumerator BourradeZombie()
     {
         if (gameManager != null)
@@ -350,7 +504,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             Vector3 vel = enemyRb.linearVelocity;
             vel.y = 0;
             enemyRb.linearVelocity = vel;
-            
+
             // ACTIVER LE FLAG KNOCKBACK
             if (enemyHealth != null)
             {

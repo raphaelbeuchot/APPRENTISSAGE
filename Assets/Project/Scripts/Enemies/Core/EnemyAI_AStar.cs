@@ -61,7 +61,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
     private bool isBlinder = false;
 
-    public enum State { Idle, Wandering, Chasing, Attacking, StunBySpray, Dead }
+    public enum State { Idle, Wandering, Chasing, Attacking, PreGrab, StunBySpray, Dead }
     public State currentState = State.Idle;
 
     protected virtual void Start()
@@ -218,6 +218,9 @@ public class EnemyAI_AStar : MonoBehaviour
                 break;
             case State.Attacking:
                 HandleAttackingState();
+                break;
+            case State.PreGrab:
+                HandlePreGrabState();
                 break;
             case State.StunBySpray:
                 HandleStunBySprayState();
@@ -601,7 +604,19 @@ public class EnemyAI_AStar : MonoBehaviour
             if (Time.time - lastAttackTime >= stats.attackCooldown)
             {
                 lastAttackTime = Time.time;
-                attackBehavior.AttemptAttack(targetHuman.gameObject);
+
+                // NOUVEAU : Si c'est un Grabber, passer en PreGrab au lieu d'attaquer direct
+                GrabAttack grabAttack = attackBehavior as GrabAttack;
+                if (grabAttack != null)
+                {
+                    currentState = State.PreGrab;
+                    grabAttack.StartWindup();
+                }
+                else
+                {
+                    // Autres types d'attaque (Hitter, Spitter)
+                    attackBehavior.AttemptAttack(targetHuman.gameObject);
+                }
             }
         }
     }
@@ -768,6 +783,32 @@ public class EnemyAI_AStar : MonoBehaviour
             // Retour à l'état Idle
             currentState = State.Idle;
             Debug.Log($"{gameObject.name} exited StunBySpray state");
+        }
+    }
+
+    protected virtual void HandlePreGrabState()
+    {
+        if (wanderBehavior != null) wanderBehavior.StopWandering();
+
+        // Rester face au player pendant windup
+        if (targetHuman != null)
+        {
+            Vector3 direction = (targetHuman.position - transform.position).normalized;
+            direction.y = 0;
+
+            if (direction.magnitude > 0.1f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
+            }
+        }
+
+        // Le GrabAttack gère le timer et la transition
+        GrabAttack grab = attackBehavior as GrabAttack;
+        if (grab != null && !grab.isInWindup)
+        {
+            // Windup terminé ou annulé, retour normal
+            currentState = State.Chasing;
         }
     }
 

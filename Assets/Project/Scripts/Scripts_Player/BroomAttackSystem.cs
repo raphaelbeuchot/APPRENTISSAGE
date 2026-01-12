@@ -224,6 +224,14 @@ public class BroomAttackSystem : MonoBehaviour
                 // Degats
                 enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Broom);
 
+                // ANNULER WINDUP GRAB SI EN COURS
+                GrabAttack grab = enemyHealth.GetComponent<GrabAttack>();
+                if (grab != null && grab.isInWindup)
+                {
+                    grab.CancelWindup();
+                    Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} grab windup");
+                }
+
                 // Son d'impact individuel
                 if (audioSource != null && stats.broomHitSound != null)
                 {

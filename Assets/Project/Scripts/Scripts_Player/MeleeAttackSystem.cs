@@ -390,6 +390,14 @@ public class MeleeAttackSystem : MonoBehaviour
                     // Dégâts
                     enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Spray);
 
+                    // ANNULER WINDUP GRAB SI EN COURS
+                    GrabAttack grab = enemyHealth.GetComponent<GrabAttack>();
+                    if (grab != null && grab.isInWindup)
+                    {
+                        grab.CancelWindup();
+                        Debug.Log($"[SPRAY] Cancelled {enemyHealth.gameObject.name} grab windup");
+                    }
+
                     // Son backstab
                     if (audioSource != null && stats.sprayBackSound != null)
                     {
@@ -448,6 +456,14 @@ public class MeleeAttackSystem : MonoBehaviour
 
                     // Dégâts
                     enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Spray);
+                    
+                    // ANNULER WINDUP GRAB SI EN COURS
+                    GrabAttack grabBackstab = enemyHealth.GetComponent<GrabAttack>();
+                    if (grabBackstab != null && grabBackstab.isInWindup)
+                    {
+                        grabBackstab.CancelWindup();
+                        Debug.Log($"[BACKSTAB] Cancelled {enemyHealth.gameObject.name} grab windup");
+                    }
                 }
 
                 // Notifier Blinders (commun spray/backstab)

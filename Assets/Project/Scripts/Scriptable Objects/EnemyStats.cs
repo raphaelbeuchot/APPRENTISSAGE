@@ -97,6 +97,8 @@ public class EnemyStats : ScriptableObject
     public float fakeGrabRange = 3f;
     [Tooltip("Dégat morsure par seconde")]
     public float biteTickDamage = 5f;
+    [Header("Grab Settings")]
+    public float grabWindupDuration = 0.5f; // Durée telegraph avant grab
 
     [Header("ATTAQUE - HITTER (si attackType = Hitter)")]
     [Tooltip("Dégâts d'un coup de melee")]
