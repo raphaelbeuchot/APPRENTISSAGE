@@ -2,9 +2,10 @@ using UnityEngine;
 
 public class MetalShutter : MonoBehaviour
 {
+    [Header("Opening Settings")]
     public float openHeight = 5f;
     public float openSpeed = 2f;
-    public float destroyDelay = 0.5f; // Temps avant destruction apres montee
+    public float destroyDelay = 0.5f;
 
     private Vector3 startPosition;
     private Vector3 targetPosition;
@@ -26,19 +27,29 @@ public class MetalShutter : MonoBehaviour
                 openSpeed * Time.deltaTime
             );
 
-            // Si arrive en haut
+            // Si arrivé en haut
             if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
             {
-                Debug.Log("[MetalShutter] Montee terminee, destruction dans " + destroyDelay + "s");
+                Debug.Log($"[MetalShutter] Montée terminée, destruction dans {destroyDelay}s");
                 Destroy(gameObject, destroyDelay);
-                isOpening = false; // Arreter l'update
+                isOpening = false;
             }
         }
     }
 
+    // NOUVELLE méthode appelée depuis PupitreInteraction
+    public void StartOpening()
+    {
+        if (!isOpening)
+        {
+            Debug.Log("[MetalShutter] Début ouverture");
+            isOpening = true;
+        }
+    }
+
+    // Ancienne méthode - garde pour compatibilité si utilisée ailleurs
     public void Open()
     {
-        Debug.Log("Rideau s'ouvre!");
-        isOpening = true;
+        StartOpening();
     }
 }
