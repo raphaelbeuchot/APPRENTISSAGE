@@ -55,6 +55,7 @@ public class CameraPanningExtension : CinemachineExtension
             countdownManager = FindObjectOfType<CountdownManager>();
         }
 
+        // Reset tous les offsets au demarrage
         currentPanOffset = Vector3.zero;
         currentLateralOffset = Vector3.zero;
         isHighPosition = false;
@@ -147,24 +148,21 @@ public class CameraPanningExtension : CinemachineExtension
     }
 
     protected override void PostPipelineStageCallback(
-        CinemachineVirtualCameraBase vcam,
-        CinemachineCore.Stage stage,
-        ref CameraState state,
-        float deltaTime)
+    CinemachineVirtualCameraBase vcam,
+    CinemachineCore.Stage stage,
+    ref CameraState state,
+    float deltaTime)
     {
         if (stage == CinemachineCore.Stage.Body)
         {
-            
-
             Vector2 lookInput = PlayerInputManager.Instance.LookInput;
-            Vector3 targetOffset = Vector3.zero;  //  INITIALISATION
-            float speed = verticalPanSpeed;        //  INITIALISATION
+            Vector3 targetOffset = Vector3.zero;
+            float speed = verticalPanSpeed;
 
             if (isHighPosition)
             {
                 if (isLowView)
                 {
-                    // NOUVEAU : Détecter si dans l'eau
                     bool isInWater = false;
                     if (playerTransform != null)
                     {
@@ -172,7 +170,6 @@ public class CameraPanningExtension : CinemachineExtension
                         isInWater = pitInteractable != null && pitInteractable.IsInWater();
                     }
 
-                    // Utiliser offset adapté selon si dans l'eau ou non
                     float offsetToUse = isInWater ? lowCameraOffsetInWater : lowCameraOffset;
                     targetOffset = Vector3.up * offsetToUse;
                     speed = 1f / viewToggleDuration;
@@ -189,10 +186,8 @@ public class CameraPanningExtension : CinemachineExtension
                 speed = verticalPanSpeed;
             }
 
-
             Vector3 targetLateralOffset = currentLateralOffset;
 
-            // Pan actif seulement si countdown termine OU sorti de startzone
             bool canPan = isHighPosition || (countdownManager != null && countdownManager.countdownFinished);
 
             if (canPan && Mathf.Abs(lookInput.y) < 0.5f)

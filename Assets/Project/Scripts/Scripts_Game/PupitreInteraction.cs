@@ -59,13 +59,20 @@ public class PupitreInteraction : MonoBehaviour
         else
         {
             Debug.Log("[Pupitre] PREMIER LANCEMENT - Etat normal");
-            if (startZoneCamera != null)
-                startZoneCamera.Priority.Value = activePriority;
-            if (normalCamera != null)
-                normalCamera.Priority.Value = inactivePriority;
+            StartCoroutine(InitializeCamerasNextFrame());
         }
     }
+    private IEnumerator InitializeCamerasNextFrame()
+    {
+        yield return new WaitForEndOfFrame();
 
+        if (startZoneCamera != null)
+            startZoneCamera.Priority.Value = activePriority;
+        if (normalCamera != null)
+            normalCamera.Priority.Value = inactivePriority;
+
+        Debug.Log("[Pupitre] Cameras initialisees apres 1 frame");
+    }
     private void LateUpdate()
     {
         if (needsRespawn)
@@ -225,4 +232,5 @@ public class PupitreInteraction : MonoBehaviour
         Gizmos.DrawWireSphere(spawnPos, 0.5f);
         Gizmos.DrawLine(transform.position, spawnPos);
     }
+
 }

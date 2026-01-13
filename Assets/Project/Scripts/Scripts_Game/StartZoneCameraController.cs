@@ -10,11 +10,14 @@ public class StartZoneCameraController : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private float searchStepSize = 0.01f;
-    [SerializeField] private float smoothSpeed = 5f; // NOUVEAU
+    [SerializeField] private float smoothSpeed = 5f;
+    [SerializeField] private float activationDistance = 1f;
 
     private CinemachineSplineDolly splineDolly;
-    private float initialDistance;
-    private float currentT = 0f; // NOUVEAU - position actuelle lissée
+    private float initialDistance; // Sera calculee a l'activation
+    private float currentT = 0f;
+    private Vector3 playerStartPosition;
+    private bool isActive = false;
 
     void Start()
     {
@@ -24,10 +27,9 @@ public class StartZoneCameraController : MonoBehaviour
             currentT = splineDolly != null ? splineDolly.CameraPosition : 0f;
         }
 
-        if (player != null && vcam != null)
+        if (player != null)
         {
-            initialDistance = Vector3.Distance(vcam.transform.position, player.position);
-            Debug.Log($"[StartZoneCamera] Distance initiale : {initialDistance:F2}m");
+            playerStartPosition = player.position;
         }
     }
 
@@ -35,6 +37,33 @@ public class StartZoneCameraController : MonoBehaviour
     {
         if (splineDolly == null || player == null || splineContainer == null) return;
 
+        // Verifier si le joueur a marche assez loin pour activer le script
+        if (!isActive)
+        {
+            float distanceMoved = Vector3.Distance(player.position, playerStartPosition);
+            if (distanceMoved >= activationDistance)
+            {
+                isActive = true;
+
+                // CALCUL de la distance de reference au moment de l'activation
+                initialDistance = Vector3.Distance(vcam.transform.position, player.position);
+
+                Debug.Log($"[StartZoneCamera] ACTIVE apres {distanceMoved:F2}m - Distance reference: {initialDistance:F2}m");
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        // Script actif : fonctionnement normal
+        float bestT = CalculateBestT();
+        currentT = Mathf.Lerp(currentT, bestT, smoothSpeed * Time.deltaTime);
+        splineDolly.CameraPosition = currentT;
+    }
+
+    private float CalculateBestT()
+    {
         float bestT = 0f;
         float bestDiff = float.MaxValue;
 
@@ -51,8 +80,6 @@ public class StartZoneCameraController : MonoBehaviour
             }
         }
 
-        // SMOOTH le changement
-        currentT = Mathf.Lerp(currentT, bestT, smoothSpeed * Time.deltaTime);
-        splineDolly.CameraPosition = currentT;
+        return bestT;
     }
 }
