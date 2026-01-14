@@ -8,6 +8,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
     [Header("Player Stats")]
     public PlayerStats stats;
 
+    private Transform currentParent = null;
+
     [Header("Grab Immunity")]
     [HideInInspector] public bool isImmuneToGrab = false;
     [HideInInspector] public float lastGrabEndTime = -999f; 
@@ -43,6 +45,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private Material originalMaterial;
 
     public bool isClimbing = false;
+
 
     public bool IsSprinting() => isSprinting;
 
@@ -353,7 +356,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
             moveDirection = GetCameraRelativeMovement(moveInput);
             float targetSpeed = CalculateSpeed();
             Vector3 targetVelocity = moveDirection * targetSpeed;
-
             // Acceleration plus reactive pour eviter le drift
             currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, 20f * Time.fixedDeltaTime);
         }
@@ -398,7 +400,21 @@ public class PlayerPhysicsMovement : MonoBehaviour
             transform.position += platformDelta;
             lastPlatformPosition = platformCurrentPos;
         }
+        // === ROTATING PLATFORM SUPPORT ===
+        if (transform.parent != null)
+        {
+            RotatingPlatform rotPlatform = transform.parent.GetComponent<RotatingPlatform>();
+            if (rotPlatform != null)
+            {
+                Vector3 tangentialVel = rotPlatform.GetTangentialVelocityAtPoint(transform.position);
+                finalVelocity.x += tangentialVel.x;
+                finalVelocity.z += tangentialVel.z;
+            }
+        }
 
+        rb.linearVelocity = finalVelocity;
+
+        rb.linearVelocity = finalVelocity;
         rb.linearVelocity = finalVelocity;
     }
     float CalculateSpeed()

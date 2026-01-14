@@ -178,9 +178,19 @@ public class GameUIManager : MonoBehaviour
         }
     }
 
-    public void ShowCountdown()
+    public void ShowCountdown(bool skipText = false)
     {
-        StartCoroutine(CountdownSequence());
+        Debug.Log($"[GameUIManager] ShowCountdown appele avec skipText = {skipText}"); // NOUVEAU
+
+        if (!skipText)
+        {
+            Debug.Log("[GameUIManager] Lancement CountdownSequence"); // NOUVEAU
+            StartCoroutine(CountdownSequence());
+        }
+        else
+        {
+            Debug.Log("[GameUIManager] Skip CountdownSequence (restart)"); // NOUVEAU
+        }
     }
 
     IEnumerator CountdownSequence()

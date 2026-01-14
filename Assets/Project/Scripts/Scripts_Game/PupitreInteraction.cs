@@ -50,8 +50,7 @@ public class PupitreInteraction : MonoBehaviour
         if (isRestart)
         {
             Debug.Log("[Pupitre] RESTART DETECTE - Activation mode force respawn");
-            PlayerPrefs.SetInt(RESTART_KEY, 0);
-            PlayerPrefs.Save();
+            
 
             needsRespawn = true;
             respawnFrameCount = 0;
@@ -181,7 +180,8 @@ public class PupitreInteraction : MonoBehaviour
         hasActivated = true;
         Debug.Log("[Pupitre] === ACTIVATION AUTO (RESTART) ===");
 
-        StartCoroutine(SinkPupitreCoroutine());
+        // NOUVEAU : Position directe en bas, pas d'animation
+        transform.position = transform.position + Vector3.down * sinkDistance;
 
         SwitchToNormalCamera();
         LaunchCountdownAndShutter();

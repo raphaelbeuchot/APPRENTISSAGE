@@ -5,15 +5,13 @@ public class CountdownManager : MonoBehaviour
 {
     public MetalShutter shutter;
     public GameManager gameManager;
-
     [Header("Audio")]
     public AudioClip countdownStartSound;
     private AudioSource audioSource;
-
     [HideInInspector]
     public bool countdownFinished = false;
-
-    private bool isCountdownRunning = false;  // NOUVEAU : Protection anti-double
+    private bool isCountdownRunning = false;
+    private bool isRestart = false;
 
     void Awake()
     {
@@ -29,8 +27,9 @@ public class CountdownManager : MonoBehaviour
         // Si c'est un restart depuis Game Over, lancer automatiquement
         if (PlayerPrefs.GetInt("AutoStartCountdown", 0) == 1)
         {
+            isRestart = true;
             PlayerPrefs.DeleteKey("AutoStartCountdown");
-            Debug.Log("[CountdownManager] Auto-start après restart détecté !");
+            Debug.Log("[CountdownManager] Auto-start apres restart detecte !");
             StartCoroutine(AutoStartCountdownAfterDelay(0.5f));
         }
     }
@@ -43,14 +42,15 @@ public class CountdownManager : MonoBehaviour
 
     public void StartCountdown()
     {
-        // PROTECTION : Si déjà lancé, ignorer
+        // PROTECTION : Si deja lance, ignorer
         if (isCountdownRunning || countdownFinished)
         {
-            Debug.Log("[CountdownManager] Countdown déjà en cours ou terminé, ignoré.");
+            Debug.Log("[CountdownManager] Countdown deja en cours ou termine, ignore.");
             return;
         }
+        isCountdownRunning = true;
 
-        isCountdownRunning = true;  //  Verrouiller
+        Debug.Log($"[CountdownManager] isRestart = {isRestart}"); // NOUVEAU
 
         if (audioSource != null && countdownStartSound != null)
         {
@@ -60,7 +60,8 @@ public class CountdownManager : MonoBehaviour
         GameUIManager uiManager = FindObjectOfType<GameUIManager>();
         if (uiManager != null)
         {
-            uiManager.ShowCountdown();
+            Debug.Log($"[CountdownManager] Appel ShowCountdown avec skipText = {isRestart}"); // NOUVEAU
+            uiManager.ShowCountdown(isRestart);
         }
 
         Debug.Log("Countdown demarre!");
@@ -76,14 +77,11 @@ public class CountdownManager : MonoBehaviour
         Debug.Log("1...");
         yield return new WaitForSeconds(3f);
         Debug.Log("GO!");
-
         if (shutter != null)
         {
             shutter.Open();
         }
-
         countdownFinished = true;
-
         if (gameManager != null)
         {
             gameManager.StartGameCycle();
