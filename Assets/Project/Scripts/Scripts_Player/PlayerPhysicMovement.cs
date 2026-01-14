@@ -393,28 +393,38 @@ public class PlayerPhysicsMovement : MonoBehaviour
         DetectMovingPlatform();
         if (currentPlatform != null)
         {
-            Vector3 platformCurrentPos = currentPlatform.GetTransform().position;
-            Vector3 platformDelta = platformCurrentPos - lastPlatformPosition;
-            platformDelta.y = 0f; // Ignorer mouvement vertical
+            RotatingPlatform rotPlatform = currentPlatform.GetTransform().GetComponent<RotatingPlatform>();
 
-            transform.position += platformDelta;
-            lastPlatformPosition = platformCurrentPos;
-        }
-        // === ROTATING PLATFORM SUPPORT ===
-        if (transform.parent != null)
-        {
-            RotatingPlatform rotPlatform = transform.parent.GetComponent<RotatingPlatform>();
             if (rotPlatform != null)
             {
-                Vector3 tangentialVel = rotPlatform.GetTangentialVelocityAtPoint(transform.position);
-                finalVelocity.x += tangentialVel.x;
-                finalVelocity.z += tangentialVel.z;
+                // Si idle : teleportation (reste solidaire)
+                if (moveInput.magnitude < 0.1f)
+                {
+                    Vector3 pivotPoint = rotPlatform.GetTransform().position + new Vector3(
+                        rotPlatform.settings.pivotOffset.x,
+                        0f,
+                        rotPlatform.settings.pivotOffset.y
+                    );
+
+                    float angleThisFrame = rotPlatform.settings.rotationSpeed * Time.fixedDeltaTime;
+                    if (!rotPlatform.settings.clockwise)
+                        angleThisFrame = -angleThisFrame;
+
+                    Vector3 directionFromPivot = transform.position - pivotPoint;
+                    directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
+                    transform.position = pivotPoint + directionFromPivot;
+                }
+                else
+                {
+                    // Si bouge : ajouter velocite tangentielle (lutte/boost)
+                    Vector3 tangentialVel = rotPlatform.GetTangentialVelocityAtPoint(transform.position);
+                    finalVelocity.x += tangentialVel.x * rotPlatform.settings.playerInfluence;
+                    finalVelocity.z += tangentialVel.z * rotPlatform.settings.playerInfluence;
+                }
             }
         }
 
-        rb.linearVelocity = finalVelocity;
 
-        rb.linearVelocity = finalVelocity;
         rb.linearVelocity = finalVelocity;
     }
     float CalculateSpeed()

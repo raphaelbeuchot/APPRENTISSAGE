@@ -6,6 +6,11 @@ public class RotatingPlatformSettings : ScriptableObject
     [Header("Identity")]
     public string obstacleName = "Rotating Platform";
 
+    [Header("Player Interaction")]
+    [Tooltip("Multiplicateur influence rotation sur player (1 = normal, 2 = double effet)")]
+    [Range(0.5f, 10f)]
+    public float playerInfluence = 6f;
+
     [Header("Rotation")]
     [Tooltip("Vitesse de rotation en degres par seconde")]
     public float rotationSpeed = 30f;

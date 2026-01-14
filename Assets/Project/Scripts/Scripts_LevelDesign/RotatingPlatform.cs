@@ -3,7 +3,7 @@ using UnityEngine;
 public class RotatingPlatform : MonoBehaviour, IMovingPlatform
 {
     [Header("Settings")]
-    [SerializeField] private RotatingPlatformSettings settings;
+    public RotatingPlatformSettings settings; // CHANGE private en public
 
     private Vector3 pivotPoint;
     private AudioSource audioSource;
