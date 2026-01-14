@@ -397,9 +397,10 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
             if (rotPlatform != null)
             {
-                // Si idle : teleportation (reste solidaire)
+                // ROTATING PLATFORM
                 if (moveInput.magnitude < 0.1f)
                 {
+                    // Idle : teleportation (reste solidaire)
                     Vector3 pivotPoint = rotPlatform.GetTransform().position + new Vector3(
                         rotPlatform.settings.pivotOffset.x,
                         0f,
@@ -416,11 +417,21 @@ public class PlayerPhysicsMovement : MonoBehaviour
                 }
                 else
                 {
-                    // Si bouge : ajouter velocite tangentielle (lutte/boost)
+                    // Bouge : velocite tangentielle (lutte/boost)
                     Vector3 tangentialVel = rotPlatform.GetTangentialVelocityAtPoint(transform.position);
                     finalVelocity.x += tangentialVel.x * rotPlatform.settings.playerInfluence;
                     finalVelocity.z += tangentialVel.z * rotPlatform.settings.playerInfluence;
                 }
+            }
+            else
+            {
+                // ROAMING OBSTACLE : toujours teleportation (idle OU en mouvement)
+                Vector3 platformCurrentPos = currentPlatform.GetTransform().position;
+                Vector3 platformDelta = platformCurrentPos - lastPlatformPosition;
+                platformDelta.y = 0f;
+
+                transform.position += platformDelta;
+                lastPlatformPosition = platformCurrentPos;
             }
         }
 
