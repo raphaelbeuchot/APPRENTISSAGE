@@ -1,14 +1,14 @@
 using UnityEngine;
 using System.Collections;
-using Pathfinding; // AJOUT A*
+using Pathfinding;
 
 [RequireComponent(typeof(Rigidbody))]
 public class EnemyAI_AStar : MonoBehaviour
 {
 
     private bool hasCalculatedAnticipatedPosition = false;
-    private Vector3 lastChaseDirection = Vector3.zero; // NOUVEAU
-    private bool isLookingAround = false; // NOUVEAU
+    private Vector3 lastChaseDirection = Vector3.zero;
+    private bool isLookingAround = false;
 
 
     [Header("Enemy Stats")]
@@ -17,8 +17,8 @@ public class EnemyAI_AStar : MonoBehaviour
 
     // Wall staring detection
     private float wallStaringTimer = 0f;
-    private float wallStaringThreshold = 5f; // Temps avant rotation
-    private float wallDetectionDistance = 1f; // Distance de détection mur
+    private float wallStaringThreshold = 5f;
+    private float wallDetectionDistance = 1f;
 
     private Vector3 lastKnownPlayerPosition;
     private bool isGoingToLastKnownPosition = false;
@@ -30,8 +30,8 @@ public class EnemyAI_AStar : MonoBehaviour
     protected GameManager gameManager;
     protected EnemyHealth health;
     protected IAttackBehavior attackBehavior;
-    private AIPath aiPath; // REMPLACE NavMeshAgent
-    private Seeker seeker; // AJOUT
+    private AIPath aiPath;
+    private Seeker seeker;
     private BlinderWanderBehavior wanderBehavior;
     private EnemyPitInteractable pitInteractable;
 
@@ -39,17 +39,23 @@ public class EnemyAI_AStar : MonoBehaviour
     [Header("Pit Mode")]
     [HideInInspector] public bool isInPitMode = false;
 
+    [Header("Rotating Platform Mode")]
+    [HideInInspector] public bool isOnRotatingPlatform = false;
+    private RotatingPlatform currentRotatingPlatform;
+    private float centrifugalDrift = 0f;
+    private float recoveryEndTime = 0f;
+    private bool isRecoveringFromPlatform = false;
+
     private EnemyHealthBarUI healthBarUI;
     public bool canMove = true;
     [HideInInspector] public bool isStunnedBySentinel = false;
 
-    // Ajout pour persistance chase
     private float lostTargetTime = -999f;
     private bool wasChasing = false;
 
     [HideInInspector] public bool isForcedChase = false;
 
-    
+
     private bool isPlayerInRange = false;
     protected float lastWanderTime = 0f;
     protected float wanderTimer = 0f;
@@ -61,7 +67,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
     private bool isBlinder = false;
 
-    public enum State { Idle, Wandering, Chasing, Attacking, PreGrab, StunBySpray, Dead }
+    public enum State { Idle, Wandering, Chasing, Attacking, PreGrab, StunBySpray, OnRotatingPlatform, Dead }
     public State currentState = State.Idle;
 
     protected virtual void Start()
@@ -75,8 +81,8 @@ public class EnemyAI_AStar : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         gameManager = FindObjectOfType<GameManager>();
         health = GetComponent<EnemyHealth>();
-        aiPath = GetComponent<AIPath>(); // REMPLACE GetComponent<NavMeshAgent>
-        seeker = GetComponent<Seeker>(); // AJOUT
+        aiPath = GetComponent<AIPath>();
+        seeker = GetComponent<Seeker>();
         wanderBehavior = GetComponent<BlinderWanderBehavior>();
         pitInteractable = GetComponent<EnemyPitInteractable>();
 
@@ -87,7 +93,7 @@ public class EnemyAI_AStar : MonoBehaviour
             aiPath.maxSpeed = stats.walkSpeed;
             aiPath.rotationSpeed = stats.rotationSpeed;
 
-            
+
         }
 
         InitializeAttackBehavior();
@@ -126,7 +132,6 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         if (stats == null || isDead) return;
 
-        // Debug zombie coincé devant un mur
         if (currentState == State.Idle)
         {
             RaycastHit hit;
@@ -136,7 +141,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
                 if (wallStaringTimer >= wallStaringThreshold)
                 {
-                    // Rotation fluide au lieu de snap
                     float randomAngle = Random.Range(90f, 270f);
                     StartCoroutine(SmoothRotateAway(randomAngle));
                     wallStaringTimer = 0f;
@@ -152,14 +156,12 @@ public class EnemyAI_AStar : MonoBehaviour
             wallStaringTimer = 0f;
         }
 
-        // === DEBUG ROTATION FOLLE ===
         if (rb != null && rb.angularVelocity.magnitude > 10f)
         {
             Debug.LogError($"[ROTATION FOLLE] {gameObject.name} - Angular velocity: {rb.angularVelocity.magnitude:F2}");
             Debug.LogError($"State: {currentState}, Constraints: {rb.constraints}");
             Debug.LogError($"AIPath enabled: {aiPath?.enabled}, canMove: {canMove}");
 
-            // FORCE STOP
             rb.angularVelocity = Vector3.zero;
             rb.constraints = RigidbodyConstraints.FreezeRotation;
         }
@@ -170,10 +172,29 @@ public class EnemyAI_AStar : MonoBehaviour
             return;
         }
 
+        // Recuperation apres sortie rotating platform
+        if (isRecoveringFromPlatform)
+        {
+            if (Time.time >= recoveryEndTime)
+            {
+                isRecoveringFromPlatform = false;
+                if (aiPath != null)
+                {
+                    aiPath.enabled = true;
+                }
+                Debug.Log($"{gameObject.name} recovered from rotating platform");
+            }
+            else
+            {
+                StopMovement();
+                return;
+            }
+        }
+
         if (!canMove)
         {
-            if (aiPath != null) // REMPLACE agent.isOnNavMesh check
-                aiPath.canMove = false; // REMPLACE agent.isStopped = true
+            if (aiPath != null)
+                aiPath.canMove = false;
             return;
         }
 
@@ -225,6 +246,9 @@ public class EnemyAI_AStar : MonoBehaviour
             case State.StunBySpray:
                 HandleStunBySprayState();
                 break;
+            case State.OnRotatingPlatform:
+                HandleOnRotatingPlatformState();
+                break;
             case State.Dead:
                 StopMovement();
                 break;
@@ -249,7 +273,7 @@ public class EnemyAI_AStar : MonoBehaviour
         Quaternion targetRotation = startRotation * Quaternion.Euler(0, angle, 0);
 
         float elapsed = 0f;
-        float rotationDuration = 1f; // 1 seconde pour la rotation
+        float rotationDuration = 1f;
 
         while (elapsed < rotationDuration)
         {
@@ -259,7 +283,7 @@ public class EnemyAI_AStar : MonoBehaviour
             yield return null;
         }
 
-        transform.rotation = targetRotation; // Force la rotation finale
+        transform.rotation = targetRotation;
         Debug.Log($"{gameObject.name} finished smooth rotation away from wall");
     }
 
@@ -270,7 +294,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
         Debug.Log($"{gameObject.name} lastChaseDirection = {lastChaseDirection}");
 
-        // S'assurer que la direction est horizontale et valide
         Vector3 lookDirection = lastChaseDirection;
         lookDirection.y = 0;
 
@@ -286,7 +309,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
         lookDirection.Normalize();
 
-        // Rotation vers la direction où le player se déplaçait
         Quaternion startRotation = transform.rotation;
         Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
 
@@ -305,10 +327,8 @@ public class EnemyAI_AStar : MonoBehaviour
 
         transform.rotation = targetRotation;
 
-        // Pause pour "scanner"
         yield return new WaitForSeconds(0.8f);
 
-        // Retour Idle
         wasChasing = false;
         isGoingToLastKnownPosition = false;
         isLookingAround = false;
@@ -320,27 +340,26 @@ public class EnemyAI_AStar : MonoBehaviour
 
     protected virtual void DetectHumans()
     {
-        // Ignorer détection si en StunBySpray
         if (currentState == State.StunBySpray)
+            return;
+        
+        // Ignorer detection si sur plateforme rotative
+        if (currentState == State.OnRotatingPlatform)
             return;
 
         PlayerHealth player = FindObjectOfType<PlayerHealth>();
         if (player == null || player.IsDead())
             return;
 
-        // DECLARE ICI UNE FOIS POUR TOUTE LA METHODE
         bool wasInRange = isPlayerInRange;
         float distToPlayer = Vector3.Distance(transform.position, player.transform.position);
 
-        // ----- Gestion speciale pour le Blinder -----
         if (isBlinder)
         {
-            // Le Blinder ne poursuit jamais le joueur
             targetHuman = null;
             if (currentState == State.Chasing || currentState == State.Attacking)
                 currentState = State.Idle;
 
-            // Affichage de la barre de vie si le joueur est dans le range defini
             if (distToPlayer <= stats.blinderHealthBarRange)
                 health?.healthBarUI?.Show();
             else
@@ -349,12 +368,10 @@ public class EnemyAI_AStar : MonoBehaviour
             return;
         }
 
-        // ----- FORCED CHASE (apres bottle throw) -----
         if (isForcedChase && targetHuman != null)
         {
             currentState = State.Chasing;
 
-            // Mise a jour barre de vie
             isPlayerInRange = distToPlayer <= 5f;
 
             if (isPlayerInRange && !wasInRange)
@@ -365,7 +382,6 @@ public class EnemyAI_AStar : MonoBehaviour
             return;
         }
 
-        // ----- Detection classique pour les autres ennemis -----
         Collider[] hits = Physics.OverlapSphere(transform.position, stats.detectionRadius, stats.targetLayer);
         Transform closestHuman = null;
         float closestDistance = Mathf.Infinity;
@@ -382,17 +398,14 @@ public class EnemyAI_AStar : MonoBehaviour
                 if (angle > stats.detectionAngle / 2f)
                     continue;
 
-                // Check Line of Sight
-                Vector3 eyePos = transform.position + Vector3.up * 1.0f; // hauteur yeux zombie
-                Vector3 targetEyePos = hit.transform.position + Vector3.up * 1.0f; // hauteur yeux du player
+                Vector3 eyePos = transform.position + Vector3.up * 1.0f;
+                Vector3 targetEyePos = hit.transform.position + Vector3.up * 1.0f;
 
                 Vector3 dir = (targetEyePos - eyePos).normalized;
                 float dist = Vector3.Distance(eyePos, targetEyePos);
 
-                // Si un obstacle bloque la vue
                 if (Physics.Raycast(eyePos, dir, out RaycastHit wallHit, dist, stats.obstacleMask))
                 {
-                    // Si ce qu'on touche n'est pas le PLAYER  vue bloquée
                     if (!wallHit.collider.GetComponent<PlayerHealth>())
                     {
                         continue;
@@ -410,8 +423,8 @@ public class EnemyAI_AStar : MonoBehaviour
         if (closestHuman != null)
         {
             targetHuman = closestHuman;
-            lastKnownPlayerPosition = closestHuman.position; // MAJ constante
-            isGoingToLastKnownPosition = false; // On le voit = pas besoin de la derniere position
+            lastKnownPlayerPosition = closestHuman.position;
+            isGoingToLastKnownPosition = false;
             wasChasing = true;
             lostTargetTime = -999f;
             hasCalculatedAnticipatedPosition = false;
@@ -421,20 +434,17 @@ public class EnemyAI_AStar : MonoBehaviour
             else
                 currentState = State.Chasing;
         }
-        else // Player invisible (hors range OU cache derriere obstacle)
+        else
         {
             if (wasChasing && !isForcedChase)
             {
                 targetHuman = null;
 
-                // NOUVEAU : Calcul offset anticipation (UNE SEULE FOIS)
                 if (!hasCalculatedAnticipatedPosition)
                 {
-                    // 1. Position anticipée (COMME AVANT) : zombie->player
                     Vector3 directionToLastPos = (lastKnownPlayerPosition - transform.position).normalized;
                     lastKnownPlayerPosition = lastKnownPlayerPosition + directionToLastPos * 0.75f;
 
-                    // 2. Direction mouvement player (NOUVEAU) : pour rotation finale uniquement
                     Rigidbody playerRb = player.GetComponent<Rigidbody>();
                     if (playerRb != null)
                     {
@@ -444,16 +454,16 @@ public class EnemyAI_AStar : MonoBehaviour
                         if (playerVelocity.magnitude > 0.5f)
                         {
                             lastChaseDirection = playerVelocity.normalized;
-                            Debug.Log($"{gameObject.name} Mémorise direction mouvement player : {lastChaseDirection}");
+                            Debug.Log($"{gameObject.name} Memorise direction mouvement player : {lastChaseDirection}");
                         }
                         else
                         {
-                            lastChaseDirection = directionToLastPos; // Fallback si immobile
+                            lastChaseDirection = directionToLastPos;
                         }
                     }
 
                     hasCalculatedAnticipatedPosition = true;
-                    Debug.Log($"{gameObject.name} position anticipée calculée : {lastKnownPlayerPosition}");
+                    Debug.Log($"{gameObject.name} position anticipee calculee : {lastKnownPlayerPosition}");
                 }
 
                 isGoingToLastKnownPosition = true;
@@ -471,10 +481,7 @@ public class EnemyAI_AStar : MonoBehaviour
             }
         }
 
-        // CRITIQUE : Mise a jour de la barre de vie APRES toute la logique
-        // (pour TOUS les ennemis non-Blinder)
         isPlayerInRange = distToPlayer <= 5f;
-        // NOUVEAU : Ignorer distance check si zombie dans deep empty pit
         EnemyPitInteractable pitInt = GetComponent<EnemyPitInteractable>();
         bool ignoreDistance = pitInt != null && pitInt.shouldIgnoreHealthbarDistance;
 
@@ -483,6 +490,7 @@ public class EnemyAI_AStar : MonoBehaviour
         else if (!isPlayerInRange && wasInRange && !ignoreDistance)
             health?.healthBarUI?.Hide();
     }
+
     protected virtual void HandleIdleState()
     {
         StopMovement();
@@ -514,8 +522,7 @@ public class EnemyAI_AStar : MonoBehaviour
     protected virtual void HandleChasingState()
     {
         if (isBlinder) return;
-        
-        // NOUVEAU : Bloquer si en train de regarder autour
+
         if (isLookingAround)
         {
             StopMovement();
@@ -524,7 +531,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
         if (wanderBehavior != null) wanderBehavior.StopWandering();
 
-        // CAS 1 : On voit le player (chase normal)
         if (targetHuman != null)
         {
             float distance = Vector3.Distance(transform.position, targetHuman.position);
@@ -542,20 +548,17 @@ public class EnemyAI_AStar : MonoBehaviour
                 MoveInDirection(direction, stats.chaseSpeed);
             }
         }
-        // CAS 2 : On ne voit plus le player, on va a la derniere position connue
         else if (isGoingToLastKnownPosition)
         {
             float distanceToLastPos = Vector3.Distance(transform.position, lastKnownPlayerPosition);
 
-            // Arrive a la derniere position : rotation puis abandon
             if (distanceToLastPos <= arrivalThreshold)
             {
                 Debug.Log($"{gameObject.name} arrive a la derniere position, rotation de recherche...");
                 StartCoroutine(LookAroundCoroutine());
-                return; // IMPORTANT : ne pas modifier les flags ici
+                return;
             }
 
-            // Avancer vers la derniere position connue
             if (isInPitMode)
                 MoveInPitMode();
             else
@@ -564,7 +567,6 @@ public class EnemyAI_AStar : MonoBehaviour
                 MoveInDirection(direction, stats.chaseSpeed);
             }
         }
-        // CAS 3 : Ni cible ni position -> Idle
         else
         {
             currentState = State.Idle;
@@ -605,7 +607,6 @@ public class EnemyAI_AStar : MonoBehaviour
             {
                 lastAttackTime = Time.time;
 
-                // NOUVEAU : Si c'est un Grabber, passer en PreGrab au lieu d'attaquer direct
                 GrabAttack grabAttack = attackBehavior as GrabAttack;
                 if (grabAttack != null)
                 {
@@ -614,7 +615,6 @@ public class EnemyAI_AStar : MonoBehaviour
                 }
                 else
                 {
-                    // Autres types d'attaque (Hitter, Spitter)
                     attackBehavior.AttemptAttack(targetHuman.gameObject);
                 }
             }
@@ -629,7 +629,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
         float finalSpeed = speed;
 
-        // Appliquer ralentissement shallow water
         if (pitInteractable != null && pitInteractable.isInShallowWater)
         {
             finalSpeed = finalSpeed * pitInteractable.waterSlowdownMultiplier;
@@ -642,8 +641,6 @@ public class EnemyAI_AStar : MonoBehaviour
         else
             aiPath.destination = transform.position + direction * 3f;
 
-        // AIPath gere rotation et mouvement automatiquement
-        // On garde rotation manuelle pour matching ancien comportement
         direction.y = 0;
         direction.Normalize();
 
@@ -658,7 +655,6 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         Debug.Log($"[PitMode] {gameObject.name} MoveInPitMode called!");
 
-        // Determiner la position cible
         Vector3 targetPosition;
         if (targetHuman != null)
         {
@@ -670,7 +666,7 @@ public class EnemyAI_AStar : MonoBehaviour
         }
         else
         {
-            return; // Ni cible ni derniere position, on sort
+            return;
         }
 
         Vector3 directionToTarget = (targetPosition - transform.position);
@@ -700,8 +696,8 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         if (aiPath != null)
         {
-            aiPath.destination = transform.position; // REMPLACE agent.ResetPath()
-            aiPath.canMove = false; // Stop le movement Astar
+            aiPath.destination = transform.position;
+            aiPath.canMove = false;
         }
 
         rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
@@ -720,10 +716,10 @@ public class EnemyAI_AStar : MonoBehaviour
         if (!isDead)
         {
             currentState = State.Chasing;
-            if (aiPath != null) // REMPLACE agent
+            if (aiPath != null)
             {
-                aiPath.canMove = true; // REMPLACE agent.isStopped = false
-                aiPath.maxSpeed = stats.walkSpeed; // REMPLACE agent.speed
+                aiPath.canMove = true;
+                aiPath.maxSpeed = stats.walkSpeed;
             }
         }
     }
@@ -746,7 +742,7 @@ public class EnemyAI_AStar : MonoBehaviour
         }
     }
 
-    public AIPath GetAIPath() // REMPLACE GetNavMeshAgent()
+    public AIPath GetAIPath()
     {
         return aiPath;
     }
@@ -756,9 +752,8 @@ public class EnemyAI_AStar : MonoBehaviour
         isInPitMode = true;
         if (aiPath != null)
         {
-            aiPath.enabled = false; // Desactive SEULEMENT AIPath
+            aiPath.enabled = false;
         }
-        // NE PAS desactiver this.enabled !
         Debug.Log($"[EnemyAI] {gameObject.name} PitMode enabled");
     }
 
@@ -772,15 +767,73 @@ public class EnemyAI_AStar : MonoBehaviour
         Debug.Log($"[EnemyAI] {gameObject.name} PitMode disabled");
     }
 
+    public void EnableRotatingPlatformMode(RotatingPlatform platform)
+    {
+        isOnRotatingPlatform = true;
+        currentRotatingPlatform = platform;
+        centrifugalDrift = 0f;
+        currentState = State.OnRotatingPlatform;
+
+        if (aiPath != null)
+        {
+            aiPath.enabled = false;
+        }
+
+        Debug.Log($"[EnemyAI] {gameObject.name} OnRotatingPlatform mode enabled");
+    }
+
+    public void DisableRotatingPlatformMode()
+    {
+        isOnRotatingPlatform = false;
+        currentRotatingPlatform = null;
+
+        isRecoveringFromPlatform = true;
+        recoveryEndTime = Time.time + 1.5f;
+
+        currentState = State.Idle;
+
+        Debug.Log($"[EnemyAI] {gameObject.name} OnRotatingPlatform mode disabled, recovering...");
+    }
+
+    protected virtual void HandleOnRotatingPlatformState()
+    {
+        if (currentRotatingPlatform == null || rb == null)
+        {
+            DisableRotatingPlatformMode();
+            return;
+        }
+
+        // Teleportation simple (comme player idle)
+        Vector3 pivotPoint = currentRotatingPlatform.transform.position + new Vector3(
+            currentRotatingPlatform.settings.pivotOffset.x,
+            0f,
+            currentRotatingPlatform.settings.pivotOffset.y
+        );
+
+        float angleThisFrame = currentRotatingPlatform.settings.rotationSpeed * Time.deltaTime;
+        if (!currentRotatingPlatform.settings.clockwise)
+            angleThisFrame = -angleThisFrame;
+
+        Vector3 directionFromPivot = transform.position - pivotPoint;
+        directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
+
+        transform.position = pivotPoint + directionFromPivot;
+
+        // NOUVEAU : Ne bloquer velocity que si PAS en knockback
+        if (health != null && !health.isInKnockback)
+        {
+            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+        }
+
+        Debug.Log($"[ROTPLAT] {gameObject.name} teleporting on platform (knockback={health?.isInKnockback})");
+    }
+
     protected virtual void HandleStunBySprayState()
     {
-        // Stop le zombie
         StopMovement();
 
-        // Check si le stun est terminé
         if (health != null && health.GetSprayStunTimeRemaining() <= 0f)
         {
-            // Retour à l'état Idle
             currentState = State.Idle;
             Debug.Log($"{gameObject.name} exited StunBySpray state");
         }
@@ -790,7 +843,6 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         if (wanderBehavior != null) wanderBehavior.StopWandering();
 
-        // Rester face au player pendant windup
         if (targetHuman != null)
         {
             Vector3 direction = (targetHuman.position - transform.position).normalized;
@@ -803,11 +855,9 @@ public class EnemyAI_AStar : MonoBehaviour
             }
         }
 
-        // Le GrabAttack gère le timer et la transition
         GrabAttack grab = attackBehavior as GrabAttack;
         if (grab != null && !grab.isInWindup)
         {
-            // Windup terminé ou annulé, retour normal
             currentState = State.Chasing;
         }
     }
