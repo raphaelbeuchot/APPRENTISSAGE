@@ -9,11 +9,20 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     [Header("Spline")]
     [SerializeField] private SplineContainer splineContainer;
 
+    [Header("Instance Settings")]
+    [SerializeField]
+    [Range(0f, 1f)]
+    private float startingProgress = 0f;
+
+    [SerializeField]
+    [Range(0.1f, 3f)]
+    private float speedMultiplier = 1f;
+
     private float currentProgress = 0f;
     private AudioSource audioSource;
     private float currentDirection = 1f;
 
-    // NOUVEAU : Pour calculer la velocite
+    // Pour calculer la velocite
     private Vector3 lastPosition;
     private Vector3 currentVelocity;
 
@@ -33,11 +42,15 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
             return;
         }
 
+        // Initialiser la position de depart
+        currentProgress = startingProgress;
+        lastPosition = transform.position;
+
         // Setup audio
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.loop = true;
         audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 1f; // 3D sound
+        audioSource.spatialBlend = 1f;
         audioSource.volume = settings.soundVolume;
 
         if (settings.movementSound != null)
@@ -49,7 +62,7 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
         // Position initiale sur la spline
         UpdatePosition();
 
-        // NOUVEAU : Initialiser lastPosition
+        // Initialiser lastPosition
         lastPosition = transform.position;
 
         Debug.Log($"[RoamingObstacle] {settings.obstacleName} demarre sur spline");
@@ -60,7 +73,7 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
         if (splineContainer == null || settings == null) return;
 
         float splineLength = splineContainer.Spline.GetLength();
-        float distanceThisFrame = settings.moveSpeed * Time.deltaTime;
+        float distanceThisFrame = settings.moveSpeed * speedMultiplier * Time.deltaTime;
         float progressIncrement = distanceThisFrame / splineLength;
 
         // Appliquer direction
@@ -80,12 +93,12 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
             if (currentProgress >= 1f)
             {
                 currentProgress = 1f;
-                currentDirection = -1f; // Inverser
+                currentDirection = -1f;
             }
             else if (currentProgress <= 0f)
             {
                 currentProgress = 0f;
-                currentDirection = 1f; // Inverser
+                currentDirection = 1f;
             }
         }
         else
@@ -99,7 +112,7 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
         UpdatePosition();
 
-        // NOUVEAU : Calculer la velocite apres avoir bouge
+        // Calculer la velocite apres avoir bouge
         CalculateVelocity();
     }
 
@@ -109,20 +122,18 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
         Vector3 position = splineContainer.EvaluatePosition(currentProgress);
 
         // Offset pour que la BASE de l'obstacle touche la spline
-        // Calcule automatiquement selon la taille du collider
         Collider col = GetComponent<Collider>();
         float yOffset = 0f;
 
         if (col != null)
         {
-            yOffset = col.bounds.extents.y; // Moitie de la hauteur
+            yOffset = col.bounds.extents.y;
         }
 
         position.y += yOffset;
         transform.position = position;
     }
 
-    // NOUVEAU : Calculer la velocite de la plateforme
     private void CalculateVelocity()
     {
         currentVelocity = (transform.position - lastPosition) / Time.deltaTime;
