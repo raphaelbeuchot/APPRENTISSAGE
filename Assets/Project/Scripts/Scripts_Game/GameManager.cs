@@ -778,16 +778,17 @@ public class GameManager : MonoBehaviour
             Debug.Log(enemy.name + " MORT!");
     }
 
-
     IEnumerator StunSpecificZombie(EnemyAI_AStar ai)
     {
         ai.isStunnedBySentinel = true;
         yield return new WaitForSeconds(sentinel.stunZombieDuration);
-        ai.isStunnedBySentinel = false;
 
+        // CHECK si le zombie existe encore
+        if (ai == null) yield break;
+
+        ai.isStunnedBySentinel = false;
         alreadyShot.Remove(ai.gameObject);
     }
-
     void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, bool isHeadshot = false)
     {
         // NOUVEAU : Vérifier interception par un ennemi

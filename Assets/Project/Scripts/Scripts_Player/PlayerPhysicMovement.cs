@@ -414,6 +414,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
                     Vector3 directionFromPivot = transform.position - pivotPoint;
                     directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
                     transform.position = pivotPoint + directionFromPivot;
+
+                    // AJOUTER CETTE LIGNE : Rotation de l'orientation
+                    transform.Rotate(Vector3.up, angleThisFrame);
                 }
                 else
                 {

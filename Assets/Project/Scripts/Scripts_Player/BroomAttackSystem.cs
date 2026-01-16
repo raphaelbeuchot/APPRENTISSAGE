@@ -302,8 +302,12 @@ public class BroomAttackSystem : MonoBehaviour
     {
         EnemyAI_AStar zombieAI_AStar = target.GetComponent<EnemyAI_AStar>();
 
-        // Desactiver pathfinding A* (sauf si en PitMode)
-        if (zombieAI_AStar != null && !zombieAI_AStar.isInPitMode)
+        // NOUVEAU : Ne pas desactiver si sur rotating platform
+        bool shouldDisableAI = zombieAI_AStar != null
+            && !zombieAI_AStar.isInPitMode
+            && !zombieAI_AStar.isOnRotatingPlatform; // AJOUT DE CETTE LIGNE
+
+        if (shouldDisableAI)
         {
             Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
             if (aiPath != null)
@@ -319,12 +323,16 @@ public class BroomAttackSystem : MonoBehaviour
         {
             if (zombieAI_AStar.isInPitMode)
             {
-                // En PitMode : juste réactiver AI (AIPath reste disabled)
+                zombieAI_AStar.enabled = true;
+            }
+            else if (zombieAI_AStar.isOnRotatingPlatform)
+            {
+                // Sur rotplat : juste reactiver AIPath mais GARDER l'AI active
+                // (elle gère déjà la rotation dans HandleOnRotatingPlatformState)
                 zombieAI_AStar.enabled = true;
             }
             else
             {
-                // Hors pit : réactiver AI + AIPath
                 Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
                 if (aiPath != null)
                 {

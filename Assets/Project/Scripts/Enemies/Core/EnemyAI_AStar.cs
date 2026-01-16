@@ -797,35 +797,8 @@ public class EnemyAI_AStar : MonoBehaviour
 
     protected virtual void HandleOnRotatingPlatformState()
     {
-        if (currentRotatingPlatform == null || rb == null)
-        {
-            DisableRotatingPlatformMode();
-            return;
-        }
-
-        // Teleportation simple (comme player idle)
-        Vector3 pivotPoint = currentRotatingPlatform.transform.position + new Vector3(
-            currentRotatingPlatform.settings.pivotOffset.x,
-            0f,
-            currentRotatingPlatform.settings.pivotOffset.y
-        );
-
-        float angleThisFrame = currentRotatingPlatform.settings.rotationSpeed * Time.deltaTime;
-        if (!currentRotatingPlatform.settings.clockwise)
-            angleThisFrame = -angleThisFrame;
-
-        Vector3 directionFromPivot = transform.position - pivotPoint;
-        directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
-
-        transform.position = pivotPoint + directionFromPivot;
-
-        // NOUVEAU : Ne bloquer velocity que si PAS en knockback
-        if (health != null && !health.isInKnockback)
-        {
-            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
-        }
-
-        Debug.Log($"[ROTPLAT] {gameObject.name} teleporting on platform (knockback={health?.isInKnockback})");
+        // La rotation est geree par RotatingPlatform.Update()
+        StopMovement();
     }
 
     protected virtual void HandleStunBySprayState()
