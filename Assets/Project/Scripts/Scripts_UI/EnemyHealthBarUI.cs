@@ -38,11 +38,18 @@ public class EnemyHealthBarUI : MonoBehaviour
 
         float healthPercent = currentHealth / maxHealth;
         targetFillAmount = healthPercent;
-
         healthFill.fillAmount = healthPercent;
 
         if (damagePreviewFill != null)
         {
+            // CORRECTION : Ne lancer la coroutine QUE si le GameObject est actif
+            if (!gameObject.activeInHierarchy)
+            {
+                // Si inactif, juste mettre à jour direct sans coroutine
+                damagePreviewFill.fillAmount = targetFillAmount;
+                return;
+            }
+
             if (damagePreviewCoroutine != null)
                 StopCoroutine(damagePreviewCoroutine);
             damagePreviewCoroutine = StartCoroutine(DamagePreviewCoroutine());
