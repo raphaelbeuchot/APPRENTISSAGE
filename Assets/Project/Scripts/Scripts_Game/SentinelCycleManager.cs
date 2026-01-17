@@ -100,31 +100,37 @@ public class SentinelCycleManager : MonoBehaviour
             return sentinelSettings.GetRandomGreenlightDuration();
         }
 
+        // Facteur distance
+        float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
+        float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+
+        // Facteur ennemis
         int totalEnemies = gameManager.GetTotalEnemies();
         int enemiesKilled = gameManager.GetEnemiesKilled();
+        float enemyFactor = 0f;
 
-        // Si pas d'ennemis comptabilises, duree normale
-        if (totalEnemies <= 0)
+        if (totalEnemies > 0)
         {
-            return sentinelSettings.GetRandomGreenlightDuration();
+            float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
+            enemyFactor = 1f - enemyRatio; // Inverse : plus d'ennemis tues = facteur plus haut
         }
 
-        // Ratio d'ennemis restants (1.0 = niveau plein, 0.0 = niveau vide)
-        float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
+        // Prendre le facteur le plus eleve (celui qui domine)
+        float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
 
-        // Multiplicateur va de 0.5 (0% ennemis) a 1.0 (100% ennemis)
-        float durationMultiplier = minCycleDurationMultiplier + (enemyRatio * (1f - minCycleDurationMultiplier));
+        // Multiplicateur : plus combinedFactor est haut, plus on reduit la duree
+        // combinedFactor = 0 (debut) -> multiplier = 1.0 (duree normale)
+        // combinedFactor = 1 (fin) -> multiplier = minCycleDurationMultiplier (duree reduite)
+        float durationMultiplier = 1f - (combinedFactor * (1f - minCycleDurationMultiplier));
 
-        // Duree de base random
         float baseDuration = sentinelSettings.GetRandomGreenlightDuration();
-
-        // Appliquer le multiplicateur
         float finalDuration = baseDuration * durationMultiplier;
 
-        Debug.Log($"[CYCLE] GreenLight dynamique - Ennemis: {totalEnemies - enemiesKilled}/{totalEnemies} ({enemyRatio:P0}) - Duree: {finalDuration:F1}s (base: {baseDuration:F1}s, x{durationMultiplier:F2})");
+        Debug.Log($"[CYCLE] GreenLight dynamique - Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Max: {combinedFactor:F2} - Duree: {finalDuration:F1}s (base: {baseDuration:F1}s, x{durationMultiplier:F2})");
 
         return finalDuration;
     }
+
     private float GetDynamicRedLightDuration()
     {
         if (gameManager == null)
@@ -133,28 +139,33 @@ public class SentinelCycleManager : MonoBehaviour
             return sentinelSettings.GetRandomRedlightDuration();
         }
 
+        // Facteur distance
+        float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
+        float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+
+        // Facteur ennemis
         int totalEnemies = gameManager.GetTotalEnemies();
         int enemiesKilled = gameManager.GetEnemiesKilled();
+        float enemyFactor = 0f;
 
-        // Si pas d'ennemis comptabilises, duree normale
-        if (totalEnemies <= 0)
+        if (totalEnemies > 0)
         {
-            return sentinelSettings.GetRandomRedlightDuration();
+            float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
+            enemyFactor = 1f - enemyRatio; // Inverse : plus d'ennemis tues = facteur plus haut
         }
 
-        // Ratio d'ennemis restants (1.0 = niveau plein, 0.0 = niveau vide)
-        float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
+        // Prendre le facteur le plus eleve (celui qui domine)
+        float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
 
-        // Multiplicateur va de 0.5 (0% ennemis) a 1.0 (100% ennemis)
-        float durationMultiplier = minCycleDurationMultiplier + (enemyRatio * (1f - minCycleDurationMultiplier));
+        // Multiplicateur : plus combinedFactor est haut, plus on reduit la duree
+        // combinedFactor = 0 (debut) -> multiplier = 1.0 (duree normale)
+        // combinedFactor = 1 (fin) -> multiplier = minCycleDurationMultiplier (duree reduite)
+        float durationMultiplier = 1f - (combinedFactor * (1f - minCycleDurationMultiplier));
 
-        // Duree de base random
         float baseDuration = sentinelSettings.GetRandomRedlightDuration();
-
-        // Appliquer le multiplicateur
         float finalDuration = baseDuration * durationMultiplier;
 
-        Debug.Log($"[CYCLE] RedLight dynamique - Ennemis: {totalEnemies - enemiesKilled}/{totalEnemies} ({enemyRatio:P0}) - Duree: {finalDuration:F1}s (base: {baseDuration:F1}s, x{durationMultiplier:F2})");
+        Debug.Log($"[CYCLE] RedLight dynamique - Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Max: {combinedFactor:F2} - Duree: {finalDuration:F1}s (base: {baseDuration:F1}s, x{durationMultiplier:F2})");
 
         return finalDuration;
     }
@@ -198,8 +209,22 @@ public class SentinelCycleManager : MonoBehaviour
 
             // NOUVEAU : Calculer duree Alert pour marquee lights
             float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
-            float normalizedDistance = Mathf.Clamp01(1f - (distance / 50f));
-            float pitch = Mathf.Lerp(sentinelSettings.minPitch, sentinelSettings.maxPitch, normalizedDistance);
+            float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+
+            float enemyFactor = 0f;
+            if (gameManager != null)
+            {
+                int totalEnemies = gameManager.GetTotalEnemies();
+                int enemiesKilled = gameManager.GetEnemiesKilled();
+                if (totalEnemies > 0)
+                {
+                    float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
+                    enemyFactor = 1f - enemyRatio;
+                }
+            }
+
+            float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
+            float pitch = Mathf.Lerp(1.0f, sentinelSettings.maxPitch, combinedFactor);
             float alertDuration = sentinelSettings.alertSound.length / pitch;
 
             // NOUVEAU : Marquee lights
