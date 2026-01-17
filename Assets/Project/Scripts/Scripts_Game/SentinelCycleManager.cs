@@ -8,6 +8,11 @@ public class SentinelCycleManager : MonoBehaviour
     [Header("Sentinel Settings")]
     public SentinelSettings sentinelSettings;
 
+    [Header("Dynamic Cycle Difficulty")]
+    [SerializeField, Range(0.1f, 1f)] private float minCycleDurationMultiplier = 0.3f;
+    private float initialPlayerSentinelDistance;
+
+
     [Header("Visual Feedback")]
     public Renderer sentinelLightRenderer;
     public Material greenMaterial;
@@ -87,6 +92,72 @@ public class SentinelCycleManager : MonoBehaviour
                 StartNewCycle(GameState.Release);
         }
     }
+    private float GetDynamicGreenLightDuration()
+    {
+        if (gameManager == null)
+        {
+            Debug.LogWarning("[CYCLE] GameManager null, utilise duree par defaut");
+            return sentinelSettings.GetRandomGreenlightDuration();
+        }
+
+        int totalEnemies = gameManager.GetTotalEnemies();
+        int enemiesKilled = gameManager.GetEnemiesKilled();
+
+        // Si pas d'ennemis comptabilises, duree normale
+        if (totalEnemies <= 0)
+        {
+            return sentinelSettings.GetRandomGreenlightDuration();
+        }
+
+        // Ratio d'ennemis restants (1.0 = niveau plein, 0.0 = niveau vide)
+        float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
+
+        // Multiplicateur va de 0.5 (0% ennemis) a 1.0 (100% ennemis)
+        float durationMultiplier = minCycleDurationMultiplier + (enemyRatio * (1f - minCycleDurationMultiplier));
+
+        // Duree de base random
+        float baseDuration = sentinelSettings.GetRandomGreenlightDuration();
+
+        // Appliquer le multiplicateur
+        float finalDuration = baseDuration * durationMultiplier;
+
+        Debug.Log($"[CYCLE] GreenLight dynamique - Ennemis: {totalEnemies - enemiesKilled}/{totalEnemies} ({enemyRatio:P0}) - Duree: {finalDuration:F1}s (base: {baseDuration:F1}s, x{durationMultiplier:F2})");
+
+        return finalDuration;
+    }
+    private float GetDynamicRedLightDuration()
+    {
+        if (gameManager == null)
+        {
+            Debug.LogWarning("[CYCLE] GameManager null, utilise duree par defaut");
+            return sentinelSettings.GetRandomRedlightDuration();
+        }
+
+        int totalEnemies = gameManager.GetTotalEnemies();
+        int enemiesKilled = gameManager.GetEnemiesKilled();
+
+        // Si pas d'ennemis comptabilises, duree normale
+        if (totalEnemies <= 0)
+        {
+            return sentinelSettings.GetRandomRedlightDuration();
+        }
+
+        // Ratio d'ennemis restants (1.0 = niveau plein, 0.0 = niveau vide)
+        float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
+
+        // Multiplicateur va de 0.5 (0% ennemis) a 1.0 (100% ennemis)
+        float durationMultiplier = minCycleDurationMultiplier + (enemyRatio * (1f - minCycleDurationMultiplier));
+
+        // Duree de base random
+        float baseDuration = sentinelSettings.GetRandomRedlightDuration();
+
+        // Appliquer le multiplicateur
+        float finalDuration = baseDuration * durationMultiplier;
+
+        Debug.Log($"[CYCLE] RedLight dynamique - Ennemis: {totalEnemies - enemiesKilled}/{totalEnemies} ({enemyRatio:P0}) - Duree: {finalDuration:F1}s (base: {baseDuration:F1}s, x{durationMultiplier:F2})");
+
+        return finalDuration;
+    }
 
     public void StartNewCycle(GameState newState)
     {
@@ -95,7 +166,7 @@ public class SentinelCycleManager : MonoBehaviour
 
         if (newState == GameState.GreenLight)
         {
-            targetDuration = sentinelSettings.GetRandomGreenlightDuration();
+            targetDuration = GetDynamicGreenLightDuration();
             Debug.Log(string.Format("[CYCLE] GreenLight - Duree: {0:F1}s", targetDuration));
 
             // NOUVEAU : Allumer aerial light
@@ -151,7 +222,7 @@ public class SentinelCycleManager : MonoBehaviour
             if (gameManager != null)
                 gameManager.ResetAllTracking();
 
-            targetDuration = sentinelSettings.GetRandomRedlightDuration();
+            targetDuration = GetDynamicRedLightDuration();
 
             // NOUVEAU : Son en boucle
             if (audioSource != null && sentinelSettings.redlightSound != null)
@@ -239,15 +310,31 @@ public class SentinelCycleManager : MonoBehaviour
             yield break;
         }
 
+        // Facteur distance (0 = loin, 1 = proche sentinelle)
         float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
+        float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
 
-        float normalizedDistance = Mathf.Clamp01(1f - (distance / 50f));
+        // Facteur ennemis (0 = niveau plein, 1 = niveau vide)
+        float enemyFactor = 0f;
+        if (gameManager != null)
+        {
+            int totalEnemies = gameManager.GetTotalEnemies();
+            int enemiesKilled = gameManager.GetEnemiesKilled();
+            if (totalEnemies > 0)
+            {
+                float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
+                enemyFactor = 1f - enemyRatio; // Inverse : plus d'ennemis tues = facteur plus haut
+            }
+        }
 
-        float pitch = Mathf.Lerp(sentinelSettings.minPitch, sentinelSettings.maxPitch, normalizedDistance);
+        // Prendre le facteur le plus eleve (celui qui domine)
+        float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
+
+        float pitch = Mathf.Lerp(1.0f, sentinelSettings.maxPitch, combinedFactor);
+
+        Debug.Log($"[ALERT] Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Max: {combinedFactor:F2}, Pitch: {pitch:F2}");
 
         PlaySoundAtPitch(sentinelSettings.alertSound, pitch);
-
-        Debug.Log(string.Format("[ALERT] Son joue - Distance: {0:F1}m, Pitch: {1:F2}", distance, pitch));
 
         float soundDuration = sentinelSettings.alertSound.length / pitch;
         yield return new WaitForSeconds(soundDuration);
@@ -292,6 +379,19 @@ public class SentinelCycleManager : MonoBehaviour
     {
         if (gameStarted) return;
         gameStarted = true;
+
+        // Calculer distance initiale player-sentinelle
+        if (playerTransform != null && sentinelTransform != null)
+        {
+            initialPlayerSentinelDistance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
+            Debug.Log($"[CYCLE] Distance initiale player-sentinelle: {initialPlayerSentinelDistance:F1}m");
+        }
+        else
+        {
+            initialPlayerSentinelDistance = 50f; // Fallback si references manquantes
+            Debug.LogWarning("[CYCLE] References manquantes, utilise distance fallback 50m");
+        }
+
         StartNewCycle(GameState.GreenLight);
         Debug.Log("[CYCLE] Demarrage du jeu !");
     }
