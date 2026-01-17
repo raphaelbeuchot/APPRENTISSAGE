@@ -142,4 +142,6 @@ public class MarqueeLightBulb : MonoBehaviour
     public Color GetGreenLightColor() => greenLightColor;
     public float GetRedEmissionIntensity() => redEmissionIntensity;
     public float GetGreenEmissionIntensity() => greenEmissionIntensity;
+    public float GetAlertIntensity() => alertIntensity;
+    public float GetAlertEmissionIntensity() => alertEmissionIntensity;
 }

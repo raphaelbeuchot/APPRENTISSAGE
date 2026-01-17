@@ -28,6 +28,7 @@ public class SentinelCycleManager : MonoBehaviour
     [SerializeField] private Transform startZoneTransform;
     public GameManager gameManager;
     [SerializeField] private MarqueeLightController marqueeLightController;
+    [SerializeField] private Light[] lightsToDisableInRedLight;
 
     [Header("State")]
     public GameState currentState = GameState.GreenLight;
@@ -227,10 +228,6 @@ public class SentinelCycleManager : MonoBehaviour
             float pitch = Mathf.Lerp(1.0f, sentinelSettings.maxPitch, combinedFactor);
             float alertDuration = sentinelSettings.alertSound.length / pitch;
 
-            // NOUVEAU : Marquee lights
-            if (marqueeLightController != null)
-                marqueeLightController.StartAlertPattern(alertDuration);
-
             alertCoroutine = StartCoroutine(BeethovenAlertCoroutine());
             Debug.Log("[CYCLE] Alert - duree = duree du son");
 
@@ -266,6 +263,16 @@ public class SentinelCycleManager : MonoBehaviour
             // NOUVEAU : Eteindre aerial light
             if (aerialLight != null)
                 aerialLight.enabled = false;
+
+            // NOUVEAU : Eteindre les lights specifiques
+            if (lightsToDisableInRedLight != null)
+            {
+                foreach (Light light in lightsToDisableInRedLight)
+                {
+                    if (light != null)
+                        light.enabled = false;
+                }
+            }
         }
         else if (newState == GameState.Release)
         {
@@ -304,9 +311,18 @@ public class SentinelCycleManager : MonoBehaviour
             // NOUVEAU : Allumer aerial light
             if (aerialLight != null)
                 aerialLight.enabled = true;
+
+            // NOUVEAU : Rallumer les lights specifiques
+            if (lightsToDisableInRedLight != null)
+            {
+                foreach (Light light in lightsToDisableInRedLight)
+                {
+                    if (light != null)
+                        light.enabled = true;
+                }
+            }
         }
     }
-
     private IEnumerator FadeAerialLightCoroutine(float duration)
     {
         if (aerialLight == null) yield break;
@@ -359,18 +375,30 @@ public class SentinelCycleManager : MonoBehaviour
 
         Debug.Log($"[ALERT] Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Max: {combinedFactor:F2}, Pitch: {pitch:F2}");
 
-        PlaySoundAtPitch(sentinelSettings.alertSound, pitch);
+        AudioSource alertAudioSource = PlaySoundAtPitch(sentinelSettings.alertSound, pitch);
 
         float soundDuration = sentinelSettings.alertSound.length / pitch;
+
+        // Demarrer les marquee lights en mode audio-reactive
+        if (marqueeLightController != null && alertAudioSource != null)
+        {
+            marqueeLightController.StartAlertAudioReactivePattern(alertAudioSource, soundDuration);
+        }
+        else if (marqueeLightController != null)
+        {
+            // Fallback si pas d'AudioSource
+            marqueeLightController.StartAlertPattern(soundDuration);
+        }
+
         yield return new WaitForSeconds(soundDuration);
 
         Debug.Log("[ALERT] Son termine - transition RedLight");
         StartNewCycle(GameState.RedLight);
     }
 
-    private void PlaySoundAtPitch(AudioClip clip, float pitch)
+    private AudioSource PlaySoundAtPitch(AudioClip clip, float pitch)
     {
-        if (clip == null || audioSource == null) return;
+        if (clip == null || audioSource == null) return null;
 
         GameObject tempGO = new GameObject("TempAudio_Alert");
         tempGO.transform.position = sentinelTransform.position;
@@ -381,6 +409,8 @@ public class SentinelCycleManager : MonoBehaviour
         tempAS.volume = audioSource.volume;
         tempAS.Play();
         Destroy(tempGO, clip.length / pitch + 0.1f);
+
+        return tempAS;
     }
 
     void SetState(GameState newState)

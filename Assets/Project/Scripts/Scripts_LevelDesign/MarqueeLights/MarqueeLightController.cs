@@ -7,21 +7,19 @@ public class MarqueeLightController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform bulbsContainer;
 
-    [Header("GreenLight Settings")]
-    [SerializeField] private float greenLightInterval = 2f;
-    [SerializeField] private float greenLightRatio = 0.25f;
-
     [Header("Alert Settings")]
     [SerializeField] private int alertFlashCount = 5;
 
-    [Header("RedLight Settings")]
-    [SerializeField] private int redLightChaseLength = 5;
-    [SerializeField] private float redLightRotationDuration = 6f;
-    [SerializeField] private float redLightFadeDuration = 1f;
-    [SerializeField] private int redLightOffsetPerCircle = 2;
+    [Header("Audio Reactive")]
+    [SerializeField] private int audioSampleSize = 128;
+    [SerializeField, Range(0f, 1f)] private float minIntensityRatio = 0.1f;
+    [SerializeField, Range(0f, 1f)] private float maxIntensityRatio = 1f;
+    [SerializeField, Range(0f, 0.5f)] private float propagationDelay = 0.1f;
+    [SerializeField, Range(1f, 10f)] private float audioMultiplier = 2f; // NOUVEAU : sensibilite generale
 
     private List<List<MarqueeLightBulb>> circles = new List<List<MarqueeLightBulb>>();
     private Coroutine currentPatternCoroutine;
+    private float[] audioSamples;
 
     void Start()
     {
@@ -60,6 +58,16 @@ public class MarqueeLightController : MonoBehaviour
         }
 
         Debug.Log($"[MarqueeLightController] {circles.Count} cercles collectes");
+
+        // NOUVEAU : Allumer en mode GreenLight par defaut des le depart
+        foreach (var circle in circles)
+        {
+            foreach (var bulb in circle)
+            {
+                bulb.SetGreenLightMode();
+            }
+        }
+        Debug.Log("[MarqueeLightController] Marquee lights allumees en GreenLight au demarrage");
     }
 
     // ========== PUBLIC METHODS ==========
@@ -74,6 +82,113 @@ public class MarqueeLightController : MonoBehaviour
     {
         StopCurrentPattern();
         currentPatternCoroutine = StartCoroutine(AlertCoroutine(alertDuration));
+    }
+
+    public void StartAlertAudioReactivePattern(AudioSource alertAudioSource, float totalDuration)
+    {
+        StopCurrentPattern();
+        currentPatternCoroutine = StartCoroutine(AlertAudioReactiveCoroutine(alertAudioSource, totalDuration));
+    }
+
+    IEnumerator AlertAudioReactiveCoroutine(AudioSource alertAudioSource, float totalDuration)
+    {
+        Debug.Log($"[MarqueeLights] Alert AUDIO REACTIVE pattern - duration: {totalDuration}s");
+
+        if (alertAudioSource == null)
+        {
+            Debug.LogWarning("[MarqueeLights] AudioSource null, fallback vers pattern normal");
+            yield return AlertCoroutine(totalDuration);
+            yield break;
+        }
+
+        // Initialiser le tableau d'echantillons audio
+        if (audioSamples == null || audioSamples.Length != audioSampleSize)
+        {
+            audioSamples = new float[audioSampleSize];
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < totalDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            // Verifier que l'AudioSource existe toujours
+            if (alertAudioSource == null || !alertAudioSource.isPlaying)
+            {
+                Debug.Log("[MarqueeLights] Audio stopped, finishing pattern");
+                break;
+            }
+
+            // Recuperer les donnees audio globales
+            alertAudioSource.GetOutputData(audioSamples, 0);
+
+            // Calculer l'amplitude moyenne
+            float sum = 0f;
+            for (int i = 0; i < audioSamples.Length; i++)
+            {
+                sum += Mathf.Abs(audioSamples[i]);
+            }
+            float averageAmplitude = sum / audioSamples.Length;
+
+            // Mapper l'amplitude vers intensite (0-1 -> minRatio-maxRatio)
+            float normalizedAmplitude = Mathf.Clamp01(averageAmplitude * audioMultiplier);
+            float targetIntensityRatio = Mathf.Lerp(minIntensityRatio, maxIntensityRatio, normalizedAmplitude);
+
+            // Appliquer aux bulbs avec propagation exterieur -> interieur (premiere seconde uniquement)
+            if (elapsed < 1f)
+            {
+                // PREMIERE SECONDE : effet de propagation
+                for (int circleIndex = 0; circleIndex < circles.Count; circleIndex++)
+                {
+                    // Calculer le delai pour ce cercle (exterieur -> interieur)
+                    float circleDelay = (circles.Count - 1 - circleIndex) * propagationDelay;
+                    float delayedElapsed = elapsed - circleDelay;
+
+                    // Si on n'a pas encore atteint ce cercle, intensite minimale
+                    float circleIntensity;
+                    if (delayedElapsed < 0f)
+                    {
+                        circleIntensity = minIntensityRatio;
+                    }
+                    else
+                    {
+                        // Transition progressive pour ce cercle
+                        circleIntensity = Mathf.Lerp(minIntensityRatio, targetIntensityRatio, Mathf.Clamp01(delayedElapsed * 10f));
+                    }
+
+                    foreach (var bulb in circles[circleIndex])
+                    {
+                        bulb.SetAlertMode();
+                        float alertIntensity = bulb.GetAlertIntensity();
+                        float alertEmission = bulb.GetAlertEmissionIntensity();
+                        bulb.SetLightIntensity(alertIntensity * circleIntensity);
+                        bulb.SetEmissionIntensity(alertEmission * circleIntensity);
+                    }
+                }
+            }
+            else
+            {
+                // APRES PREMIERE SECONDE : tous les cercles ensemble
+                foreach (var circle in circles)
+                {
+                    foreach (var bulb in circle)
+                    {
+                        bulb.SetAlertMode();
+                        float alertIntensity = bulb.GetAlertIntensity();
+                        float alertEmission = bulb.GetAlertEmissionIntensity();
+                        bulb.SetLightIntensity(alertIntensity * targetIntensityRatio);
+                        bulb.SetEmissionIntensity(alertEmission * targetIntensityRatio);
+                    }
+                }
+            }
+
+            yield return null;
+        }
+
+        // Fin du pattern : eteindre
+        TurnOffAllBulbs();
+        Debug.Log("[MarqueeLights] Alert audio reactive pattern finished");
     }
 
     public void StartRedLightPattern()

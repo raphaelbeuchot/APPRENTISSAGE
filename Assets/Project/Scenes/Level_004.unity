@@ -61817,13 +61817,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightController
   bulbsContainer: {fileID: 0}
-  greenLightInterval: 2
-  greenLightRatio: 0.25
   alertFlashCount: 5
-  redLightChaseLength: 5
-  redLightRotationDuration: 6
-  redLightFadeDuration: 1
-  redLightOffsetPerCircle: 2
+  audioSampleSize: 128
+  minIntensityRatio: 0.1
+  maxIntensityRatio: 1
+  propagationDelay: 0.1
+  audioMultiplier: 2
 --- !u!4 &890979478 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
@@ -62697,13 +62696,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightController
   bulbsContainer: {fileID: 3334672207805439877, guid: c93a49e0942bc6b4ba0f79e764b5bc15, type: 3}
-  greenLightInterval: 2
-  greenLightRatio: 0.5
   alertFlashCount: 4
-  redLightChaseLength: 5
-  redLightRotationDuration: 1
-  redLightFadeDuration: 0.5
-  redLightOffsetPerCircle: 1
+  audioSampleSize: 128
+  minIntensityRatio: 0.3
+  maxIntensityRatio: 1
+  propagationDelay: 0.15
+  audioMultiplier: 3
 --- !u!1001 &910788149
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -149289,6 +149287,26 @@ PrefabInstance:
       propertyPath: marqueeLightController
       value: 
       objectReference: {fileID: 910748073}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: lightsToDisableInRedLight.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: 'lightsToDisableInRedLight.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1298930524}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: 'lightsToDisableInRedLight.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1093731449}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: 'lightsToDisableInRedLight.Array.data[2]'
+      value: 
+      objectReference: {fileID: 249223734}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: 'lightsToDisableInRedLight.Array.data[3]'
+      value: 
+      objectReference: {fileID: 366612317}
     - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: m_LocalPosition.x
       value: 4.78797

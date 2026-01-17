@@ -4120,7 +4120,7 @@ Transform:
   m_GameObject: {fileID: 44089342}
   serializedVersion: 2
   m_LocalRotation: {x: 0.3307181, y: 0.6250005, z: 0.01629458, w: 0.70691895}
-  m_LocalPosition: {x: 0.39506668, y: 2.3133333, z: 8.407193}
+  m_LocalPosition: {x: 0.39506668, y: 2, z: 8.407193}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -69010,13 +69010,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightController
   bulbsContainer: {fileID: 0}
-  greenLightInterval: 2
-  greenLightRatio: 0.25
   alertFlashCount: 5
-  redLightChaseLength: 5
-  redLightRotationDuration: 6
-  redLightFadeDuration: 1
-  redLightOffsetPerCircle: 2
+  audioSampleSize: 64
+  minIntensityRatio: 0.1
+  maxIntensityRatio: 1
+  propagationDelay: 0.1
+  audioMultiplier: 2
 --- !u!4 &890979478 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
@@ -70134,13 +70133,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightController
   bulbsContainer: {fileID: 3334672207805439877, guid: c93a49e0942bc6b4ba0f79e764b5bc15, type: 3}
-  greenLightInterval: 2
-  greenLightRatio: 0.5
   alertFlashCount: 4
-  redLightChaseLength: 5
-  redLightRotationDuration: 1
-  redLightFadeDuration: 0.5
-  redLightOffsetPerCircle: 1
+  audioSampleSize: 64
+  minIntensityRatio: 0
+  maxIntensityRatio: 1
+  propagationDelay: 0.1
+  audioMultiplier: 2
 --- !u!1001 &910788149
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -86448,8 +86446,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 25f3fee2a23c2ae42939fecd49f2b336, type: 2}
-  - {fileID: 2100000, guid: 25f3fee2a23c2ae42939fecd49f2b336, type: 2}
+  - {fileID: 2100000, guid: 814471554e42add499361c22991b2abb, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -89736,7 +89733,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1189802040}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.26935744, y: -0.4913349, z: 0.16296957, w: 0.8120823}
+  m_LocalRotation: {x: 0.29402187, y: -0.486131, z: 0.17789231, w: 0.8034813}
   m_LocalPosition: {x: 2.6880078, y: 3.9856787, z: -4.368811}
   m_LocalScale: {x: -73, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -92792,8 +92789,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1231677631}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.048926048, y: 0.080451794, z: -0.003953786, w: 0.9955492}
-  m_LocalPosition: {x: -1.49, y: 3.47, z: -3.18}
+  m_LocalRotation: {x: 0.042337775, y: 0.08047619, z: -0.0034213779, w: 0.9958511}
+  m_LocalPosition: {x: -1.49, y: 3, z: -3.18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -100961,7 +100958,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1344271812}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.032772247, y: 0.9637036, z: -0.22453743, w: -0.14065687}
+  m_LocalRotation: {x: -0.033994883, y: 0.9617134, z: -0.23291428, w: -0.1403664}
   m_LocalPosition: {x: 4.5, y: 9.39, z: 22.17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -102043,7 +102040,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1361275052}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.26935744, y: -0.4913349, z: 0.16296957, w: 0.8120823}
+  m_LocalRotation: {x: 0.29402187, y: -0.486131, z: 0.17789231, w: 0.8034813}
   m_LocalPosition: {x: 2.6880078, y: 3.9856787, z: -4.368811}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -128795,7 +128792,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f00c1a91e9dc5df47a159459921d5a6b, type: 2}
+  - {fileID: 2100000, guid: 814471554e42add499361c22991b2abb, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -152933,8 +152930,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 25f3fee2a23c2ae42939fecd49f2b336, type: 2}
-  - {fileID: 2100000, guid: 25f3fee2a23c2ae42939fecd49f2b336, type: 2}
+  - {fileID: 2100000, guid: 6a89d497ebc98b74b9ee1ed167889dbc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -161194,7 +161190,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2360765802615539265, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.47
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2360765802615539265, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -161327,6 +161323,18 @@ PrefabInstance:
       propertyPath: marqueeLightController
       value: 
       objectReference: {fileID: 910748073}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: lightsToDisableInRedLight.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: 'lightsToDisableInRedLight.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1298930524}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: 'lightsToDisableInRedLight.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1093731449}
     - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: m_LocalPosition.x
       value: 4.78797
