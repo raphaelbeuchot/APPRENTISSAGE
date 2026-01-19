@@ -21,6 +21,8 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Vitesse diminuee par point de vie perdu (en %)")]
     [Range(0f, 1f)]
     public float speedReductionPerHealthLost = 0.005f;
+    [Header("Sentinel Knockback")]
+    public float sentinelKnockbackForce = 10f;
 
     [Header("MOUVEMENT")]
     [Tooltip("Vitesse de deplacement normale")]

@@ -87,13 +87,28 @@ public class PlayerHealth : MonoBehaviour
     /// <summary>
     /// Variante : dégâts par tir de sentinelle
     /// </summary>
-    public void TakeSentinelShot()
+    public void TakeSentinelShot(Vector3 sentinelPosition)
     {
         // Annuler climb si en cours
         TestClimbDetection climbDetection = GetComponent<TestClimbDetection>();
         if (climbDetection != null)
         {
             climbDetection.CancelClimb();
+        }
+
+        // KNOCKBACK
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            // Direction opposée à la sentinelle (plan XZ uniquement)
+            Vector3 knockbackDir = (transform.position - sentinelPosition);
+            knockbackDir.y = 0f;
+            knockbackDir.Normalize();
+
+            // Application de la force avec Impulse
+            rb.AddForce(knockbackDir * stats.sentinelKnockbackForce, ForceMode.Impulse);
+
+            Debug.Log($"[SENTINEL KNOCKBACK] Force: {stats.sentinelKnockbackForce}, Direction: {knockbackDir}");
         }
 
         TakeDamage(settings.playerDamage);

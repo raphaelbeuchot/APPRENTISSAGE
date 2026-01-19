@@ -831,9 +831,9 @@ public class GameManager : MonoBehaviour
 
         if (isHeadshot)
         {
-            humanHealth.TakeSentinelShot();
+            humanHealth.TakeSentinelShot(sentinelPos);
         }
-        humanHealth.TakeSentinelShot();
+        humanHealth.TakeSentinelShot(sentinelPos);
     }
 
     IEnumerator PlayerStunBySentinel()
@@ -868,7 +868,7 @@ public class GameManager : MonoBehaviour
             StartCoroutine(ShowShootLaser(sentinelPos, targetPos, sentinelSettings.shootLaserFadeDuration));
 
             StartCoroutine(PlayerStunBySentinel());
-            humanHealth.TakeSentinelShot();
+            humanHealth.TakeSentinelShot(sentinelPos);
         }
 
         yield return null;
