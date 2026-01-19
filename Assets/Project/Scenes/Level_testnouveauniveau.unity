@@ -711,18 +711,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 4330301}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &4330301
@@ -3368,18 +3364,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 34818110}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &34818110
@@ -6695,18 +6687,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 79106894}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &79106894
@@ -8169,147 +8157,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1883638552}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &100966335
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 100966341}
-  - component: {fileID: 100966340}
-  - component: {fileID: 100966339}
-  - component: {fileID: 100966338}
-  - component: {fileID: 100966337}
-  - component: {fileID: 100966336}
-  m_Layer: 8
-  m_Name: Cube (22)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &100966336
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100966335}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b5534f2a09cb85458f3c111ad192a63, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RotatingPlatform
-  settings: {fileID: 11400000, guid: c5846154aeb4ea6408553210d452b88f, type: 2}
---- !u!114 &100966337
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100966335}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a576934b6fc79545936c933f01e4383, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ClimbableObject
-  climbType: {fileID: 11400000, guid: da5e2907d0787a048ac1bdf1a77cd53b, type: 2}
-  onlyClimbFromLongSide: 0
---- !u!23 &100966338
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100966335}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 6a89d497ebc98b74b9ee1ed167889dbc, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &100966339
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100966335}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!33 &100966340
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100966335}
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &100966341
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100966335}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.25881952, z: -0, w: 0.96592575}
-  m_LocalPosition: {x: 7.53, y: 0, z: 4.92}
-  m_LocalScale: {x: 5, y: 0.05, z: 5}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 30, z: 0}
 --- !u!1 &101128210
 GameObject:
   m_ObjectHideFlags: 0
@@ -10235,18 +10082,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 133919957}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &133919957
@@ -17661,18 +17504,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 229911212}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &229911212
@@ -17968,18 +17807,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 234157814}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &234157814
@@ -22693,6 +22528,74 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6e6f8dad640cdd64aaf665f7ea1161a8, type: 3}
+--- !u!1001 &297102157
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.82353
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 7.83111
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7223738199076534618, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+      propertyPath: m_Name
+      value: RedVolume
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+--- !u!114 &297102158 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5847959052634411871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
+  m_PrefabInstance: {fileID: 297102157}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 117157ca8c4a2bd4090bd48b4e6852a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedLightVolumeController
 --- !u!1001 &297651764
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -26583,6 +26486,161 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8c6fa7ab62026104b805b357479e7e2d, type: 3}
+--- !u!1 &346231103
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 346231104}
+  - component: {fileID: 346231107}
+  - component: {fileID: 346231106}
+  - component: {fileID: 346231105}
+  m_Layer: 0
+  m_Name: CentralLightTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &346231104
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 346231103}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 8.5, y: 6, z: 14}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1890326246}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &346231105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 346231103}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 592fddeb868f90b4bae6a42478a40831, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelCentralLight
+  centralLight: {fileID: 346231107}
+  sentinelCycleManager: {fileID: 2103414916}
+  greenLightColor: {r: 1, g: 0.9305355, b: 0.16509432, a: 1}
+  greenLightIntensity: 2
+  greenLightRange: 10
+  alertColor: {r: 1, g: 0.45798925, b: 0.015686274, a: 1}
+  alertIntensity: 5
+  alertRange: 20
+  redLightColor: {r: 1, g: 0.13618721, b: 0, a: 1}
+  redLightIntensity: 15
+  redLightRange: 20
+  releaseColor: {r: 1, g: 0.9294118, b: 0.16470589, a: 1}
+  releaseIntensity: 2
+  releaseRange: 10
+  pulseDuration: 1
+--- !u!114 &346231106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 346231103}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
+--- !u!108 &346231107
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 346231103}
+  m_Enabled: 1
+  serializedVersion: 11
+  m_Type: 2
+  m_Color: {r: 0.9920199, g: 1, b: 0.21226418, a: 1}
+  m_Intensity: 10
+  m_Range: 10
+  m_SpotAngle: 30
+  m_InnerSpotAngle: 21.80208
+  m_CookieSize: 10
+  m_Shadows:
+    m_Type: 0
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 1
+  m_Lightmapping: 4
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShadowRadius: 0
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!4 &346491807 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
@@ -33961,18 +34019,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 426809392}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &426809392
@@ -34447,18 +34501,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 429405636}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &429405636
@@ -40988,147 +41038,6 @@ Transform:
   - {fileID: 1113347984}
   m_Father: {fileID: 1315299803}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &518259838
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 518259844}
-  - component: {fileID: 518259843}
-  - component: {fileID: 518259842}
-  - component: {fileID: 518259841}
-  - component: {fileID: 518259840}
-  - component: {fileID: 518259839}
-  m_Layer: 8
-  m_Name: Cube (18)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &518259839
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 518259838}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b5534f2a09cb85458f3c111ad192a63, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RotatingPlatform
-  settings: {fileID: 11400000, guid: 36c7ee79b695dbc438215663987057bb, type: 2}
---- !u!114 &518259840
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 518259838}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a576934b6fc79545936c933f01e4383, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ClimbableObject
-  climbType: {fileID: 11400000, guid: da5e2907d0787a048ac1bdf1a77cd53b, type: 2}
-  onlyClimbFromLongSide: 0
---- !u!23 &518259841
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 518259838}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: f00c1a91e9dc5df47a159459921d5a6b, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &518259842
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 518259838}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!33 &518259843
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 518259838}
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &518259844
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 518259838}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.25881952, z: -0, w: 0.96592575}
-  m_LocalPosition: {x: 1.33, y: 0, z: 15.27}
-  m_LocalScale: {x: 3, y: 0.05, z: 3}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 30, z: 0}
 --- !u!1001 &519149632
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -41943,18 +41852,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 528057848}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &528057848
@@ -44665,18 +44570,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 558789758}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &558789758
@@ -53106,18 +53007,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 679142904}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &679142904
@@ -62433,18 +62330,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 814892371}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &814892371
@@ -67524,18 +67417,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 871435859}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &871435859
@@ -69011,11 +68900,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightController
   bulbsContainer: {fileID: 0}
   alertFlashCount: 5
-  audioSampleSize: 64
-  minIntensityRatio: 0.1
-  maxIntensityRatio: 1
-  propagationDelay: 0.1
-  audioMultiplier: 2
 --- !u!4 &890979478 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
@@ -70134,11 +70018,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightController
   bulbsContainer: {fileID: 3334672207805439877, guid: c93a49e0942bc6b4ba0f79e764b5bc15, type: 3}
   alertFlashCount: 4
-  audioSampleSize: 64
-  minIntensityRatio: 0
-  maxIntensityRatio: 1
-  propagationDelay: 0.1
-  audioMultiplier: 2
 --- !u!1001 &910788149
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -71583,18 +71462,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 927471604}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &927471604
@@ -76329,18 +76204,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 996807234}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &996807234
@@ -77115,18 +76986,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1009915516}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1009915516
@@ -77355,18 +77222,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1010470417}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1010470417
@@ -81113,18 +80976,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1070057375}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1070057375
@@ -83474,18 +83333,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1098148534}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1098148534
@@ -90402,18 +90257,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1196600929}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1196600929
@@ -95860,18 +95711,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1269823451}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1269823451
@@ -105129,18 +104976,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1405569251}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1405569251
@@ -109309,18 +109152,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1461542540}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1461542540
@@ -113887,18 +113726,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1540596187}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1540596187
@@ -115718,18 +115553,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1557663942}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1557663942
@@ -134158,18 +133989,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1799992231}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1799992231
@@ -135122,18 +134949,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1811643429}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1811643429
@@ -138180,18 +138003,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1854757480}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1854757480
@@ -138680,18 +138499,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1858661836}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1858661836
@@ -139475,18 +139290,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1865551025}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1865551025
@@ -141391,18 +141202,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1888945048}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1888945048
@@ -141663,6 +141470,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 346231104}
   - {fileID: 910748072}
   - {fileID: 1803505160}
   - {fileID: 1547379118}
@@ -143803,18 +143611,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 1918688404}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &1918688404
@@ -150888,18 +150692,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 2012791023}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &2012791023
@@ -151615,18 +151415,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 2018595673}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &2018595673
@@ -154990,18 +154786,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 2071520924}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &2071520924
@@ -155580,18 +155372,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
   bulbRenderer: {fileID: 2075159490}
-  pointLight: {fileID: 0}
   redLightMaterial: {fileID: 0}
   alertMaterial: {fileID: 0}
   greenLightMaterial: {fileID: 0}
   lightOffMaterial: {fileID: 0}
-  redLightIntensity: 2
   redLightColor: {r: 1, g: 0, b: 0, a: 1}
   redEmissionIntensity: 2
-  alertIntensity: 3
   alertColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   alertEmissionIntensity: 3
-  greenLightIntensity: 1
   greenLightColor: {r: 0, g: 1, b: 0, a: 1}
   greenEmissionIntensity: 1
 --- !u!23 &2075159490
@@ -161042,6 +160830,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
+--- !u!1001 &3941216789558917547
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 856488991909782410, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_Name
+      value: Cube (18)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.33
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 15.27
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.96592575
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.25881952
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
 --- !u!1001 &4913714743123645038
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -161283,6 +161128,63 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 922244142}
   m_SourcePrefab: {fileID: 100100000, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+--- !u!1001 &8078392877654545311
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 7.53
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 4.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.96592575
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.25881952
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2714209952316529457, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_Name
+      value: Cube (22)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
 --- !u!1001 &9019177782128006907
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -161316,6 +161218,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1547379118}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: sentinelCentralLight
+      value: 
+      objectReference: {fileID: 346231105}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: sentinelLightRenderer
       value: 
       objectReference: {fileID: 887716754}
@@ -161323,6 +161229,10 @@ PrefabInstance:
       propertyPath: marqueeLightController
       value: 
       objectReference: {fileID: 910748073}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: redLightVolumeController
+      value: 
+      objectReference: {fileID: 297102158}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: lightsToDisableInRedLight.Array.size
       value: 2
@@ -161384,6 +161294,7 @@ PrefabInstance:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 297102157}
   - {fileID: 1361275057}
   - {fileID: 832575519}
   - {fileID: 1189802042}
@@ -161433,9 +161344,9 @@ SceneRoots:
   - {fileID: 1146068297}
   - {fileID: 1734593474}
   - {fileID: 519229705}
-  - {fileID: 100966341}
+  - {fileID: 8078392877654545311}
   - {fileID: 2040617612}
-  - {fileID: 518259844}
+  - {fileID: 3941216789558917547}
   - {fileID: 492290849}
   - {fileID: 1558432569}
   - {fileID: 940198129}

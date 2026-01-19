@@ -112,7 +112,7 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
         float distanceToCenter = Vector2.Distance(enemyPosXZ, centerXZ);
 
         // Rayon de la plateforme (on prend le plus petit pour être sûr)
-        float platformRadius = Mathf.Min(bounds.extents.x, bounds.extents.z) - 0.3f; // Marge de 0.3m
+        float platformRadius = Mathf.Min(bounds.extents.x, bounds.extents.z) - 0.05f; // Marge de 0.05m
 
         Debug.Log($"[RotPlat] {enemyAI.name} - Distance={distanceToCenter:F2}m, Radius={platformRadius:F2}m");
 

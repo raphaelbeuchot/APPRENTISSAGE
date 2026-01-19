@@ -4,7 +4,6 @@ public class MarqueeLightBulb : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private MeshRenderer bulbRenderer;
-    [SerializeField] private Light pointLight;
 
     [Header("Materials")]
     [SerializeField] private Material redLightMaterial;
@@ -12,18 +11,15 @@ public class MarqueeLightBulb : MonoBehaviour
     [SerializeField] private Material greenLightMaterial;
     [SerializeField] private Material lightOffMaterial;
 
-    [Header("Light Settings - RedLight")]
-    [SerializeField] private float redLightIntensity = 2f;
+    [Header("Emission Settings - RedLight")]
     [SerializeField] private Color redLightColor = Color.red;
     [SerializeField] private float redEmissionIntensity = 2f;
 
-    [Header("Light Settings - Alert")]
-    [SerializeField] private float alertIntensity = 3f;
+    [Header("Emission Settings - Alert")]
     [SerializeField] private Color alertColor = Color.yellow;
     [SerializeField] private float alertEmissionIntensity = 3f;
 
-    [Header("Light Settings - GreenLight")]
-    [SerializeField] private float greenLightIntensity = 1f;
+    [Header("Emission Settings - GreenLight")]
     [SerializeField] private Color greenLightColor = Color.green;
     [SerializeField] private float greenEmissionIntensity = 1f;
 
@@ -35,9 +31,6 @@ public class MarqueeLightBulb : MonoBehaviour
     {
         if (bulbRenderer == null)
             bulbRenderer = GetComponentInChildren<MeshRenderer>();
-
-        if (pointLight == null)
-            pointLight = GetComponentInChildren<Light>();
 
         TurnOff();
     }
@@ -51,13 +44,6 @@ public class MarqueeLightBulb : MonoBehaviour
             currentBaseEmissionColor = redLightColor;
             SetEmissionIntensity(redEmissionIntensity);
         }
-
-        if (pointLight != null)
-        {
-            pointLight.intensity = redLightIntensity;
-            pointLight.color = redLightColor;
-            pointLight.enabled = true;
-        }
     }
 
     public void SetAlertMode()
@@ -68,13 +54,6 @@ public class MarqueeLightBulb : MonoBehaviour
             bulbRenderer.material = currentMaterialInstance;
             currentBaseEmissionColor = alertColor;
             SetEmissionIntensity(alertEmissionIntensity);
-        }
-
-        if (pointLight != null)
-        {
-            pointLight.intensity = alertIntensity;
-            pointLight.color = alertColor;
-            pointLight.enabled = true;
         }
     }
 
@@ -87,13 +66,6 @@ public class MarqueeLightBulb : MonoBehaviour
             currentBaseEmissionColor = greenLightColor;
             SetEmissionIntensity(greenEmissionIntensity);
         }
-
-        if (pointLight != null)
-        {
-            pointLight.intensity = greenLightIntensity;
-            pointLight.color = greenLightColor;
-            pointLight.enabled = true;
-        }
     }
 
     public void TurnOff()
@@ -101,28 +73,6 @@ public class MarqueeLightBulb : MonoBehaviour
         if (bulbRenderer != null && lightOffMaterial != null)
         {
             bulbRenderer.material = lightOffMaterial;
-        }
-
-        if (pointLight != null)
-        {
-            pointLight.enabled = false;
-        }
-    }
-
-    // Pour le fade
-    public void SetLightIntensity(float intensity)
-    {
-        if (pointLight != null)
-        {
-            pointLight.intensity = intensity;
-        }
-    }
-
-    public void SetLightColor(Color color)
-    {
-        if (pointLight != null)
-        {
-            pointLight.color = color;
         }
     }
 
@@ -136,12 +86,9 @@ public class MarqueeLightBulb : MonoBehaviour
     }
 
     // Getters
-    public float GetRedLightIntensity() => redLightIntensity;
-    public float GetGreenLightIntensity() => greenLightIntensity;
     public Color GetRedLightColor() => redLightColor;
     public Color GetGreenLightColor() => greenLightColor;
     public float GetRedEmissionIntensity() => redEmissionIntensity;
     public float GetGreenEmissionIntensity() => greenEmissionIntensity;
-    public float GetAlertIntensity() => alertIntensity;
     public float GetAlertEmissionIntensity() => alertEmissionIntensity;
 }
