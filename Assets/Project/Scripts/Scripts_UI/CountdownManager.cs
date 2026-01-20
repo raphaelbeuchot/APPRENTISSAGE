@@ -77,14 +77,24 @@ public class CountdownManager : MonoBehaviour
         Debug.Log("1...");
         yield return new WaitForSeconds(3f);
         Debug.Log("GO!");
+
         if (shutter != null)
         {
             shutter.Open();
         }
+
         countdownFinished = true;
+
         if (gameManager != null)
         {
             gameManager.StartGameCycle();
+        }
+
+        // NOUVEAU : Déclencher l'apparition des icônes ennemis
+        EnemyIconsUI enemyIconsUI = FindObjectOfType<EnemyIconsUI>();
+        if (enemyIconsUI != null)
+        {
+            enemyIconsUI.SpawnIconsForEnemies();
         }
     }
 }
