@@ -26,6 +26,10 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     private Vector3 lastPosition;
     private Vector3 currentVelocity;
 
+    // Gestion collision
+    private float lastCollisionTime = -999f;
+    private float collisionCooldown = 0.5f;
+
     void Start()
     {
         if (settings == null)
@@ -151,6 +155,26 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
         return transform;
     }
 
+    void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("TRIGGER DETECTE !"); // TEST
+
+        // Verifier si c'est un autre RoamingObstacle
+        RoamingObstacle otherObstacle = other.GetComponent<RoamingObstacle>();
+
+        if (otherObstacle != null)
+        {
+            // Verifier cooldown pour eviter inversions multiples
+            if (Time.time - lastCollisionTime > collisionCooldown)
+            {
+                // Inverser direction
+                currentDirection *= -1f;
+                lastCollisionTime = Time.time;
+
+                Debug.Log($"[RoamingObstacle] {settings.obstacleName} croisement detecte - inversion direction");
+            }
+        }
+    }
     void OnDestroy()
     {
         if (audioSource != null && audioSource.isPlaying)

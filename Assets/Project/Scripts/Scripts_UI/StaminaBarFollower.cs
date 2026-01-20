@@ -80,7 +80,7 @@ public class StaminaBarFollower : MonoBehaviour
         }
 
         // Determiner si on doit afficher la barre
-        shouldShow = staminaPercent < showThreshold;
+        shouldShow = true;
     }
 
     void UpdateVisibility()

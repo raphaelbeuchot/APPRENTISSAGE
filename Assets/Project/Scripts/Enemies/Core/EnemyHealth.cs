@@ -49,6 +49,8 @@ public class EnemyHealth : MonoBehaviour
 
     public event Action OnDeath;
     public event Action<float, float> OnHealthChanged;
+    public event System.Action OnTakeDamage;
+
 
     // Health bar
     public EnemyHealthBarUI healthBarUI;
@@ -344,6 +346,7 @@ public class EnemyHealth : MonoBehaviour
         lastImpactForce = damage;
 
         currentHealth -= damage;
+        OnTakeDamage?.Invoke();
         currentHealth = Mathf.Max(0f, currentHealth);
 
         Debug.Log($"{gameObject.name} took {damage} {attackType} damage! Health: {currentHealth}/{stats.maxHealth}");
@@ -379,6 +382,7 @@ public class EnemyHealth : MonoBehaviour
         lastImpactForce = damage;
 
         currentHealth -= damage;
+        OnTakeDamage?.Invoke();
         currentHealth = Mathf.Max(0f, currentHealth);
 
         Debug.Log($"{gameObject.name} took {damage} damage! Health: {currentHealth}/{stats.maxHealth}");
@@ -428,6 +432,7 @@ public class EnemyHealth : MonoBehaviour
         // Appliquer les dégâts
         currentHealth -= stats.sentinelDamageTaken;
         currentHealth = Mathf.Max(0f, currentHealth);
+        OnTakeDamage?.Invoke();
 
         Debug.Log($"{gameObject.name} shot by sentinel! Health: {currentHealth}/{stats.maxHealth}");
         OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
