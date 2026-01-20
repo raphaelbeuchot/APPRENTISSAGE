@@ -16,14 +16,14 @@ MonoBehaviour:
   enemyModel: {fileID: 0}
   skinVariants: []
   attackType: 5
-  maxHealth: 100
+  maxHealth: 50
   limbLossThreshold: 0.5
   obstacleMask:
     serializedVersion: 2
     m_Bits: 8
   walkSpeed: 1
   chaseSpeed: 2
-  rotationSpeed: 30
+  rotationSpeed: 60
   crawlSpeed: 1
   speedReductionPerHealthPercent: 1
   detectionRadius: 6
@@ -45,6 +45,7 @@ MonoBehaviour:
   oneArmMashReduction: 0.5
   fakeGrabRange: 3
   biteTickDamage: 5
+  grabWindupDuration: 0.5
   meleeDamage: 20
   meleeKnockbackForce: 8
   meleeAttackDuration: 0.8
@@ -81,6 +82,7 @@ MonoBehaviour:
   hasWeapon: 0
   weaponPrefab: {fileID: 0}
   sentinelDamageTaken: 25
+  waterSplashSound: {fileID: 0}
   sprayDamageTaken: 0
   broomDamageTaken: 0
   bottleDamageTaken: 0

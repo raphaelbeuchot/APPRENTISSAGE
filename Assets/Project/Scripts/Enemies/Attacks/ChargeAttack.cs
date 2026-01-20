@@ -96,6 +96,13 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
     {
         if (isCharging || isStraightRunning) return;
 
+        // NOUVEAU : Check si en StunBySpray
+        if (enemyAI != null && enemyAI.currentState == EnemyAI_AStar.State.StunBySpray)
+        {
+            Debug.Log("BLINDER cannot charge - still stunned by spray!");
+            return;
+        }
+
         isCharging = true;
 
         if (enemyAI != null) enemyAI.enabled = false;

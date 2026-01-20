@@ -443,12 +443,12 @@ public class MeleeAttackSystem : MonoBehaviour
                     {
                         if (enemyAI_AStar.currentState == EnemyAI_AStar.State.StunBySpray)
                         {
-                            // Déjà stun → extend window
+                            // Déjà stun : extend window
                             enemyHealth.ExtendSprayWindow(enemyHealth.stats.sprayWindowDuration);
                         }
                         else
                         {
-                            // Nouveau stun → start window
+                            // Nouveau stun : start window
                             enemyAI_AStar.currentState = EnemyAI_AStar.State.StunBySpray;
                             enemyHealth.StartSprayWindow(enemyHealth.stats.sprayWindowDuration);
                         }

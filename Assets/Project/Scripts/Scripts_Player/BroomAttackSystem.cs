@@ -238,20 +238,22 @@ public class BroomAttackSystem : MonoBehaviour
                     audioSource.PlayOneShot(stats.broomHitSound);
                 }
 
-                // Knockdown (sauf Blinders)
-                ChargeAttack chargeAttack = hit.GetComponent<ChargeAttack>();
-                if (chargeAttack == null)  // Si pas Blinder
+                // Knockdown (TOUS les zombies, Blinders inclus)
+                EnemyAI_AStar zombieAI_AStar_temp = hit.GetComponent<EnemyAI_AStar>();
+                if (zombieAI_AStar_temp != null)
                 {
-                    // SEULEMENT ICI on désactive le zombie
-                    EnemyAI_AStar zombieAI_AStar_temp = hit.GetComponent<EnemyAI_AStar>();
-                    if (zombieAI_AStar_temp != null)
-                    {
-                        zombieAI_AStar_temp.enabled = false;
-                    }
-
-                    MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
-                    StartCoroutine(KnockdownTarget(hit.gameObject));
+                    zombieAI_AStar_temp.enabled = false;
                 }
+
+                // Désactiver aussi BlinderWanderBehavior si présent
+                BlinderWanderBehavior wanderBehavior = hit.GetComponent<BlinderWanderBehavior>();
+                if (wanderBehavior != null)
+                {
+                    wanderBehavior.StopWandering();
+                }
+
+                MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
+                StartCoroutine(KnockdownTarget(hit.gameObject));
             }
 
             // SWARMS

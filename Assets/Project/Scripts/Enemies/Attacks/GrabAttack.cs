@@ -130,6 +130,32 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         float dist = Vector3.Distance(transform.position, player.transform.position);
         if (dist > stats.attackRange) return;
 
+        // === LINE-OF-SIGHT CHECK ===
+        Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
+        Vector3 targetPoint = player.transform.position + Vector3.up * 0.5f;
+        Vector3 directionToTarget = (targetPoint - rayOrigin).normalized;
+        float distance = Vector3.Distance(rayOrigin, targetPoint);
+
+        // DEBUG VISUEL - GARDE LA SCENE VIEW OUVERTE
+        Debug.DrawRay(rayOrigin, directionToTarget * distance, Color.red, 2f);
+        Debug.Log($"[GRAB DEBUG] Raycast from {rayOrigin} to {targetPoint}, distance={distance}");
+
+        RaycastHit hitInfo;
+        if (Physics.Raycast(rayOrigin,
+                            directionToTarget,
+                            out hitInfo,
+                            distance,
+                            LayerMask.GetMask("Obstacle")))
+        {
+            Debug.Log($"[GRAB] {gameObject.name} HIT OBSTACLE: {hitInfo.collider.name} at distance {hitInfo.distance}");
+            return;
+        }
+        else
+        {
+            Debug.Log($"[GRAB] {gameObject.name} NO OBSTACLE DETECTED - grab allowed");
+        }
+        // === FIN LINE-OF-SIGHT CHECK ===
+
         if (player.grabState == PlayerPhysicsMovement.GrabState.None)
         {
             StartCoroutine(GrabCoroutine());
@@ -163,6 +189,15 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 yield break;
             }
 
+            // NOUVEAU : Check annulation si tir sentinelle
+            if (enemyHealth != null && enemyHealth.IsRecovering())
+            {
+                Debug.Log($"{gameObject.name} WINDUP CANCELLED - hit by sentinel");
+                StopCoroutine(pulseCoroutine);
+                CancelWindup();
+                yield break;
+            }
+
             // Check si player sort de range
             if (player == null)
             {
@@ -175,6 +210,17 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             if (dist > stats.attackRange * 1.2f) // 20% marge
             {
                 Debug.Log($"{gameObject.name} WINDUP CANCELLED - player too far");
+                StopCoroutine(pulseCoroutine);
+                CancelWindup();
+                yield break;
+            }
+
+            // NOUVEAU : Check si player derriere le zombie
+            Vector3 dirToPlayer = (player.transform.position - transform.position).normalized;
+            float angleToPlayer = Vector3.Angle(transform.forward, dirToPlayer);
+            if (angleToPlayer > 90f) // Si player à plus de 90° (derrière)
+            {
+                Debug.Log($"{gameObject.name} WINDUP CANCELLED - player behind zombie");
                 StopCoroutine(pulseCoroutine);
                 CancelWindup();
                 yield break;
@@ -195,6 +241,25 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             float finalDist = Vector3.Distance(transform.position, player.transform.position);
             if (finalDist <= stats.attackRange)
             {
+                // === RE-CHECK LINE-OF-SIGHT AVANT GRAB ===
+                Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
+                Vector3 targetPoint = player.transform.position + Vector3.up * 0.5f;
+                Vector3 directionToTarget = (targetPoint - rayOrigin).normalized;
+                float distance = Vector3.Distance(rayOrigin, targetPoint);
+
+                RaycastHit hitInfo;
+                if (Physics.Raycast(rayOrigin,
+                                    directionToTarget,
+                                    out hitInfo,
+                                    distance,
+                                    LayerMask.GetMask("Obstacle")))
+                {
+                    Debug.Log($"[GRAB] {gameObject.name} WINDUP COMPLETE but player behind obstacle ({hitInfo.collider.name})");
+                    enemy.currentState = EnemyAI_AStar.State.Chasing;
+                    yield break;
+                }
+                // === FIN RE-CHECK ===
+
                 Debug.Log($"{gameObject.name} WINDUP COMPLETE - starting grab");
                 StartCoroutine(GrabCoroutine());
             }
