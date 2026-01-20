@@ -44,8 +44,7 @@ public class RisingPlatform : MonoBehaviour
         // Determiner si on monte ou descend
         switch (currentState)
         {
-            case SentinelCycleManager.GameState.Alert:
-            case SentinelCycleManager.GameState.RedLight:
+            case SentinelCycleManager.GameState.RedLight:  // ENLEVE Alert
                 if (!isRising)
                 {
                     StartRising();

@@ -99,12 +99,22 @@ public class EnemyHealthBarManager : MonoBehaviour
     {
         if (canvas == null || mainCamera == null || playerTransform == null) return;
 
+        // Check global si le rideau existe
+        bool shutterExists = FindObjectOfType<MetalShutter>() != null;
+
         foreach (var kvp in healthBars)
         {
             Transform enemy = kvp.Key;
             EnemyHealthBarUI bar = kvp.Value;
 
             if (enemy == null || bar == null) continue;
+
+            // SI LE RIDEAU EXISTE, NE PAS AFFICHER LES BARRES
+            if (shutterExists)
+            {
+                bar.Hide();
+                continue;
+            }
 
             // Position world space
             Vector3 worldPos = enemy.position + Vector3.up * verticalOffset;
