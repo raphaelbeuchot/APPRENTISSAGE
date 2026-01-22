@@ -302,14 +302,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a5ca08b01527584aba547500a277770, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestClimbDetection
-  detectionRadius: 0.5
+  detectionRadius: 0.45
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 8
   alignmentThreshold: 0
   playerMovement: {fileID: 3882219009807252739}
-  rotationDuration: 0.3
+  rotationDuration: 0.4
+  sphereCastRadius: 0.25
   climbPrompt: {fileID: 0}
+  inputBufferDuration: 0.7
 --- !u!114 &1789847621711801423
 MonoBehaviour:
   m_ObjectHideFlags: 0
