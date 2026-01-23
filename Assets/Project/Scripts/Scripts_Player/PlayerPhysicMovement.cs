@@ -236,13 +236,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
     void FixedUpdate()
     {
         if (stats == null) return;
-
         if (grabState == GrabState.Recoil || grabState == GrabState.Knockdown) return;
-
         if (isFrozen) return;
 
-        HandleMovement();
-        HandleStepClimb();
+        HandleStepClimb();  // AVANT HandleMovement (correction géométrique)
+        HandleMovement();    // APRÈS (mouvement normal)
     }
 
     void HandleInput()
@@ -306,19 +304,17 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void HandleStepClimb()
     {
-        // Ne pas step climb si déjà en animation
-        if (isClimbing || isCrouching || grabState != GrabState.None || moveInput.magnitude < 0.1f)
+        // AJOUTER ICI : check conditions bloquantes
+        if (isClimbing || grabState != GrabState.None || moveInput.magnitude < 0.1f)
             return;
 
         Vector3 moveDirection = GetCameraRelativeMovement(moveInput);
 
-        // Raycast horizontal bas
         Vector3 rayStart = transform.position + Vector3.up * stepRayHeightOffset;
         RaycastHit hitLower;
 
         if (Physics.Raycast(rayStart, moveDirection, out hitLower, stepCheckDistance, LayerMask.GetMask("Ground", "Obstacle")))
         {
-            // Raycast vertical depuis au-dessus
             Vector3 upperRayStart = transform.position + moveDirection * stepCheckDistance + Vector3.up * maxStepHeight;
             RaycastHit hitUpper;
 
@@ -326,90 +322,29 @@ public class PlayerPhysicsMovement : MonoBehaviour
             {
                 float stepHeight = hitUpper.point.y - transform.position.y;
 
-                // Si step grimpable
                 if (stepHeight > 0.05f && stepHeight <= maxStepHeight)
                 {
-                    // Cooldown
-                    if (Time.time - lastStepClimbTime < 0.3f)
-                        return;
+                    // CALCULER VELOCITY Y PROPORTIONNELLE
+                    Vector3 currentVel = rb.linearVelocity;
+                    float horizontalSpeed = new Vector3(currentVel.x, 0f, currentVel.z).magnitude;
 
-                    lastStepClimbTime = Time.time;
+                    float ratio = stepHeight / stepCheckDistance;
+                    float targetVelocityY = stepHeight * 20f;
 
-                    // Lancer l'animation climb
-                    Vector3 targetTop = new Vector3(
-                        transform.position.x,
-                        hitUpper.point.y,
-                        transform.position.z
-                    );
+                    // APPLIQUER VELOCITY Y
+                    Vector3 newVelocity = rb.linearVelocity;
+                    newVelocity.y = targetVelocityY;
+                    rb.linearVelocity = newVelocity;
 
-                    Vector3 targetFinal = targetTop + moveDirection * 0.2f; // Avance 20cm
-
-                    StartCoroutine(StepClimbCoroutine(targetTop, targetFinal, stepHeight));
+                    return; // Step climb actif, Y reste unfreeze
                 }
             }
         }
+
+        
     }
 
-    IEnumerator StepClimbCoroutine(Vector3 topPosition, Vector3 finalPosition, float height)
-    {
-        // BLOQUER TOUS LES INPUTS (comme TestClimbDetection)
-        isClimbing = true;
-        /*canMove = false;*/
-        ResetAllInputs();
 
-        // Sauvegarder constraints
-        RigidbodyConstraints oldConstraints = rb.constraints;
-        rb.constraints = RigidbodyConstraints.FreezeRotation;
-
-        Vector3 startPos = transform.position;
-
-        // PHASE 1 : Montée diagonale rapide (0.1s pour petites marches)
-        float phase1Duration = 0.1f;
-        float elapsed = 0f;
-
-        while (elapsed < phase1Duration)
-        {
-            elapsed += Time.fixedDeltaTime;
-            float t = elapsed / phase1Duration;
-
-            Vector3 currentPos = Vector3.Lerp(startPos, topPosition, t);
-            rb.MovePosition(currentPos);
-
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-
-            yield return new WaitForFixedUpdate();
-        }
-
-        // Force position finale phase 1
-        rb.MovePosition(topPosition);
-
-        // PHASE 2 : Avancée horizontale rapide (0.02s)
-        float phase2Duration = 0.1f;
-        elapsed = 0f;
-
-        while (elapsed < phase2Duration)
-        {
-            elapsed += Time.fixedDeltaTime;
-            float t = elapsed / phase2Duration;
-
-            Vector3 currentPos = Vector3.Lerp(topPosition, finalPosition, t);
-            rb.MovePosition(currentPos);
-
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-
-            yield return new WaitForFixedUpdate();
-        }
-
-        // Force position finale
-        rb.MovePosition(finalPosition);
-
-        // RESTAURER TOUT (comme TestClimbDetection)
-        rb.constraints = oldConstraints;
-        canMove = true;
-        isClimbing = false;
-    }
     public void ApplyKnockdown(Vector3 knockbackDirection, float force, float duration)
     {
         if (grabState == GrabState.Grabbed)
