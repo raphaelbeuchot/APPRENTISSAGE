@@ -15,6 +15,8 @@ public class EnemyAI_AStar : MonoBehaviour
     public EnemyStats stats;
     public PlayerStats playerStats;
 
+   
+
     // Wall staring detection
     private float wallStaringTimer = 0f;
     private float wallStaringThreshold = 5f;
@@ -62,7 +64,7 @@ public class EnemyAI_AStar : MonoBehaviour
     protected float lastAttackTime = 0f;
     protected Vector3 wanderDirection;
     protected float currentSpeed;
-    protected bool isDead = false;
+    public bool isDead = false;
     [HideInInspector] public bool isDetectedBySentinel = false;
 
     private bool isBlinder = false;
@@ -255,7 +257,7 @@ public class EnemyAI_AStar : MonoBehaviour
         }
 
     }
-
+    
     protected IEnumerator DetectionLoop()
     {
         while (true)
@@ -795,6 +797,7 @@ public class EnemyAI_AStar : MonoBehaviour
         Debug.Log($"[EnemyAI] {gameObject.name} OnRotatingPlatform mode disabled, recovering...");
     }
 
+    
     protected virtual void HandleOnRotatingPlatformState()
     {
         // La rotation est geree par RotatingPlatform.Update()

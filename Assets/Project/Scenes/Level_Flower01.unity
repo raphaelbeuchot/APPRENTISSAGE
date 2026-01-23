@@ -2180,6 +2180,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  enemyMaxStepHeight: 0.3
+  enemyStepCheckDistance: 0.3
+  enemyStepRayHeightOffset: 0.05
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isInPitMode: 0
@@ -2187,6 +2190,7 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!114 &56338579
@@ -2915,12 +2919,16 @@ PrefabInstance:
       value: FlowerSmall
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.19
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.04
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10948,6 +10956,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  enemyMaxStepHeight: 0.3
+  enemyStepCheckDistance: 0.3
+  enemyStepRayHeightOffset: 0.05
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isInPitMode: 0
@@ -10955,6 +10966,7 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!114 &301849657
@@ -23929,6 +23941,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: 2c78e39192de1e840bd8c014db42eb28, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  enemyMaxStepHeight: 0.3
+  enemyStepCheckDistance: 0.3
+  enemyStepRayHeightOffset: 0.05
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isInPitMode: 0
@@ -23936,6 +23951,7 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!136 &736933125
@@ -26101,12 +26117,16 @@ PrefabInstance:
       value: FlowerSmall
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 2.55
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.04
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -27302,6 +27322,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  enemyMaxStepHeight: 0.3
+  enemyStepCheckDistance: 0.3
+  enemyStepRayHeightOffset: 0.05
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isInPitMode: 0
@@ -27309,6 +27332,7 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!114 &851951883
@@ -27600,6 +27624,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  enemyMaxStepHeight: 0.3
+  enemyStepCheckDistance: 0.3
+  enemyStepRayHeightOffset: 0.05
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isInPitMode: 0
@@ -27607,6 +27634,7 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!114 &854945109
@@ -36105,12 +36133,16 @@ PrefabInstance:
     m_TransformParent: {fileID: 67702273}
     m_Modifications:
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 2.66
       objectReference: {fileID: 0}
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.04
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -36474,6 +36506,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  enemyMaxStepHeight: 0.3
+  enemyStepCheckDistance: 0.3
+  enemyStepRayHeightOffset: 0.05
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isInPitMode: 0
@@ -36481,6 +36516,7 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!114 &1118344335
@@ -39154,12 +39190,16 @@ PrefabInstance:
     m_TransformParent: {fileID: 67702273}
     m_Modifications:
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.42
       objectReference: {fileID: 0}
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.04
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -45110,12 +45150,16 @@ PrefabInstance:
       value: FlowerSmall (1)
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.59
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.04
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -46219,6 +46263,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: 2c78e39192de1e840bd8c014db42eb28, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  enemyMaxStepHeight: 0.3
+  enemyStepCheckDistance: 0.3
+  enemyStepRayHeightOffset: 0.05
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isInPitMode: 0
@@ -46226,6 +46273,7 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!136 &1429145131
@@ -47066,6 +47114,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 3882219009807252739, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+      propertyPath: stepCheckDistance
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882219009807252739, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+      propertyPath: stepRayHeightOffset
+      value: 0.05
+      objectReference: {fileID: 0}
     - target: {fileID: 8250552759225607286, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -47845,12 +47901,16 @@ PrefabInstance:
     m_TransformParent: {fileID: 67702273}
     m_Modifications:
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.36
       objectReference: {fileID: 0}
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.04
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -50260,12 +50320,16 @@ PrefabInstance:
       value: FlowerSmall
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.62
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.04
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 7087061154403605203, guid: f4350ebf26cb52e478f9dec948811f9a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -52568,6 +52632,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  enemyMaxStepHeight: 0.3
+  enemyStepCheckDistance: 0.3
+  enemyStepRayHeightOffset: 0.05
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isInPitMode: 0
@@ -52575,6 +52642,7 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!114 &1647027116
@@ -55862,6 +55930,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  enemyMaxStepHeight: 0.3
+  enemyStepCheckDistance: 0.3
+  enemyStepRayHeightOffset: 0.05
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isInPitMode: 0
@@ -55869,6 +55940,7 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!114 &1785196388
@@ -61322,6 +61394,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  enemyMaxStepHeight: 0.3
+  enemyStepCheckDistance: 0.3
+  enemyStepRayHeightOffset: 0.05
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isInPitMode: 0
@@ -61329,6 +61404,7 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!114 &1926071804
@@ -62632,12 +62708,16 @@ PrefabInstance:
     m_TransformParent: {fileID: 67702273}
     m_Modifications:
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.37
       objectReference: {fileID: 0}
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.04
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -65973,6 +66053,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
   stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  enemyMaxStepHeight: 0.3
+  enemyStepCheckDistance: 0.3
+  enemyStepRayHeightOffset: 0.05
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isInPitMode: 0
@@ -65980,6 +66063,7 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!114 &2084095814

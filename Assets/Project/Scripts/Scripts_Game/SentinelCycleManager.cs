@@ -73,11 +73,7 @@ public class SentinelCycleManager : MonoBehaviour
     {
         if (!gameStarted || sentinelSettings == null) return;
 
-        // DEBUG SPOT - Tracer l'intensite en temps reel
-        if (currentState == GameState.RedLight && playerSpotLight != null)
-        {
-            Debug.Log($"[SPOT] Frame: {Time.frameCount}, Enabled: {playerSpotLight.enabled}, Intensity: {playerSpotLight.intensity:F2}");
-        }
+        
 
         cycleTimer += Time.deltaTime;
 
