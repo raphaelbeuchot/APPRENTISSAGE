@@ -9,7 +9,6 @@ public class BrightEyesController : MonoBehaviour
 
     [Header("References")]
     public Renderer flameRenderer;
-    public Material flameMaterial;
 
     [Header("Health Bar")]
     public EnemyHealthBarUI healthBarUI;
@@ -20,17 +19,16 @@ public class BrightEyesController : MonoBehaviour
 
     private bool isAwake = false;
     private bool playerInRange = false;
-    private Material flameMaterialInstance;
-    private Color originalEmission;
 
     private float lastDamageTime;
     private float currentHealth;
     private bool isDead = false;
 
-    // Flame system
     private bool isFlameExtinguished = false;
     private bool wasExtinguishedThisCycle = false;
-    private SentinelCycleManager.GameState lastState; // MODIFIÉ
+    private SentinelCycleManager.GameState lastState;
+
+    private Material materialInstance;
 
     void Start()
     {
@@ -46,23 +44,6 @@ public class BrightEyesController : MonoBehaviour
 
         SetupHealthBar();
 
-        if (flameRenderer != null && flameMaterial != null)
-        {
-            flameMaterialInstance = new Material(flameMaterial);
-            flameRenderer.material = flameMaterialInstance;
-            originalEmission = flameMaterialInstance.GetColor("_EmissionColor");
-        }
-
-        // Start eteint
-        if (!isFlameExtinguished)
-        {
-            SetFlameGlow(false);
-        }
-        else
-        {
-            SetFlameExtinguished();
-        }
-
         if (agent != null)
         {
             agent.enabled = stats.canWander;
@@ -73,7 +54,6 @@ public class BrightEyesController : MonoBehaviour
             }
         }
 
-        // MODIFIÉ
         if (gameManager != null && gameManager.sentinelCycleManager != null)
         {
             lastState = gameManager.sentinelCycleManager.currentState;
@@ -104,7 +84,6 @@ public class BrightEyesController : MonoBehaviour
     {
         if (player == null || stats == null || isDead) return;
 
-        // Health bar visibility (6m range)
         if (healthBarUI != null)
         {
             float distToPlayer = Vector3.Distance(transform.position, player.position);
@@ -116,12 +95,10 @@ public class BrightEyesController : MonoBehaviour
                 healthBarUI.Hide();
         }
 
-        // Flame reignite system - MODIFIÉ
         if (gameManager != null && gameManager.sentinelCycleManager != null && stats.canReignite && isFlameExtinguished && wasExtinguishedThisCycle)
         {
             SentinelCycleManager.GameState currentState = gameManager.sentinelCycleManager.currentState;
 
-            // Si on entre dans Alert apres avoir ete eteint
             if (currentState == SentinelCycleManager.GameState.Alert && lastState != SentinelCycleManager.GameState.Alert)
             {
                 ReigniteFlame();
@@ -130,7 +107,6 @@ public class BrightEyesController : MonoBehaviour
             lastState = currentState;
         }
 
-        // Si flamme eteinte, aucune activite
         if (isFlameExtinguished)
         {
             if (isAwake)
@@ -139,6 +115,8 @@ public class BrightEyesController : MonoBehaviour
             }
             return;
         }
+
+        UpdateMaterial();
 
         bool shouldBeAwake = ShouldBeAwake();
 
@@ -159,16 +137,16 @@ public class BrightEyesController : MonoBehaviour
 
     bool ShouldBeAwake()
     {
-        if (gameManager == null || gameManager.sentinelCycleManager == null) return false; // MODIFIÉ
+        if (gameManager == null || gameManager.sentinelCycleManager == null) return false;
         if (isFlameExtinguished) return false;
 
-        SentinelCycleManager.GameState state = gameManager.sentinelCycleManager.currentState; // MODIFIÉ
+        SentinelCycleManager.GameState state = gameManager.sentinelCycleManager.currentState;
 
-        if (state == SentinelCycleManager.GameState.GreenLight && stats.activeInGreenLight) // MODIFIÉ
+        if (state == SentinelCycleManager.GameState.GreenLight && stats.activeInGreenLight)
             return true;
-        if (state == SentinelCycleManager.GameState.Alert && stats.activeInAlert) // MODIFIÉ
+        if (state == SentinelCycleManager.GameState.Alert && stats.activeInAlert)
             return true;
-        if (state == SentinelCycleManager.GameState.RedLight && stats.activeInRedLight) // MODIFIÉ
+        if (state == SentinelCycleManager.GameState.RedLight && stats.activeInRedLight)
             return true;
 
         return false;
@@ -177,14 +155,12 @@ public class BrightEyesController : MonoBehaviour
     void WakeUp()
     {
         isAwake = true;
-        SetFlameGlow(true);
-        Debug.Log($"{gameObject.name} flame LIT");
+        Debug.Log($"{gameObject.name} comportement ACTIF");
     }
 
     void Sleep()
     {
         isAwake = false;
-        SetFlameGlow(false);
         playerInRange = false;
 
         if (player != null)
@@ -194,17 +170,16 @@ public class BrightEyesController : MonoBehaviour
             {
                 movement.RemoveBrightEyesAttraction();
 
-                // Recoil seulement si player proche (range recoil)
                 float distToPlayer = Vector3.Distance(transform.position, player.position);
                 if (distToPlayer <= stats.releaseRecoilRange)
                 {
                     Vector3 recoilDirection = (player.position - transform.position).normalized;
                     movement.ApplyKnockback(recoilDirection * stats.releaseRecoilForce, 0.3f);
-                    Debug.Log($"{gameObject.name} flame SLEEP + recoil player");
+                    Debug.Log($"{gameObject.name} comportement INACTIF + recoil player");
                 }
                 else
                 {
-                    Debug.Log($"{gameObject.name} flame SLEEP (no recoil, player too far)");
+                    Debug.Log($"{gameObject.name} comportement INACTIF");
                 }
             }
         }
@@ -222,6 +197,63 @@ public class BrightEyesController : MonoBehaviour
             {
                 movement.RemoveBrightEyesAttraction();
             }
+        }
+    }
+
+    void UpdateMaterial()
+    {
+        if (gameManager == null || gameManager.sentinelCycleManager == null || flameRenderer == null) return;
+
+        SentinelCycleManager.GameState state = gameManager.sentinelCycleManager.currentState;
+
+        // GreenLight + Release = material vert
+        if (state == SentinelCycleManager.GameState.GreenLight || state == SentinelCycleManager.GameState.Release)
+        {
+            if (materialInstance == null || flameRenderer.sharedMaterial != stats.materialGreenLight)
+            {
+                if (materialInstance != null) Destroy(materialInstance);
+                materialInstance = new Material(stats.materialGreenLight);
+                flameRenderer.material = materialInstance;
+            }
+            flameRenderer.enabled = true;
+        }
+        // Alert = material alert avec pulse
+        else if (state == SentinelCycleManager.GameState.Alert)
+        {
+            if (materialInstance == null || flameRenderer.sharedMaterial != stats.materialAlert)
+            {
+                if (materialInstance != null) Destroy(materialInstance);
+                materialInstance = new Material(stats.materialAlert);
+                flameRenderer.material = materialInstance;
+            }
+            flameRenderer.enabled = true;
+
+            // Pulse emission Alert
+            float pulse = Mathf.PingPong(Time.time * stats.alertPulseSpeed, 1f);
+            float intensity = Mathf.Lerp(stats.alertPulseIntensityMin, stats.alertPulseIntensityMax, pulse);
+            Color baseColor = stats.materialAlert.GetColor("_EmissionColor");
+            materialInstance.SetColor("_EmissionColor", baseColor * intensity);
+        }
+        // RedLight = material rouge avec pulse
+        else if (state == SentinelCycleManager.GameState.RedLight)
+        {
+            if (materialInstance == null || flameRenderer.sharedMaterial != stats.materialRedLight)
+            {
+                if (materialInstance != null) Destroy(materialInstance);
+                materialInstance = new Material(stats.materialRedLight);
+                flameRenderer.material = materialInstance;
+            }
+            flameRenderer.enabled = true;
+
+            // Pulse emission RedLight
+            float pulse = Mathf.PingPong(Time.time * stats.redlightPulseSpeed, 1f);
+            float intensity = Mathf.Lerp(stats.redlightPulseIntensityMin, stats.redlightPulseIntensityMax, pulse);
+            Color baseColor = stats.materialRedLight.GetColor("_EmissionColor");
+            materialInstance.SetColor("_EmissionColor", baseColor * intensity);
+        }
+        else
+        {
+            flameRenderer.enabled = true;
         }
     }
 
@@ -279,7 +311,6 @@ public class BrightEyesController : MonoBehaviour
                 {
                     playerHealth.TakeDamage(stats.contactDamage);
                     lastDamageTime = Time.time;
-                    Debug.Log($"{gameObject.name} damaged player for {stats.contactDamage}");
                 }
             }
         }
@@ -303,34 +334,6 @@ public class BrightEyesController : MonoBehaviour
         }
     }
 
-    void SetFlameGlow(bool glow)
-    {
-        if (flameMaterialInstance == null) return;
-
-        if (glow)
-        {
-            Color emissionColor = stats.flameColorLit * stats.flameIntensity;
-            flameMaterialInstance.SetColor("_EmissionColor", emissionColor);
-            flameMaterialInstance.EnableKeyword("_EMISSION");
-        }
-        else
-        {
-            flameMaterialInstance.SetColor("_EmissionColor", originalEmission);
-            flameMaterialInstance.DisableKeyword("_EMISSION");
-        }
-    }
-
-    void SetFlameExtinguished()
-    {
-        if (flameMaterialInstance == null) return;
-
-        Color darkColor = stats.flameColorExtinguished * 0.1f;
-        flameMaterialInstance.SetColor("_EmissionColor", darkColor);
-        flameMaterialInstance.DisableKeyword("_EMISSION");
-    }
-
-    // === FLAME SYSTEM ===
-
     public void ExtinguishFlame()
     {
         if (isFlameExtinguished) return;
@@ -339,7 +342,6 @@ public class BrightEyesController : MonoBehaviour
         wasExtinguishedThisCycle = true;
 
         ForceDeactivate();
-        SetFlameExtinguished();
 
         Debug.Log($"{gameObject.name} flame EXTINGUISHED!");
     }
@@ -354,8 +356,6 @@ public class BrightEyesController : MonoBehaviour
         Debug.Log($"{gameObject.name} flame REIGNITED!");
     }
 
-    // === HEALTH SYSTEM ===
-
     public void TakeDamage(float damage)
     {
         if (isDead) return;
@@ -367,8 +367,6 @@ public class BrightEyesController : MonoBehaviour
         {
             healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
         }
-
-        Debug.Log($"{gameObject.name} took {damage} damage, health: {currentHealth}/{stats.maxHealth}");
 
         if (currentHealth <= 0f)
         {
@@ -396,14 +394,12 @@ public class BrightEyesController : MonoBehaviour
             }
         }
 
-        Debug.Log($"{gameObject.name} died!");
         Destroy(gameObject);
     }
 
     public bool IsAlive() => !isDead && currentHealth > 0f;
     public bool IsAwake() => isAwake;
     public bool IsFlameExtinguished() => isFlameExtinguished;
-    public EnemyHealthBarUI GetHealthBarUI() => healthBarUI;
 
     IEnumerator WanderRoutine()
     {
@@ -427,6 +423,11 @@ public class BrightEyesController : MonoBehaviour
         if (playerInRange && player != null)
         {
             RemoveAttractionFromPlayer();
+        }
+
+        if (materialInstance != null)
+        {
+            Destroy(materialInstance);
         }
     }
 }

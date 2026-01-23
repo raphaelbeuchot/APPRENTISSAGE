@@ -39,6 +39,7 @@ public class SentinelCycleManager : MonoBehaviour
     private float aerialLightOriginalIntensity;
 
     private Coroutine alertCoroutine;
+    public float alertDuration;
 
     void Start()
     {
@@ -364,6 +365,7 @@ public class SentinelCycleManager : MonoBehaviour
         PlaySoundAtPitch(sentinelSettings.alertSound, pitch);
 
         float soundDuration = sentinelSettings.alertSound.length / pitch;
+        alertDuration = soundDuration; // NOUVEAU - stocke pour BrightEyes
 
         if (marqueeLightController != null)
         {

@@ -28,8 +28,14 @@ MonoBehaviour:
   contactDamageRange: 1
   releaseRecoilForce: 10
   releaseRecoilRange: 1
-  canReignite: 1
+  canReignite: 0
   startsExtinguished: 0
-  flameColorLit: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  flameColorExtinguished: {r: 0, g: 0, b: 0, a: 1}
-  flameIntensity: 2
+  materialGreenLight: {fileID: 2100000, guid: 9ddd8791b49c5b24f97ff131292af37d, type: 2}
+  materialAlert: {fileID: 2100000, guid: 7316a41f524558a4fa4a6f9679af5afe, type: 2}
+  materialRedLight: {fileID: 2100000, guid: 865fe8506deb1554e98dac84db2b7882, type: 2}
+  alertPulseIntensityMin: 1
+  alertPulseIntensityMax: 3
+  alertPulseSpeed: 4
+  redlightPulseIntensityMin: 1
+  redlightPulseIntensityMax: 3
+  redlightPulseSpeed: 4

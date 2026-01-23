@@ -1,5 +1,4 @@
 using UnityEngine;
-
 [CreateAssetMenu(fileName = "BrightEyesStats", menuName = "Enemy/Bright Eyes Stats")]
 public class BrightEyesStats : ScriptableObject
 {
@@ -33,8 +32,20 @@ public class BrightEyesStats : ScriptableObject
     public bool canReignite = false;
     public bool startsExtinguished = false;
 
-    [Header("Visual")]
-    public Color flameColorLit = Color.yellow;
-    public Color flameColorExtinguished = Color.black;
-    public float flameIntensity = 2f;
+    [Header("Flame Materials")]
+    public Material materialGreenLight;
+    public Material materialAlert;
+    public Material materialRedLight;
+
+    [Header("Alert Pulse")]
+    public float alertPulseIntensityMin = 1.0f;
+    public float alertPulseIntensityMax = 3.0f;
+    public float alertPulseSpeed = 2.0f;
+
+    [Header("RedLight Pulse")]
+    public float redlightPulseIntensityMin = 9.0f;
+    public float redlightPulseIntensityMax = 10.0f;
+    public float redlightPulseSpeed = 1.0f;
+
+    
 }
