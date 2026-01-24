@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class CameraPanningExtension : CinemachineExtension
 {
+    [Header("Camera active sans pupitre")]
+
+    [SerializeField] private bool startWithFreeCameraEnabled = false;
+
     [Header("Vertical Panning")]
     [SerializeField] private float verticalOffset = 5f;
     [SerializeField] private float verticalPanSpeed = 10f;
@@ -58,10 +62,21 @@ public class CameraPanningExtension : CinemachineExtension
         // Reset tous les offsets au demarrage
         currentPanOffset = Vector3.zero;
         currentLateralOffset = Vector3.zero;
-        isHighPosition = false;
-        isLowView = false;
 
-        Debug.Log("[CameraPanning] START - isHighPosition: false, isLowView: false");
+        // NOUVEAU : Activer la camera libre si demandé
+        if (startWithFreeCameraEnabled)
+        {
+            isHighPosition = true;
+            isLowView = false;
+            Debug.Log("[CameraPanning] Camera libre activée dès le départ (niveau tuto)");
+        }
+        else
+        {
+            isHighPosition = false;
+            isLowView = false;
+        }
+
+        Debug.Log($"[CameraPanning] START - isHighPosition: {isHighPosition}, isLowView: {isLowView}");
     }
 
     public void OnPlayerExitStartZone()
