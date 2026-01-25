@@ -9,7 +9,7 @@ public class TestClimbDetection : MonoBehaviour
     [SerializeField] private PlayerPhysicsMovement playerMovement;
     [SerializeField] private float rotationDuration = 0.5f;
     [Header("UI")]
-    public ClimbPromptUI climbPrompt;
+    public TutorialPromptUI climbPrompt;
     [Header("Input Buffer")]
     [SerializeField] private float inputBufferDuration = 0.7f;
     private Vector3 bufferedInputDirection;

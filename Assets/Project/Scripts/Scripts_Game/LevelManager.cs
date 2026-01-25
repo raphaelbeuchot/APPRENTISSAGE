@@ -24,6 +24,11 @@ public class LevelManager : MonoBehaviour
     public float delayBeforeNextLevel = 3f;
     public float delayBeforeRestart = 2f;
 
+    [Header("Level End")]
+    [SerializeField] private Collider levelEndTrigger; // Pour niveau tuto sans Victory UI
+    [SerializeField] private bool useLevelEndTrigger = false; // Active/désactive ce système
+    [SerializeField] private bool isTutorialLevel = false;
+
     private bool levelCompleted = false;
     private bool gameOver = false;
 
@@ -191,8 +196,13 @@ public class LevelManager : MonoBehaviour
     public void RestartLevel()
     {
         Debug.Log("Redémarrage du niveau...");
-        // NOUVEAU : Flag pour auto-start le countdown après reload
-        PlayerPrefs.SetInt("AutoStartCountdown", 1);
+
+        // NOUVEAU : Ne set le PlayerPrefs que si ce n'est PAS un niveau tuto
+        if (!isTutorialLevel)
+        {
+            PlayerPrefs.SetInt("AutoStartCountdown", 1);
+        }
+
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
@@ -204,13 +214,32 @@ public class LevelManager : MonoBehaviour
     {
         Debug.Log("Quitter le jeu...");
 
+
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
         Application.Quit();
 #endif
     }
+    /// <summary>
+    /// Appelée quand le player touche le levelEndTrigger (passage direct sans Victory UI)
+    /// </summary>
+    public void OnPlayerReachedLevelEnd(GameObject playerObject)
+    {
+        if (levelCompleted || gameOver) return;
 
+        levelCompleted = true;
+        Debug.Log("=== NIVEAU COMPLETÉ (Level End Trigger) ===");
+
+        // Désactiver le mouvement du joueur
+        if (player != null)
+        {
+            player.enabled = false;
+        }
+
+        // Chargement direct du niveau suivant sans Victory UI
+        Invoke(nameof(LoadNextLevel), 0.5f);
+    }
     // ============================================
     // CLEANUP
     // ============================================

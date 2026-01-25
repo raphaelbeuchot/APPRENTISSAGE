@@ -2,7 +2,7 @@ using UnityEngine;
 using TMPro;
 using System.Collections;
 
-public class ClimbPromptUI : MonoBehaviour
+public class TutorialPromptUI : MonoBehaviour
 {
     [Header("UI Elements")]
     [SerializeField] private TextMeshProUGUI promptText;
@@ -16,7 +16,6 @@ public class ClimbPromptUI : MonoBehaviour
 
     void Start()
     {
-        // Cacher au démarrage
         if (canvasGroup != null)
         {
             canvasGroup.alpha = 0f;
@@ -26,7 +25,8 @@ public class ClimbPromptUI : MonoBehaviour
 
     public void Show()
     {
-        if (isVisible) return;
+        // ENLEVE LE GUARD pour permettre changement de message
+        // if (isVisible) return;   SUPPRIME
 
         isVisible = true;
 
@@ -46,6 +46,14 @@ public class ClimbPromptUI : MonoBehaviour
             StopCoroutine(fadeCoroutine);
 
         fadeCoroutine = StartCoroutine(FadeCoroutine(0f));
+    }
+
+    public void SetMessage(string message)
+    {
+        if (promptText != null)
+        {
+            promptText.text = message;
+        }
     }
 
     IEnumerator FadeCoroutine(float targetAlpha)
