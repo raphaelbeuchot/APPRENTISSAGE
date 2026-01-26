@@ -11,4 +11,9 @@ public class CameraConfiner : MonoBehaviour
             transform.position = boundingVolume.ClosestPoint(transform.position);
         }
     }
+    public void SetBoundingVolume(Collider newVolume)
+    {
+        boundingVolume = newVolume;
+        Debug.Log("[CameraConfiner] Bounding volume mis a jour");
+    }
 }
