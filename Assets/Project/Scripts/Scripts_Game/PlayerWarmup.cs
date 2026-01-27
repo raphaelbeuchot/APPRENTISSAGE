@@ -48,10 +48,7 @@ public class PlayerWarmup : MonoBehaviour
             {
                 meleeSystem.stats.sprayFrontSound.LoadAudioData();
             }
-            if (meleeSystem.stats.sprayMissSound != null)
-            {
-                meleeSystem.stats.sprayMissSound.LoadAudioData();
-            }
+            
             Debug.Log("[WARMUP] AudioClips precharges");
         }
 
