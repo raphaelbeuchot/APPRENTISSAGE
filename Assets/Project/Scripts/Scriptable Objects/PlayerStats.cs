@@ -58,15 +58,10 @@ public class PlayerStats : ScriptableObject
     public float attackRange = 1.2f;
     [Tooltip("Force du knockback")]
     public float knockbackForce = 5f;
-    [Tooltip("Force du knockback backstab (coup de culot)")]
-    public float backstabKnockbackForce = 15f;
     [Tooltip("Duree de l'animation d'attaque (en secondes)")]
     public float attackDuration = 0.5f;
     [Tooltip("Cooldown entre deux attaques (en secondes)")]
     public float attackCooldown = 0.5f;
-
-    [Header("Backstab")]
-    public float backstabConeAngle = 60f; // Cone arrière (en degrés)
 
     [Header("SPRAY SYSTEM")]
     [Tooltip("Munitions max du spray")]
@@ -79,12 +74,9 @@ public class PlayerStats : ScriptableObject
     public int totalSprayAmmoStart = 40;
     [Tooltip("Particules effet spray")]
     public GameObject sprayVFX;
-    [Tooltip("Son du spray pshit de face aware")]
+    [Tooltip("Son du spray pshit")]
     public AudioClip sprayFrontSound;
-    [Tooltip("Son du spray pshit de dos non-aware")]
-    public AudioClip sprayBackSound;
-    [Tooltip("Son du spray a vide")]
-    public AudioClip sprayMissSound;
+    
 
     [Header("BOTTLE THROW")]
     [Tooltip("Force de lancer de la bouteille")]
@@ -98,7 +90,7 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Son de l'impact blong")]
     public AudioClip bottleImpactSound;
 
-    
+
 
     [Header("BROOM SYSTEM")]
     [Tooltip("Portee de l'attaque balai")]
@@ -175,7 +167,7 @@ public class PlayerStats : ScriptableObject
         return moveSpeed * (1f - speedReduction);
     }
 
-    
+
 
     /// <summary>
     /// Calcule le knockback reel en fonction du multiplicateur de force.

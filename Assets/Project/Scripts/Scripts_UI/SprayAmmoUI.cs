@@ -23,7 +23,7 @@ public class SprayAmmoUI : MonoBehaviour
 
     private Image[] sprayIcons;
     private int maxAmmo;
-    private int totalShots = 50; // 5 bouteilles x 10
+    private int maxTotalAmmo;
 
     void Start()
     {
@@ -36,6 +36,16 @@ public class SprayAmmoUI : MonoBehaviour
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        // Recuperer maxTotalAmmo depuis PlayerStats
+        if (meleeSystem != null && meleeSystem.stats != null)
+        {
+            maxTotalAmmo = meleeSystem.stats.totalSprayAmmoStart;
+        }
+        else
+        {
+            maxTotalAmmo = 50; // Fallback si pas de stats
         }
 
         InitializeIcons();
@@ -106,7 +116,8 @@ public class SprayAmmoUI : MonoBehaviour
         // Total disponible = réserve + ce qu'il y a dans le chargeur
         int totalAvailable = totalReserve + currentInMag;
 
-        ammoCountText.text = totalAvailable + "/50";
+        // Utiliser maxTotalAmmo au lieu de "50" hardcodé
+        ammoCountText.text = totalAvailable + "/" + maxTotalAmmo;
     }
 
     public void PlayReloadSound()

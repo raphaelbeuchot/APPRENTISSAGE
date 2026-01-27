@@ -90,7 +90,7 @@ public class EnemyStats : ScriptableObject
     public float grabDuration = 4f;
     [Tooltip("Dégâts de la morsure")]
     public float biteDamage = 15f;
-        [Tooltip("Réduction de mashes avec 1 seul bras")]
+    [Tooltip("Réduction de mashes avec 1 seul bras")]
     [Range(0f, 1f)]
     public float oneArmMashReduction = 0.5f;
     [Tooltip("Rayon pour fake grab autour du joueur")]
@@ -152,14 +152,12 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Durée du cooldown après bourrade")]
     public float bourradeCooldown = 2f;
 
-    [Header("Spray Stun System")]
-    public float cumulativeStunPerSpray = 0.3f;
-    public float stunSprayDuration = 0.5f;
-    public float sprayWindowDuration = 0.7f; // Durée fenêtre pour cumuler sprays
+    [Header("SPRAY STUN SYSTEM")]
+    [Tooltip("Durée de stun par spray (secondes)")]
+    public float sprayStunDuration = 2.5f;
 
-    [Tooltip("Durée d'immobilisation après backstab (secondes)")]
-    public float backstabStunDuration = 0.8f;
-   
+    [Tooltip("Durée du knockback (secondes)")]
+    public float knockbackStunDuration = 0.5f;
 
 
     [Header("SYSTÈME DE MEMBRES")]

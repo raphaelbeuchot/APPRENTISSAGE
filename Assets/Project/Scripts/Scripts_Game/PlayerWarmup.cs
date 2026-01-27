@@ -44,9 +44,9 @@ public class PlayerWarmup : MonoBehaviour
             {
                 meleeSystem.stats.sprayFrontSound.LoadAudioData();
             }
-            if (meleeSystem.stats.sprayBackSound != null)
+            if (meleeSystem.stats.sprayFrontSound != null)
             {
-                meleeSystem.stats.sprayBackSound.LoadAudioData();
+                meleeSystem.stats.sprayFrontSound.LoadAudioData();
             }
             if (meleeSystem.stats.sprayMissSound != null)
             {

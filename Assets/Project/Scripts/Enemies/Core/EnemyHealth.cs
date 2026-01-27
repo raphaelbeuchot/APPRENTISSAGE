@@ -42,8 +42,6 @@ public class EnemyHealth : MonoBehaviour
 
     private StunTimerUI stunTimerUI;
     private float maxTheoreticalStun = 0f;
-    private float totalStunRemaining = 0f;
-
 
     private Rigidbody rb;
 
@@ -56,12 +54,8 @@ public class EnemyHealth : MonoBehaviour
     public EnemyHealthBarUI healthBarUI;
     private EnemyHealthBarManager healthBarManager;
 
-    // NOUVEAU : Spray stun system 2 phases
-    private bool isInSprayWindow = false;
-    private float sprayWindowTimer = 0f;
-    private int sprayCount = 0;
-    private float finalStunTimer = 0f;
-    private float cumulativeStunPerSpray;
+    // SIMPLIFIÉ : Spray stun simple
+    private float sprayStunTimer = 0f;
 
     void Awake()
     {
@@ -83,8 +77,7 @@ public class EnemyHealth : MonoBehaviour
         }
 
         currentHealth = stats.maxHealth;
-        cumulativeStunPerSpray = stats.cumulativeStunPerSpray;
-        maxTheoreticalStun = 10f * cumulativeStunPerSpray;
+        maxTheoreticalStun = stats.sprayStunDuration;
         SetupDeathEffect();
         SetupHealthBar();
     }
@@ -142,31 +135,15 @@ public class EnemyHealth : MonoBehaviour
     {
         if (isDead) return;
 
-        // NOUVEAU : Systeme spray 2 phases
-        if (isInSprayWindow)
+        // SIMPLIFIÉ : Timer de stun spray
+        if (sprayStunTimer > 0f)
         {
-            // Phase 1 : Fenetre de spray
-            sprayWindowTimer -= Time.deltaTime;
+            sprayStunTimer -= Time.deltaTime;
 
-            if (sprayWindowTimer <= 0f)
+            if (sprayStunTimer <= 0f)
             {
-                // Timer expire : passer en phase 2 (stun final)
-                sprayWindowTimer = 0f;
-                isInSprayWindow = false;
-                finalStunTimer = sprayCount * cumulativeStunPerSpray;
-
-                Debug.Log($"{gameObject.name} fenetre expiree - {sprayCount} sprays recus - Stun final {finalStunTimer}s");
-            }
-        }
-        else if (finalStunTimer > 0f)
-        {
-            // Phase 2 : Stun final
-            finalStunTimer -= Time.deltaTime;
-
-            if (finalStunTimer <= 0f)
-            {
-                finalStunTimer = 0f;
-                Debug.Log($"{gameObject.name} stun final termine");
+                sprayStunTimer = 0f;
+                Debug.Log($"{gameObject.name} spray stun ended");
             }
         }
 
@@ -183,13 +160,11 @@ public class EnemyHealth : MonoBehaviour
         }
 
         // Update UI timer
-        float stunToDisplay = isInSprayWindow ? (sprayCount * cumulativeStunPerSpray) : finalStunTimer;
-
         if (stunTimerUI != null)
         {
-            if (stunToDisplay > 0f)
+            if (sprayStunTimer > 0f)
             {
-                stunTimerUI.UpdateTimer(stunToDisplay);
+                stunTimerUI.UpdateTimer(sprayStunTimer);
                 if (!stunTimerUI.gameObject.activeSelf)
                     stunTimerUI.Show();
             }
@@ -198,7 +173,7 @@ public class EnemyHealth : MonoBehaviour
                 stunTimerUI.Hide();
             }
         }
-        else if (stunToDisplay > 0f && StunTimerManager.Instance != null)
+        else if (sprayStunTimer > 0f && StunTimerManager.Instance != null)
         {
             GameObject timerObj = Instantiate(StunTimerManager.Instance.stunTimerPrefab, StunTimerManager.Instance.canvas.transform);
             stunTimerUI = timerObj.GetComponent<StunTimerUI>();
@@ -237,20 +212,7 @@ public class EnemyHealth : MonoBehaviour
             shouldBounce = true;
         }
 
-        /*// 2. Check Blinder
-        ChargeAttack chargeAttack = GetComponent<ChargeAttack>();
-        if (chargeAttack != null)
-        {
-            Debug.Log($"[ENEMYHEALTH] ChargeAttack found, isStraightRunning = {chargeAttack.isStraightRunning}");
-            if (chargeAttack.isStraightRunning)
-                shouldBounce = true;
-        }
-        else
-        {
-            Debug.Log("[ENEMYHEALTH] No ChargeAttack component");
-        }*/
-
-        // 3. Check bourrade
+        // 2. Check bourrade
         GrabAttack grabAttack = GetComponent<GrabAttack>();
         if (grabAttack != null && grabAttack.isInBourradeDuration)
         {
@@ -400,8 +362,6 @@ public class EnemyHealth : MonoBehaviour
         }
     }
 
-    // Démarre un stun spray (Chase mode - pas de cumul)
-
     public void TakeSentinelShot(bool isHeadshot = false)
     {
         if (isDead) return;
@@ -534,13 +494,20 @@ public class EnemyHealth : MonoBehaviour
 
     void Die()
     {
-        
-            if (isDead) return;
 
-            isDead = true;
-            Debug.Log(string.Format("{0} is dead!", gameObject.name));
+        if (isDead) return;
 
-            OnDeath?.Invoke();
+        isDead = true;
+        Debug.Log(string.Format("{0} is dead!", gameObject.name));
+
+        OnDeath?.Invoke();
+
+        // AJOUTER ICI : Désinscrire le timer UI
+        if (stunTimerUI != null && StunTimerManager.Instance != null)
+        {
+            StunTimerManager.Instance.UnregisterEnemy(transform);
+            stunTimerUI = null;
+        }
 
         // Notifier GameManager du kill (sauf si BrightEyes)
         BrightEyesController brightEyes = GetComponent<BrightEyesController>();
@@ -555,11 +522,11 @@ public class EnemyHealth : MonoBehaviour
 
         // NOUVEAU : Forcer la barre visible meme apres mort si en pit
         EnemyPitInteractable pitInt = GetComponent<EnemyPitInteractable>();
-            if (pitInt != null && pitInt.isFallingInPit && healthBarUI != null)
-            {
-                healthBarUI.Show();
-                Debug.Log(string.Format("[EnemyHealth] Forced healthbar show for {0} after pit death", gameObject.name));
-            }
+        if (pitInt != null && pitInt.isFallingInPit && healthBarUI != null)
+        {
+            healthBarUI.Show();
+            Debug.Log(string.Format("[EnemyHealth] Forced healthbar show for {0} after pit death", gameObject.name));
+        }
 
         /// Desinscrire la barre de vie (SAUF si dans deep empty pit)
         bool isInDeepPit = pitInt != null && pitInt.shouldIgnoreHealthbarDistance;
@@ -587,7 +554,7 @@ public class EnemyHealth : MonoBehaviour
             aiPath.canMove = false;
             aiPath.enabled = false;
         }
-        
+
         // SI MORT PAR PIT: Pas de ragdoll, comportement selon type de pit
         if (deathByPit)
         {
@@ -608,10 +575,10 @@ public class EnemyHealth : MonoBehaviour
                         {
                             AudioSource.PlayClipAtPoint(crowdLaughterSound, Camera.main.transform.position);
                         }
-                        
+
                     }
                 }
-                
+
             }
 
             Rigidbody rb = GetComponent<Rigidbody>();
@@ -629,7 +596,7 @@ public class EnemyHealth : MonoBehaviour
             return;
         }
 
-        
+
 
         // SINON: Mort normale avec ragdoll
         Debug.Log($"========== {gameObject.name} DIE() - MORT NORMALE ==========");
@@ -733,48 +700,29 @@ public class EnemyHealth : MonoBehaviour
         return currentHealth > 0f;
     }
 
-    public void StartSprayWindow(float windowDuration)
+    // SIMPLIFIÉ : Démarrer un stun spray simple
+    public void ApplySprayStun(float duration)
     {
-        isInSprayWindow = true;
-        sprayWindowTimer = windowDuration;
-        sprayCount = 1;
-        finalStunTimer = 0f;
-
-        totalStunRemaining += cumulativeStunPerSpray;  // AJOUTER 0.3s
-
-        Debug.Log($"{gameObject.name} START spray window - count=1, window={windowDuration}s");
+        sprayStunTimer = duration;
+        Debug.Log($"{gameObject.name} spray stun applied - {duration}s");
     }
 
-    public void ExtendSprayWindow(float windowDuration)
-    {
-        if (isInSprayWindow)
-        {
-            sprayWindowTimer = windowDuration;
-            sprayCount++;
-
-            totalStunRemaining += cumulativeStunPerSpray;  // AJOUTER encore 0.3s
-
-            Debug.Log($"{gameObject.name} EXTEND spray window - count={sprayCount}, window reset to {windowDuration}s");
-        }
-        else
-        {
-            StartSprayWindow(windowDuration);
-        }
-    }
     public bool IsRecovering() => isRecovering;
     public float GetCurrentHealth() => currentHealth;
     public float GetMaxHealth() => stats.maxHealth;
     public float GetHealthPercentage() => currentHealth / stats.maxHealth;
 
+    // SIMPLIFIÉ : Retourner le timer de stun actuel
     public float GetSprayStunTimeRemaining()
     {
-        if (isInSprayWindow)
-            return sprayWindowTimer;
-        else
-            return finalStunTimer;
+        return sprayStunTimer;
     }
 
-    
+    public bool IsStunnedBySpray()
+    {
+        return sprayStunTimer > 0f;
+    }
+
     public int GetArmCount() => 2;
 
     private void OnDestroy()

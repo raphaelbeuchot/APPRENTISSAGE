@@ -54,16 +54,15 @@ public class MeleeAttackSystem : MonoBehaviour
         movement = GetComponent<PlayerPhysicsMovement>();
         lockSystem = GetComponent<TargetLockSystem>();
 
-
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
 
         originalScale = transform.localScale;
 
-        // Initialize spray ammo
-        currentSprayAmmo = stats.maxSprayAmmo;  // Chargeur plein
-        totalSprayAmmo = stats.totalSprayAmmoStart;
+        // CORRIGE : Reserve = Total - Chargeur initial
+        currentSprayAmmo = stats.maxSprayAmmo;
+        totalSprayAmmo = stats.totalSprayAmmoStart - stats.maxSprayAmmo;
     }
 
     void OnDisable()
@@ -196,14 +195,7 @@ public class MeleeAttackSystem : MonoBehaviour
         {
             return false;
         }
-        /*
-        // CHECK STAMINA
-        if (movement != null && movement.GetCurrentStamina() < stats.meleeStaminaCost)
-        {
-            Debug.Log("Cannot attack: not enough stamina!");
-            return false;
-        }
-        */
+
         if (Time.time - lastAttackTime < stats.attackCooldown)
         {
             return false;
@@ -236,14 +228,6 @@ public class MeleeAttackSystem : MonoBehaviour
 
         try
         {
-            /*// CONSOMMER LA STAMINA
-            if (movement != null)
-            {
-                float currentStamina = movement.GetCurrentStamina();
-                movement.UpdateStamina(currentStamina - stats.meleeStaminaCost);
-            }
-            */
-
             lastAttackTime = Time.time;
             StartCoroutine(PulseScale());
             yield return new WaitForSeconds(0.1f);
@@ -289,7 +273,10 @@ public class MeleeAttackSystem : MonoBehaviour
 
     void DetectAndHitTargets()
     {
-        Debug.Log("MELEE ATTACK!");
+        Debug.Log("SPRAY ATTACK!");
+
+        // CONSOMMER LA MUNITION DIRECTEMENT (peu importe si on touche ou pas)
+        currentSprayAmmo--;
 
         Collider[] hits = Physics.OverlapSphere(
             transform.position + Vector3.up * 1f,
@@ -298,8 +285,6 @@ public class MeleeAttackSystem : MonoBehaviour
         );
 
         bool hitSomething = false;
-        bool sprayUsed = false;
-        bool wasFrontAttack = false;
 
         foreach (Collider hit in hits)
         {
@@ -310,18 +295,15 @@ public class MeleeAttackSystem : MonoBehaviour
 
             float angleToTarget = Vector3.Angle(transform.forward, directionToTarget);
 
-            // MODIFIÉ : Autoriser spray cone (140°) OU backstab cone (60° derrière)
-            bool inSprayCone = angleToTarget <= stats.meleeConeAngle / 2f;
-            bool inBackstabCone = angleToTarget <= 30f; // 60° cone = ±30°
-
-            if (!inSprayCone && !inBackstabCone)
+            // Cone de spray
+            if (angleToTarget > stats.meleeConeAngle / 2f)
             {
                 continue;
             }
 
-            // ========== LINE-OF-SIGHT CHECK ==========
-            Vector3 rayOrigin = transform.position + Vector3.up * 0.5f; // Depuis ton torse
-            Vector3 targetPoint = hit.bounds.center; // Vers le centre du collider zombie
+            // LINE-OF-SIGHT CHECK
+            Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
+            Vector3 targetPoint = hit.bounds.center;
             Vector3 directionToTarget3D = (targetPoint - rayOrigin).normalized;
             float distance = Vector3.Distance(rayOrigin, targetPoint);
 
@@ -332,11 +314,9 @@ public class MeleeAttackSystem : MonoBehaviour
                                 distance,
                                 LayerMask.GetMask("Obstacle")))
             {
-                Debug.Log($"[SPRAY] {hit.name} est derrière un obstacle, ignoré");
+                Debug.Log($"[SPRAY] {hit.name} is behind obstacle, ignored");
                 continue;
             }
-            // ========== FIN LINE-OF-SIGHT CHECK ==========
-
 
             // GESTION ZOMBIES
             EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
@@ -347,134 +327,43 @@ public class MeleeAttackSystem : MonoBehaviour
                 EnemyAI_AStar enemyAI_AStar = hit.GetComponent<EnemyAI_AStar>();
                 Rigidbody targetRb = hit.GetComponent<Rigidbody>();
 
-                // === CHECK BACKSTAB CONDITIONS ===
-                float distanceToEnemy = Vector3.Distance(transform.position, hit.transform.position);
-                bool isBackstab = false;
-
-                if (distanceToEnemy <= 1f) // Range backstab 1m
+                // KNOCKBACK
+                if (targetRb != null)
                 {
-                    // Check : Joueur dans les 60° du DOS de l'ennemi
-                    Vector3 dirPlayerFromEnemy = (transform.position - hit.transform.position).normalized;
-                    dirPlayerFromEnemy.y = 0f;
-                    float angleFromEnemyBack = Vector3.Angle(-hit.transform.forward, dirPlayerFromEnemy);
-
-                    if (angleFromEnemyBack <= stats.backstabConeAngle / 2f)
-                    {
-                        isBackstab = true;
-                    }
+                    Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
+                    knockbackDir.y = 0;
+                    targetRb.AddForce(knockbackDir * stats.knockbackForce, ForceMode.VelocityChange);
+                    enemyHealth.SetKnockbackState(enemyHealth.stats.knockbackStunDuration);
                 }
 
-                if (isBackstab)
+                // STUN SIMPLE
+                if (enemyAI_AStar != null)
                 {
-                    // === BACKSTAB ===
-                    // PAS de consommation munition
-                    wasFrontAttack = false;
-
-                    // Knockback
-                    if (targetRb != null)
-                    {
-                        Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
-                        knockbackDir.y = 0;
-                        targetRb.AddForce(knockbackDir * stats.backstabKnockbackForce, ForceMode.Impulse);
-                        // ACTIVER LE FLAG KNOCKBACK
-                        enemyHealth.SetKnockbackState(enemyHealth.stats.backstabStunDuration);
-                    }
-
-                    // Désactiver AI temporairement
-                    if (enemyAI_AStar != null)
-                    {
-                        enemyAI_AStar.enabled = false;
-                        StartCoroutine(ReenableAIAfterBackstab(enemyAI_AStar, enemyHealth.stats.backstabStunDuration));
-                    }
-
-                    // Dégâts
-                    enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Spray);
-
-                    // ANNULER WINDUP GRAB SI EN COURS
-                    GrabAttack grab = enemyHealth.GetComponent<GrabAttack>();
-                    if (grab != null && grab.isInWindup)
-                    {
-                        grab.CancelWindup();
-                        Debug.Log($"[SPRAY] Cancelled {enemyHealth.gameObject.name} grab windup");
-                    }
-
-                    // Son backstab
-                    if (audioSource != null && stats.sprayBackSound != null)
-                    {
-                        audioSource.PlayOneShot(stats.sprayBackSound);
-                    }
-
-                    Debug.Log($"BACKSTAB: {hit.gameObject.name} (no ammo used)");
-                }
-                else
-                {
-                    // === SPRAY NORMAL ===
-
-                    // Check si joueur dans dos ennemi (protection)
-                    Vector3 dirPlayerFromEnemy = (transform.position - hit.transform.position).normalized;
-                    dirPlayerFromEnemy.y = 0f;
-                    float angleFromEnemyBack = Vector3.Angle(-hit.transform.forward, dirPlayerFromEnemy);
-
-                    if (angleFromEnemyBack <= stats.backstabConeAngle / 2f)
-                    {
-                        Debug.Log($"MISS: {hit.gameObject.name} - player in enemy back cone");
-                        continue;
-                    }
-
-                    // Consommer munition
-                    if (!sprayUsed)
-                    {
-                        currentSprayAmmo--;
-                        sprayUsed = true;
-                        wasFrontAttack = true;
-                    }
-
-                    // TOUJOURS APPLIQUER RECUL
-                    if (targetRb != null && enemyAI_AStar != null)
-                    {
-                        Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
-                        knockbackDir.y = 0;
-                        targetRb.AddForce(knockbackDir * stats.knockbackForce, ForceMode.VelocityChange);
-                        enemyHealth.SetKnockbackState(enemyHealth.stats.backstabStunDuration);
-                    }
-
-                    // GESTION STUN
-                    if (enemyAI_AStar != null)
-                    {
-                        if (enemyAI_AStar.currentState == EnemyAI_AStar.State.StunBySpray)
-                        {
-                            // Déjà stun : extend window
-                            enemyHealth.ExtendSprayWindow(enemyHealth.stats.sprayWindowDuration);
-                        }
-                        else
-                        {
-                            // Nouveau stun : start window
-                            enemyAI_AStar.currentState = EnemyAI_AStar.State.StunBySpray;
-                            enemyHealth.StartSprayWindow(enemyHealth.stats.sprayWindowDuration);
-                        }
-                    }
-
-                    // Dégâts
-                    enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Spray);
-                    
-                    // ANNULER WINDUP GRAB SI EN COURS
-                    GrabAttack grabBackstab = enemyHealth.GetComponent<GrabAttack>();
-                    if (grabBackstab != null && grabBackstab.isInWindup)
-                    {
-                        grabBackstab.CancelWindup();
-                        Debug.Log($"[BACKSTAB] Cancelled {enemyHealth.gameObject.name} grab windup");
-                    }
+                    enemyAI_AStar.currentState = EnemyAI_AStar.State.StunBySpray;
+                    enemyHealth.ApplySprayStun(enemyHealth.stats.sprayStunDuration);
                 }
 
-                // Notifier Blinders (commun spray/backstab)
+                // DÉGÂTS
+                enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Spray);
+
+                // ANNULER WINDUP GRAB
+                GrabAttack grab = enemyHealth.GetComponent<GrabAttack>();
+                if (grab != null && grab.isInWindup)
+                {
+                    grab.CancelWindup();
+                    Debug.Log($"[SPRAY] Cancelled {enemyHealth.gameObject.name} grab windup");
+                }
+
+                // NOTIFIER BLINDERS
                 MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
 
-                // Check Blinder
                 ChargeAttack chargeAttack = hit.GetComponent<ChargeAttack>();
                 if (chargeAttack != null)
                 {
                     chargeAttack.OnDirectHit(transform.position);
                 }
+
+                Debug.Log($"SPRAY HIT: {hit.gameObject.name}");
             }
 
             // GESTION SWARMS
@@ -482,19 +371,8 @@ public class MeleeAttackSystem : MonoBehaviour
             if (swarmController != null && swarmController.IsAlive())
             {
                 hitSomething = true;
-
-                // Consommer munition si pas déjà fait
-                if (!sprayUsed)
-                {
-                    currentSprayAmmo--;
-                    sprayUsed = true;
-                    wasFrontAttack = true;
-                }
-
-                // Appliquer dégâts spray depuis SwarmStats
                 float damage = swarmController.stats.sprayDamageTaken;
                 swarmController.TakeDamage(damage);
-
                 Debug.Log($"SPRAY HIT SWARM: {hit.gameObject.name} for {damage} damage");
             }
 
@@ -508,75 +386,34 @@ public class MeleeAttackSystem : MonoBehaviour
             }
         }
 
-        // Jouer le bon son + VFX
+        // AUDIO + VFX (toujours jouer, peu importe si on touche ou pas)
         if (audioSource != null)
         {
-            if (sprayUsed)
+            // Son spray
+            if (stats.sprayFrontSound != null)
             {
-                // PSHIT SPRAY
-                if (wasFrontAttack && stats.sprayFrontSound != null)
-                {
-                    audioSource.PlayOneShot(stats.sprayFrontSound);
-                }
-                else if (!wasFrontAttack && stats.sprayBackSound != null)
-                {
-                    audioSource.PlayOneShot(stats.sprayBackSound);
-                }
-
-                // Spawn VFX spray
-                if (stats.sprayVFX != null)
-                {
-                    Vector3 spawnPos = transform.position + transform.forward * 1f + Vector3.up * 1f;
-                    Instantiate(stats.sprayVFX, spawnPos, transform.rotation);
-                }
+                audioSource.PlayOneShot(stats.sprayFrontSound);
             }
-            else
+
+            // VFX spray - spawn sur premier ennemi touché
+            if (hitSomething && stats.sprayVFX != null && hits.Length > 0)
             {
-                // SPRAY A VIDE
-                if (stats.sprayMissSound != null)
+                foreach (Collider hit in hits)
                 {
-                    audioSource.PlayOneShot(stats.sprayMissSound);
+                    if (hit.gameObject == gameObject) continue;
+
+                    EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
+                    if (enemyHealth != null && !enemyHealth.IsDead())
+                    {
+                        Vector3 vfxPos = hit.bounds.center;
+                        Instantiate(stats.sprayVFX, vfxPos, Quaternion.identity);
+                        break;
+                    }
                 }
             }
         }
     }
 
-
-    IEnumerator KnockdownTarget(GameObject target)
-    {
-        // Skip knockdown si Blinder
-        ChargeAttack chargeAttack = target.GetComponent<ChargeAttack>();
-        if (chargeAttack != null)
-        {
-            yield break;
-        }
-
-        EnemyAI_AStar zombieAI_AStar = target.GetComponent<EnemyAI_AStar>();
-
-        // Pas besoin de redisable, deja fait dans DetectAndHit
-
-        yield return new WaitForSeconds(2f);
-
-        // Reactiver
-        if (zombieAI_AStar != null && target != null)
-        {
-            if (zombieAI_AStar.isInPitMode)
-            {
-                // En PitMode : juste reactiver AI (AIPath reste disabled)
-                zombieAI_AStar.enabled = true;
-            }
-            else
-            {
-                // Hors pit : reactiver AI + AIPath
-                Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
-                if (aiPath != null)
-                {
-                    aiPath.enabled = true;
-                }
-                zombieAI_AStar.enabled = true;
-            }
-        }
-    }
 
     // ============================================
     // GESTION DU GRAB
@@ -754,15 +591,6 @@ public class MeleeAttackSystem : MonoBehaviour
     }
 
     public bool IsBottleThrown() => bottleThrown;
-
-    IEnumerator ReenableAIAfterBackstab(EnemyAI_AStar ai, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (ai != null)
-        {
-            ai.enabled = true;
-        }
-    }
 
     void PickupBottle()
     {

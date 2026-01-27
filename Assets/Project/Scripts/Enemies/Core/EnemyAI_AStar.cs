@@ -174,6 +174,13 @@ public class EnemyAI_AStar : MonoBehaviour
             return;
         }
 
+        if (health != null && health.IsStunnedBySpray())
+        {
+            currentState = State.StunBySpray;
+            StopMovement();
+            return;
+        }
+
         // Recuperation apres sortie rotating platform
         if (isRecoveringFromPlatform)
         {
