@@ -215,7 +215,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         // === NOUVEAU CHECK 4 : Bloquer si mur climbable ===
         Vector3 checkPosition = new Vector3(transform.position.x, 0.1f, transform.position.z);
         RaycastHit hit;
-        float rayDistance = 1.5f;
+        float rayDistance = 0.75f;
 
         // Debug visuel du raycast (rouge = rayon, vert = hit si trouvé)
         Debug.DrawRay(checkPosition, exitDirection * rayDistance, Color.red, 2f);
