@@ -45,13 +45,11 @@ public class PupitreInteraction : MonoBehaviour
 
         // Check si restart
         bool isRestart = PlayerPrefs.GetInt(RESTART_KEY, 0) == 1;
-        Debug.Log($"[Pupitre] PlayerPrefs check: {PlayerPrefs.GetInt(RESTART_KEY, 0)}, isRestart: {isRestart}");
+        Debug.LogError($"[Pupitre] START - isRestart: {isRestart}, PlayerPrefs value: {PlayerPrefs.GetInt(RESTART_KEY, 0)}");
 
         if (isRestart)
         {
             Debug.Log("[Pupitre] RESTART DETECTE - Activation mode force respawn");
-            
-
             needsRespawn = true;
             respawnFrameCount = 0;
         }
@@ -61,6 +59,7 @@ public class PupitreInteraction : MonoBehaviour
             StartCoroutine(InitializeCamerasNextFrame());
         }
     }
+
     private IEnumerator InitializeCamerasNextFrame()
     {
         yield return new WaitForEndOfFrame();
@@ -72,12 +71,13 @@ public class PupitreInteraction : MonoBehaviour
 
         Debug.Log("[Pupitre] Cameras initialisees apres 1 frame");
     }
+
     private void LateUpdate()
     {
         if (needsRespawn)
         {
+            Debug.LogError($"[Pupitre] LATEUPDATE frame {respawnFrameCount} - Player pos: {player.position}");
             respawnFrameCount++;
-            Debug.Log($"[Pupitre] Force respawn frame {respawnFrameCount}");
 
             // Forcer le respawn pendant les 3 premieres frames
             if (respawnFrameCount <= 3)
@@ -114,7 +114,7 @@ public class PupitreInteraction : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[Pupitre] Player position AVANT respawn : {player.position}");
+        Debug.LogError($"[Pupitre] RESPAWN CALLED - Player pos AVANT: {player.position}, Pupitre pos: {transform.position}");
 
         // Position devant le pupitre (en coordonnees LOCALES du pupitre)
         Vector3 spawnPos = transform.position - transform.forward * restartSpawnDistance;
@@ -132,7 +132,7 @@ public class PupitreInteraction : MonoBehaviour
 
         // Faire regarder le player vers le pupitre
         Vector3 directionToPupitre = (transform.position - spawnPos).normalized;
-        directionToPupitre.y = 0; // Garder rotation horizontale seulement
+        directionToPupitre.y = 0;
         player.rotation = Quaternion.LookRotation(directionToPupitre);
 
         // Reinitialise etats du movement
@@ -144,7 +144,7 @@ public class PupitreInteraction : MonoBehaviour
             movement.canMove = true;
         }
 
-        Debug.Log($"[Pupitre] Player position APRES respawn : {player.position}");
+        Debug.LogError($"[Pupitre] Player position APRES respawn : {player.position}");
     }
 
     private void ActivatePupitre()
@@ -180,7 +180,7 @@ public class PupitreInteraction : MonoBehaviour
         hasActivated = true;
         Debug.Log("[Pupitre] === ACTIVATION AUTO (RESTART) ===");
 
-        // NOUVEAU : Position directe en bas, pas d'animation
+        // Position directe en bas, pas d'animation
         transform.position = transform.position + Vector3.down * sinkDistance;
 
         SwitchToNormalCamera();
@@ -232,5 +232,4 @@ public class PupitreInteraction : MonoBehaviour
         Gizmos.DrawWireSphere(spawnPos, 0.5f);
         Gizmos.DrawLine(transform.position, spawnPos);
     }
-
 }

@@ -3,7 +3,6 @@ using System.Collections;
 
 public class CountdownManager : MonoBehaviour
 {
-    public MetalShutter shutter;
     public GameManager gameManager;
     [Header("Audio")]
     public AudioClip countdownStartSound;
@@ -77,11 +76,6 @@ public class CountdownManager : MonoBehaviour
         Debug.Log("1...");
         yield return new WaitForSeconds(3f);
         Debug.Log("GO!");
-
-        if (shutter != null)
-        {
-            shutter.Open();
-        }
 
         countdownFinished = true;
 

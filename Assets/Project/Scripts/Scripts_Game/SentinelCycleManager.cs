@@ -37,7 +37,6 @@ public class SentinelCycleManager : MonoBehaviour
 
     [Header("Tutorial Mode")]
     public bool isTutorialMode = false;
-    [SerializeField] private Collider tutorialTriggerZone;
     [SerializeField] private TutorialPromptUI tutorialPromptUI;
     [SerializeField] private Sprite redLightTutorialSprite;
     private bool hasTriggeredFirstRedLight = false;
@@ -48,8 +47,10 @@ public class SentinelCycleManager : MonoBehaviour
     private Coroutine alertCoroutine;
     public float alertDuration;
 
-    void Start()
+    void OnEnable()
     {
+        Debug.LogError("[CYCLE START] DEBUT OnEnable()");
+
         if (sentinelSettings == null)
         {
             Debug.LogError("SentinelCycleManager: SentinelSettings non assigne!");
@@ -72,33 +73,37 @@ public class SentinelCycleManager : MonoBehaviour
             playerSpotLight.enabled = false;
         }
 
+        bool isRestart = PlayerPrefs.GetInt("AutoStartCountdown", 0) == 1;
+        bool hasSeenTutorial = TutorialRedLightTrigger.hasSeenRedLightTutorial;
 
+        Debug.LogError($"[CYCLE START] isRestart={isRestart}, hasSeenTutorial={hasSeenTutorial}, isTutorialMode={isTutorialMode}");
+
+        // NOUVEAU : Reset la variable statique si ce n'est pas un restart
+        if (!isRestart)
+        {
+            TutorialRedLightTrigger.hasSeenRedLightTutorial = false;
+            Debug.Log("[CYCLE] Premier lancement - Reset hasSeenRedLightTutorial");
+        }
+
+        if (isRestart && hasSeenTutorial && isTutorialMode)
+        {
+            Debug.Log("[CYCLE] Restart + tutorial deja vu - Mode normal active");
+            isTutorialMode = false;
+            hasTriggeredFirstRedLight = true;
+
+            TutorialRedLightTrigger triggerScript = FindObjectOfType<TutorialRedLightTrigger>();
+            if (triggerScript != null)
+            {
+                triggerScript.gameObject.SetActive(false);
+                Debug.Log("[CYCLE] GameObject triggerredcycle desactive");
+            }
+        }
 
         Time.timeScale = 1f;
     }
-
     void Update()
     {
         if (!gameStarted || sentinelSettings == null) return;
-
-        // Check trigger tutorial RedLight (SEULEMENT en GreenLight)
-        if (isTutorialMode && !hasTriggeredFirstRedLight && currentState == GameState.GreenLight && tutorialTriggerZone != null && playerTransform != null)
-        {
-            if (tutorialTriggerZone.bounds.Contains(playerTransform.position))
-            {
-                hasTriggeredFirstRedLight = true;
-
-                // Afficher message tuto
-                if (tutorialPromptUI != null && redLightTutorialSprite != null)
-                {
-                    tutorialPromptUI.Show(redLightTutorialSprite);
-                }
-
-                // Forcer transition immediate vers Alert
-                StartNewCycle(GameState.Alert);
-                Debug.Log("[TUTORIAL] Premier RedLight declenche par trigger !");
-            }
-        }
 
         cycleTimer += Time.deltaTime;
 
@@ -132,7 +137,21 @@ public class SentinelCycleManager : MonoBehaviour
                 StartNewCycle(GameState.Release);
         }
     }
+    public void TriggerFirstRedLight()
+    {
+        if (!isTutorialMode || hasTriggeredFirstRedLight || currentState != GameState.GreenLight)
+            return;
 
+        hasTriggeredFirstRedLight = true;
+
+        if (tutorialPromptUI != null && redLightTutorialSprite != null)
+        {
+            tutorialPromptUI.Show(redLightTutorialSprite);
+        }
+
+        StartNewCycle(GameState.Alert);
+        Debug.Log("[TUTORIAL] Premier RedLight declenche par trigger !");
+    }
     private float GetDynamicGreenLightDuration()
     {
         if (gameManager == null)
@@ -164,7 +183,7 @@ public class SentinelCycleManager : MonoBehaviour
 
         return finalDuration;
     }
-    private void OnTriggerEnter(Collider other)
+    /*private void OnTriggerEnter(Collider other)
     {
         if (!isTutorialMode || hasTriggeredFirstRedLight) return;
 
@@ -182,7 +201,7 @@ public class SentinelCycleManager : MonoBehaviour
             StartNewCycle(GameState.Alert);
             Debug.Log("[TUTORIAL] Premier RedLight declenche par trigger !");
         }
-    }
+    }*/
     private float GetDynamicRedLightDuration()
     {
         if (gameManager == null)
