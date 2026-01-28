@@ -30250,6 +30250,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PupitreInteraction
   countdownManager: {fileID: 510246361}
   metalShutter: {fileID: 1803505161}
+  gameStartDelay: 4.5
+  gameManager: {fileID: 1801742136}
   startZoneCamera: {fileID: 1189802041}
   normalCamera: {fileID: 1231677634}
   activePriority: 20
@@ -127324,6 +127326,10 @@ PrefabInstance:
     - target: {fileID: 1431846399533044856, guid: f6400f5fe00441846945593686056b69, type: 3}
       propertyPath: m_Name
       value: CountdownManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 1431846399533044856, guid: f6400f5fe00441846945593686056b69, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1443019702026919252, guid: f6400f5fe00441846945593686056b69, type: 3}
       propertyPath: m_LocalPosition.x

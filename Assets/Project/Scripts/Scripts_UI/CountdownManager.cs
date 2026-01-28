@@ -3,7 +3,6 @@ using System.Collections;
 
 public class CountdownManager : MonoBehaviour
 {
-    public GameManager gameManager;
     [Header("Audio")]
     public AudioClip countdownStartSound;
     private AudioSource audioSource;
@@ -79,16 +78,6 @@ public class CountdownManager : MonoBehaviour
 
         countdownFinished = true;
 
-        if (gameManager != null)
-        {
-            gameManager.StartGameCycle();
-        }
-
-        // NOUVEAU : Déclencher l'apparition des icônes ennemis
-        EnemyIconsUI enemyIconsUI = FindObjectOfType<EnemyIconsUI>();
-        if (enemyIconsUI != null)
-        {
-            enemyIconsUI.SpawnIconsForEnemies();
-        }
+        
     }
 }

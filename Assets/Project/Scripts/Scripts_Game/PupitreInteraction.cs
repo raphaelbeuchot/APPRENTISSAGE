@@ -8,6 +8,10 @@ public class PupitreInteraction : MonoBehaviour
     [SerializeField] private CountdownManager countdownManager;
     [SerializeField] private MetalShutter metalShutter;
 
+    [Header("Game Start")]
+    [SerializeField] private float gameStartDelay = 4.5f; // Temps du countdown
+    [SerializeField] private GameManager gameManager;
+
     [Header("Camera Switch")]
     [SerializeField] private CinemachineCamera startZoneCamera;
     [SerializeField] private CinemachineCamera normalCamera;
@@ -153,9 +157,10 @@ public class PupitreInteraction : MonoBehaviour
         Debug.Log("[Pupitre] === ACTIVATION MANUELLE ===");
 
         StartCoroutine(SinkPupitreCoroutine());
-
         SwitchToNormalCamera();
         LaunchCountdownAndShutter();
+
+        StartGameLogic(); //  AJOUTER CETTE LIGNE
     }
 
     private IEnumerator SinkPupitreCoroutine()
@@ -180,11 +185,11 @@ public class PupitreInteraction : MonoBehaviour
         hasActivated = true;
         Debug.Log("[Pupitre] === ACTIVATION AUTO (RESTART) ===");
 
-        // Position directe en bas, pas d'animation
         transform.position = transform.position + Vector3.down * sinkDistance;
-
         SwitchToNormalCamera();
         LaunchCountdownAndShutter();
+
+        StartGameLogic(); //  AJOUTER CETTE LIGNE
     }
 
     private void SwitchToNormalCamera()
@@ -208,7 +213,8 @@ public class PupitreInteraction : MonoBehaviour
 
     private void LaunchCountdownAndShutter()
     {
-        if (countdownManager != null)
+        // Vérifier que le GameObject est actif
+        if (countdownManager != null && countdownManager.gameObject.activeInHierarchy)
         {
             countdownManager.StartCountdown();
             Debug.Log("[Pupitre] Countdown lance");
@@ -218,6 +224,30 @@ public class PupitreInteraction : MonoBehaviour
         {
             metalShutter.StartOpening();
             Debug.Log("[Pupitre] Rideau leve");
+        }
+    }
+
+    private void StartGameLogic()
+    {
+        StartCoroutine(StartGameAfterDelay());
+    }
+
+    private IEnumerator StartGameAfterDelay()
+    {
+        Debug.Log($"[Pupitre] Attente {gameStartDelay}s avant de lancer le jeu...");
+        yield return new WaitForSeconds(gameStartDelay);
+
+        Debug.Log("[Pupitre] === LANCEMENT DU JEU ===");
+
+        if (gameManager != null)
+        {
+            gameManager.StartGameCycle();
+        }
+
+        EnemyIconsUI enemyIconsUI = FindObjectOfType<EnemyIconsUI>();
+        if (enemyIconsUI != null)
+        {
+            enemyIconsUI.SpawnIconsForEnemies();
         }
     }
 
