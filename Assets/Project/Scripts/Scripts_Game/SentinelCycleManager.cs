@@ -27,7 +27,7 @@ public class SentinelCycleManager : MonoBehaviour
     [SerializeField] private SentinelCentralLight sentinelCentralLight;
     [SerializeField] private RedLightVolumeController redLightVolumeController;
     [SerializeField] private Light playerSpotLight;
-    [SerializeField] private Color spotColorCompensated = new Color(0.5f, 0.8f, 1f, 1f); // Cyan pour compenser le rouge
+    [SerializeField] private Color spotColorCompensated = new Color(0.5f, 0.8f, 1f, 1f);
 
     [Header("State")]
     public GameState currentState = GameState.GreenLight;
@@ -78,7 +78,6 @@ public class SentinelCycleManager : MonoBehaviour
 
         Debug.LogError($"[CYCLE START] isRestart={isRestart}, hasSeenTutorial={hasSeenTutorial}, isTutorialMode={isTutorialMode}");
 
-        // NOUVEAU : Reset la variable statique si ce n'est pas un restart
         if (!isRestart)
         {
             TutorialRedLightTrigger.hasSeenRedLightTutorial = false;
@@ -97,10 +96,13 @@ public class SentinelCycleManager : MonoBehaviour
                 triggerScript.gameObject.SetActive(false);
                 Debug.Log("[CYCLE] GameObject triggerredcycle desactive");
             }
+
+            StartGameCycle();
         }
 
         Time.timeScale = 1f;
     }
+
     void Update()
     {
         if (!gameStarted || sentinelSettings == null) return;
@@ -126,7 +128,6 @@ public class SentinelCycleManager : MonoBehaviour
         {
             if (currentState == GameState.GreenLight)
             {
-                // Bloquer transition vers Alert en mode tutorial
                 if (isTutorialMode && !hasTriggeredFirstRedLight)
                 {
                     return;
@@ -137,12 +138,29 @@ public class SentinelCycleManager : MonoBehaviour
                 StartNewCycle(GameState.Release);
         }
     }
-    public void TriggerFirstRedLight()
+
+    public void TriggerFirstRedLight(float customDistance = -1f)
     {
         if (!isTutorialMode || hasTriggeredFirstRedLight || currentState != GameState.GreenLight)
             return;
 
         hasTriggeredFirstRedLight = true;
+
+        if (!gameStarted)
+        {
+            gameStarted = true;
+
+            if (customDistance > 0f)
+            {
+                initialPlayerSentinelDistance = customDistance;
+                Debug.Log($"[TUTORIAL] Distance custom utilisee: {initialPlayerSentinelDistance:F1}m");
+            }
+            else if (playerTransform != null && sentinelTransform != null)
+            {
+                initialPlayerSentinelDistance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
+                Debug.Log($"[TUTORIAL] Distance calculee: {initialPlayerSentinelDistance:F1}m");
+            }
+        }
 
         if (tutorialPromptUI != null && redLightTutorialSprite != null)
         {
@@ -152,6 +170,7 @@ public class SentinelCycleManager : MonoBehaviour
         StartNewCycle(GameState.Alert);
         Debug.Log("[TUTORIAL] Premier RedLight declenche par trigger !");
     }
+
     private float GetDynamicGreenLightDuration()
     {
         if (gameManager == null)
@@ -183,25 +202,7 @@ public class SentinelCycleManager : MonoBehaviour
 
         return finalDuration;
     }
-    /*private void OnTriggerEnter(Collider other)
-    {
-        if (!isTutorialMode || hasTriggeredFirstRedLight) return;
 
-        if (other.CompareTag("Player"))
-        {
-            hasTriggeredFirstRedLight = true;
-
-            // Afficher message tuto
-            if (tutorialPromptUI != null && redLightTutorialSprite != null)
-            {
-                tutorialPromptUI.Show(redLightTutorialSprite);
-            }
-
-            // Forcer transition immediate vers Alert
-            StartNewCycle(GameState.Alert);
-            Debug.Log("[TUTORIAL] Premier RedLight declenche par trigger !");
-        }
-    }*/
     private float GetDynamicRedLightDuration()
     {
         if (gameManager == null)
@@ -250,13 +251,9 @@ public class SentinelCycleManager : MonoBehaviour
             if (sentinelCentralLight != null)
                 sentinelCentralLight.TurnOff();
 
-            // Eteindre spot player
             if (playerSpotLight != null)
                 playerSpotLight.enabled = false;
-
-
         }
-    
         else if (newState == GameState.Alert)
         {
             if (audioSource != null && audioSource.loop)
@@ -281,8 +278,6 @@ public class SentinelCycleManager : MonoBehaviour
                     float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
                     enemyFactor = 1f - enemyRatio;
                 }
-
-                
             }
 
             float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
@@ -308,11 +303,9 @@ public class SentinelCycleManager : MonoBehaviour
 
             Debug.Log(string.Format("[CYCLE] RedLight - Duree: {0:F1}s", targetDuration));
 
-            // Fade in volume RedLight
             if (redLightVolumeController != null)
                 redLightVolumeController.FadeIn();
 
-            // Dans la section RedLight, juste après avoir allumé le spot :
             if (playerSpotLight != null)
             {
                 playerSpotLight.enabled = true;
@@ -356,11 +349,9 @@ public class SentinelCycleManager : MonoBehaviour
 
             Debug.Log(string.Format("[CYCLE] Release - Duree: {0:F1}s", targetDuration));
 
-            // Fade out volume RedLight
             if (redLightVolumeController != null)
                 redLightVolumeController.FadeOut();
 
-            // Eteindre spot player
             if (playerSpotLight != null)
                 playerSpotLight.enabled = false;
 
@@ -433,7 +424,7 @@ public class SentinelCycleManager : MonoBehaviour
         PlaySoundAtPitch(sentinelSettings.alertSound, pitch);
 
         float soundDuration = sentinelSettings.alertSound.length / pitch;
-        alertDuration = soundDuration; // NOUVEAU - stocke pour BrightEyes
+        alertDuration = soundDuration;
 
         if (marqueeLightController != null)
         {

@@ -1167,10 +1167,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.HorizontalLayoutGroup
   m_Padding:
     m_Left: 0
-    m_Right: 0
+    m_Right: 100
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 3
+  m_ChildAlignment: 5
   m_Spacing: 5
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
@@ -2813,7 +2813,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -390, y: 120}
+  m_AnchoredPosition: {x: -390, y: 140}
   m_SizeDelta: {x: 300, y: 40}
   m_Pivot: {x: 1, y: 0}
 --- !u!222 &6574851626403390713
@@ -3188,9 +3188,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfa951bcfe65d0f45824f6d20294b154, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClimbPromptUI
-  promptText: {fileID: 3364457722949735700}
+  backgroundPanel: {fileID: 0}
+  tutorialImage: {fileID: 0}
+  anyButtonText: {fileID: 0}
   canvasGroup: {fileID: 2413548223654105564}
   fadeDuration: 0.2
+  resetTipsOnStart: 1
+  tipIDsToReset:
+  - Tuto_Sprint
+  - Tuto_Climb
+  - Tuto_Crouch
+  - Tuto_CameraSafety
 --- !u!225 &2413548223654105564
 CanvasGroup:
   m_ObjectHideFlags: 0
