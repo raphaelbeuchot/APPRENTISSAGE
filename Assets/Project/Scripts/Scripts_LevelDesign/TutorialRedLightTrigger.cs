@@ -21,18 +21,22 @@ public class TutorialRedLightTrigger : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         Debug.LogError($"[TriggerRedCycle] OnTriggerEnter avec {other.name} - canTrigger: {canTrigger}");
-
         if (!canTrigger) return;
 
         if (other.CompareTag("Player"))
         {
             Debug.LogError("[TriggerRedCycle] DECLENCHEMENT du premier RedLight !");
-
             hasSeenRedLightTutorial = true;
 
             if (sentinelCycleManager != null)
             {
-                sentinelCycleManager.TriggerFirstRedLight();
+                // Calculer et forcer la distance depuis ICI
+                float distanceFromTrigger = Vector3.Distance(
+                    other.transform.position,
+                    sentinelCycleManager.sentinelTransform.position
+                );
+
+                sentinelCycleManager.TriggerFirstRedLight(distanceFromTrigger);
             }
         }
     }

@@ -97,6 +97,7 @@ public class SentinelCycleManager : MonoBehaviour
                 triggerScript.gameObject.SetActive(false);
                 Debug.Log("[CYCLE] GameObject triggerredcycle desactive");
             }
+            StartGameCycle();
         }
 
         Time.timeScale = 1f;
@@ -137,12 +138,29 @@ public class SentinelCycleManager : MonoBehaviour
                 StartNewCycle(GameState.Release);
         }
     }
-    public void TriggerFirstRedLight()
+    public void TriggerFirstRedLight(float customDistance = -1f)
     {
         if (!isTutorialMode || hasTriggeredFirstRedLight || currentState != GameState.GreenLight)
             return;
 
         hasTriggeredFirstRedLight = true;
+
+        if (!gameStarted)
+        {
+            gameStarted = true;
+
+            // Utiliser distance custom si fournie, sinon calculer
+            if (customDistance > 0f)
+            {
+                initialPlayerSentinelDistance = customDistance;
+                Debug.Log($"[TUTORIAL] Distance custom utilisée: {initialPlayerSentinelDistance:F1}m");
+            }
+            else if (playerTransform != null && sentinelTransform != null)
+            {
+                initialPlayerSentinelDistance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
+                Debug.Log($"[TUTORIAL] Distance calculée: {initialPlayerSentinelDistance:F1}m");
+            }
+        }
 
         if (tutorialPromptUI != null && redLightTutorialSprite != null)
         {

@@ -23,10 +23,7 @@ public class CameraPanningExtension : CinemachineExtension
     [SerializeField] private float lateralPanDuration = 1f;
     [SerializeField] private float lateralThreshold = 0.7f;
 
-    [Header("Start Zone")]
-    [SerializeField] private CountdownManager countdownManager;
-
-    [Header("Obstacle Hiding")]
+   [Header("Obstacle Hiding")]
     [SerializeField] private float playerHeightOffset = 0.5f;
     [SerializeField] private LayerMask obstacleHidingLayers;
     [SerializeField] private Material transparentMaterial;
@@ -54,11 +51,6 @@ public class CameraPanningExtension : CinemachineExtension
             mainCamera = FindObjectOfType<Camera>();
         }
 
-        if (countdownManager == null)
-        {
-            countdownManager = FindObjectOfType<CountdownManager>();
-        }
-
         // Reset tous les offsets au demarrage
         currentPanOffset = Vector3.zero;
         currentLateralOffset = Vector3.zero;
@@ -79,9 +71,9 @@ public class CameraPanningExtension : CinemachineExtension
         Debug.Log($"[CameraPanning] START - isHighPosition: {isHighPosition}, isLowView: {isLowView}");
     }
 
-    public void OnPlayerExitStartZone()
+    public void EnableFreeCameraMode()
     {
-        Debug.Log("[CameraPanning] Player sorti de startzone - Montee camera !");
+        Debug.Log("[CameraPanning] Mode camera libre active !");
         isHighPosition = true;
     }
 
@@ -203,7 +195,7 @@ public class CameraPanningExtension : CinemachineExtension
 
             Vector3 targetLateralOffset = currentLateralOffset;
 
-            bool canPan = isHighPosition || (countdownManager != null && countdownManager.countdownFinished);
+            bool canPan = isHighPosition;
 
             if (canPan && Mathf.Abs(lookInput.y) < 0.5f)
             {
