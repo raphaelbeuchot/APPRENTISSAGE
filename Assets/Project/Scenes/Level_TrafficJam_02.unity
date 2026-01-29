@@ -78164,6 +78164,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
   m_PrefabInstance: {fileID: 124141225}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1477694226 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3630615494597918022, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+  m_PrefabInstance: {fileID: 6978021389780206166}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1478198810 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
@@ -115062,6 +115067,10 @@ PrefabInstance:
       propertyPath: sentinelLightRenderer
       value: 
       objectReference: {fileID: 887716754}
+    - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
+      propertyPath: playerDetectionFeedback
+      value: 
+      objectReference: {fileID: 6305765746340978718}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -115150,7 +115159,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3882219009807252739, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
   m_PrefabInstance: {fileID: 6978021389780206166}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1477694226}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 534013b3a1f08b4478a84e2fe534d242, type: 3}
@@ -115161,12 +115170,25 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3986950052484981319, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
   m_PrefabInstance: {fileID: 6978021389780206166}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1477694226}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 52166e4e94a0683439dc983ad12856cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+--- !u!114 &6305765746340978718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1477694226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b253f867cc165994a8cba80f88f78902, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDetectionFeedback
+  detectionSound: {fileID: 8300000, guid: 03ab767723e1eeb42b6afb682b41f66f, type: 3}
 --- !u!1001 &6516964717960369256
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -115297,10 +115319,17 @@ PrefabInstance:
       propertyPath: climbPrompt
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 8250552759225607286, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3630615494597918022, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6305765746340978718}
   m_SourcePrefab: {fileID: 100100000, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
 --- !u!1001 &9019177782128006907
 PrefabInstance:

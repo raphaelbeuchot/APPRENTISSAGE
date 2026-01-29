@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 6824530332055029301}
   - component: {fileID: 7912330855418011473}
   - component: {fileID: 1789847621711801423}
+  - component: {fileID: 5943132159257684885}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -326,6 +327,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 407d7d454d6bd214ab523a3920639822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerWarmup
+--- !u!114 &5943132159257684885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3630615494597918022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b253f867cc165994a8cba80f88f78902, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDetectionFeedback
+  detectionSound: {fileID: 8300000, guid: 03ab767723e1eeb42b6afb682b41f66f, type: 3}
 --- !u!1 &8250552759225607286
 GameObject:
   m_ObjectHideFlags: 0

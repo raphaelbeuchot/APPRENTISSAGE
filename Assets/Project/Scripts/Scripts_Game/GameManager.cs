@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour
     public PlayerPhysicsMovement player;
     public SentinelSettings sentinel;
     public PlayerHealth playerHealth;
+    public PlayerDetectionFeedback playerDetectionFeedback;
+
 
     public Renderer sentinelLightRenderer;
     public Material greenMaterial;
@@ -312,6 +314,8 @@ public class GameManager : MonoBehaviour
                     if (col.gameObject == player.gameObject)
                     {
                         playerAlarmTriggered = true;
+                        if (playerDetectionFeedback != null) // <-- AJOUTER CES 2 LIGNES
+                            playerDetectionFeedback.OnDetected();
                     }
                 }
             }
@@ -347,6 +351,8 @@ public class GameManager : MonoBehaviour
                             alreadyShot.Remove(col.gameObject);
                             if (col.gameObject == player.gameObject)
                                 playerAlarmTriggered = false;
+                            if (playerDetectionFeedback != null) // <-- AJOUTER CES 2 LIGNES
+                                playerDetectionFeedback.OnNoLongerDetected();
 
                             continue;
                         }
@@ -370,6 +376,8 @@ public class GameManager : MonoBehaviour
                     StartCoroutine(ShowShootLaser(sentinelPos, obstacleHit.point, sentinelSettings.shootLaserFadeDuration));
                 }
 
+
+
                 // RESET immediat
                 trackData.crouchStateChangeInProgress = false;
                 trackData.crouchStateChangeScheduledTime = -1f;
@@ -379,6 +387,8 @@ public class GameManager : MonoBehaviour
                 alreadyShot.Remove(col.gameObject);
                 if (col.gameObject == player.gameObject)
                     playerAlarmTriggered = false;
+                if (playerDetectionFeedback != null) // <-- AJOUTER CES 2 LIGNES
+                    playerDetectionFeedback.OnNoLongerDetected();
 
                 continue;
             }
@@ -442,6 +452,8 @@ public class GameManager : MonoBehaviour
                             alreadyShot.Remove(col.gameObject);
                             if (col.gameObject == player.gameObject)
                                 playerAlarmTriggered = false;
+                            if (playerDetectionFeedback != null) // <-- AJOUTER CES 2 LIGNES
+                                playerDetectionFeedback.OnNoLongerDetected();
 
                             continue;
                         }
@@ -473,6 +485,8 @@ public class GameManager : MonoBehaviour
                 alreadyShot.Remove(col.gameObject);
                 if (col.gameObject == player.gameObject)
                     playerAlarmTriggered = false;
+                if (playerDetectionFeedback != null) // <-- AJOUTER CES 2 LIGNES
+                    playerDetectionFeedback.OnNoLongerDetected();
 
                 continue;
             }
@@ -670,6 +684,8 @@ public class GameManager : MonoBehaviour
                             if (col.gameObject == player.gameObject && !playerAlarmTriggered)
                             {
                                 playerAlarmTriggered = true;
+                                if (playerDetectionFeedback != null) // <-- AJOUTER CES 2 LIGNES
+                                    playerDetectionFeedback.OnDetected();
                             }
                         }
                     }
@@ -693,6 +709,8 @@ public class GameManager : MonoBehaviour
                         if (col.gameObject == player.gameObject && !playerAlarmTriggered)
                         {
                             playerAlarmTriggered = true;
+                            if (playerDetectionFeedback != null) // <-- AJOUTER CES 2 LIGNES
+                                playerDetectionFeedback.OnDetected();
                         }
                     }
                 }
@@ -701,10 +719,28 @@ public class GameManager : MonoBehaviour
             {
                 trackData.consecutiveLOSScans = 0;
             }
+
+            // AJOUTER ICI LE NOUVEAU BLOC :
+            // NOUVEAU : Si le player était détecté mais n'est plus en condition de tir
+            if (col.gameObject == player.gameObject && trackData.isBeingShot && (!shouldBeShot || !hasLOS))
+            {
+                Debug.Log("[DETECTION PERDUE] Player n'est plus détecté - reset alarme");
+
+                trackData.isBeingShot = false;
+                trackData.shootScheduledTime = -1f;
+                trackData.consecutiveLOSScans = 0;
+                alreadyShot.Remove(col.gameObject);
+                playerAlarmTriggered = false;
+
+                if (playerDetectionFeedback != null)
+                    playerDetectionFeedback.OnNoLongerDetected();
+            }
+
             // NOUVEAU : Update etat crouch pour prochain scan (A LA FIN)
             trackData.wasPlayerCrouched = isPlayerCrouched;
             trackData.wasInLOS = hasLOS;
             trackData.hasBeenTrackedBefore = true;
+
         }
 
     }
@@ -826,6 +862,8 @@ public class GameManager : MonoBehaviour
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
         StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
+        if (playerDetectionFeedback != null)
+            playerDetectionFeedback.OnNoLongerDetected();
 
         StartCoroutine(PlayerStunBySentinel());
 
@@ -846,6 +884,7 @@ public class GameManager : MonoBehaviour
         {
             alreadyShot.Remove(player.gameObject);
             playerAlarmTriggered = false;
+
             Debug.Log("Player recovery complete - can be shot again if moves");
         }
     }
@@ -908,6 +947,8 @@ public class GameManager : MonoBehaviour
             kvp.Value.hasBeenTrackedBefore = false;
         }
         Debug.Log("[TRACKING RESET] All tracking data cleared for new cycle");
+        if (playerDetectionFeedback != null) // <-- AJOUTER CES 2 LIGNES
+            playerDetectionFeedback.OnNoLongerDetected();
     }
 
     void CountEnemiesAtStart()

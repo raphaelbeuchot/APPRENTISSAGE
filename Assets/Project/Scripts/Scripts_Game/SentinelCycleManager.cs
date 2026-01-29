@@ -242,6 +242,10 @@ public class SentinelCycleManager : MonoBehaviour
 
         if (newState == GameState.GreenLight)
         {
+            // AJOUTER CES 2 LIGNES AU DÉBUT :
+            if (gameManager != null)
+                gameManager.ResetAllTracking();
+
             targetDuration = GetDynamicGreenLightDuration();
             Debug.Log(string.Format("[CYCLE] GreenLight - Duree: {0:F1}s", targetDuration));
 
