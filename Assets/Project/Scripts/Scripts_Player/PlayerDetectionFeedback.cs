@@ -6,26 +6,26 @@ public class PlayerDetectionFeedback : MonoBehaviour
     [Header("References")]
     [SerializeField] private AudioClip detectionSound;
 
-    private SkinnedMeshRenderer[] playerMeshRenderers; // CHANGÉ : array au lieu d'un seul
-    private Material[][] originalMaterials; // CHANGÉ : array 2D
+    private SkinnedMeshRenderer[] playerMeshRenderers;
+    private Material[][] originalMaterials;
     private Material whiteMaterial;
-    private bool isCurrentlyDetected = false;
+    public bool isCurrentlyDetected = false; // CHANGE DE private A public
     private AudioSource audioSource;
 
     void Start()
     {
-        // Récupérer AudioSource du GameManager
+        // Recuperer AudioSource du GameManager
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null)
         {
             audioSource = gm.GetComponent<AudioSource>();
         }
 
-        // Créer material blanc
+        // Creer material blanc
         whiteMaterial = new Material(Shader.Find("Unlit/Color"));
         whiteMaterial.color = Color.white;
 
-        // Récupérer TOUS les SkinnedMeshRenderer dans les enfants
+        // Recuperer TOUS les SkinnedMeshRenderer dans les enfants
         playerMeshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
 
         // Sauvegarder les materials originaux de chaque renderer
