@@ -206,7 +206,7 @@ public class PupitreInteraction : MonoBehaviour
         CameraPanningExtension panningExt = FindAnyObjectByType<CameraPanningExtension>();
         if (panningExt != null)
         {
-            panningExt.EnableFreeCameraMode();
+            panningExt.OnPlayerExitStartZone();
             Debug.Log("[Pupitre] CameraPanning notifie");
         }
     }

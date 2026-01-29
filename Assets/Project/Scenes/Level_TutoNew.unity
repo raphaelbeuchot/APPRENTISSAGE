@@ -14491,6 +14491,7 @@ MonoBehaviour:
   lateralOffset: 5
   lateralPanDuration: 1
   lateralThreshold: 0.7
+  countdownManager: {fileID: 0}
   playerHeightOffset: 0.5
   obstacleHidingLayers:
     serializedVersion: 2
@@ -26934,8 +26935,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PupitreInteraction
   countdownManager: {fileID: 510246361}
   metalShutter: {fileID: 1803505161}
-  gameStartDelay: 4.5
-  gameManager: {fileID: 0}
   startZoneCamera: {fileID: 1189802041}
   normalCamera: {fileID: 1231677634}
   activePriority: 20
@@ -56437,7 +56436,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0.000061035156, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &987690052
@@ -69613,6 +69612,7 @@ MonoBehaviour:
   lateralOffset: 3
   lateralPanDuration: 1.5
   lateralThreshold: 0.7
+  countdownManager: {fileID: 510246361}
   playerHeightOffset: 0.5
   obstacleHidingLayers:
     serializedVersion: 2
@@ -120130,7 +120130,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 828745556533612378, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: aerialLight

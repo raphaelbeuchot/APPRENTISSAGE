@@ -16,30 +16,16 @@ public class PitBrushSystem
     private static bool isPainting = false;
     private static HashSet<Vector2Int> paintedCellsThisStroke = new HashSet<Vector2Int>();
 
+    private static int nextZoneID = 0; // NOUVEAU : compteur pour les IDs
 
     private const string BRUSH_ENABLED_KEY = "PitBrush_Enabled";
+    private const string NEXT_ZONE_ID_KEY = "PitBrush_NextZoneID"; // NOUVEAU
 
     static PitBrushSystem()
     {
         brushEnabled = EditorPrefs.GetBool(BRUSH_ENABLED_KEY, false);
+        nextZoneID = EditorPrefs.GetInt(NEXT_ZONE_ID_KEY, 0); // NOUVEAU
         SceneView.duringSceneGui += OnSceneGUI;
-    }
-    // NOUVELLE METHODE : Trouve le prochain zoneID disponible
-    private static int GetNextAvailableZoneID()
-    {
-        PitZone[] allZones = Object.FindObjectsOfType<PitZone>();
-
-        if (allZones.Length == 0)
-            return 0; // Première zone
-
-        int maxID = -1;
-        foreach (PitZone zone in allZones)
-        {
-            if (zone.zoneID > maxID)
-                maxID = zone.zoneID;
-        }
-
-        return maxID + 1;
     }
 
     public static void SetActiveGridData(PitGridData data)
@@ -59,6 +45,8 @@ public class PitBrushSystem
     {
         return activePitZone;
     }
+
+    // NOUVELLE METHODE : Creer un nouveau PitZone
     public static PitZone CreateNewPitZone()
     {
         if (activeGridData == null)
@@ -67,20 +55,15 @@ public class PitBrushSystem
             return null;
         }
 
-        // MODIFICATION : Calculer l'ID dynamiquement
-        int newZoneID = GetNextAvailableZoneID();
-
-        GameObject pitZoneObj = new GameObject("PitZone_" + newZoneID);
+        GameObject pitZoneObj = new GameObject("PitZone_" + nextZoneID);
         PitZone newZone = pitZoneObj.AddComponent<PitZone>();
-        newZone.Initialize(newZoneID, activeGridData);
+        newZone.Initialize(nextZoneID, activeGridData);
 
         Undo.RegisterCreatedObjectUndo(pitZoneObj, "Create Pit Zone");
 
         activePitZone = newZone;
-
-        // SUPPRIMER ces 2 lignes :
-        // nextZoneID++;
-        // EditorPrefs.SetInt(NEXT_ZONE_ID_KEY, nextZoneID);
+        nextZoneID++;
+        EditorPrefs.SetInt(NEXT_ZONE_ID_KEY, nextZoneID);
 
         Debug.Log("Created new PitZone with ID: " + newZone.zoneID);
 
