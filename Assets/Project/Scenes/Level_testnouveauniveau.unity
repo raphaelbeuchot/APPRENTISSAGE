@@ -25182,7 +25182,7 @@ GameObject:
   - component: {fileID: 325467367}
   - component: {fileID: 325467366}
   - component: {fileID: 325467365}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -39627,7 +39627,7 @@ MonoBehaviour:
   countdownManager: {fileID: 510246361}
   metalShutter: {fileID: 1803505161}
   gameStartDelay: 4.5
-  gameManager: {fileID: 0}
+  gameManager: {fileID: 1801742136}
   startZoneCamera: {fileID: 1189802041}
   normalCamera: {fileID: 1231677634}
   activePriority: 20
@@ -114409,7 +114409,6 @@ GameObject:
   - component: {fileID: 1547379117}
   - component: {fileID: 1547379116}
   - component: {fileID: 1547379115}
-  - component: {fileID: 1547379114}
   m_Layer: 0
   m_Name: StartZonePlatform
   m_TagString: Untagged
@@ -114417,18 +114416,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1547379114
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1547379113}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StartZone
 --- !u!65 &1547379115
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -152582,7 +152569,6 @@ GameObject:
   - component: {fileID: 2038059295}
   - component: {fileID: 2038059294}
   - component: {fileID: 2038059293}
-  - component: {fileID: 2038059292}
   m_Layer: 0
   m_Name: StartZonePlatform (1)
   m_TagString: Untagged
@@ -152606,18 +152592,6 @@ Transform:
   - {fileID: 373248138}
   m_Father: {fileID: 1890326246}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!114 &2038059292
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2038059290}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StartZone
 --- !u!65 &2038059293
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -161187,6 +161161,10 @@ PrefabInstance:
       propertyPath: sentinelLightRenderer
       value: 
       objectReference: {fileID: 887716754}
+    - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
+      propertyPath: playerDetectionFeedback
+      value: 
+      objectReference: {fileID: 6978021389780206167}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -161498,6 +161476,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 922244142}
   m_SourcePrefab: {fileID: 100100000, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+--- !u!114 &6978021389780206167 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5943132159257684885, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+  m_PrefabInstance: {fileID: 6978021389780206166}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b253f867cc165994a8cba80f88f78902, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDetectionFeedback
 --- !u!1001 &8078392877654545311
 PrefabInstance:
   m_ObjectHideFlags: 0

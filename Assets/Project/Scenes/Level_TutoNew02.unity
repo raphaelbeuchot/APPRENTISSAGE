@@ -15979,7 +15979,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3562173f05739db4f89d846c650ab620, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TutorialTrigger
-  tutorialImage: {fileID: 21300000, guid: 440d81eeae0c8a347b4e26c3fccfe856, type: 3}
+  tutorialImage: {fileID: 21300000, guid: 5c1efecd1b53dbc4ea0e3cbce35887b9, type: 3}
   tipID: Tuto_Crouch
   showOnce: 1
   promptUI: {fileID: 987690053}
@@ -18621,7 +18621,7 @@ Transform:
   m_GameObject: {fileID: 353029789}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.9000003, y: 1.1, z: 14}
+  m_LocalPosition: {x: 3.9000003, y: 1.1, z: 15.5}
   m_LocalScale: {x: 4, y: 2, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -120441,6 +120441,10 @@ PrefabInstance:
       propertyPath: sentinelLightRenderer
       value: 
       objectReference: {fileID: 887716754}
+    - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
+      propertyPath: playerDetectionFeedback
+      value: 
+      objectReference: {fileID: 6978021389780206167}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -120676,6 +120680,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+--- !u!114 &6978021389780206167 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5943132159257684885, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+  m_PrefabInstance: {fileID: 6978021389780206166}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b253f867cc165994a8cba80f88f78902, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDetectionFeedback
 --- !u!1001 &9019177782128006907
 PrefabInstance:
   m_ObjectHideFlags: 0
