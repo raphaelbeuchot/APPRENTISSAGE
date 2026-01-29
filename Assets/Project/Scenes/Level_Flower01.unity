@@ -10155,6 +10155,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7795896a60b7f74c91dec122302123e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraPanningExtension
+  startWithFreeCameraEnabled: 0
   verticalOffset: 5
   verticalPanSpeed: 2
   initialRiseDuration: 2
@@ -16653,7 +16654,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BrightEyesController
   stats: {fileID: 11400000, guid: 56f8281de24256a43a9268333d0e4791, type: 2}
   flameRenderer: {fileID: 496632967}
-  flameMaterial: {fileID: 2100000, guid: d2e5b74caa7e99243a0fe9b1bbeb4acd, type: 2}
   healthBarUI: {fileID: 0}
 --- !u!65 &496632966
 BoxCollider:
@@ -16870,6 +16870,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PupitreInteraction
   countdownManager: {fileID: 510246361}
   metalShutter: {fileID: 1803505161}
+  gameStartDelay: 4.5
+  gameManager: {fileID: 0}
   startZoneCamera: {fileID: 1189802041}
   normalCamera: {fileID: 1231677634}
   activePriority: 20
@@ -39889,6 +39891,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7795896a60b7f74c91dec122302123e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraPanningController
+  startWithFreeCameraEnabled: 0
   verticalOffset: 4
   verticalPanSpeed: 5
   initialRiseDuration: 1.5
@@ -67390,6 +67393,14 @@ PrefabInstance:
     - target: {fileID: 3870675793715944844, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_Name
       value: UI
+      objectReference: {fileID: 0}
+    - target: {fileID: 5592999826705333007, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: titleMessage
+      value: Flower Power !
+      objectReference: {fileID: 0}
+    - target: {fileID: 5592999826705333007, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: rotateClockwise
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -15,7 +15,7 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     private float startingProgress = 0f;
 
     [SerializeField]
-    [Range(0.1f, 3f)]
+    [Range(0.1f, 10f)]
     private float speedMultiplier = 1f;
 
     private float currentProgress = 0f;
@@ -157,12 +157,11 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log("TRIGGER DETECTE !"); // TEST
-
-        // Verifier si c'est un autre RoamingObstacle
+        // Verifier si c'est un autre RoamingObstacle OU un objet sur layer "Obstacle"
         RoamingObstacle otherObstacle = other.GetComponent<RoamingObstacle>();
+        bool isObstacleLayer = other.gameObject.layer == LayerMask.NameToLayer("Obstacle");
 
-        if (otherObstacle != null)
+        if (otherObstacle != null || isObstacleLayer)
         {
             // Verifier cooldown pour eviter inversions multiples
             if (Time.time - lastCollisionTime > collisionCooldown)
@@ -171,7 +170,8 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
                 currentDirection *= -1f;
                 lastCollisionTime = Time.time;
 
-                Debug.Log($"[RoamingObstacle] {settings.obstacleName} croisement detecte - inversion direction");
+                string collisionType = otherObstacle != null ? "autre RoamingObstacle" : "obstacle";
+                Debug.Log($"[RoamingObstacle] {settings.obstacleName} collision avec {collisionType} detectee - inversion direction");
             }
         }
     }

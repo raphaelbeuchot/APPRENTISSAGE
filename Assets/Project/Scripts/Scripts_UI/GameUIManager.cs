@@ -18,6 +18,7 @@ public class GameUIManager : MonoBehaviour
     [Header("Countdown UI")]
     [SerializeField] private TextMeshProUGUI countdownText;
     [SerializeField] private float countdownFontSize = 100f;
+    private CountdownTextConfig countdownConfig;
 
     [Header("References")]
     [SerializeField] private PlayerHealth playerHealth;
@@ -59,6 +60,12 @@ public class GameUIManager : MonoBehaviour
         if (countdownText != null)
         {
             countdownText.gameObject.SetActive(false);
+        }
+        // NOUVEAU : Récupérer la config
+        countdownConfig = countdownText.GetComponent<CountdownTextConfig>();
+        if (countdownConfig == null)
+        {
+            Debug.LogWarning("CountdownTextConfig non trouve sur CountdownText !");
         }
 
         // S'abonner UNIQUEMENT au damage flash
@@ -200,36 +207,63 @@ public class GameUIManager : MonoBehaviour
         countdownText.gameObject.SetActive(true);
         countdownText.fontSize = countdownFontSize;
 
-        string[] countdownNumbers = { "Let's", "Play", "Super Panopticon !", "" };
+        // Récupérer config
+        string titleText = countdownConfig != null
+            ? countdownConfig.GetTitle()
+            : "Super Panopticon!";
 
-        foreach (string number in countdownNumbers)
+        float rotationDuration = countdownConfig != null
+            ? countdownConfig.GetRotationDuration()
+            : 2f;
+
+        float fadeOutDuration = countdownConfig != null
+            ? countdownConfig.GetFadeOutDuration()
+            : 1f;
+
+        // Afficher le texte
+        countdownText.text = titleText;
+        countdownText.transform.localScale = Vector3.one;
+        Color c = countdownText.color;
+        c.a = 1f;
+        countdownText.color = c;
+
+        // PHASE 1 : Rotation 360 degrés
+        float elapsed = 0f;
+        Quaternion startRotation = countdownText.transform.localRotation;
+
+        // NOUVEAU : Direction de rotation
+        bool clockwise = countdownConfig != null ? countdownConfig.IsClockwise() : true;
+        float rotationDirection = clockwise ? 360f : -360f;
+
+        while (elapsed < rotationDuration)
         {
-            countdownText.text = number;
-
-            float elapsed = 0f;
-            float duration = number == "GO!" ? 0.5f : 1f;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float scale = Mathf.Lerp(2f, 1f, elapsed / duration);
-                countdownText.transform.localScale = Vector3.one * scale;
-
-                float alpha = Mathf.Lerp(1f, 0f, elapsed / duration);
-                Color c = countdownText.color;
-                c.a = alpha;
-                countdownText.color = c;
-
-                yield return null;
-            }
-
-            Color resetColor = countdownText.color;
-            resetColor.a = 1f;
-            countdownText.color = resetColor;
-            countdownText.transform.localScale = Vector3.one;
+            elapsed += Time.deltaTime;
+            float angle = Mathf.Lerp(0f, rotationDirection, elapsed / rotationDuration); // Modifié
+            countdownText.transform.localRotation = Quaternion.Euler(0f, 0f, angle);
+            yield return null;
         }
 
+        // Reset rotation
+        countdownText.transform.localRotation = startRotation;
+
+        // PHASE 2 : Fade out
+        elapsed = 0f;
+        while (elapsed < fadeOutDuration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, elapsed / fadeOutDuration);
+            c = countdownText.color;
+            c.a = alpha;
+            countdownText.color = c;
+            yield return null;
+        }
+
+        // Cleanup
         countdownText.gameObject.SetActive(false);
+        countdownText.transform.localRotation = startRotation;
+        c = countdownText.color;
+        c.a = 1f;
+        countdownText.color = c;
     }
 
     public void UpdateZombiesList()
