@@ -48,6 +48,10 @@ public class EnemyAI_AStar : MonoBehaviour
     private float recoveryEndTime = 0f;
     private bool isRecoveringFromPlatform = false;
 
+    [Header("Pathfinding Optimization")]
+    private Vector3 lastPathDestination;
+    private float pathUpdateThreshold = 0.5f; // Distance min pour recalculer path
+
     private EnemyHealthBarUI healthBarUI;
     public bool canMove = true;
     [HideInInspector] public bool isStunnedBySentinel = false;
@@ -76,7 +80,6 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         if (stats == null)
         {
-            Debug.LogError("EnemyStats not assigned on " + gameObject.name);
             return;
         }
 
@@ -110,23 +113,19 @@ public class EnemyAI_AStar : MonoBehaviour
                 attackBehavior = GetComponent<GrabAttack>() ?? gameObject.AddComponent<GrabAttack>();
                 break;
             case EnemyStats.AttackType.Hitter:
-                Debug.LogWarning(gameObject.name + ": Hitter attack not yet implemented!");
                 break;
             case EnemyStats.AttackType.Spitter:
-                Debug.LogWarning(gameObject.name + ": Spitter attack not yet implemented!");
                 break;
             case EnemyStats.AttackType.Blinder:
                 attackBehavior = GetComponent<ChargeAttack>() ?? gameObject.AddComponent<ChargeAttack>();
                 break;
             default:
-                Debug.LogWarning(gameObject.name + ": Unknown attack type " + stats.attackType);
                 break;
         }
 
         if (attackBehavior != null)
         {
             attackBehavior.Initialize(stats, playerStats, transform, rb);
-            Debug.Log(gameObject.name + " initialized with " + stats.attackType + " attack behavior");
         }
     }
 
@@ -160,9 +159,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
         if (rb != null && rb.angularVelocity.magnitude > 10f)
         {
-            Debug.LogError($"[ROTATION FOLLE] {gameObject.name} - Angular velocity: {rb.angularVelocity.magnitude:F2}");
-            Debug.LogError($"State: {currentState}, Constraints: {rb.constraints}");
-            Debug.LogError($"AIPath enabled: {aiPath?.enabled}, canMove: {canMove}");
+            
 
             rb.angularVelocity = Vector3.zero;
             rb.constraints = RigidbodyConstraints.FreezeRotation;
@@ -191,7 +188,6 @@ public class EnemyAI_AStar : MonoBehaviour
                 {
                     aiPath.enabled = true;
                 }
-                Debug.Log($"{gameObject.name} recovered from rotating platform");
             }
             else
             {
@@ -293,7 +289,6 @@ public class EnemyAI_AStar : MonoBehaviour
         }
 
         transform.rotation = targetRotation;
-        Debug.Log($"{gameObject.name} finished smooth rotation away from wall");
     }
 
     private IEnumerator LookAroundCoroutine()
@@ -301,14 +296,12 @@ public class EnemyAI_AStar : MonoBehaviour
         isLookingAround = true;
         StopMovement();
 
-        Debug.Log($"{gameObject.name} lastChaseDirection = {lastChaseDirection}");
 
         Vector3 lookDirection = lastChaseDirection;
         lookDirection.y = 0;
 
         if (lookDirection.magnitude < 0.1f)
         {
-            Debug.LogWarning($"{gameObject.name} lastChaseDirection invalide, abandon rotation");
             wasChasing = false;
             isGoingToLastKnownPosition = false;
             isLookingAround = false;
@@ -321,7 +314,6 @@ public class EnemyAI_AStar : MonoBehaviour
         Quaternion startRotation = transform.rotation;
         Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
 
-        Debug.Log($"{gameObject.name} startRotation = {startRotation.eulerAngles}, targetRotation = {targetRotation.eulerAngles}");
 
         float elapsed = 0f;
         float rotationDuration = 1f;
@@ -343,7 +335,6 @@ public class EnemyAI_AStar : MonoBehaviour
         isLookingAround = false;
         currentState = State.Idle;
 
-        Debug.Log($"{gameObject.name} finished looking around, returning to Idle");
     }
 
 
@@ -463,7 +454,6 @@ public class EnemyAI_AStar : MonoBehaviour
                         if (playerVelocity.magnitude > 0.5f)
                         {
                             lastChaseDirection = playerVelocity.normalized;
-                            Debug.Log($"{gameObject.name} Memorise direction mouvement player : {lastChaseDirection}");
                         }
                         else
                         {
@@ -472,12 +462,10 @@ public class EnemyAI_AStar : MonoBehaviour
                     }
 
                     hasCalculatedAnticipatedPosition = true;
-                    Debug.Log($"{gameObject.name} position anticipee calculee : {lastKnownPlayerPosition}");
                 }
 
                 isGoingToLastKnownPosition = true;
                 currentState = State.Chasing;
-                Debug.Log($"{gameObject.name} a perdu le joueur, va chercher a {lastKnownPlayerPosition}");
             }
             else if (!isForcedChase)
             {
@@ -563,7 +551,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
             if (distanceToLastPos <= arrivalThreshold)
             {
-                Debug.Log($"{gameObject.name} arrive a la derniere position, rotation de recherche...");
                 StartCoroutine(LookAroundCoroutine());
                 return;
             }
@@ -645,10 +632,19 @@ public class EnemyAI_AStar : MonoBehaviour
 
         aiPath.maxSpeed = finalSpeed;
 
+        // OPTIMISATION : Recalculer path UNIQUEMENT si destination change significativement
+        Vector3 newDestination;
         if (targetHuman != null)
-            aiPath.destination = targetHuman.position;
+            newDestination = targetHuman.position;
         else
-            aiPath.destination = transform.position + direction * 3f;
+            newDestination = transform.position + direction * 3f;
+
+        // Check si la destination a assez change
+        if (Vector3.Distance(newDestination, lastPathDestination) > pathUpdateThreshold)
+        {
+            aiPath.destination = newDestination;
+            lastPathDestination = newDestination;
+        }
 
         direction.y = 0;
         direction.Normalize();
@@ -662,7 +658,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
     protected virtual void MoveInPitMode()
     {
-        Debug.Log($"[PitMode] {gameObject.name} MoveInPitMode called!");
 
         Vector3 targetPosition;
         if (targetHuman != null)
@@ -697,7 +692,6 @@ public class EnemyAI_AStar : MonoBehaviour
         Vector3 moveDirection = transform.forward * pitMoveSpeed;
         rb.linearVelocity = new Vector3(moveDirection.x, rb.linearVelocity.y, moveDirection.z);
 
-        Debug.Log($"[PitMode] Setting velocity to {moveDirection}, speed={pitMoveSpeed}");
     }
 
 
@@ -743,7 +737,6 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         if (isGoingToLastKnownPosition)
         {
-            Debug.Log($"{gameObject.name} annule la recherche (stun sentinelle)");
             targetHuman = null;
             wasChasing = false;
             isGoingToLastKnownPosition = false;
@@ -763,7 +756,6 @@ public class EnemyAI_AStar : MonoBehaviour
         {
             aiPath.enabled = false;
         }
-        Debug.Log($"[EnemyAI] {gameObject.name} PitMode enabled");
     }
 
     public void DisablePitMode()
@@ -773,7 +765,6 @@ public class EnemyAI_AStar : MonoBehaviour
         {
             aiPath.enabled = true;
         }
-        Debug.Log($"[EnemyAI] {gameObject.name} PitMode disabled");
     }
 
     public void EnableRotatingPlatformMode(RotatingPlatform platform)
@@ -788,7 +779,6 @@ public class EnemyAI_AStar : MonoBehaviour
             aiPath.enabled = false;
         }
 
-        Debug.Log($"[EnemyAI] {gameObject.name} OnRotatingPlatform mode enabled");
     }
 
     public void DisableRotatingPlatformMode()
@@ -801,7 +791,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
         currentState = State.Idle;
 
-        Debug.Log($"[EnemyAI] {gameObject.name} OnRotatingPlatform mode disabled, recovering...");
     }
 
     
@@ -818,7 +807,6 @@ public class EnemyAI_AStar : MonoBehaviour
         if (health != null && health.GetSprayStunTimeRemaining() <= 0f)
         {
             currentState = State.Idle;
-            Debug.Log($"{gameObject.name} exited StunBySpray state");
         }
     }
 

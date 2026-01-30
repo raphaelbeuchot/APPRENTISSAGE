@@ -121,10 +121,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             currentHealth = stats.maxHealth;
             currentStamina = stats.maxStamina;
         }
-        else
-        {
-            Debug.LogError("PlayerStats non assigne sur " + gameObject.name);
-        }
+        
 
         // Renderer auto si non assigné
         if (playerRenderer == null)
@@ -140,11 +137,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         animator = GetComponentInChildren<Animator>();
 
-        // AJOUTE CES 2 LIGNES :
-        if (animator != null)
-            Debug.Log("ANIMATOR FOUND: " + animator.gameObject.name);
-        else
-            Debug.LogError("ANIMATOR NOT FOUND!");
+        
 
 
         if (gameManager == null)
@@ -173,7 +166,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
     void Update()
     {
         if (stats == null) return;
-        Debug.Log("UPDATE RUNNING");
 
         HandleInput();
         HandleStamina();
@@ -381,13 +373,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
         grabState = GrabState.Knockdown;
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         rb.linearVelocity = direction * force;
-        Debug.Log("Player KNOCKDOWN!");
         yield return new WaitForSeconds(duration);
         if (grabState == GrabState.Knockdown)
         {
             grabState = GrabState.None;
         }
-        Debug.Log("Player getting up!");
     }
 
     public void HandleMovement()
@@ -591,7 +581,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
     public void ApplySwarmVision(bool active)
     {
         isInSwarmVision = active;
-        Debug.Log($"Swarm vision effect: {active}");
 
 
     }

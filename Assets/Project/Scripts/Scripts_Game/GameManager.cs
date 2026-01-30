@@ -148,24 +148,16 @@ public class GameManager : MonoBehaviour
     {
         if (sentinelSettings == null)
         {
-            Debug.LogError("GameManager: SentinelSettings non assigne!");
             return;
         }
 
-        if (player == null)
-            Debug.LogError("GameManager: PlayerPhysicsMovement non assigne!");
-
-        if (playerHealth == null)
+         if (playerHealth == null)
         {
             playerHealth = player != null ? player.GetComponent<PlayerHealth>() : null;
-            if (playerHealth == null)
-                Debug.LogError("GameManager: PlayerHealth non trouve sur le joueur!");
+            
         }
 
-        if (sentinelCycleManager == null)
-        {
-            Debug.LogError("GameManager: SentinelCycleManager non assigne!");
-        }
+       
 
         audioSource = GetComponent<AudioSource>();
         Time.timeScale = 1f;
@@ -265,7 +257,6 @@ public class GameManager : MonoBehaviour
                     isHeadshot = true;
                     finalTargetPos = headPos;
                     Debug.DrawLine(sentinelPos, headPos, Color.yellow, 0.2f);
-                    Debug.Log($"[HEADSHOT OPPORTUNITY] {col.name} - tete visible a {headPos.y}m");
                 }
             }
             else
@@ -337,7 +328,6 @@ public class GameManager : MonoBehaviour
                         EnemyHealth coverEnemyHealth = obstacleHit.collider.GetComponent<EnemyHealth>();
                         if (coverEnemyHealth != null && !coverEnemyHealth.IsDead())
                         {
-                            Debug.Log($"[INTERCEPT CROUCH] {obstacleHit.collider.name} intercepte le tir de crouch!");
                             ShootEnemy(obstacleHit.collider.gameObject, coverEnemyHealth, "BOUCLIER CROUCH", sentinelPos, obstacleHit.point, trackData.isHeadshot);
 
                             // RESET immediat
@@ -356,8 +346,7 @@ public class GameManager : MonoBehaviour
                         }
                     }
 
-                    // Sinon c'est un vrai obstacle - ricochet normal
-                    Debug.Log($"[RICOCHET CROUCH] {col.name} cache pendant timer crouch, hit {obstacleHit.collider.name}");
+                    
 
                     // Son ricochet
                     if (audioSource != null && sentinelSettings.ricochetSound != null)
@@ -390,7 +379,6 @@ public class GameManager : MonoBehaviour
             // FIN TIMER CROUCH : Re-check visibilite et tirer
             if (trackData.crouchStateChangeInProgress && Time.time >= trackData.crouchStateChangeScheduledTime && hasLOS)
             {
-                Debug.Log($"[FIN TIMER CROUCH] {col.name} - tete={trackData.isHeadshot}, corps={!trackData.isHeadshot}");
 
                 PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
@@ -439,7 +427,6 @@ public class GameManager : MonoBehaviour
                         EnemyHealth coverEnemyHealth = obstacleHit.collider.GetComponent<EnemyHealth>();
                         if (coverEnemyHealth != null && !coverEnemyHealth.IsDead())
                         {
-                            Debug.Log($"[INTERCEPT DELAI] {obstacleHit.collider.name} intercepte le tir pendant le delai!");
                             ShootEnemy(obstacleHit.collider.gameObject, coverEnemyHealth, "BOUCLIER DELAI", sentinelPos, obstacleHit.point, trackData.isHeadshot);
 
                             // RESET
@@ -455,8 +442,7 @@ public class GameManager : MonoBehaviour
                         }
                     }
 
-                    // Sinon c'est un vrai obstacle - ricochet normal
-                    Debug.Log($"[RICOCHET IMMEDIAT] {col.name} cache pendant delai, hit {obstacleHit.collider.name}");
+                    
 
                     // Son ricochet
                     if (audioSource != null && sentinelSettings.ricochetSound != null)
@@ -553,7 +539,6 @@ public class GameManager : MonoBehaviour
                         effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
                     }
                     isMoving = rb.linearVelocity.magnitude > effectiveThreshold;
-                    Debug.Log($"[PIT MODE] {col.name} velocity={rb.linearVelocity.magnitude}, threshold={effectiveThreshold}, moving={isMoving}");
                 }
                 else
                 {
@@ -600,7 +585,6 @@ public class GameManager : MonoBehaviour
                         if (worldSpaceVelocity > effectiveThreshold)
                         {
                             isMoving = true;
-                            Debug.Log($"[WORLD MOVEMENT] {col.name} velocity: {worldSpaceVelocity:F3} m/s (plateforme)");
                         }
 
                         trackData.lastCheckPosition = col.transform.position;
@@ -613,7 +597,6 @@ public class GameManager : MonoBehaviour
             EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isInShallowWater)
             {
-                Debug.Log($"[WATER] {col.name} - isMoving: {isMoving}, hasLOS: {hasLOS}, shouldShoot: {shouldBeShot}");
             }
 
             // FIN DU DELAI : Si toujours visible : TIR REUSSI
@@ -627,7 +610,6 @@ public class GameManager : MonoBehaviour
                     continue;
                 }
 
-                Debug.Log($"[TIR REUSSI] {col.name} toujours visible apres delai");
 
                 PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
@@ -786,7 +768,6 @@ public class GameManager : MonoBehaviour
         // PAS de verification d'interception pour les ennemis entre eux
         // Tir normal direct
         string headshotTag = isHeadshot ? " [HEADSHOT]" : "";
-        Debug.Log("BANG! " + enemy.name + " (" + reason + ")" + headshotTag);
 
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
@@ -841,7 +822,6 @@ public class GameManager : MonoBehaviour
                 EnemyHealth coverEnemyHealth = hit.collider.GetComponent<EnemyHealth>();
                 if (coverEnemyHealth != null && !coverEnemyHealth.IsDead())
                 {
-                    Debug.Log($"[INTERCEPT] {hit.collider.name} intercepte le tir destine au player!");
                     ShootEnemy(hit.collider.gameObject, coverEnemyHealth, "BOUCLIER HUMAIN", sentinelPos, hit.point, isHeadshot);
                     return;
                 }
@@ -850,7 +830,6 @@ public class GameManager : MonoBehaviour
 
         // Tir normal
         string headshotTag = isHeadshot ? " [HEADSHOT]" : "";
-        Debug.Log("BANG! " + human.name + " (" + reason + ")" + headshotTag);
 
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
@@ -884,7 +863,6 @@ public class GameManager : MonoBehaviour
             alreadyShot.Remove(player.gameObject);
             playerAlarmTriggered = false;
 
-            Debug.Log("Player recovery complete - can be shot again if moves");
         }
     }
 
@@ -895,7 +873,6 @@ public class GameManager : MonoBehaviour
             Vector3 currentPos = GetTargetCenter(playerObject);
             StartCoroutine(ShowShootLaser(sentinelPos, currentPos, sentinelSettings.shootLaserFadeDuration));
 
-            Debug.Log("BANG! Player shot at end of recoil");
 
             if (audioSource != null && sentinelSettings.shootSound != null)
                 audioSource.PlayOneShot(sentinelSettings.shootSound);
@@ -949,7 +926,6 @@ public class GameManager : MonoBehaviour
             kvp.Value.lastCheckPosition = Vector3.zero;
             kvp.Value.lastCheckTime = 0f;
         }
-        Debug.Log("[TRACKING RESET] All tracking data cleared for new cycle");
 
         // Reset le blanc au passage en GreenLight
         if (playerDetectionFeedback != null)
@@ -972,13 +948,11 @@ public class GameManager : MonoBehaviour
             totalEnemies++;
         }
 
-        Debug.Log($"[KILLCOUNT] Total enemies to kill: {totalEnemies}");
     }
 
     public void OnEnemyKilled()
     {
         enemiesKilled++;
-        Debug.Log($"[KILLCOUNT] Enemy killed! {enemiesKilled}/{totalEnemies}");
     }
 
     // Getters pour VictoryUI

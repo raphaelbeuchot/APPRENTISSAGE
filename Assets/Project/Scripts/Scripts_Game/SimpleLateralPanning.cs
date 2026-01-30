@@ -18,6 +18,10 @@ public class SimpleLateralPanning : CinemachineExtension
     {
         if (stage == CinemachineCore.Stage.Body)
         {
+            // Vérification si PlayerInputManager existe
+            if (PlayerInputManager.Instance == null)
+                return;
+
             Vector2 lookInput = PlayerInputManager.Instance.LookInput;
             Vector3 targetLateralOffset = currentLateralOffset;
 
