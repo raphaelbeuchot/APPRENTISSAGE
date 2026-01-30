@@ -9,6 +9,7 @@ public class EnemyHealthBarManager : MonoBehaviour
     [Header("Prefab")]
     public GameObject healthBarPrefab;
     public Canvas canvas;
+    public RectTransform healthBarsContainer;
 
     [Header("Settings")]
     public float verticalOffset = 2f;
@@ -66,6 +67,7 @@ public class EnemyHealthBarManager : MonoBehaviour
     {
         if (!healthBars.ContainsKey(enemy))
         {
+            bar.transform.SetParent(healthBarsContainer, false);
             healthBars.Add(enemy, bar);
             Debug.Log($"[HealthBarManager] Registered {enemy.name}");
         }
