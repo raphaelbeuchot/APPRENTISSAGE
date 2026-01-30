@@ -27,9 +27,13 @@ public class PlayerStats : ScriptableObject
     [Header("MOUVEMENT")]
     [Tooltip("Vitesse de deplacement normale")]
     public float moveSpeed = 5f;
-    [Tooltip("Multiplicateur de vitesse en sprint")]
-    [Range(1f, 3f)]
-    public float sprintSpeedMultiplier = 1.5f;
+    
+
+    [Header("Dash")]
+    public float dashDistance = 1f;
+    public float dashDuration = 0.35f;
+    public float dashStaminaCost = 25f;
+    public float dashCooldown = 2.5f;
 
     [Header("Crouch")]
     public float crouchSpeedMultiplier = 0.8f; // 80 prcents vitesse en crouch

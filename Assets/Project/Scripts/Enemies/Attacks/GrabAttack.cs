@@ -117,8 +117,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
 
-        if (player != null && player.IsSprinting())
-            return;
+        
 
         // === CHECK IMMUNITE GRABS ===
         if (player != null && player.isImmuneToGrab)

@@ -55,7 +55,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
     public bool isClimbing = false;
 
 
-    public bool IsSprinting() => isSprinting;
 
     // Grab States
     public enum GrabState { None, Grabbed, Recoil, Knockdown }
@@ -67,15 +66,18 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private Rigidbody rb;
     private Vector3 moveInput;
     private Vector3 currentVelocity;
-    private bool isSprinting = false;
     private float currentSpeed;
 
     // Stamina runtime
     private float currentStamina;
-    private float lastSprintTime;
 
     // Health
     private float currentHealth;
+
+    // Dash
+    [HideInInspector] public bool isDashing = false;
+    private float lastDashTime = -999f;
+    private Vector3 dashDirection;
 
     // Reference
     public GameManager gameManager;
@@ -182,29 +184,12 @@ public class PlayerPhysicsMovement : MonoBehaviour
                 EnterCrouch();
         }
 
-        // Sortie crouch si sprint
+        // Sortie crouch si dash
         if (PlayerInputManager.Instance.SprintPressed && isCrouching)
         {
             ExitCrouch();
         }
 
-        // Sortie crouch si sprint
-        if (PlayerInputManager.Instance.SprintPressed && isCrouching)
-        {
-            isCrouching = false;
-        }
-
-        // Calculer vitesse
-        float targetSpeed = stats.moveSpeed;
-        if (isCrouching)
-        {
-            targetSpeed *= stats.crouchSpeedMultiplier;
-        }
-        else if (isSprinting && currentStamina > 0)
-        {
-            targetSpeed *= stats.sprintSpeedMultiplier;
-        }
-        
         if (animator != null)
         {
             // Calculer la vitesse dans le référentiel LOCAL du personnage
@@ -216,11 +201,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
             animator.SetFloat("SpeedZ", localVelocity.z);
             animator.SetBool("IsCrouching", isCrouching);
         }
-        
-        // === IMMUNITÉ GRABS SI EN L'AIR ===
+
+        // === IMMUNITÉ GRABS ===
         if (!isClimbing) // Ne pas override l'immunité du climb
         {
-            isImmuneToGrab = !IsGrounded(); // Simple : en l'air = immune, au sol = vulnérable
+            isImmuneToGrab = !IsGrounded() || isDashing; // En l'air OU en dash = immune
         }
     }
 
@@ -231,8 +216,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (grabState == GrabState.Recoil || grabState == GrabState.Knockdown) return;
         if (isFrozen) return;
 
-        HandleStepClimb();  // AVANT HandleMovement (correction géométrique)
-        HandleMovement();    // APRÈS (mouvement normal)
+        // AJOUTER CETTE LIGNE :
+        if (isDashing) return; // Skip tout pendant le dash
+
+        HandleStepClimb();
+        HandleMovement();
     }
 
     void HandleInput()
@@ -260,38 +248,19 @@ public class PlayerPhysicsMovement : MonoBehaviour
         // Multiplier par la magnitude originale pour garder l'intensité du stick
         moveInput = direction * Mathf.Clamp01(inputMagnitude);
 
-        // Sprint
-        if (PlayerInputManager.Instance.SprintPressed && currentStamina > 0f && moveInput.magnitude > 0.1f)
+        // Dash
+        if (PlayerInputManager.Instance.SprintPressed && CanDash())
         {
-            isSprinting = true;
-            lastSprintTime = Time.time;
-        }
-        else
-        {
-            isSprinting = false;
+            Vector3 dashDir = GetCameraRelativeMovement(moveInput);
+            StartCoroutine(DashCoroutine(dashDir));
         }
     }
 
     void HandleStamina()
     {
-        if (isSprinting)
-        {
-            currentStamina -= stats.staminaDrainPerSecond * Time.deltaTime;
-            currentStamina = Mathf.Max(0f, currentStamina);
-
-            if (currentStamina <= 0f)
-            {
-                isSprinting = false;
-            }
-        }
-        else
-        {
-            if (Time.time - lastSprintTime >= stats.staminaRegenDelay)
-            {
-                currentStamina += stats.staminaRegenPerSecond * Time.deltaTime;
-                currentStamina = Mathf.Min(stats.maxStamina, currentStamina);
-            }
-        }
+        // Regen passive (pas de condition sprint)
+        currentStamina += stats.staminaRegenPerSecond * Time.deltaTime;
+        currentStamina = Mathf.Min(stats.maxStamina, currentStamina);
     }
 
     void HandleStepClimb()
@@ -485,10 +454,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         float stickMagnitude = moveInput.magnitude;
         baseSpeed *= stickMagnitude;
 
-        if (isSprinting)
-        {
-            baseSpeed *= stats.sprintSpeedMultiplier;
-        }
+       
 
         // AJOUTE CES LIGNES :
         if (isCrouching)
@@ -644,7 +610,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         isFrozen = true;
         canMove = false;
-        isSprinting = false;
         rb.linearVelocity = Vector3.zero;
 
         if (playerRenderer != null)
@@ -716,5 +681,50 @@ public class PlayerPhysicsMovement : MonoBehaviour
             currentPlatform = null;
         }
     }
-    
+    bool CanDash()
+    {
+        if (isDashing) return false;
+        if (isClimbing) return false;
+        if (isCrouching) return false;
+        if (grabState != GrabState.None) return false;
+        if (gameManager.stunBySentinel) return false;
+        if (moveInput.magnitude < 0.1f) return false; // Pas de dash sur place
+        if (currentStamina < stats.dashStaminaCost) return false;
+        if (Time.time < lastDashTime + stats.dashCooldown) return false;
+
+        return true;
+    }
+
+    IEnumerator DashCoroutine(Vector3 direction)
+    {
+        // Consommer stamina
+        currentStamina -= stats.dashStaminaCost;
+        currentStamina = Mathf.Max(0f, currentStamina);
+
+        // Setup dash
+        isDashing = true;
+        dashDirection = direction.normalized;
+        float dashSpeed = stats.dashDistance / stats.dashDuration;
+
+        // Bloquer inputs normaux
+        canMove = false;
+
+        float elapsed = 0f;
+        while (elapsed < stats.dashDuration)
+        {
+            // Forcer velocity dans dashDirection
+            Vector3 dashVelocity = dashDirection * dashSpeed;
+            dashVelocity.y = rb.linearVelocity.y; // Garder gravité
+            rb.linearVelocity = dashVelocity;
+
+            elapsed += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+
+        // Fin dash
+        isDashing = false;
+        canMove = true;
+        lastDashTime = Time.time;
+    }
+
 }
