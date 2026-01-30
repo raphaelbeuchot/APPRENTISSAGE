@@ -843,6 +843,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d5c027045b0ec1240985ae2bd424e61c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7998777115308558468}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d5c027045b0ec1240985ae2bd424e61c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7388128949257609772}
   m_SourcePrefab: {fileID: 100100000, guid: d5c027045b0ec1240985ae2bd424e61c, type: 3}
 --- !u!1 &4772320303696662645 stripped
 GameObject:
@@ -871,6 +874,23 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7388128949257609772
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4772320303696662645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ac716e918879a045b2742eea0962168, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FootstepController
+  footstepSounds:
+  - {fileID: 8300000, guid: cc7aac98691a809428f32ec69d992223, type: 3}
+  baseVolume: 0.2
+  volumeVariation: 0.1
+  pitchVariation: 0.05
 --- !u!4 &5292117297086401231 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d5c027045b0ec1240985ae2bd424e61c, type: 3}

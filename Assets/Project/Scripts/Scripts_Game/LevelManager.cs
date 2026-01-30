@@ -1,11 +1,13 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
+using UnityEngine.UI;
 
 /// <summary>
-/// Gère le déroulement complet du niveau :
-/// - Détection de la victoire (GoalDoor)
-/// - Détection de la défaite (PlayerHealth)
-/// - Affichage des écrans UI
+/// Gere le deroulement complet du niveau :
+/// - Detection de la victoire (GoalDoor)
+/// - Detection de la defaite (PlayerHealth)
+/// - Affichage des ecrans UI
 /// - Chargement des niveaux
 /// </summary>
 public class LevelManager : MonoBehaviour
@@ -24,17 +26,36 @@ public class LevelManager : MonoBehaviour
     public float delayBeforeNextLevel = 3f;
     public float delayBeforeRestart = 2f;
 
-    [Header("Level End")]
-    [SerializeField] private Collider levelEndTrigger; // Pour niveau tuto sans Victory UI
-    [SerializeField] private bool useLevelEndTrigger = false; // Active/désactive ce système
+    [Header("Level Rules")]
+    [Tooltip("Si coche, skip l'ecran Victory UI et passe direct au niveau suivant avec fade")]
+    public bool skipVictoryUI = false;
+
+    [Tooltip("Si coche, la porte reste fermee jusqu'a ce que tous les ennemis soient tues")]
+    public bool requireAllEnemiesKilled = false;
+
+    [Header("Fade Settings")]
+    [SerializeField] private float fadeDuration = 1f;
+
+    [Header("Level End (Legacy)")]
+    [SerializeField] private Collider levelEndTrigger;
+    [SerializeField] private bool useLevelEndTrigger = false;
     [SerializeField] private bool isTutorialLevel = false;
 
     private bool levelCompleted = false;
     private bool gameOver = false;
+    private bool doorHasBeenActivated = false;
+
+    // Fade canvas
+    private Canvas fadeCanvas;
+    private Image fadeImage;
+    private CanvasGroup fadeCanvasGroup;
 
     void Start()
     {
-        // Trouver automatiquement les références si non assignées
+        // Creer le canvas de fade
+        CreateFadeCanvas();
+
+        // Trouver automatiquement les references si non assignees
         if (goalDoor == null)
         {
             goalDoor = FindObjectOfType<GoalDoor>();
@@ -81,14 +102,20 @@ public class LevelManager : MonoBehaviour
             }
         }
 
-        // S'abonner aux événements
+        // S'abonner aux evenements
         if (goalDoor != null)
         {
             goalDoor.OnPlayerReached += OnPlayerReachedGoal;
+
+            // Si la regle require tous ennemis tues, desactiver la porte au debut
+            if (requireAllEnemiesKilled)
+            {
+                goalDoor.SetActive(false);
+            }
         }
         else
         {
-            Debug.LogWarning("LevelManager: Aucune GoalDoor trouvée dans la scène!");
+            Debug.LogWarning("LevelManager: Aucune GoalDoor trouvee dans la scene!");
         }
 
         if (playerHealth != null)
@@ -97,11 +124,56 @@ public class LevelManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("LevelManager: PlayerHealth non trouvé!");
+            Debug.LogWarning("LevelManager: PlayerHealth non trouve!");
         }
 
         // S'assurer que le temps est normal
         Time.timeScale = 1f;
+    }
+
+    void Update()
+    {
+        // Check si la porte doit s'activer apres tous les kills
+        if (requireAllEnemiesKilled && !doorHasBeenActivated && gameManager != null && goalDoor != null)
+        {
+            if (gameManager.enemiesKilled >= gameManager.totalEnemies && gameManager.totalEnemies > 0)
+            {
+                doorHasBeenActivated = true;
+                goalDoor.ActivateDoor();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Cree le canvas de fade noir
+    /// </summary>
+    void CreateFadeCanvas()
+    {
+        GameObject fadeObj = new GameObject("FadeCanvas");
+        fadeObj.transform.SetParent(transform);
+
+        fadeCanvas = fadeObj.AddComponent<Canvas>();
+        fadeCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        fadeCanvas.sortingOrder = 9999;
+
+        fadeObj.AddComponent<CanvasScaler>();
+        fadeObj.AddComponent<GraphicRaycaster>();
+
+        fadeCanvasGroup = fadeObj.AddComponent<CanvasGroup>();
+        fadeCanvasGroup.alpha = 0f;
+        fadeCanvasGroup.blocksRaycasts = false;
+
+        GameObject imageObj = new GameObject("FadeImage");
+        imageObj.transform.SetParent(fadeObj.transform);
+
+        fadeImage = imageObj.AddComponent<Image>();
+        fadeImage.color = Color.black;
+
+        RectTransform rt = fadeImage.rectTransform;
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.sizeDelta = Vector2.zero;
+        rt.anchoredPosition = Vector2.zero;
     }
 
     // ============================================
@@ -113,28 +185,65 @@ public class LevelManager : MonoBehaviour
         if (levelCompleted || gameOver) return;
 
         levelCompleted = true;
-        Debug.Log("=== NIVEAU COMPLETÉ! ===");
+        Debug.Log("=== NIVEAU COMPLETE! ===");
 
-        // Désactiver le mouvement du joueur
+        // Desactiver le mouvement du joueur
         if (player != null)
         {
             player.enabled = false;
         }
 
-        // Afficher l'écran de victoire
-        if (victoryUI != null)
+        // Branching selon skipVictoryUI
+        if (skipVictoryUI)
         {
-            victoryUI.Show(playerHealth);
+            // Fade noir puis chargement direct
+            StartCoroutine(FadeAndLoadNextLevel());
         }
         else
         {
-            Debug.LogWarning("VictoryUI non trouvé! Chargement automatique du niveau suivant.");
-            Invoke(nameof(LoadNextLevel), delayBeforeNextLevel);
+            // Afficher l'ecran de victoire
+            if (victoryUI != null)
+            {
+                victoryUI.Show(playerHealth);
+            }
+            else
+            {
+                Debug.LogWarning("VictoryUI non trouve! Chargement automatique du niveau suivant.");
+                Invoke(nameof(LoadNextLevel), delayBeforeNextLevel);
+            }
         }
     }
 
+    /// <summary>
+    /// Fade noir puis charge le niveau suivant
+    /// </summary>
+    IEnumerator FadeAndLoadNextLevel()
+    {
+        if (fadeCanvasGroup != null)
+        {
+            fadeCanvasGroup.blocksRaycasts = true;
+
+            // Fade in (vers noir)
+            float elapsed = 0f;
+            while (elapsed < fadeDuration)
+            {
+                elapsed += Time.deltaTime;
+                fadeCanvasGroup.alpha = Mathf.Clamp01(elapsed / fadeDuration);
+                yield return null;
+            }
+
+            fadeCanvasGroup.alpha = 1f;
+        }
+
+        // Petit delai au noir
+        yield return new WaitForSeconds(0.3f);
+
+        // Charger le niveau suivant
+        LoadNextLevel();
+    }
+
     // ============================================
-    // DÉFAITE
+    // DEFAITE
     // ============================================
 
     void OnPlayerDeath()
@@ -144,20 +253,20 @@ public class LevelManager : MonoBehaviour
         gameOver = true;
         Debug.Log("=== GAME OVER ===");
 
-        // Désactiver le mouvement du joueur
+        // Desactiver le mouvement du joueur
         if (player != null)
         {
             player.enabled = false;
         }
 
-        // Afficher l'écran de Game Over
+        // Afficher l'ecran de Game Over
         if (gameOverUI != null)
         {
             gameOverUI.Show();
         }
         else
         {
-            Debug.LogWarning("GameOverUI non trouvé! Redémarrage automatique.");
+            Debug.LogWarning("GameOverUI non trouve! Redemarrage automatique.");
             Invoke(nameof(RestartLevel), delayBeforeRestart);
         }
     }
@@ -174,7 +283,7 @@ public class LevelManager : MonoBehaviour
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         int nextSceneIndex = currentSceneIndex + 1;
 
-        // Vérifier s'il y a un niveau suivant
+        // Verifier s'il y a un niveau suivant
         if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
         {
             Debug.Log("Chargement du niveau " + nextSceneIndex + "...");
@@ -184,9 +293,9 @@ public class LevelManager : MonoBehaviour
         else
         {
             // Plus de niveaux, retour au menu ou niveau 1
-            Debug.Log("TOUS LES NIVEAUX COMPLÉTÉS! Recommencer...");
+            Debug.Log("TOUS LES NIVEAUX COMPLETES! Recommencer...");
             Time.timeScale = 1f;
-            SceneManager.LoadScene(0); // Retour au niveau 1
+            SceneManager.LoadScene(0);
         }
     }
 
@@ -195,9 +304,9 @@ public class LevelManager : MonoBehaviour
     /// </summary>
     public void RestartLevel()
     {
-        Debug.Log("Redémarrage du niveau...");
+        Debug.Log("Redemarrage du niveau...");
 
-        // NOUVEAU : Ne set le PlayerPrefs que si ce n'est PAS un niveau tuto
+        // Ne set le PlayerPrefs que si ce n'est PAS un niveau tuto
         if (!isTutorialLevel)
         {
             PlayerPrefs.SetInt("AutoStartCountdown", 1);
@@ -210,32 +319,30 @@ public class LevelManager : MonoBehaviour
     /// <summary>
     /// Quitte le jeu
     /// </summary>
-    /// <summary>
-    /// Quitte le jeu
-    /// </summary>
     public void QuitGame()
     {
         Debug.Log("Quitter le jeu...");
 
-        Time.timeScale = 1f; // AJOUTE CA ICI
+        Time.timeScale = 1f;
 
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
-    Application.Quit();
+        Application.Quit();
 #endif
     }
+
     /// <summary>
-    /// Appelée quand le player touche le levelEndTrigger (passage direct sans Victory UI)
+    /// Appelee quand le player touche le levelEndTrigger (passage direct sans Victory UI)
     /// </summary>
     public void OnPlayerReachedLevelEnd(GameObject playerObject)
     {
         if (levelCompleted || gameOver) return;
 
         levelCompleted = true;
-        Debug.Log("=== NIVEAU COMPLETÉ (Level End Trigger) ===");
+        Debug.Log("=== NIVEAU COMPLETE (Level End Trigger) ===");
 
-        // Désactiver le mouvement du joueur
+        // Desactiver le mouvement du joueur
         if (player != null)
         {
             player.enabled = false;
@@ -244,13 +351,14 @@ public class LevelManager : MonoBehaviour
         // Chargement direct du niveau suivant sans Victory UI
         Invoke(nameof(LoadNextLevel), 0.5f);
     }
+
     // ============================================
     // CLEANUP
     // ============================================
 
     void OnDestroy()
     {
-        // Se désabonner des événements
+        // Se desabonner des evenements
         if (goalDoor != null)
         {
             goalDoor.OnPlayerReached -= OnPlayerReachedGoal;

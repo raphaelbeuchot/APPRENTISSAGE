@@ -15,6 +15,7 @@ public class GoalDoor : MonoBehaviour
 
     [Header("Audio")]
     public AudioClip doorReachedSound;
+    public AudioClip doorActivatedSound; // NOUVEAU - son quand la porte s'active apres tous les kills
     private AudioSource audioSource;
 
     [Header("Effets")]
@@ -65,7 +66,6 @@ public class GoalDoor : MonoBehaviour
     void ReachGoal(GameObject player)
     {
         hasBeenReached = true;
-
         Debug.Log("VICTOIRE! Le joueur a atteint la porte!");
 
         // Son de victoire
@@ -95,6 +95,25 @@ public class GoalDoor : MonoBehaviour
         {
             Destroy(player, 2f);
         }
+    }
+
+    /// <summary>
+    /// Active la porte (appelee par LevelManager quand tous ennemis tues)
+    /// </summary>
+    public void ActivateDoor()
+    {
+        if (isActive) return; // Deja active
+
+        isActive = true;
+        UpdateVisuals();
+
+        // Son d'activation
+        if (audioSource != null && doorActivatedSound != null)
+        {
+            audioSource.PlayOneShot(doorActivatedSound);
+        }
+
+        Debug.Log("GoalDoor: Porte activee! Tous les ennemis sont elimines.");
     }
 
     /// <summary>

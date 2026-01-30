@@ -1016,7 +1016,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6720186609789860585, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Enabled
@@ -2518,6 +2518,28 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 34818105}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &36507968 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4772320303696662645, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+  m_PrefabInstance: {fileID: 6978021389780206166}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &36507971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36507968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ac716e918879a045b2742eea0962168, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FootstepController
+  footstepSounds:
+  - {fileID: 8300000, guid: 600b3265984445f439885198bd3a09b0, type: 3}
+  baseVolume: 0.2
+  volumeVariation: 0.1
+  pitchVariation: 0.15
 --- !u!4 &36546394 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
@@ -10195,7 +10217,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6720186609789860585, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Enabled
@@ -10579,7 +10601,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5275224879802208621, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Layer
@@ -43902,7 +43924,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5275224879802208621, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Layer
@@ -50246,7 +50268,6 @@ GameObject:
   - component: {fileID: 871157099}
   - component: {fileID: 871157098}
   - component: {fileID: 871157097}
-  - component: {fileID: 871157102}
   m_Layer: 0
   m_Name: GoalDoor
   m_TagString: Untagged
@@ -50268,9 +50289,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GoalDoor
   isActive: 1
   doorRenderer: {fileID: 871157099}
-  activeMaterial: {fileID: 2100000, guid: 3fd8df8b74dceb54c95181af4a0a7fb6, type: 2}
-  inactiveMaterial: {fileID: 0}
-  doorReachedSound: {fileID: 8300000, guid: 5f4d3211fec8ce04190dc8a9c9c2c4cd, type: 3}
+  activeMaterial: {fileID: 2100000, guid: 514822785fd99084193079fb1d20b82d, type: 2}
+  inactiveMaterial: {fileID: 2100000, guid: 0126f9a9ac3bc0a46927be7740536b18, type: 2}
+  doorReachedSound: {fileID: 8300000, guid: 9bb00fe3488099445858bf27a904bc1f, type: 3}
+  doorActivatedSound: {fileID: 0}
   victoryEffectPrefab: {fileID: 0}
   destroyPlayerOnReach: 0
 --- !u!65 &871157098
@@ -50365,22 +50387,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1890326246}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!208 &871157102
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 871157096}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 0.5, y: 0.5, z: 0.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 0, y: 0, z: 0}
-  m_TimeToStationary: 0.5
 --- !u!1 &871435854
 GameObject:
   m_ObjectHideFlags: 0
@@ -60799,6 +60805,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ZombieBloatMaggot01
       objectReference: {fileID: 0}
+    - target: {fileID: 1832123752479731275, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4295875408224688438, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
       propertyPath: m_LocalPosition.x
       value: -6.19
@@ -68201,7 +68211,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5275224879802208621, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Layer
@@ -69484,7 +69494,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5275224879802208621, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Layer
@@ -87475,7 +87485,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5275224879802208621, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Layer
@@ -97912,7 +97922,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5275224879802208621, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Layer
@@ -99055,6 +99065,10 @@ PrefabInstance:
     - target: {fileID: 1832123752479731275, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
       propertyPath: m_Name
       value: ZombieBloatMaggot02
+      objectReference: {fileID: 0}
+    - target: {fileID: 1832123752479731275, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4295875408224688438, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -100520,7 +100534,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6720186609789860585, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Enabled
@@ -127637,7 +127651,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5275224879802208621, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Layer
@@ -127830,7 +127844,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1703198637837860369, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1703198637837860369, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: m_LocalScale.z
@@ -127842,7 +127856,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1703198637837860369, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1703198637837860369, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: m_LocalPosition.z
@@ -128304,6 +128318,14 @@ PrefabInstance:
       propertyPath: gameManager
       value: 
       objectReference: {fileID: 1801742136}
+    - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: skipVictoryUI
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: requireAllEnemiesKilled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7881171583933020488, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: m_Name
       value: LevelManager
@@ -128503,6 +128525,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1801742136}
     - target: {fileID: 3882219009807252739, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+      propertyPath: maxStepHeight
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882219009807252739, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
       propertyPath: cameraTransform
       value: 
       objectReference: {fileID: 1361275057}
@@ -128520,12 +128546,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 5943132159257684885, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+    - {fileID: 7969278328544710240, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3630615494597918022, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6305765746340978719}
+    - targetCorrespondingSourceObject: {fileID: 4772320303696662645, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 36507971}
   m_SourcePrefab: {fileID: 100100000, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
 --- !u!1001 &9019177782128006907
 PrefabInstance:

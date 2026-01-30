@@ -35659,6 +35659,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8c6fa7ab62026104b805b357479e7e2d, type: 3}
+--- !u!224 &665780598 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7581279474760324962, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+  m_PrefabInstance: {fileID: 115993669638194592}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &666102192 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
@@ -46065,6 +46070,7 @@ MonoBehaviour:
   activeMaterial: {fileID: 2100000, guid: 3fd8df8b74dceb54c95181af4a0a7fb6, type: 2}
   inactiveMaterial: {fileID: 0}
   doorReachedSound: {fileID: 8300000, guid: 5f4d3211fec8ce04190dc8a9c9c2c4cd, type: 3}
+  doorActivatedSound: {fileID: 0}
   victoryEffectPrefab: {fileID: 0}
   destroyPlayerOnReach: 0
 --- !u!65 &871157098
@@ -54336,7 +54342,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1021356696
 RectTransform:
   m_ObjectHideFlags: 0
@@ -54403,8 +54409,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 15
-  m_fontSizeBase: 15
+  m_fontSize: 25
+  m_fontSizeBase: 25
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -120230,7 +120236,7 @@ PrefabInstance:
     - target: {fileID: 3354294245251459709, guid: 53a1b0d71e0b6a440a6a7c3f08109ebc, type: 3}
       propertyPath: healthBarsContainer
       value: 
-      objectReference: {fileID: 125035845}
+      objectReference: {fileID: 665780598}
     - target: {fileID: 4373965582128324914, guid: 53a1b0d71e0b6a440a6a7c3f08109ebc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -120483,6 +120489,14 @@ PrefabInstance:
       propertyPath: gameManager
       value: 
       objectReference: {fileID: 1801742136}
+    - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: skipVictoryUI
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: requireAllEnemiesKilled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7881171583933020488, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: m_Name
       value: LevelManager

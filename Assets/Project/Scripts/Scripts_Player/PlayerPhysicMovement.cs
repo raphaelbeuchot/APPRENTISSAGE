@@ -43,7 +43,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private Vector3 originalMeshScale;
 
     [Header("Step Climbing")]  // <--- AJOUTER ICI
-    [SerializeField] private float maxStepHeight = 0.3f;
+    [SerializeField] private float maxStepHeight = 0.4f;
     [SerializeField] private float stepCheckDistance = 0.1f;
     [SerializeField] private float stepRayHeightOffset = 0.1f;
     private float lastStepClimbTime = 0f;
