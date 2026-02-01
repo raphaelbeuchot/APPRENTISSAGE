@@ -46,6 +46,8 @@ public class SentinelCycleManager : MonoBehaviour
 
     private Coroutine alertCoroutine;
     public float alertDuration;
+    // NOUVEAU : Reference au GameObject temporaire du son d'alerte
+    private GameObject tempAlertAudioGO = null;
 
     void OnEnable()
     {
@@ -445,15 +447,21 @@ public class SentinelCycleManager : MonoBehaviour
     {
         if (clip == null || audioSource == null) return null;
 
-        GameObject tempGO = new GameObject("TempAudio_Alert");
-        tempGO.transform.position = sentinelTransform.position;
-        AudioSource tempAS = tempGO.AddComponent<AudioSource>();
+        // Detruire l'ancien si il existe encore
+        if (tempAlertAudioGO != null)
+        {
+            Destroy(tempAlertAudioGO);
+        }
+
+        tempAlertAudioGO = new GameObject("TempAudio_Alert");
+        tempAlertAudioGO.transform.position = sentinelTransform.position;
+        AudioSource tempAS = tempAlertAudioGO.AddComponent<AudioSource>();
         tempAS.clip = clip;
         tempAS.pitch = pitch;
         tempAS.spatialBlend = 0f;
         tempAS.volume = audioSource.volume;
         tempAS.Play();
-        Destroy(tempGO, clip.length / pitch + 0.1f);
+        Destroy(tempAlertAudioGO, clip.length / pitch + 0.1f);
 
         return tempAS;
     }
@@ -501,5 +509,39 @@ public class SentinelCycleManager : MonoBehaviour
     public bool IsGameStarted()
     {
         return gameStarted;
+    }
+    /// <summary>
+    /// Arrete completement le cycle de la sentinelle (appele par GoalDoor)
+    /// </summary>
+    public void StopCycle()
+    {
+        Debug.Log("[CYCLE] ARRET COMPLET - GoalDoor atteinte !");
+
+        // Arrete le systeme de cycle
+        gameStarted = false;
+
+        // Stoppe la coroutine d'alerte si elle tourne
+        if (alertCoroutine != null)
+        {
+            StopCoroutine(alertCoroutine);
+            alertCoroutine = null;
+        }
+
+        // Stoppe tous les sons (jingles BeethovenAlert, RedLight, etc.)
+        if (audioSource != null)
+        {
+            audioSource.Stop();
+            audioSource.loop = false;
+        }
+
+        // NOUVEAU : Detruit le GameObject temporaire du BeethovenAlert s'il existe
+        if (tempAlertAudioGO != null)
+        {
+            Destroy(tempAlertAudioGO);
+            tempAlertAudioGO = null;
+            Debug.Log("[CYCLE] BeethovenAlert temporaire detruit");
+        }
+
+        Debug.Log("[CYCLE] Cycle arrete - Sons coupes");
     }
 }

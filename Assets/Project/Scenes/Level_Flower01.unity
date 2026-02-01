@@ -28274,9 +28274,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GoalDoor
   isActive: 1
   doorRenderer: {fileID: 871157099}
-  activeMaterial: {fileID: 2100000, guid: 3fd8df8b74dceb54c95181af4a0a7fb6, type: 2}
-  inactiveMaterial: {fileID: 0}
+  activeMaterial: {fileID: 2100000, guid: 514822785fd99084193079fb1d20b82d, type: 2}
+  inactiveMaterial: {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
   doorReachedSound: {fileID: 8300000, guid: 5f4d3211fec8ce04190dc8a9c9c2c4cd, type: 3}
+  doorActivatedSound: {fileID: 0}
   victoryEffectPrefab: {fileID: 0}
   destroyPlayerOnReach: 0
 --- !u!65 &871157098
@@ -28364,13 +28365,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 871157096}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 12.3348, y: 1, z: 13.918419}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8.3348, y: 1, z: 14.918419}
   m_LocalScale: {x: 1.5837, y: 2.7506, z: 0.55176}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1890326246}
-  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!208 &871157102
 NavMeshObstacle:
   m_ObjectHideFlags: 0
@@ -67924,6 +67925,10 @@ PrefabInstance:
       propertyPath: playerHealth
       value: 
       objectReference: {fileID: 1871075794}
+    - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: requireAllEnemiesKilled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7881171583933020488, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: m_Name
       value: LevelManager

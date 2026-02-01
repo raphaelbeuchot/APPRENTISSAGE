@@ -703,8 +703,13 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         // Setup dash
         isDashing = true;
+        // AJOUTER CES 2 LIGNES :
+        if (animator != null)
+            animator.SetTrigger("DoDash");
+
         dashDirection = direction.normalized;
         float dashSpeed = stats.dashDistance / stats.dashDuration;
+        
 
         // Bloquer inputs normaux
         canMove = false;

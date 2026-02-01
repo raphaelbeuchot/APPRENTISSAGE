@@ -90,6 +90,17 @@ public class GoalDoor : MonoBehaviour
             playerMovement.enabled = false;
         }
 
+        // NOUVEAU : Arreter le cycle de la sentinelle
+        SentinelCycleManager sentinelCycle = FindObjectOfType<SentinelCycleManager>();
+        if (sentinelCycle != null)
+        {
+            sentinelCycle.StopCycle();
+        }
+        else
+        {
+            Debug.LogWarning("[GoalDoor] SentinelCycleManager introuvable !");
+        }
+
         // Option: detruire le joueur
         if (destroyPlayerOnReach)
         {
