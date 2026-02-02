@@ -209,16 +209,18 @@ public class BroomAttackSystem : MonoBehaviour
             EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
             if (enemyHealth != null && !enemyHealth.IsDead())
             {
+                // CALCULER DIRECTION KNOCKBACK D'ABORD
+                Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
+                knockbackDir.y = 0;
+
                 // Knockback (applique a TOUS les zombies, Blinder inclus)
                 Rigidbody targetRb = hit.GetComponent<Rigidbody>();
                 if (targetRb != null)
                 {
-                    Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
-                    knockbackDir.y = 0;
                     targetRb.AddForce(knockbackDir * stats.broomKnockbackForce, ForceMode.VelocityChange);
 
                     // ACTIVER LE FLAG KNOCKBACK
-                    enemyHealth.SetKnockbackState(0.8f); // Durée = celle du knockdown (2s) ou moins
+                    enemyHealth.SetKnockbackState(0.8f);
                 }
 
                 // Degats
@@ -230,6 +232,14 @@ public class BroomAttackSystem : MonoBehaviour
                 {
                     grab.CancelWindup();
                     Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} grab windup");
+                }
+
+                // ANNULER ROTATION TO IMPACT SI EN COURS
+                EnemyAI_AStar zombieAI = hit.GetComponent<EnemyAI_AStar>();
+                if (zombieAI != null && zombieAI.currentState == EnemyAI_AStar.State.RotatingToImpact)
+                {
+                    zombieAI.CancelRotationToImpact();
+                    Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} rotation to impact");
                 }
 
                 // Son d'impact individuel
@@ -253,7 +263,7 @@ public class BroomAttackSystem : MonoBehaviour
                 }
 
                 MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
-                StartCoroutine(KnockdownTarget(hit.gameObject));
+                StartCoroutine(KnockdownTarget(hit.gameObject, knockbackDir));
             }
 
             // SWARMS
@@ -300,7 +310,7 @@ public class BroomAttackSystem : MonoBehaviour
             }
         }
     }
-    IEnumerator KnockdownTarget(GameObject target)
+    IEnumerator KnockdownTarget(GameObject target, Vector3 knockbackDirection)
     {
         EnemyAI_AStar zombieAI_AStar = target.GetComponent<EnemyAI_AStar>();
 
@@ -320,6 +330,21 @@ public class BroomAttackSystem : MonoBehaviour
         }
 
         yield return new WaitForSeconds(2f);
+
+        // DÉMARRER ROTATION VERS POINT D'IMPACT
+        EnemyAI_AStar zombieForRotation = target.GetComponent<EnemyAI_AStar>();
+        EnemyHealth healthForRotation = target.GetComponent<EnemyHealth>();
+
+        if (zombieForRotation != null && healthForRotation != null && !healthForRotation.IsDead())
+        {
+            if (healthForRotation.stats != null)
+            {
+                // Inverser la direction : le zombie doit regarder VERS le point d'impact (le player)
+                Vector3 impactDirection = -knockbackDirection;
+                zombieForRotation.StartRotationToImpact(impactDirection, healthForRotation.stats.rotationToImpactDuration);
+                Debug.Log($"[BROOM] Started rotation to impact for {target.name}");
+            }
+        }
 
         if (zombieAI_AStar != null && target != null)
         {

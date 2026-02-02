@@ -159,6 +159,10 @@ public class EnemyStats : ScriptableObject
     [Tooltip("Durée du knockback (secondes)")]
     public float knockbackStunDuration = 0.5f;
 
+    [Header("ROTATION TO IMPACT")]
+    [Tooltip("Durée de rotation vers point d'impact après broom knockdown (secondes)")]
+    public float rotationToImpactDuration = 1.5f;
+
 
     [Header("SYSTÈME DE MEMBRES")]
     [Tooltip("Nombre de bras au départ")]

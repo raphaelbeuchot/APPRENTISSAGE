@@ -70,10 +70,14 @@ public class EnemyAI_AStar : MonoBehaviour
     protected float currentSpeed;
     public bool isDead = false;
     [HideInInspector] public bool isDetectedBySentinel = false;
+    [Header("Rotation To Impact")]
+    private Vector3 impactDirection = Vector3.zero;
+    private float rotationToImpactEndTime = 0f;
+    private bool isRotatingToImpact = false;
 
     private bool isBlinder = false;
 
-    public enum State { Idle, Wandering, Chasing, Attacking, PreGrab, StunBySpray, OnRotatingPlatform, Dead }
+    public enum State { Idle, Wandering, Chasing, Attacking, PreGrab, StunBySpray, OnRotatingPlatform, RotatingToImpact, Dead }
     public State currentState = State.Idle;
 
     protected virtual void Start()
@@ -253,6 +257,9 @@ public class EnemyAI_AStar : MonoBehaviour
                 break;
             case State.OnRotatingPlatform:
                 HandleOnRotatingPlatformState();
+                break;
+            case State.RotatingToImpact:
+                HandleRotatingToImpactState();
                 break;
             case State.Dead:
                 StopMovement();
@@ -842,5 +849,47 @@ public class EnemyAI_AStar : MonoBehaviour
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, stats.attackRange);
+    }
+    protected virtual void HandleRotatingToImpactState()
+    {
+        StopMovement();
+
+        if (Time.time >= rotationToImpactEndTime)
+        {
+            isRotatingToImpact = false;
+            currentState = State.Idle;
+            return;
+        }
+
+        if (impactDirection.magnitude > 0.1f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(impactDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
+        }
+    }
+
+    public void StartRotationToImpact(Vector3 impactDir, float duration)
+    {
+        impactDirection = impactDir;
+        impactDirection.y = 0;
+        impactDirection.Normalize();
+
+        rotationToImpactEndTime = Time.time + duration;
+        isRotatingToImpact = true;
+        currentState = State.RotatingToImpact;
+    }
+
+    public void CancelRotationToImpact()
+    {
+        if (isRotatingToImpact)
+        {
+            isRotatingToImpact = false;
+            impactDirection = Vector3.zero;
+
+            if (currentState == State.RotatingToImpact)
+            {
+                currentState = State.Idle;
+            }
+        }
     }
 }

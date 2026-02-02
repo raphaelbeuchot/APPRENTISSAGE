@@ -353,6 +353,12 @@ public class MeleeAttackSystem : MonoBehaviour
                     grab.CancelWindup();
                     Debug.Log($"[SPRAY] Cancelled {enemyHealth.gameObject.name} grab windup");
                 }
+                // ANNULER ROTATION TO IMPACT SI EN COURS
+                if (enemyAI_AStar != null && enemyAI_AStar.currentState == EnemyAI_AStar.State.RotatingToImpact)
+                {
+                    enemyAI_AStar.CancelRotationToImpact();
+                    Debug.Log($"[SPRAY] Cancelled {enemyHealth.gameObject.name} rotation to impact");
+                }
 
                 // NOTIFIER BLINDERS
                 MeleeAudioManager.TriggerMeleeHit(hit.transform.position);
