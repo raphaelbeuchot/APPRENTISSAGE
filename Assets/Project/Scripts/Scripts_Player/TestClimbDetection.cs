@@ -14,8 +14,18 @@ public class TestClimbDetection : MonoBehaviour
     [SerializeField] private float inputBufferDuration = 0.7f;
     private Vector3 bufferedInputDirection;
     private float lastInputTime = -999f;
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
 
     private bool isClimbing = false;
+
+    void Start()
+    {
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+    }
 
     void Update()
     {
@@ -230,6 +240,13 @@ public class TestClimbDetection : MonoBehaviour
 
         Debug.Log("[CLIMB] Debut rotation vers: " + targetDirection);
 
+        // Déclencher l'animation de climb
+        if (animator != null)
+        {
+            animator.SetBool("DoClimb", true);
+            Debug.Log("[CLIMB] Animation DoClimb déclenchée");
+        }
+
         while (elapsed < rotationDuration)
         {
             if (playerMovement.grabState != PlayerPhysicsMovement.GrabState.None)
@@ -295,6 +312,13 @@ public class TestClimbDetection : MonoBehaviour
         rb.MovePosition(topPos);
         rb.linearVelocity = Vector3.zero;
 
+        // Arrêter l'animation de climb
+        if (animator != null)
+        {
+            animator.SetBool("DoClimb", false);
+            Debug.Log("[CLIMB] Animation DoClimb arrêtée");
+        }
+
         Vector3 finalPos = topPos + transform.forward * distance;
         float phase2Duration = climbType.phase2Duration;
         elapsed = 0f;
@@ -307,6 +331,11 @@ public class TestClimbDetection : MonoBehaviour
             rb.MovePosition(newPos);
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
+            // NOUVEAU : Simuler vitesse pour animation walk
+            if (animator != null)
+            {
+                animator.SetFloat("SpeedZ", 0.5f); // Vitesse walk normale
+            }
             yield return new WaitForFixedUpdate();
         }
 
@@ -347,7 +376,7 @@ public class TestClimbDetection : MonoBehaviour
         playerMovement.isImmuneToGrab = false;
 
         ReEnableMovement();
-
+        
         yield return new WaitUntil(() => !PlayerInputManager.Instance.InteractPressed);
 
         isClimbing = false;
@@ -367,6 +396,12 @@ public class TestClimbDetection : MonoBehaviour
         Debug.LogWarning("[CLIMB] CLIMB ANNULE par tir sentinelle!");
 
         StopAllCoroutines();
+
+        // Arrêter l'animation si climb annulé
+        if (animator != null)
+        {
+            animator.SetBool("DoClimb", false);
+        }
 
         Rigidbody rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotation;

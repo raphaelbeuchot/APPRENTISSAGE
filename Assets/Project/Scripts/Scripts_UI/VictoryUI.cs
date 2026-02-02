@@ -9,44 +9,46 @@ public class VictoryUI : MonoBehaviour
     [Header("UI Elements")]
     [SerializeField] private GameObject victoryPanel;
     [SerializeField] private CanvasGroup victoryCanvasGroup;
-    [SerializeField] private TextMeshProUGUI victoryText;
-    [SerializeField] private TextMeshProUGUI statsText;
+    [SerializeField] private Image fadeImage; // NOUVEAU : Image noire pour le fade
 
-    [Header("Menu Options")]
+    /*[SerializeField] private TextMeshProUGUI victoryText;
+    [SerializeField] private TextMeshProUGUI statsText;*/
+
+    /*[Header("Menu Options")]
     [SerializeField] private TextMeshProUGUI nextLevelText;
     [SerializeField] private TextMeshProUGUI restartText;
-    [SerializeField] private TextMeshProUGUI quitText;
+    [SerializeField] private TextMeshProUGUI quitText;*/
 
-    [Header("Visual Settings")]
+    /*[Header("Visual Settings")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color selectedColor = Color.yellow;
     [SerializeField] private float selectedScale = 1.2f;
-    [SerializeField] private float transitionSpeed = 10f;
+    [SerializeField] private float transitionSpeed = 10f;*/
 
-    [Header("Messages")]
+    /*[Header("Messages")]
     [SerializeField]
     private string[] victoryMessages = new string[]
     {
-        "LEVEL COMPLETE!",
-        "VICTORY!",
-        "ESCAPED!",
-        "SURVIVOR!",
-        "WELL DONE!"
-    };
+        "Well done ! You survived !"
+    };*/
 
     [Header("Audio")]
     [SerializeField] private AudioClip victorySound;
     private AudioSource audioSource;
 
-    [Header("Animation")]
-    [SerializeField] private float textAnimationDuration = 0.5f;
+    [Header("Fade Settings")]
+    [SerializeField] private float fadeDuration = 1f;
 
-    private List<TextMeshProUGUI> menuTexts = new List<TextMeshProUGUI>();
+    /*[Header("Animation")]
+    [SerializeField] private float textAnimationDuration = 0.5f;*/
+
+    /*private List<TextMeshProUGUI> menuTexts = new List<TextMeshProUGUI>();
     private int currentSelection = 0;
     private Vector3 normalScale = Vector3.one;
     private float navigationCooldown = 0f;
-    private float cooldownDuration = 0.2f;
+    private float cooldownDuration = 0.2f;*/
     private bool isActive = false;
+    private bool isTransitioning = false; // NOUVEAU : Empecher double input
 
     void Start()
     {
@@ -57,7 +59,7 @@ public class VictoryUI : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        // Setup liste textes menu
+        /*// Setup liste textes menu
         menuTexts.Add(nextLevelText);
         menuTexts.Add(restartText);
         menuTexts.Add(quitText);
@@ -70,11 +72,19 @@ public class VictoryUI : MonoBehaviour
                 text.color = normalColor;
                 text.transform.localScale = normalScale;
             }
-        }
+        }*/
 
         if (victoryPanel != null)
         {
             victoryPanel.SetActive(true);
+        }
+
+        // NOUVEAU : Initialiser fadeImage transparent
+        if (fadeImage != null)
+        {
+            Color c = fadeImage.color;
+            c.a = 0f;
+            fadeImage.color = c;
         }
 
         Hide();
@@ -82,14 +92,18 @@ public class VictoryUI : MonoBehaviour
 
     void Update()
     {
-        if (isActive)
+        if (isActive && !isTransitioning)
         {
-            HandleNavigation();
-            UpdateVisuals();
+            // Detecter N'IMPORTE QUEL input
+            if (Input.anyKeyDown || Input.GetButtonDown("Submit") || Input.GetButtonDown("Jump") ||
+                Input.GetButtonDown("Fire1") || Input.GetButtonDown("Fire2") || Input.GetButtonDown("Fire3"))
+            {
+                StartCoroutine(FadeAndLoadNextLevel());
+            }
         }
     }
 
-    void HandleNavigation()
+    /*void HandleNavigation()
     {
         // Cooldown entre navigations
         if (navigationCooldown > 0f)
@@ -164,11 +178,12 @@ public class VictoryUI : MonoBehaviour
                 OnQuitClicked();
                 break;
         }
-    }
+    }*/
 
     public void Show(PlayerHealth playerHealth = null)
     {
         isActive = true;
+        isTransitioning = false;
 
         // Freeze le temps
         Time.timeScale = 0f;
@@ -180,7 +195,7 @@ public class VictoryUI : MonoBehaviour
             victoryCanvasGroup.blocksRaycasts = true;
         }
 
-        // Message aléatoire
+        /*// Message aleatoire
         if (victoryText != null && victoryMessages.Length > 0)
         {
             string randomMessage = victoryMessages[Random.Range(0, victoryMessages.Length)];
@@ -188,7 +203,7 @@ public class VictoryUI : MonoBehaviour
         }
 
         // Afficher les stats
-        DisplayStats(playerHealth);
+        DisplayStats(playerHealth);*/
 
         // Son
         if (audioSource != null && victorySound != null)
@@ -196,11 +211,60 @@ public class VictoryUI : MonoBehaviour
             audioSource.PlayOneShot(victorySound);
         }
 
-        // Animation
+        /*// Animation
         StartCoroutine(AnimateVictoryText());
 
-        currentSelection = 0;
-        Debug.Log("=== VICTORY ===");
+        currentSelection = 0;*/
+
+        Debug.Log("=== VICTORY === Press any button to continue");
+    }
+
+    // NOUVEAU : Coroutine fade noir puis chargement niveau
+    IEnumerator FadeAndLoadNextLevel()
+    {
+        isTransitioning = true;
+
+        if (fadeImage == null)
+        {
+            Debug.LogWarning("FadeImage non assigne, chargement direct");
+            LoadNextLevel();
+            yield break;
+        }
+
+        // Fade to black
+        float elapsed = 0f;
+        Color fadeColor = fadeImage.color;
+
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime; // unscaledDeltaTime car time freeze
+            fadeColor.a = Mathf.Lerp(0f, 1f, elapsed / fadeDuration);
+            fadeImage.color = fadeColor;
+            yield return null;
+        }
+
+        // Force alpha final
+        fadeColor.a = 1f;
+        fadeImage.color = fadeColor;
+
+        // Charger niveau suivant
+        LoadNextLevel();
+    }
+
+    void LoadNextLevel()
+    {
+        Debug.Log("Next Level loading...");
+        Time.timeScale = 1f;
+
+        LevelManager levelManager = FindObjectOfType<LevelManager>();
+        if (levelManager != null)
+        {
+            levelManager.LoadNextLevel();
+        }
+        else
+        {
+            Debug.LogWarning("LevelManager not found!");
+        }
     }
 
     public void Hide()
@@ -215,7 +279,7 @@ public class VictoryUI : MonoBehaviour
         }
     }
 
-    void DisplayStats(PlayerHealth playerHealth)
+    /*void DisplayStats(PlayerHealth playerHealth)
     {
         if (statsText == null) return;
 
@@ -251,7 +315,7 @@ public class VictoryUI : MonoBehaviour
         int seconds = Mathf.FloorToInt(time % 60f);
         return $"{minutes:00}:{seconds:00}";
     }
-
+    
     IEnumerator AnimateVictoryText()
     {
         if (victoryText == null) yield break;
@@ -326,5 +390,5 @@ public class VictoryUI : MonoBehaviour
             UnityEditor.EditorApplication.isPlaying = false;
 #endif
         }
-    }
+    }*/
 }
