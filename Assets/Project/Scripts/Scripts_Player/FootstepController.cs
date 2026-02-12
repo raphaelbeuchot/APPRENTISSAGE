@@ -9,9 +9,10 @@ public class FootstepController : MonoBehaviour
     [SerializeField] private float baseVolume = 0.5f;
     [SerializeField] private float volumeVariation = 0.1f;
     [SerializeField] private float pitchVariation = 0.1f;
+    [SerializeField] private float minTimeBetweenSteps = 0.10f;
 
     private AudioSource audioSource;
-
+    private float lastFootstepTime = 0f;
     void Start()
     {
         // Chercher ou creer un AudioSource
@@ -27,6 +28,13 @@ public class FootstepController : MonoBehaviour
     // Methode appelee par les Animation Events
     public void OnFootstep()
     {
+        // NOUVEAU : Cooldown pour eviter doubles sons
+        if (Time.time - lastFootstepTime < minTimeBetweenSteps)
+            return;
+
+        lastFootstepTime = Time.time;
+        // FIN NOUVEAU
+
         if (footstepSounds == null || footstepSounds.Length == 0)
         {
             Debug.LogWarning("[FootstepController] Aucun son de pas assigne !");
