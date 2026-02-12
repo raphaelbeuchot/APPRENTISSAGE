@@ -33,19 +33,13 @@ public class BrightEyesStats : ScriptableObject
     public bool startsExtinguished = false;
 
     [Header("Flame Materials")]
-    public Material materialGreenLight;
-    public Material materialAlert;
-    public Material materialRedLight;
+    public Material materialAwake;    // Quand isAwake = true
+    public Material materialAsleep;   // Quand isAwake = false
 
-    [Header("Alert Pulse")]
-    public float alertPulseIntensityMin = 1.0f;
-    public float alertPulseIntensityMax = 3.0f;
-    public float alertPulseSpeed = 2.0f;
+    [Header("Awake Pulse")]
+    public float awakePulseIntensityMin = 3.0f;
+    public float awakePulseIntensityMax = 9.0f;
+    public float awakePulseSpeed = 2.0f;
 
-    [Header("RedLight Pulse")]
-    public float redlightPulseIntensityMin = 9.0f;
-    public float redlightPulseIntensityMax = 10.0f;
-    public float redlightPulseSpeed = 1.0f;
 
-    
 }

@@ -15,27 +15,23 @@ MonoBehaviour:
   activeInGreenLight: 0
   activeInAlert: 1
   activeInRedLight: 1
-  detectionRange: 5
+  detectionRange: 4
   detectionAngle: 360
   attractionForce: 1
   playerSlowdownMultiplier: 0.8
   canWander: 0
-  wanderSpeed: 2
+  wanderSpeed: 3
   wanderRadius: 5
   maxHealth: 50
   contactDamage: 5
-  contactDamageInterval: 1
-  contactDamageRange: 1
+  contactDamageInterval: 0.5
+  contactDamageRange: 0.5
   releaseRecoilForce: 10
   releaseRecoilRange: 1
   canReignite: 0
   startsExtinguished: 0
-  materialGreenLight: {fileID: 2100000, guid: 9ddd8791b49c5b24f97ff131292af37d, type: 2}
-  materialAlert: {fileID: 2100000, guid: 7316a41f524558a4fa4a6f9679af5afe, type: 2}
-  materialRedLight: {fileID: 2100000, guid: 865fe8506deb1554e98dac84db2b7882, type: 2}
-  alertPulseIntensityMin: 1
-  alertPulseIntensityMax: 3
-  alertPulseSpeed: 4
-  redlightPulseIntensityMin: 1
-  redlightPulseIntensityMax: 3
-  redlightPulseSpeed: 4
+  materialAwake: {fileID: 2100000, guid: 865fe8506deb1554e98dac84db2b7882, type: 2}
+  materialAsleep: {fileID: 2100000, guid: 9ddd8791b49c5b24f97ff131292af37d, type: 2}
+  awakePulseIntensityMin: 3
+  awakePulseIntensityMax: 9
+  awakePulseSpeed: 2

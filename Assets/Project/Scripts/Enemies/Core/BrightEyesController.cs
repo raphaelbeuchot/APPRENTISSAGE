@@ -142,7 +142,8 @@ public class BrightEyesController : MonoBehaviour
 
         SentinelCycleManager.GameState state = gameManager.sentinelCycleManager.currentState;
 
-        if (state == SentinelCycleManager.GameState.GreenLight && stats.activeInGreenLight)
+        // Release suit le même comportement que GreenLight
+        if ((state == SentinelCycleManager.GameState.GreenLight || state == SentinelCycleManager.GameState.Release) && stats.activeInGreenLight)
             return true;
         if (state == SentinelCycleManager.GameState.Alert && stats.activeInAlert)
             return true;
@@ -202,57 +203,42 @@ public class BrightEyesController : MonoBehaviour
 
     void UpdateMaterial()
     {
-        if (gameManager == null || gameManager.sentinelCycleManager == null || flameRenderer == null) return;
+        if (flameRenderer == null || stats == null) return;
 
-        SentinelCycleManager.GameState state = gameManager.sentinelCycleManager.currentState;
-
-        // GreenLight + Release = material vert
-        if (state == SentinelCycleManager.GameState.GreenLight || state == SentinelCycleManager.GameState.Release)
+        if (isFlameExtinguished)
         {
-            if (materialInstance == null || flameRenderer.sharedMaterial != stats.materialGreenLight)
-            {
-                if (materialInstance != null) Destroy(materialInstance);
-                materialInstance = new Material(stats.materialGreenLight);
-                flameRenderer.material = materialInstance;
-            }
-            flameRenderer.enabled = true;
+            flameRenderer.enabled = false;
+            return;
         }
-        // Alert = material alert avec pulse
-        else if (state == SentinelCycleManager.GameState.Alert)
+
+        if (isAwake)
         {
-            if (materialInstance == null || flameRenderer.sharedMaterial != stats.materialAlert)
+            // Appliquer materialAwake avec pulse
+            if (materialInstance == null || flameRenderer.sharedMaterial != stats.materialAwake)
             {
                 if (materialInstance != null) Destroy(materialInstance);
-                materialInstance = new Material(stats.materialAlert);
+                materialInstance = new Material(stats.materialAwake);
                 flameRenderer.material = materialInstance;
             }
-            flameRenderer.enabled = true;
 
-            // Pulse emission Alert
-            float pulse = Mathf.PingPong(Time.time * stats.alertPulseSpeed, 1f);
-            float intensity = Mathf.Lerp(stats.alertPulseIntensityMin, stats.alertPulseIntensityMax, pulse);
-            Color baseColor = stats.materialAlert.GetColor("_EmissionColor");
+            // Pulse emission
+            float pulse = Mathf.PingPong(Time.time * stats.awakePulseSpeed, 1f);
+            float intensity = Mathf.Lerp(stats.awakePulseIntensityMin, stats.awakePulseIntensityMax, pulse);
+            Color baseColor = stats.materialAwake.GetColor("_EmissionColor");
             materialInstance.SetColor("_EmissionColor", baseColor * intensity);
-        }
-        // RedLight = material rouge avec pulse
-        else if (state == SentinelCycleManager.GameState.RedLight)
-        {
-            if (materialInstance == null || flameRenderer.sharedMaterial != stats.materialRedLight)
-            {
-                if (materialInstance != null) Destroy(materialInstance);
-                materialInstance = new Material(stats.materialRedLight);
-                flameRenderer.material = materialInstance;
-            }
-            flameRenderer.enabled = true;
 
-            // Pulse emission RedLight
-            float pulse = Mathf.PingPong(Time.time * stats.redlightPulseSpeed, 1f);
-            float intensity = Mathf.Lerp(stats.redlightPulseIntensityMin, stats.redlightPulseIntensityMax, pulse);
-            Color baseColor = stats.materialRedLight.GetColor("_EmissionColor");
-            materialInstance.SetColor("_EmissionColor", baseColor * intensity);
+            flameRenderer.enabled = true;
         }
         else
         {
+            // Appliquer materialAsleep sans pulse
+            if (materialInstance == null || flameRenderer.sharedMaterial != stats.materialAsleep)
+            {
+                if (materialInstance != null) Destroy(materialInstance);
+                materialInstance = new Material(stats.materialAsleep);
+                flameRenderer.material = materialInstance;
+            }
+
             flameRenderer.enabled = true;
         }
     }
