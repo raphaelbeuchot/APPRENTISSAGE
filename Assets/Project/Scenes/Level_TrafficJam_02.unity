@@ -44877,6 +44877,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 30e51f7694b853c42ac9769cb896c378, type: 2}
     - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: moveSpeed
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: speedMultiplier
       value: 10
       objectReference: {fileID: 0}
@@ -74647,6 +74651,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: a246de948c2ff9a46b93223e8361c608, type: 2}
     - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: moveSpeed
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: speedMultiplier
       value: 10
       objectReference: {fileID: 0}
@@ -87331,6 +87339,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: moveSpeed
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: speedMultiplier
       value: 10
@@ -115074,7 +115086,7 @@ PrefabInstance:
     - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
       propertyPath: playerDetectionFeedback
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 6305765746340978707}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -115184,6 +115196,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52166e4e94a0683439dc983ad12856cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+--- !u!114 &6305765746340978707 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1517332640135311895, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
+  m_PrefabInstance: {fileID: 6978021389780206166}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b253f867cc165994a8cba80f88f78902, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDetectionFeedback
 --- !u!1001 &6516964717960369256
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -115254,6 +115277,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5794444067654349612, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
+      propertyPath: m_Name
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1
@@ -115293,10 +115320,6 @@ PrefabInstance:
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5794444067654349612, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
-      propertyPath: m_Name
-      value: Player
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

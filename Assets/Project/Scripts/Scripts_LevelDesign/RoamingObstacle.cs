@@ -3,7 +3,12 @@ using UnityEngine.Splines;
 
 public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 {
-    [Header("Settings")]
+    [Header("Movement Settings")]
+    [SerializeField] private float moveSpeed = 2f;
+    [SerializeField] private bool reverseDirection = false;
+    [SerializeField] private bool usePingPong = true;
+
+    [Header("Audio")]
     [SerializeField] private RoamingObstacleSettings settings;
 
     [Header("Spline")]
@@ -13,10 +18,6 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     [SerializeField]
     [Range(0f, 1f)]
     private float startingProgress = 0f;
-
-    [SerializeField]
-    [Range(0.1f, 10f)]
-    private float speedMultiplier = 1f;
 
     private float currentProgress = 0f;
     private AudioSource audioSource;
@@ -32,13 +33,6 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
     void Start()
     {
-        if (settings == null)
-        {
-            Debug.LogError("[RoamingObstacle] Settings non assignes !");
-            enabled = false;
-            return;
-        }
-
         if (splineContainer == null)
         {
             Debug.LogError("[RoamingObstacle] SplineContainer non assigne !");
@@ -50,17 +44,20 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
         currentProgress = startingProgress;
         lastPosition = transform.position;
 
-        // Setup audio
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.loop = true;
-        audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 1f;
-        audioSource.volume = settings.soundVolume;
-
-        if (settings.movementSound != null)
+        // Setup audio seulement si settings assigne
+        if (settings != null)
         {
-            audioSource.clip = settings.movementSound;
-            audioSource.Play();
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.loop = true;
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1f;
+            audioSource.volume = settings.soundVolume;
+
+            if (settings.movementSound != null)
+            {
+                audioSource.clip = settings.movementSound;
+                audioSource.Play();
+            }
         }
 
         // Position initiale sur la spline
@@ -69,19 +66,19 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
         // Initialiser lastPosition
         lastPosition = transform.position;
 
-        Debug.Log($"[RoamingObstacle] {settings.obstacleName} demarre sur spline");
+        Debug.Log("[RoamingObstacle] Obstacle demarre sur spline");
     }
 
     void Update()
     {
-        if (splineContainer == null || settings == null) return;
+        if (splineContainer == null) return;
 
         float splineLength = splineContainer.Spline.GetLength();
-        float distanceThisFrame = settings.moveSpeed * speedMultiplier * Time.deltaTime;
+        float distanceThisFrame = moveSpeed * Time.deltaTime;
         float progressIncrement = distanceThisFrame / splineLength;
 
         // Appliquer direction
-        if (settings.reverseDirection)
+        if (reverseDirection)
             progressIncrement = -progressIncrement;
 
         // Appliquer direction ping-pong
@@ -91,7 +88,7 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
         currentProgress += progressIncrement;
 
         // Gestion boucle ou ping-pong
-        if (settings.usePingPong)
+        if (usePingPong)
         {
             // Aller-retour
             if (currentProgress >= 1f)
@@ -171,10 +168,11 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
                 lastCollisionTime = Time.time;
 
                 string collisionType = otherObstacle != null ? "autre RoamingObstacle" : "obstacle";
-                Debug.Log($"[RoamingObstacle] {settings.obstacleName} collision avec {collisionType} detectee - inversion direction");
+                Debug.Log($"[RoamingObstacle] Obstacle collision avec {collisionType} detectee - inversion direction");
             }
         }
     }
+
     void OnDestroy()
     {
         if (audioSource != null && audioSource.isPlaying)
