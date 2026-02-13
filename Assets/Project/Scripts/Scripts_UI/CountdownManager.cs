@@ -10,6 +10,9 @@ public class CountdownManager : MonoBehaviour
     public bool countdownFinished = false;
     private bool isCountdownRunning = false;
     private bool isRestart = false;
+    public AudioClip ambientTrack;
+    private AudioSource ambientAudioSource;
+
 
     void Awake()
     {
@@ -18,6 +21,10 @@ public class CountdownManager : MonoBehaviour
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
+        // Setup AudioSource pour ambient track
+        ambientAudioSource = gameObject.AddComponent<AudioSource>();
+        ambientAudioSource.loop = true;
+        ambientAudioSource.playOnAwake = false;
     }
 
     void Start()
@@ -53,6 +60,12 @@ public class CountdownManager : MonoBehaviour
         if (audioSource != null && countdownStartSound != null)
         {
             audioSource.PlayOneShot(countdownStartSound);
+
+            // Jouer le second son apres la fin du premier
+            if (ambientTrack != null)
+            {
+                StartCoroutine(PlaySoundAfterDelay(countdownStartSound.length));
+            }
         }
 
         GameUIManager uiManager = FindObjectOfType<GameUIManager>();
@@ -79,5 +92,43 @@ public class CountdownManager : MonoBehaviour
         countdownFinished = true;
 
         
+    }
+    IEnumerator PlaySoundAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (ambientAudioSource != null && ambientTrack != null)
+        {
+            ambientAudioSource.clip = ambientTrack;
+            ambientAudioSource.Play();
+            Debug.Log("[CountdownManager] Ambient track demarre en boucle");
+        }
+    }
+    public void PauseAmbient()
+    {
+        if (ambientAudioSource != null && ambientAudioSource.isPlaying)
+        {
+            ambientAudioSource.Pause();
+        }
+    }
+
+    public void ResumeAmbient()
+    {
+        if (ambientAudioSource != null && ambientAudioSource.clip != null)
+        {
+            ambientAudioSource.UnPause();
+        }
+    }
+
+    public void StopAmbient()
+    {
+        if (ambientAudioSource != null)
+        {
+            ambientAudioSource.Stop();
+        }
+    }
+    void OnDestroy()
+    {
+        StopAmbient();
     }
 }

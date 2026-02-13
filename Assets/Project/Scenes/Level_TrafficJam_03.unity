@@ -46449,7 +46449,7 @@ Transform:
   m_GameObject: {fileID: 871157096}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.4348, y: 1.8753, z: 15.06}
+  m_LocalPosition: {x: 8.4348, y: 2.57, z: 15.06}
   m_LocalScale: {x: 1.5837, y: 2.7506, z: 0.55176}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -50857,6 +50857,10 @@ MonoBehaviour:
   reverseDirection: 0
   usePingPong: 0
   settings: {fileID: 11400000, guid: 189652719e6b12740935ba798e494490, type: 2}
+  detectionRadius: 5
+  proximitySounds: []
+  proximityVolume: 0.7
+  pitchVariation: 0.1
   splineContainer: {fileID: 1074749135}
   startingProgress: 0.5
 --- !u!4 &953752001 stripped
@@ -52240,6 +52244,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: pitchVariation
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: detectionRadius
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximityVolume
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: speedMultiplier
       value: 1
       objectReference: {fileID: 0}
@@ -52251,6 +52267,22 @@ PrefabInstance:
       propertyPath: startingProgress
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximitySounds.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: caba221e4c6183f41a23c86079e95038, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: d4be7ffd3ca520b4aa385501ee86529d, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 8bd6a58a7f28d614ba8c592fd9e8aecb, type: 3}
     m_RemovedComponents:
     - {fileID: 8031456439814501052, guid: 265b95b0768b200439126120894c07a1, type: 3}
     m_RemovedGameObjects: []
@@ -67553,7 +67585,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1819470879045423459, guid: ca352c5f5958c5b4795820a9ba810670, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2143332274345380748, guid: ca352c5f5958c5b4795820a9ba810670, type: 3}
       propertyPath: m_LocalPosition.x
@@ -71881,6 +71913,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: pitchVariation
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: detectionRadius
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: speedMultiplier
       value: 1
       objectReference: {fileID: 0}
@@ -71892,6 +71932,22 @@ PrefabInstance:
       propertyPath: startingProgress
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximitySounds.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 13dbbd23a738880418222b5fdd3ade9b, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: e324acbfb7e3e1341a5959a2bb0a59e7, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: f8cf3635bfd5feb489de6b266dbaf711, type: 3}
     m_RemovedComponents:
     - {fileID: 8031456439814501052, guid: 265b95b0768b200439126120894c07a1, type: 3}
     m_RemovedGameObjects: []
@@ -86951,6 +87007,22 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: pitchVariation
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximitySound
+      value: 
+      objectReference: {fileID: 8300000, guid: 1dd47a209e40be343bd1be802cd0226b, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: detectionRadius
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximityVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: speedMultiplier
       value: 1
       objectReference: {fileID: 0}
@@ -86962,6 +87034,22 @@ PrefabInstance:
       propertyPath: startingProgress
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximitySounds.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 13dbbd23a738880418222b5fdd3ade9b, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 4c3ca398bf1e942449531b65ebe863d8, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 022f8301e50c160439e48bafbed60fa9, type: 3}
     m_RemovedComponents:
     - {fileID: 8031456439814501052, guid: 265b95b0768b200439126120894c07a1, type: 3}
     m_RemovedGameObjects: []
@@ -88524,6 +88612,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: pitchVariation
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: detectionRadius
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximityVolume
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: speedMultiplier
       value: 1
       objectReference: {fileID: 0}
@@ -88535,6 +88635,22 @@ PrefabInstance:
       propertyPath: startingProgress
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximitySounds.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 1dd47a209e40be343bd1be802cd0226b, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 6d2a9b922b4d2be44a3cb2df9c3271b3, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 4c3ca398bf1e942449531b65ebe863d8, type: 3}
     m_RemovedComponents:
     - {fileID: 8031456439814501052, guid: 265b95b0768b200439126120894c07a1, type: 3}
     m_RemovedGameObjects: []
@@ -98279,6 +98395,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: pitchVariation
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: detectionRadius
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximityVolume
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: speedMultiplier
       value: 1
       objectReference: {fileID: 0}
@@ -98290,6 +98418,22 @@ PrefabInstance:
       propertyPath: startingProgress
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximitySounds.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 312ecddaa8baf7f4ea97a177a37d99fd, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 0580063510fbf0946bad84ca4c00bccf, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 8bd6a58a7f28d614ba8c592fd9e8aecb, type: 3}
     m_RemovedComponents:
     - {fileID: 8031456439814501052, guid: 265b95b0768b200439126120894c07a1, type: 3}
     m_RemovedGameObjects: []
@@ -102970,6 +103114,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: pitchVariation
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: speedMultiplier
       value: 1
       objectReference: {fileID: 0}
@@ -102981,6 +103129,22 @@ PrefabInstance:
       propertyPath: startingProgress
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximitySounds.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 13dbbd23a738880418222b5fdd3ade9b, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: e324acbfb7e3e1341a5959a2bb0a59e7, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: fcdce1cf5803655428340373180c5f6c, type: 3}
     m_RemovedComponents:
     - {fileID: 8031456439814501052, guid: 265b95b0768b200439126120894c07a1, type: 3}
     m_RemovedGameObjects: []
@@ -114741,7 +114905,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2143332274345380748, guid: ca352c5f5958c5b4795820a9ba810670, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.77
+      value: -4.28
       objectReference: {fileID: 0}
     - target: {fileID: 2143332274345380748, guid: ca352c5f5958c5b4795820a9ba810670, type: 3}
       propertyPath: m_LocalPosition.y
@@ -116612,6 +116776,10 @@ PrefabInstance:
       propertyPath: gameManager
       value: 
       objectReference: {fileID: 1801742136}
+    - target: {fileID: 7172904091609856857, guid: f6400f5fe00441846945593686056b69, type: 3}
+      propertyPath: ambientTrack
+      value: 
+      objectReference: {fileID: 8300000, guid: 45c249c003797a749b3afbff507cc518, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -117116,6 +117284,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: pitchVariation
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: detectionRadius
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximityVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
       propertyPath: speedMultiplier
       value: 1
       objectReference: {fileID: 0}
@@ -117127,6 +117307,22 @@ PrefabInstance:
       propertyPath: startingProgress
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: proximitySounds.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: fcdce1cf5803655428340373180c5f6c, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: f8cf3635bfd5feb489de6b266dbaf711, type: 3}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'proximitySounds.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: e324acbfb7e3e1341a5959a2bb0a59e7, type: 3}
     m_RemovedComponents:
     - {fileID: 8031456439814501052, guid: 265b95b0768b200439126120894c07a1, type: 3}
     m_RemovedGameObjects: []

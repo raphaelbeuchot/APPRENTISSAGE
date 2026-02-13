@@ -11,6 +11,12 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     [Header("Audio")]
     [SerializeField] private RoamingObstacleSettings settings;
 
+    [Header("Proximity Detection")]
+    [SerializeField] private float detectionRadius = 5f;
+    [SerializeField] private AudioClip[] proximitySounds;
+    [SerializeField] private float proximityVolume = 0.7f;
+    [SerializeField] private float pitchVariation = 0.1f;
+
     [Header("Spline")]
     [SerializeField] private SplineContainer splineContainer;
 
@@ -31,6 +37,11 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     private float lastCollisionTime = -999f;
     private float collisionCooldown = 0.5f;
 
+    // Detection proximite player
+    private Transform playerTransform;
+    private AudioSource proximityAudioSource;
+    private bool hasPlayedProximitySound = false;
+
     void Start()
     {
         if (splineContainer == null)
@@ -50,7 +61,7 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
             audioSource = gameObject.AddComponent<AudioSource>();
             audioSource.loop = true;
             audioSource.playOnAwake = false;
-            audioSource.spatialBlend = 1f;
+            audioSource.spatialBlend = 0f;
             audioSource.volume = settings.soundVolume;
 
             if (settings.movementSound != null)
@@ -58,6 +69,23 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
                 audioSource.clip = settings.movementSound;
                 audioSource.Play();
             }
+        }
+
+        // Setup audio proximite
+        proximityAudioSource = gameObject.AddComponent<AudioSource>();
+        proximityAudioSource.playOnAwake = false;
+        proximityAudioSource.spatialBlend = 1f;
+        proximityAudioSource.volume = proximityVolume;
+
+        // Trouver le player
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            playerTransform = player.transform;
+        }
+        else
+        {
+            Debug.LogWarning("[RoamingObstacle] Player non trouve !");
         }
 
         // Position initiale sur la spline
@@ -115,6 +143,31 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
         // Calculer la velocite apres avoir bouge
         CalculateVelocity();
+
+        // Detection proximite player
+        if (playerTransform != null && proximitySounds != null && proximitySounds.Length > 0)
+        {
+            float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+
+            if (distanceToPlayer < detectionRadius && !hasPlayedProximitySound)
+            {
+                // Player entre dans le rayon : jouer un son aleatoire
+                AudioClip randomClip = proximitySounds[Random.Range(0, proximitySounds.Length)];
+
+                // Variation aleatoire de pitch
+                proximityAudioSource.pitch = 1f + Random.Range(-pitchVariation, pitchVariation);
+
+                proximityAudioSource.PlayOneShot(randomClip);
+                hasPlayedProximitySound = true;
+                Debug.Log("[RoamingObstacle] Player detecte - son proximite joue");
+            }
+            else if (distanceToPlayer >= detectionRadius && hasPlayedProximitySound)
+            {
+                // Player sort du rayon : reset le flag
+                hasPlayedProximitySound = false;
+                Debug.Log("[RoamingObstacle] Player sorti du rayon - flag reset");
+            }
+        }
     }
 
     private void UpdatePosition()

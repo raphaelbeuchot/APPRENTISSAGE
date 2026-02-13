@@ -177,6 +177,11 @@ public class PauseMenuUI : MonoBehaviour
         }
 
         currentSelection = 0;
+
+        // Pause ambient track
+        CountdownManager countdown = FindObjectOfType<CountdownManager>();
+        if (countdown != null) countdown.PauseAmbient();
+
         Debug.Log("Game paused");
     }
 
@@ -185,9 +190,13 @@ public class PauseMenuUI : MonoBehaviour
         isPaused = false;
         Time.timeScale = 1f;
         Hide();
+
+        // Resume ambient track
+        CountdownManager countdown = FindObjectOfType<CountdownManager>();
+        if (countdown != null) countdown.ResumeAmbient();
+
         Debug.Log("Game resumed");
     }
-
     void Hide()
     {
         if (pauseCanvasGroup != null)
@@ -202,6 +211,10 @@ public class PauseMenuUI : MonoBehaviour
     {
         Time.timeScale = 1f;
         isPaused = false;
+
+        // Stop ambient track avant restart
+        CountdownManager countdown = FindObjectOfType<CountdownManager>();
+        if (countdown != null) countdown.StopAmbient();
 
         LevelManager levelManager = FindObjectOfType<LevelManager>();
         if (levelManager != null)

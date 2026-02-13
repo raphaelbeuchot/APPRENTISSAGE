@@ -187,6 +187,10 @@ public class LevelManager : MonoBehaviour
         levelCompleted = true;
         Debug.Log("=== NIVEAU COMPLETE! ===");
 
+        // Stop ambient track a la victoire
+        CountdownManager countdown = FindObjectOfType<CountdownManager>();
+        if (countdown != null) countdown.StopAmbient();
+
         // Desactiver le mouvement du joueur
         if (player != null)
         {
@@ -306,6 +310,10 @@ public class LevelManager : MonoBehaviour
     {
         Debug.Log("Redemarrage du niveau...");
 
+        // Stop ambient track avant restart
+        CountdownManager countdown = FindObjectOfType<CountdownManager>();
+        if (countdown != null) countdown.StopAmbient();
+
         // Ne set le PlayerPrefs que si ce n'est PAS un niveau tuto
         if (!isTutorialLevel)
         {
@@ -341,6 +349,10 @@ public class LevelManager : MonoBehaviour
 
         levelCompleted = true;
         Debug.Log("=== NIVEAU COMPLETE (Level End Trigger) ===");
+
+        // Stop ambient track a la victoire
+        CountdownManager countdown = FindObjectOfType<CountdownManager>();
+        if (countdown != null) countdown.StopAmbient();
 
         // Desactiver le mouvement du joueur
         if (player != null)
