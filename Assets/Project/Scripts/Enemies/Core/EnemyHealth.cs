@@ -470,7 +470,11 @@ public class EnemyHealth : MonoBehaviour
         }
 
         if (zombieAI != null)
+        {
             zombieAI.canMove = true;
+            zombieAI.lastPathDestination = Vector3.positiveInfinity;
+            zombieAI.DetectHumans();
+        }
 
         isRecovering = false;
         Debug.Log($"{gameObject.name} stun ended");

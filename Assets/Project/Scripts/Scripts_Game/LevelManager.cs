@@ -139,11 +139,20 @@ public class LevelManager : MonoBehaviour
             if (gameManager.enemiesKilled >= gameManager.totalEnemies && gameManager.totalEnemies > 0)
             {
                 doorHasBeenActivated = true;
-                goalDoor.ActivateDoor();
+                StartCoroutine(ActivateDoorDelayed());
             }
         }
     }
+    IEnumerator ActivateDoorDelayed()
+    {
+        yield return new WaitForSeconds(1f);
 
+        if (goalDoor != null)
+        {
+            goalDoor.ActivateDoor();
+            Debug.Log("[LevelManager] Porte activee apres delai 1s");
+        }
+    }
     /// <summary>
     /// Cree le canvas de fade noir
     /// </summary>

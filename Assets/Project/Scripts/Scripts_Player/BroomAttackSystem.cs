@@ -367,7 +367,11 @@ public class BroomAttackSystem : MonoBehaviour
                 }
                 zombieAI_AStar.enabled = true;
             }
+            // NOUVEAU : Force la détection après knockdown
+            zombieAI_AStar.lastPathDestination = Vector3.positiveInfinity;
+            zombieAI_AStar.DetectHumans();
         }
+        
     }
 
     public void OnGrabStart()

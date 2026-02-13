@@ -49,7 +49,7 @@ public class EnemyAI_AStar : MonoBehaviour
     private bool isRecoveringFromPlatform = false;
 
     [Header("Pathfinding Optimization")]
-    private Vector3 lastPathDestination;
+    [HideInInspector] public Vector3 lastPathDestination = Vector3.positiveInfinity;
     private float pathUpdateThreshold = 0.5f; // Distance min pour recalculer path
 
     private EnemyHealthBarUI healthBarUI;
@@ -345,7 +345,7 @@ public class EnemyAI_AStar : MonoBehaviour
     }
 
 
-    protected virtual void DetectHumans()
+    public virtual void DetectHumans()
     {
         if (currentState == State.StunBySpray)
             return;
@@ -814,6 +814,8 @@ public class EnemyAI_AStar : MonoBehaviour
         if (health != null && health.GetSprayStunTimeRemaining() <= 0f)
         {
             currentState = State.Idle;
+            lastPathDestination = Vector3.positiveInfinity; // Force recalcul path
+            DetectHumans(); // Force détection immédiate
         }
     }
 

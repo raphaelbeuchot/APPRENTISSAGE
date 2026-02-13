@@ -206,6 +206,7 @@ public class VictoryUI : MonoBehaviour
         DisplayStats(playerHealth);*/
 
         // Son
+        // Son
         if (audioSource != null && victorySound != null)
         {
             audioSource.PlayOneShot(victorySound);
@@ -217,6 +218,15 @@ public class VictoryUI : MonoBehaviour
         currentSelection = 0;*/
 
         Debug.Log("=== VICTORY === Press any button to continue");
+    }
+    IEnumerator PlayVictorySoundDelayed()
+    {
+        yield return new WaitForSecondsRealtime(1f); // Realtime car Time.timeScale = 0
+
+        if (audioSource != null && victorySound != null)
+        {
+            audioSource.PlayOneShot(victorySound);
+        }
     }
 
     // NOUVEAU : Coroutine fade noir puis chargement niveau

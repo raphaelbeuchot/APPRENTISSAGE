@@ -67295,7 +67295,6 @@ GameObject:
   - component: {fileID: 871157099}
   - component: {fileID: 871157098}
   - component: {fileID: 871157097}
-  - component: {fileID: 871157102}
   m_Layer: 0
   m_Name: GoalDoor
   m_TagString: Untagged
@@ -67319,7 +67318,7 @@ MonoBehaviour:
   doorRenderer: {fileID: 871157099}
   activeMaterial: {fileID: 2100000, guid: 3fd8df8b74dceb54c95181af4a0a7fb6, type: 2}
   inactiveMaterial: {fileID: 0}
-  doorReachedSound: {fileID: 8300000, guid: 5f4d3211fec8ce04190dc8a9c9c2c4cd, type: 3}
+  doorReachedSound: {fileID: 0}
   doorActivatedSound: {fileID: 0}
   victoryEffectPrefab: {fileID: 0}
   destroyPlayerOnReach: 0
@@ -67415,22 +67414,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1890326246}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!208 &871157102
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 871157096}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 0.5, y: 0.5, z: 0.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 0, y: 0, z: 0}
-  m_TimeToStationary: 0.5
 --- !u!1 &871435854
 GameObject:
   m_ObjectHideFlags: 0
@@ -100993,6 +100976,10 @@ MonoBehaviour:
   lateralOffset: 2
   lateralPanDuration: 1.5
   lateralThreshold: 0.7
+  highCameraOffset: 5
+  lowCameraOffset: -5
+  lowCameraOffsetInWater: 2
+  viewToggleDuration: 2
 --- !u!4 &1344928689 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 8c6fa7ab62026104b805b357479e7e2d, type: 3}
@@ -161095,6 +161082,10 @@ PrefabInstance:
       propertyPath: playerHealth
       value: 
       objectReference: {fileID: 882987304}
+    - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: requireAllEnemiesKilled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7881171583933020488, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: m_Name
       value: LevelManager

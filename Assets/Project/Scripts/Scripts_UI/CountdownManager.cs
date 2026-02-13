@@ -11,6 +11,8 @@ public class CountdownManager : MonoBehaviour
     private bool isCountdownRunning = false;
     private bool isRestart = false;
     public AudioClip ambientTrack;
+    public bool loopAmbientTrack = true;
+
     private AudioSource ambientAudioSource;
 
 
@@ -100,8 +102,9 @@ public class CountdownManager : MonoBehaviour
         if (ambientAudioSource != null && ambientTrack != null)
         {
             ambientAudioSource.clip = ambientTrack;
+            ambientAudioSource.loop = loopAmbientTrack; // Utilise la variable
             ambientAudioSource.Play();
-            Debug.Log("[CountdownManager] Ambient track demarre en boucle");
+            Debug.Log("[CountdownManager] Ambient track demarre" + (loopAmbientTrack ? " en boucle" : ""));
         }
     }
     public void PauseAmbient()
