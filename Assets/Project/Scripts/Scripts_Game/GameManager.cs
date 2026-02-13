@@ -839,6 +839,9 @@ public class GameManager : MonoBehaviour
 
         StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
 
+        if (playerDetectionFeedback != null)
+            playerDetectionFeedback.OnShotBySentinel();
+
         // Enlever le blanc au moment du tir
         if (playerDetectionFeedback != null)
             playerDetectionFeedback.OnNoLongerDetected();

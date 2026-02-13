@@ -338,10 +338,18 @@ public class SentinelCycleManager : MonoBehaviour
         {
             targetDuration = sentinelSettings.releaseDuration;
 
+
+
+            // stop blanc detection
+            if (gameManager != null)
+                gameManager.ResetAllTracking();
+
+
             if (audioSource != null)
             {
                 audioSource.Stop();
             }
+
 
             if (audioSource != null && sentinelSettings.greenlightAmbientSound != null)
             {
