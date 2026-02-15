@@ -328,6 +328,32 @@ public class PlayerPhysicsMovement : MonoBehaviour
         StartCoroutine(KnockbackCoroutine(knockbackVelocity, stunDuration));
     }
 
+    public void ApplyProgressivePush(Vector3 direction, float force, float duration)
+    {
+        StartCoroutine(ProgressivePushCoroutine(direction, force, duration));
+    }
+
+    IEnumerator ProgressivePushCoroutine(Vector3 direction, float force, float duration)
+    {
+        // Désactiver le script complètement (comme le knockback)
+        enabled = false;
+
+        float elapsed = 0f;
+        float forcePerFrame = force / duration;
+
+        while (elapsed < duration)
+        {
+            // Appliquer une fraction de la force chaque frame
+            rb.AddForce(direction * forcePerFrame * Time.deltaTime, ForceMode.VelocityChange);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // Réactiver le script
+        enabled = true;
+    }
+
     IEnumerator KnockbackCoroutine(Vector3 knockbackVel, float duration)
     {
         enabled = false;

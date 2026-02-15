@@ -16,10 +16,14 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     [SerializeField] private AudioClip[] proximitySounds;
     [SerializeField] private float proximityVolume = 0.7f;
     [SerializeField] private float pitchVariation = 0.1f;
+    [Header("Push Settings")]
+    [SerializeField] private float pushForceMultiplier = 1f; // Multiplicateur de la vitesse
+    [SerializeField] private float pushDuration = 0.5f;
+
 
     [Header("Spline")]
     [SerializeField] private SplineContainer splineContainer;
-
+    
     [Header("Instance Settings")]
     [SerializeField]
     [Range(0f, 1f)]
@@ -225,6 +229,54 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
             }
         }
     }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        // Verifier si c'est le player (layer "Human")
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Human"))
+        {
+            // Recuperer le script PlayerPhysicsMovement
+            PlayerPhysicsMovement playerMovement = collision.gameObject.GetComponent<PlayerPhysicsMovement>();
+
+            if (playerMovement != null)
+            {
+                // Calculer direction du push (de l'obstacle vers le player)
+                Vector3 pushDirection = (collision.transform.position - transform.position).normalized;
+
+                // Garder seulement la direction horizontale
+                pushDirection.y = 0f;
+                pushDirection.Normalize();
+
+                // Calculer la force en fonction de la vitesse de l'obstacle
+                float calculatedForce = currentVelocity.magnitude * pushForceMultiplier;
+
+                // Appliquer le push progressif via PlayerPhysicsMovement
+                playerMovement.ApplyProgressivePush(pushDirection, calculatedForce, pushDuration);
+
+                Debug.Log($"[RoamingObstacle] Push progressif applique au player (force: {calculatedForce})");
+            }
+        }
+    }
+
+    /*private System.Collections.IEnumerator PushPlayerCoroutine(Rigidbody playerRb, Vector3 direction)
+    {
+        isPushingPlayer = true;
+
+        float elapsed = 0f;
+        float forcePerFrame = pushForce / pushDuration;
+
+        while (elapsed < pushDuration)
+        {
+            // Appliquer une fraction de la force chaque frame
+            playerRb.AddForce(direction * forcePerFrame * Time.deltaTime, ForceMode.VelocityChange);
+
+            elapsed += Time.deltaTime;
+            yield return null; // Attendre la prochaine frame
+        }
+
+        isPushingPlayer = false;
+        Debug.Log($"[RoamingObstacle] Fin poussee progressive du player");
+    }*/
 
     void OnDestroy()
     {
