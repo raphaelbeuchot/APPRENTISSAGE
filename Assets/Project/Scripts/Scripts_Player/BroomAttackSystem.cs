@@ -112,30 +112,15 @@ public class BroomAttackSystem : MonoBehaviour
             animator.SetTrigger("BroomAttack");
         }
 
+        
+
         // ATTENDRE TOUTE LA DUREE DE L'ANIMATION
         yield return new WaitForSeconds(stats.broomAttackDuration);
 
-        // LERP LAYER WEIGHT A 0
-        float elapsed = 0f;
-        float lerpDuration = 0.2f;
-        while (elapsed < lerpDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = 1f - (elapsed / lerpDuration);
-            if (animator != null)
-                animator.SetLayerWeight(1, t);
-            yield return null;
-        }
-
-        if (animator != null)
-            animator.SetLayerWeight(1, 0f);
-
-        if (animator != null)
-            animator.SetLayerWeight(1, 0f);
-
+        // Plus de lerp forcé, laisser l'Animator gérer la transition
         isAttacking = false;
 
-        // Reset complet de l'Animator APRÈS tout le reste
+        // Reset SEULEMENT si nécessaire pour éviter conflits spray
         if (animator != null)
         {
             animator.Rebind();
