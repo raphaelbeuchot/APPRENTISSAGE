@@ -11,6 +11,7 @@ public class MeleeAttackSystem : MonoBehaviour
     private PlayerHealth health;
     private PlayerPhysicsMovement movement;
     private TargetLockSystem lockSystem;
+    private Animator animator;
 
 
     // State runtime
@@ -48,7 +49,7 @@ public class MeleeAttackSystem : MonoBehaviour
             Debug.LogError("PlayerStats non assigne sur " + gameObject.name);
             return;
         }
-
+        animator = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody>();
         health = GetComponent<PlayerHealth>();
         movement = GetComponent<PlayerPhysicsMovement>();
@@ -159,119 +160,42 @@ public class MeleeAttackSystem : MonoBehaviour
     }
     bool CanAttack()
     {
+        if (bottleThrown) { Debug.Log("[SPRAY BLOCKED] bottleThrown"); return false; }
+        if (currentSprayAmmo <= 0) { Debug.Log("[SPRAY BLOCKED] no ammo"); return false; }
+        if (isReloading) { Debug.Log("[SPRAY BLOCKED] reloading"); return false; }
+        if (isGrabbed) { Debug.Log("[SPRAY BLOCKED] isGrabbed"); return false; }
 
-        // Cannot attack if bottle is thrown
-        if (bottleThrown)
-        {
-            Debug.Log("Cannot attack: bottle is thrown, pick it up first!");
-            return false;
-        }
-        // Check spray ammo
-        if (currentSprayAmmo <= 0)
-        {
-            // Rechargement auto si on a encore de la réserve
-            if (!isReloading && totalSprayAmmo > 0)
-            {
-                StartReload();
-            }
-            Debug.Log("Cannot attack: no spray ammo!");
-            return false;
-        }
-
-        if (isReloading)
-        {
-            Debug.Log("Cannot attack: reloading!");
-            return false;
-        }
-        if (isGrabbed)
-        {
-            Debug.Log("Cannot attack: player is grabbed!");
-            return false;
-        }
-
-        // Empecher attaque pendant recoil
         PlayerPhysicsMovement movement = GetComponent<PlayerPhysicsMovement>();
         if (movement != null && movement.grabState == PlayerPhysicsMovement.GrabState.Recoil)
-        {
-            return false;
-        }
+        { Debug.Log("[SPRAY BLOCKED] recoil"); return false; }
 
-        if (Time.time - lastAttackTime < stats.attackCooldown)
-        {
-            return false;
-        }
-
-        if (isAttacking)
-        {
-            Debug.Log("Cannot attack: already attacking");
-            return false;
-        }
-
-        if (health != null && health.IsDead())
-        {
-            Debug.Log("Cannot attack: player is dead");
-            return false;
-        }
-
-        if (movement != null && !movement.enabled)
-        {
-            Debug.Log("Cannot attack: movement disabled (probably grabbed)");
-            return false;
-        }
+        if (isAttacking) { Debug.Log("[SPRAY BLOCKED] isAttacking"); return false; }
+        if (health != null && health.IsDead()) { Debug.Log("[SPRAY BLOCKED] dead"); return false; }
+        if (movement != null && !movement.enabled) { Debug.Log("[SPRAY BLOCKED] movement disabled"); return false; }
 
         return true;
     }
 
     IEnumerator PerformAttack()
     {
+        Debug.Log("[SPRAY] Starting attack, setting isAttacking to true");
         isAttacking = true;
+        lastSprayTime = Time.time;
 
-        try
+        if (animator != null)
         {
-            lastAttackTime = Time.time;
-            StartCoroutine(PulseScale());
-            yield return new WaitForSeconds(0.1f);
-            DetectAndHitTargets();
-            yield return new WaitForSeconds(stats.attackDuration - 0.1f);
-            currentArm = (currentArm == AttackArm.Left) ? AttackArm.Right : AttackArm.Left;
+            animator.SetTrigger("SprayAttack");
         }
-        finally
-        {
-            isAttacking = false;
-        }
+
+        yield return new WaitForSeconds(stats.attackDuration);
+
+        Debug.Log("[SPRAY] End of coroutine, setting isAttacking to false");
+        isAttacking = false;
     }
 
-    IEnumerator PulseScale()
-    {
-        Vector3 targetScale = originalScale * 1.2f;
 
-        // Agrandir
-        float elapsed = 0f;
-        float duration = stats.attackDuration / 2f;
 
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-            transform.localScale = Vector3.Lerp(originalScale, targetScale, t);
-            yield return null;
-        }
-
-        // Retrecir
-        elapsed = 0f;
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-            transform.localScale = Vector3.Lerp(targetScale, originalScale, t);
-            yield return null;
-        }
-
-        // Forcer le retour
-        transform.localScale = originalScale;
-    }
-
-    void DetectAndHitTargets()
+    public void OnSprayHit()
     {
         Debug.Log("SPRAY ATTACK!");
 
@@ -418,6 +342,7 @@ public class MeleeAttackSystem : MonoBehaviour
                 }
             }
         }
+        
     }
 
 

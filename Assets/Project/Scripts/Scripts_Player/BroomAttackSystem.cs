@@ -15,8 +15,7 @@ public class BroomAttackSystem : MonoBehaviour
 
 
     private bool isAttacking = false;
-    private bool isInWindup = false;
-    private float lastAttackTime = 0f;
+   
     private bool isGrabbed = false;
     private Animator animator;
     void Start()
@@ -69,10 +68,7 @@ public class BroomAttackSystem : MonoBehaviour
             return false;
         }
 
-        if (Time.time - lastAttackTime < stats.broomCooldown)
-        {
-            return false;
-        }
+        
 
         if (isAttacking)
         {
@@ -98,75 +94,59 @@ public class BroomAttackSystem : MonoBehaviour
     IEnumerator PerformBroomAttack()
     {
         isAttacking = true;
-        isInWindup = true;
 
-        // Sortir du crouch si actif
+        if (movement != null)
+            movement.ExitCrouch();
+
+        // CONSOMMER LA STAMINA
         if (movement != null)
         {
-            movement.ExitCrouch();
+            float currentStamina = movement.GetCurrentStamina();
+            movement.UpdateStamina(currentStamina - stats.broomStaminaCost);
         }
 
-        // ACTIVER LE LAYER UPPER BODY
+        // ACTIVER LE LAYER UPPER BODY + TRIGGER
         if (animator != null)
         {
             animator.SetLayerWeight(1, 1f);
             animator.SetTrigger("BroomAttack");
-            Debug.Log("LAYER WEIGHT SET TO 1, TRIGGER FIRED");
         }
 
-        try
+        // ATTENDRE TOUTE LA DUREE DE L'ANIMATION
+        yield return new WaitForSeconds(stats.broomAttackDuration);
+
+        // LERP LAYER WEIGHT A 0
+        float elapsed = 0f;
+        float lerpDuration = 0.2f;
+        while (elapsed < lerpDuration)
         {
-            // WINDUP PHASE
-            Debug.Log("BROOM WINDUP START");
-            yield return new WaitForSeconds(stats.broomWindupTime);
-
-            // Check si annule par grab
-            if (isGrabbed)
-            {
-                Debug.Log("BROOM ATTACK CANCELLED BY GRAB");
-                yield break;
-            }
-
-            isInWindup = false;
-
-            // CONSOMMER LA STAMINA
-            if (movement != null)
-            {
-                float currentStamina = movement.GetCurrentStamina();
-                movement.UpdateStamina(currentStamina - stats.broomStaminaCost);
-            }
-
-            lastAttackTime = Time.time;
-
-            // EXECUTE ATTACK
-            Debug.Log("BROOM ATTACK!");
-            DetectAndHitTargets();
-
-            // Son
-            if (audioSource != null && stats.broomSound != null)
-            {
-                audioSource.PlayOneShot(stats.broomSound);
-            }
-
-            // RECOVERY PHASE
-            float recoveryTime = stats.broomAttackDuration - stats.broomWindupTime;
-            yield return new WaitForSeconds(recoveryTime);
-        }
-        finally
-        {
-            isAttacking = false;
-            isInWindup = false;
-
-            // DÉSACTIVER LE LAYER UPPER BODY
+            elapsed += Time.deltaTime;
+            float t = 1f - (elapsed / lerpDuration);
             if (animator != null)
-            {
-                animator.SetLayerWeight(1, 0f);
-            }
+                animator.SetLayerWeight(1, t);
+            yield return null;
+        }
+
+        if (animator != null)
+            animator.SetLayerWeight(1, 0f);
+
+        if (animator != null)
+            animator.SetLayerWeight(1, 0f);
+
+        isAttacking = false;
+
+        // Reset complet de l'Animator APRÈS tout le reste
+        if (animator != null)
+        {
+            animator.Rebind();
+            animator.Update(0f);
         }
     }
 
-    void DetectAndHitTargets()
+    public void OnBroomHit()
     {
+        bool hitSomething = false;
+
         Collider[] hits = Physics.OverlapSphere(
             transform.position + Vector3.up * 1f,
             stats.broomRange,
@@ -209,6 +189,8 @@ public class BroomAttackSystem : MonoBehaviour
             EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
             if (enemyHealth != null && !enemyHealth.IsDead())
             {
+                hitSomething = true;
+                
                 // CALCULER DIRECTION KNOCKBACK D'ABORD
                 Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
                 knockbackDir.y = 0;
@@ -270,6 +252,8 @@ public class BroomAttackSystem : MonoBehaviour
             SwarmController_AStar swarmAStar = hit.GetComponent<SwarmController_AStar>();
             if (swarmAStar != null)
             {
+                hitSomething = true;
+                
                 // AVANT : swarmAStar.TakeDamage(stats.broomDamage);
                 // APRÈS :
                 swarmAStar.TakeDamage(swarmAStar.stats.broomDamageTaken);
@@ -280,6 +264,7 @@ public class BroomAttackSystem : MonoBehaviour
                 SwarmController swarm = hit.GetComponent<SwarmController>();
                 if (swarm != null)
                 {
+                    hitSomething = true;
                     swarm.TakeDamage(swarm.stats.broomDamageTaken);
                     Debug.Log(gameObject.name + " BROOM hit swarm for " + swarm.stats.broomDamageTaken + " damage!");
                 }
@@ -309,6 +294,12 @@ public class BroomAttackSystem : MonoBehaviour
                 }
             }
         }
+        if (!hitSomething)
+        {
+            if (audioSource != null && stats.broomSound != null)
+                audioSource.PlayOneShot(stats.broomSound);
+        }
+        
     }
     IEnumerator KnockdownTarget(GameObject target, Vector3 knockbackDirection)
     {
@@ -378,12 +369,13 @@ public class BroomAttackSystem : MonoBehaviour
     {
         isGrabbed = true;
 
-        if (isInWindup)
+        if (isAttacking)
         {
             StopAllCoroutines();
             isAttacking = false;
-            isInWindup = false;
-            Debug.Log("BroomAttack: CANCELLED by grab during windup");
+            if (animator != null)
+                animator.SetLayerWeight(1, 0f);
+            Debug.Log("BroomAttack: CANCELLED by grab");
         }
     }
 

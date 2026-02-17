@@ -16,7 +16,6 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
     {
         if (settings == null)
         {
-            Debug.LogError("[RotatingPlatform] Settings non assignes !");
             enabled = false;
             return;
         }
@@ -32,7 +31,6 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
             audioSource.Play();
         }
         lastPosition = transform.position;
-        Debug.Log($"[RotatingPlatform] {settings.obstacleName} demarre avec pivot offset {settings.pivotOffset}");
     }
 
     void Update()
@@ -89,7 +87,6 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
 
     void OnCollisionEnter(Collision collision)
     {
-        Debug.Log($"[RotatingPlatform] {collision.gameObject.name} monte sur la plateforme");
     }
 
     void OnCollisionStay(Collision collision)
@@ -114,11 +111,9 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
         // Rayon de la plateforme (on prend le plus petit pour être sûr)
         float platformRadius = Mathf.Min(bounds.extents.x, bounds.extents.z) - 0.05f; // Marge de 0.05m
 
-        Debug.Log($"[RotPlat] {enemyAI.name} - Distance={distanceToCenter:F2}m, Radius={platformRadius:F2}m");
 
         if (distanceToCenter > platformRadius)
         {
-            Debug.Log($"[RotPlat] {enemyAI.name} trop loin du centre (bord externe)");
             return;
         }
 
@@ -127,20 +122,17 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
         {
             enemiesOnPlatform.Add(enemyAI);
             enemyAI.EnableRotatingPlatformMode(this);
-            Debug.Log($"[RotatingPlatform] {enemyAI.gameObject.name} ACTIVE rotating platform mode");
         }
     }
 
     void OnCollisionExit(Collision collision)
     {
-        Debug.Log($"[RotatingPlatform] {collision.gameObject.name} quitte la plateforme");
 
         EnemyAI_AStar enemyAI = collision.gameObject.GetComponent<EnemyAI_AStar>();
         if (enemyAI != null && enemiesOnPlatform.Contains(enemyAI))
         {
             enemiesOnPlatform.Remove(enemyAI);
             enemyAI.DisableRotatingPlatformMode();
-            Debug.Log($"[RotatingPlatform] {enemyAI.gameObject.name} DESACTIVE rotating platform mode");
         }
     }
 

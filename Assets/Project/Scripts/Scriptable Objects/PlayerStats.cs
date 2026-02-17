@@ -64,8 +64,7 @@ public class PlayerStats : ScriptableObject
     public float knockbackForce = 5f;
     [Tooltip("Duree de l'animation d'attaque (en secondes)")]
     public float attackDuration = 0.5f;
-    [Tooltip("Cooldown entre deux attaques (en secondes)")]
-    public float attackCooldown = 0.5f;
+   
 
     [Header("SPRAY SYSTEM")]
     [Tooltip("Munitions max du spray")]
@@ -104,12 +103,10 @@ public class PlayerStats : ScriptableObject
     public float broomConeAngle = 270f;
     [Tooltip("Cout en stamina de l'attaque balai")]
     public float broomStaminaCost = 15f;
-    [Tooltip("Duree du windup en secondes")]
-    public float broomWindupTime = 0.8f;
+    
     [Tooltip("Duree totale de l'attaque balai")]
-    public float broomAttackDuration = 1.2f;
-    [Tooltip("Cooldown entre attaques balai")]
-    public float broomCooldown = 0.5f;
+    public float broomAttackDuration = 1.5f;
+  
     [Tooltip("Son du balai")]
     public AudioClip broomSound;
     public AudioClip broomHitSound;

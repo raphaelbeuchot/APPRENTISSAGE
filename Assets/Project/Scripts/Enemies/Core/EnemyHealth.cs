@@ -189,18 +189,15 @@ public class EnemyHealth : MonoBehaviour
     }
     private void OnCollisionEnter(Collision collision)
     {
-        Debug.Log($"[ENEMYHEALTH] {gameObject.name} collided with {collision.gameObject.name} (layer: {collision.gameObject.layer})");
 
         if (isDead) return;
 
         // Check layer obstacle
         if (collision.gameObject.layer != LayerMask.NameToLayer("Obstacle"))
         {
-            Debug.Log("[ENEMYHEALTH] Not obstacle layer, returning");
             return;
         }
 
-        Debug.Log("[ENEMYHEALTH] Is obstacle layer!");
 
         // CHECK : Seulement si en état forcé
         bool shouldBounce = false;
