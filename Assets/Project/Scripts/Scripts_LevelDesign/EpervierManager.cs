@@ -66,26 +66,33 @@ public class EpervierManager : MonoBehaviour
 
     void Update()
     {
-        if (isEscaping || playerRigidbody == null) return;
+        if (isEscaping || playerMovement == null) return;
 
-        Vector3 rayOrigin = playerRigidbody.position;
+        Vector3 rayOrigin = playerRigidbody.position + Vector3.up * 1.4f;
         RaycastHit hit;
+        int obstacleLayer = LayerMask.GetMask("Obstacle");
 
-        if (Physics.Raycast(rayOrigin, Vector3.up, out hit, escapeRaycastHeight))
+        if (Physics.Raycast(rayOrigin, Vector3.up, out hit, escapeRaycastHeight, obstacleLayer))
         {
-            // Verifier que l'objet touche est un obstacle en phase Dropping
+            Debug.Log("[Epervier] Raycast touche : " + hit.collider.gameObject.name + " layer : " + hit.collider.gameObject.layer);
+
             for (int i = 0; i < POOL_SIZE; i++)
             {
-                if (lines[i].state != LineState.Dropping) continue;
-
+                if (lines[i].state != LineState.Dropping && lines[i].state != LineState.Rearranging) continue;
                 foreach (GameObject obs in lines[i].obstacles)
                 {
                     if (obs == hit.collider.gameObject)
                     {
-                        StartCoroutine(EscapeCoroutine()); return;
+                        Debug.Log("[Epervier] Obstacle reconnu, lancement EscapeCoroutine");
+                        StartCoroutine(EscapeCoroutine());
+                        return;
                     }
                 }
             }
+        }
+        else
+        {
+            Debug.Log("[Epervier] Raycast ne touche rien");
         }
     }
 
@@ -141,6 +148,7 @@ public class EpervierManager : MonoBehaviour
                 line.currentX[j] = slotXPositions[j];
                 obs.transform.position = new Vector3(slotXPositions[j], spawnPoint.position.y, spawnPoint.position.z);
                 line.obstacles[j] = obs;
+                obs.layer = LayerMask.NameToLayer("Obstacle");
                 if (obstacleMaterials != null && j < obstacleMaterials.Length && obstacleMaterials[j] != null)
                 {
                     Renderer rend = obs.GetComponent<Renderer>();
@@ -307,6 +315,7 @@ public class EpervierManager : MonoBehaviour
     IEnumerator DropCoroutine(int idx)
     {
         EpervierLine line = lines[idx];
+        line.state = LineState.Dropping; // AJOUTER
         float targetY = groundY + obstacleHeight / 2f;
 
         while (Mathf.Abs(line.currentY - targetY) > 0.02f)
