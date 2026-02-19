@@ -33,6 +33,9 @@ public class EpervierManager : MonoBehaviour
     [SerializeField] private float escapeForce = 10f;
     [SerializeField] private PlayerPhysicsMovement playerMovement;
 
+    [SerializeField] private float sweepRaycastDistance = 1.5f;
+    private bool isSweeping = false;
+
     private bool isEscaping = false;
     private bool isFirstDrop = true;
 
@@ -96,8 +99,35 @@ public class EpervierManager : MonoBehaviour
         {
             Debug.Log("[Epervier] Raycast ne touche rien");
         }
-    }
+        if (!isSweeping)
+        {
+            Vector3 sweepRayOrigin = playerRigidbody.position + Vector3.up * 0.6f;
+            RaycastHit sweepHit;
 
+            if (Physics.Raycast(sweepRayOrigin, Vector3.forward, out sweepHit, sweepRaycastDistance, obstacleLayer))
+            {
+                for (int i = 0; i < POOL_SIZE; i++)
+                {
+                    if (lines[i].state != LineState.Traversing) continue;
+                    foreach (GameObject obs in lines[i].obstacles)
+                    {
+                        if (obs == sweepHit.collider.gameObject)
+                        {
+                            isSweeping = true;
+                            StartCoroutine(SweepResetCoroutine());
+                            playerMovement.TriggerSweep();
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    IEnumerator SweepResetCoroutine()
+    {
+        yield return new WaitForSeconds(0.5f);
+        isSweeping = false;
+    }
     IEnumerator EscapeCoroutine()
     {
         isEscaping = true;

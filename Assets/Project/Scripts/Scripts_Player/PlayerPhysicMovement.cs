@@ -758,4 +758,36 @@ public class PlayerPhysicsMovement : MonoBehaviour
         lastDashTime = Time.time;
     }
 
+    public void TriggerSweep()
+    {
+        StartCoroutine(SweepCoroutine());
+    }
+
+    IEnumerator SweepCoroutine()
+    {
+        canMove = false;
+        enabled = false;
+        rb.linearVelocity = Vector3.zero;
+
+        animator.SetTrigger("Sweep");
+
+        yield return null; // laisser la transition s'enclencher
+
+        while (animator.GetCurrentAnimatorStateInfo(0).IsName("Sweep") &&
+               animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
+        {
+            yield return null;
+        }
+        // Attendre qu'on entre dans StandUp
+        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName("StandUp"));
+
+        // Puis attendre la fin de StandUp
+        while (animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.95f)
+        {
+            yield return null;
+        }
+        enabled = true;
+        canMove = true;
+    }
+
 }
