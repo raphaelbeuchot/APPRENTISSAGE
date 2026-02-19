@@ -34,6 +34,8 @@ public class EpervierManager : MonoBehaviour
     [SerializeField] private PlayerPhysicsMovement playerMovement;
 
     private bool isEscaping = false;
+    private bool isFirstDrop = true;
+
 
     [SerializeField] private Material[] obstacleMaterials;
     private enum LineState { Idle, Rearranging, Dropping, Ready, Traversing, Returning }
@@ -331,6 +333,12 @@ public class EpervierManager : MonoBehaviour
         readyLineIndex = idx;
 
         Debug.Log("[Epervier] Ligne " + idx + " prete.");
+
+        if (isFirstDrop)
+        {
+            isFirstDrop = false;
+            StartTraverse(idx);
+        }
     }
 
     IEnumerator TraverseCoroutine(int idx)
