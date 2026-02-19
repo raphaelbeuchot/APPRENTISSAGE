@@ -26,6 +26,16 @@ public class EpervierManager : MonoBehaviour
     [SerializeField] private float rearrangeSpeed = 4f;
     [SerializeField] private float greenLightDelay = 1f;
 
+    [Header("Player Escape")]
+    [SerializeField] private Rigidbody playerRigidbody;
+    [SerializeField] private float escapeRaycastHeight = 2f;
+    [SerializeField] private float escapeForceDuration = 0.5f;
+    [SerializeField] private float escapeForce = 10f;
+    [SerializeField] private PlayerPhysicsMovement playerMovement;
+
+    private bool isEscaping = false;
+
+    [SerializeField] private Material[] obstacleMaterials;
     private enum LineState { Idle, Rearranging, Dropping, Ready, Traversing, Returning }
 
     private class EpervierLine
@@ -54,6 +64,42 @@ public class EpervierManager : MonoBehaviour
         CreateLines();
     }
 
+    void Update()
+    {
+        if (isEscaping || playerRigidbody == null) return;
+
+        Vector3 rayOrigin = playerRigidbody.position;
+        RaycastHit hit;
+
+        if (Physics.Raycast(rayOrigin, Vector3.up, out hit, escapeRaycastHeight))
+        {
+            // Verifier que l'objet touche est un obstacle en phase Dropping
+            for (int i = 0; i < POOL_SIZE; i++)
+            {
+                if (lines[i].state != LineState.Dropping) continue;
+
+                foreach (GameObject obs in lines[i].obstacles)
+                {
+                    if (obs == hit.collider.gameObject)
+                    {
+                        StartCoroutine(EscapeCoroutine()); return;
+                    }
+                }
+            }
+        }
+    }
+
+    IEnumerator EscapeCoroutine()
+    {
+        isEscaping = true;
+
+        if (playerMovement != null)
+            playerMovement.ApplyProgressivePush(Vector3.forward, escapeForce, escapeForceDuration);
+
+        yield return new WaitForSeconds(escapeForceDuration);
+
+        isEscaping = false;
+    }
     void BuildSlotPositions()
     {
         slotXPositions = new float[numberOfSlots];
@@ -95,6 +141,12 @@ public class EpervierManager : MonoBehaviour
                 line.currentX[j] = slotXPositions[j];
                 obs.transform.position = new Vector3(slotXPositions[j], spawnPoint.position.y, spawnPoint.position.z);
                 line.obstacles[j] = obs;
+                if (obstacleMaterials != null && j < obstacleMaterials.Length && obstacleMaterials[j] != null)
+                {
+                    Renderer rend = obs.GetComponent<Renderer>();
+                    if (rend != null)
+                        rend.material = obstacleMaterials[j];
+                }
             }
 
             lines[i] = line;

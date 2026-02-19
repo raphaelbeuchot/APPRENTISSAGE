@@ -26060,6 +26060,18 @@ MonoBehaviour:
   returnSpeed: 20
   rearrangeSpeed: 4
   greenLightDelay: 0
+  playerRigidbody: {fileID: 6978021389780206176}
+  escapeRaycastHeight: 3
+  escapeForceDuration: 1
+  escapeForce: 200
+  playerMovement: {fileID: 6140236864197050197}
+  obstacleMaterials:
+  - {fileID: 2100000, guid: 5dd3ddb7635282b4d93907f1d75b84c2, type: 2}
+  - {fileID: 2100000, guid: 4c2d7ede1326d9e49a21298c866d5655, type: 2}
+  - {fileID: 2100000, guid: 5dd3ddb7635282b4d93907f1d75b84c2, type: 2}
+  - {fileID: 2100000, guid: 4c2d7ede1326d9e49a21298c866d5655, type: 2}
+  - {fileID: 2100000, guid: 5dd3ddb7635282b4d93907f1d75b84c2, type: 2}
+  - {fileID: 2100000, guid: 4c2d7ede1326d9e49a21298c866d5655, type: 2}
 --- !u!4 &487426978
 Transform:
   m_ObjectHideFlags: 0
@@ -83534,7 +83546,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a4067e8f112ca5a47adab30f72b36b9c, type: 2}
+  - {fileID: 2100000, guid: 8db988248a8ddd447921a7030c3717c6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -83574,8 +83586,8 @@ Transform:
   m_GameObject: {fileID: 1560967251}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.6000001, y: 0, z: 15.199999}
-  m_LocalScale: {x: 13, y: 0.1, z: 30}
+  m_LocalPosition: {x: 4, y: 0, z: 15.199999}
+  m_LocalScale: {x: 12, y: 0.1, z: 30}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -115608,6 +115620,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b253f867cc165994a8cba80f88f78902, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDetectionFeedback
+--- !u!54 &6978021389780206176 stripped
+Rigidbody:
+  m_CorrespondingSourceObject: {fileID: 3048699607039799863, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
+  m_PrefabInstance: {fileID: 6978021389780206166}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &9019177782128006907
 PrefabInstance:
   m_ObjectHideFlags: 0
