@@ -15,6 +15,8 @@ MonoBehaviour:
   activeInGreenLight: 0
   activeInAlert: 1
   activeInRedLight: 1
+  maxHealth: 50
+  sprayDamageTaken: 100
   detectionRange: 4
   detectionAngle: 360
   attractionForce: 1
@@ -22,7 +24,6 @@ MonoBehaviour:
   canWander: 0
   wanderSpeed: 3
   wanderRadius: 5
-  maxHealth: 50
   contactDamage: 5
   contactDamageInterval: 0.5
   contactDamageRange: 0.5
@@ -32,6 +33,7 @@ MonoBehaviour:
   startsExtinguished: 0
   materialAwake: {fileID: 2100000, guid: 865fe8506deb1554e98dac84db2b7882, type: 2}
   materialAsleep: {fileID: 2100000, guid: 9ddd8791b49c5b24f97ff131292af37d, type: 2}
+  materialDead: {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
   awakePulseIntensityMin: 3
   awakePulseIntensityMax: 9
   awakePulseSpeed: 2

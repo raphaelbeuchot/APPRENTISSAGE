@@ -29,6 +29,8 @@ public class SentinelCycleManager : MonoBehaviour
     [SerializeField] private Light playerSpotLight;
     [SerializeField] private Color spotColorCompensated = new Color(0.5f, 0.8f, 1f, 1f);
     [SerializeField] private EpervierManager epervierManager;
+    [SerializeField] private EpervierManagerLoop epervierManagerLoop;
+
 
 
     [Header("State")]
@@ -251,6 +253,8 @@ public class SentinelCycleManager : MonoBehaviour
                 gameManager.ResetAllTracking();
             if (epervierManager != null)
                 epervierManager.OnGreenLight();
+            if (epervierManagerLoop != null)
+                epervierManagerLoop.OnGreenLight();
 
             targetDuration = GetDynamicGreenLightDuration();
             Debug.Log(string.Format("[CYCLE] GreenLight - Duree: {0:F1}s", targetDuration));
@@ -303,6 +307,8 @@ public class SentinelCycleManager : MonoBehaviour
                 gameManager.ResetAllTracking();
             if (epervierManager != null)
                 epervierManager.OnRedLight();
+            if (epervierManagerLoop != null)
+                epervierManagerLoop.OnRedLight();
 
             targetDuration = GetDynamicRedLightDuration();
 

@@ -311,8 +311,8 @@ public class MeleeAttackSystem : MonoBehaviour
             if (brightEyes != null && brightEyes.IsAlive() && !brightEyes.IsFlameExtinguished())
             {
                 hitSomething = true;
-                brightEyes.ExtinguishFlame();
-                Debug.Log(gameObject.name + " extinguished " + hit.gameObject.name + "'s flame!");
+                brightEyes.TakeDamage(brightEyes.stats.sprayDamageTaken);
+                Debug.Log(gameObject.name + " sprayed " + hit.gameObject.name + "!");
             }
         }
 

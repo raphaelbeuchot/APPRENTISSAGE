@@ -7,6 +7,10 @@ public class BrightEyesStats : ScriptableObject
     public bool activeInAlert = true;
     public bool activeInRedLight = true;
 
+    [Header("Damage Taken")]
+    public float maxHealth = 100f;
+    public float sprayDamageTaken = 100f;
+
     [Header("Detection")]
     public float detectionRange = 6f;
     public float detectionAngle = 90f;
@@ -21,7 +25,6 @@ public class BrightEyesStats : ScriptableObject
     public float wanderRadius = 5f;
 
     [Header("Combat")]
-    public float maxHealth = 50f;
     public float contactDamage = 5f;
     public float contactDamageInterval = 1f;
     public float contactDamageRange = 1f;
@@ -35,6 +38,7 @@ public class BrightEyesStats : ScriptableObject
     [Header("Flame Materials")]
     public Material materialAwake;    // Quand isAwake = true
     public Material materialAsleep;   // Quand isAwake = false
+    public Material materialDead;
 
     [Header("Awake Pulse")]
     public float awakePulseIntensityMin = 3.0f;

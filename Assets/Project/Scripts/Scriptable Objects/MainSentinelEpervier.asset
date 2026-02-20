@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1787ff25769006b4883c67294b8163dc, type: 3}
+  m_Name: MainSentinelEpervier
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelSettings
+  sentinelName: Main Sentinel
+  sentinelModel: {fileID: 0}
+  detectionRadius: 1000
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 192
+  movementThreshold: 0.1
+  playerDamage: 50
+  zombieDamage: 25
+  headshotInstakill: 1
+  headshotChance: 0.05
+  stunDuration: 2
+  stunZombieDuration: 5
+  greenlightMinDuration: 2
+  greenlightMaxDuration: 4
+  greenlightAnimation: {fileID: 0}
+  greenlightAmbientSound: {fileID: 8300000, guid: 19d85f214084cf04d9e15f7132a77aa7, type: 3}
+  alertAnimation: {fileID: 0}
+  alertSound: {fileID: 8300000, guid: e2f2c96e2e7377d42a45d074be9c7031, type: 3}
+  minPitch: 0.8
+  maxPitch: 1.2
+  alertLightColor: {r: 1, g: 0.6067698, b: 0, a: 1}
+  alertParticlesPrefab: {fileID: 0}
+  redlightMinDuration: 4
+  redlightMaxDuration: 6
+  redlightAnimation: {fileID: 0}
+  redlightSound: {fileID: 0}
+  shootSound: {fileID: 8300000, guid: f0d9b3360b17b244ca5a5fae1b3e1e6e, type: 3}
+  redlightLightColor: {r: 1, g: 0, b: 0, a: 1}
+  redlightParticlesPrefab: {fileID: 0}
+  redlightScanInterval: 0.2
+  minimumExposureScans: 4
+  shootDelay: 0.4
+  shootCooldown: 2
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 2376
+  raycastOffset: {x: 0, y: 3, z: 0}
+  showLasers: 1
+  laserWidth: 0.02
+  laserColor: {r: 1, g: 0, b: 0, a: 0.6862745}
+  laserFadeInDuration: 0.5
+  laserFadeOutDuration: 1
+  shootLaserFadeDuration: 0.5
+  flashStartDelay: 1
+  flashDuration: 0.5
+  flashInterval: 0.2
+  detectionSound: {fileID: 8300000, guid: cd8210b2603e22f4990442b8d7f39341, type: 3}
+  laserFadeDuration: 1
+  ricochetSound: {fileID: 8300000, guid: c39854b70582e6447a015c94370bf723, type: 3}
+  ricochetVFX: {fileID: 4841243947222244815, guid: f381ddcb56c51a34f859a4fc764fb762, type: 3}
+  ricochetVFXDuration: 2
+  releaseDuration: 2
+  releaseAnimation: {fileID: 0}
+  releaseSound: {fileID: 8300000, guid: 19d85f214084cf04d9e15f7132a77aa7, type: 3}
+  releaseLightColor: {r: 0, g: 1, b: 0, a: 1}
+  releaseParticlesPrefab: {fileID: 0}
+  shootGrabbingZombiesInRedlight: 0
+  punishDegrabInRedlight: 1
+  degrabPunishmentDelay: 0.5
+  bulletPrefab: {fileID: 0}
+  bulletSpeed: 100
+  useInstantRaycast: 1
+  playerHitEffectPrefab: {fileID: 0}
+  zombieHitEffectPrefab: {fileID: 0}
+  enableDetectionCutscene: 0
+  slowMoDuration: 1
+  slowMoTimeScale: 0.3
+  type: 0
+  cameraMinDistance: 2
+  cameraMaxDistance: 9
+  cameraLateralOffset: 1.5
+  cameraMinLateralOffset: 0.3
+  cameraHeightOffset: 2
+  cameraTransitionRange: 20

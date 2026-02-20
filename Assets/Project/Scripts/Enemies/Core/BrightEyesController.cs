@@ -205,6 +205,8 @@ public class BrightEyesController : MonoBehaviour
     {
         if (flameRenderer == null || stats == null) return;
 
+        
+
         if (isFlameExtinguished)
         {
             flameRenderer.enabled = false;
@@ -338,13 +340,19 @@ public class BrightEyesController : MonoBehaviour
 
         isFlameExtinguished = false;
         wasExtinguishedThisCycle = false;
+        currentHealth = stats.maxHealth;
+
+        if (healthBarUI != null)
+        {
+            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
+        }
 
         Debug.Log($"{gameObject.name} flame REIGNITED!");
     }
 
     public void TakeDamage(float damage)
     {
-        if (isDead) return;
+        if (isDead || isFlameExtinguished) return;
 
         currentHealth -= damage;
         currentHealth = Mathf.Max(0f, currentHealth);
@@ -353,7 +361,6 @@ public class BrightEyesController : MonoBehaviour
         {
             healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
         }
-
         if (currentHealth <= 0f)
         {
             Die();
@@ -366,9 +373,22 @@ public class BrightEyesController : MonoBehaviour
 
         isDead = true;
 
-        if (playerInRange)
+        ForceDeactivate();
+
+        // Appliquer materialDead directement ici car Update() ne tourne plus
+        if (flameRenderer != null && stats != null)
         {
-            RemoveAttractionFromPlayer();
+            if (stats.materialDead != null)
+            {
+                if (materialInstance != null) Destroy(materialInstance);
+                materialInstance = new Material(stats.materialDead);
+                flameRenderer.material = materialInstance;
+                flameRenderer.enabled = true;
+            }
+            else
+            {
+                flameRenderer.enabled = false;
+            }
         }
 
         if (healthBarUI != null)
@@ -380,7 +400,8 @@ public class BrightEyesController : MonoBehaviour
             }
         }
 
-        Destroy(gameObject);
+        Debug.Log($"{gameObject.name} DEAD - permanent!");
+        // Pas de Destroy : le bright eyes reste en scene mais inactif
     }
 
     public bool IsAlive() => !isDead && currentHealth > 0f;
