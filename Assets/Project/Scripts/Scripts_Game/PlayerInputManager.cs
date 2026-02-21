@@ -18,6 +18,8 @@ public class PlayerInputManager : MonoBehaviour
     public bool LockOnHeld { get; private set; }
     public bool ThrowBottlePressed { get; private set; }
     public bool InteractPressed { get; private set; }
+
+    public bool InteractHeld { get; private set; }
     public bool ReloadPressed { get; private set; }
     public bool MashEscapePressed { get; private set; }
     public bool CrouchPressed { get; private set; }
@@ -72,8 +74,8 @@ public class PlayerInputManager : MonoBehaviour
         inputActions.Player.ThrowBottle.performed += ctx => ThrowBottlePressed = true;
         inputActions.Player.ThrowBottle.canceled += ctx => ThrowBottlePressed = false;
 
-        inputActions.Player.Interact.performed += ctx => InteractPressed = true;
-        inputActions.Player.Interact.canceled += ctx => InteractPressed = false;
+        inputActions.Player.Interact.performed += OnInteract;
+        inputActions.Player.Interact.canceled += OnInteract;
 
         inputActions.Player.Reload.performed += ctx => ReloadPressed = true;
         inputActions.Player.Reload.canceled += ctx => ReloadPressed = false;
@@ -154,6 +156,14 @@ public class PlayerInputManager : MonoBehaviour
     {
         if (context.performed)
             PausePressed = true;
+    }
+
+    private void OnInteract(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+            InteractPressed = true;
+
+        InteractHeld = context.ReadValueAsButton();
     }
 
 
