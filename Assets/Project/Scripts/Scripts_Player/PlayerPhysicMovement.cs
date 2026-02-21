@@ -668,7 +668,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         float rayLength = 0.3f;
         Vector3 rayStart = transform.position + Vector3.up * 0.1f; // Légèrement au-dessus des pieds
-        return Physics.Raycast(rayStart, Vector3.down, rayLength, LayerMask.GetMask("Ground"));
+        return Physics.Raycast(rayStart, Vector3.down, rayLength, LayerMask.GetMask("Ground", "LavaTrain"));
     }
 
 
@@ -684,7 +684,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         Vector3 rayStart = transform.position + Vector3.up * 0.1f;
         RaycastHit hit;
 
-        if (Physics.Raycast(rayStart, Vector3.down, out hit, rayLength, LayerMask.GetMask("Ground")))
+        if (Physics.Raycast(rayStart, Vector3.down, out hit, rayLength, LayerMask.GetMask("Ground", "LavaTrain")))
         {
             IMovingPlatform platform = hit.collider.GetComponent<IMovingPlatform>();
 
@@ -788,6 +788,10 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
         enabled = true;
         canMove = true;
+    }
+    public IMovingPlatform GetCurrentPlatform()
+    {
+        return currentPlatform;
     }
 
 }

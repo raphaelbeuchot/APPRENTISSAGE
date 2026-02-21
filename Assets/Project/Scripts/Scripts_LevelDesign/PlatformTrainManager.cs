@@ -16,11 +16,9 @@ public class PlatformTrainManager : MonoBehaviour
     [SerializeField] private float startInertia = 25f;
 
     private float currentSpeed = 0f;
-    private bool isStopped = false;
     private float splineLength = 0f;
-
-    // Pour calculer la velocite de chaque plateforme
     private Vector3[] lastPositions;
+    private PlayerPhysicsMovement player;
 
     void Start()
     {
@@ -40,14 +38,12 @@ public class PlatformTrainManager : MonoBehaviour
             return;
         }
 
-        // Repartir les plateformes equitablement sur le spline
         float spacing = 1f / platforms.Count;
         for (int i = 0; i < platforms.Count; i++)
         {
             platforms[i].currentProgress = spacing * i;
         }
 
-        // Initialiser les positions de reference pour le calcul de velocite
         lastPositions = new Vector3[platforms.Count];
         for (int i = 0; i < platforms.Count; i++)
         {
@@ -56,36 +52,31 @@ public class PlatformTrainManager : MonoBehaviour
         }
 
         currentSpeed = trainSpeed;
+        player = FindFirstObjectByType<PlayerPhysicsMovement>();
     }
 
     void Update()
     {
-        // Lecture input X
-        bool holdingX = PlayerInputManager.Instance.InteractHeld;
+        bool holdingX = PlayerInputManager.Instance.InteractHeld && IsPlayerOnTrain();
 
-        // Gestion inertie
         float targetSpeed = holdingX ? 0f : trainSpeed;
         float inertia = holdingX ? stopInertia : startInertia;
         currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, inertia * Time.deltaTime);
 
-        // Avancer toutes les plateformes
         float progressIncrement = (currentSpeed / splineLength) * Time.deltaTime;
 
         for (int i = 0; i < platforms.Count; i++)
         {
             platforms[i].currentProgress += progressIncrement;
 
-            // Boucle
             if (platforms[i].currentProgress > 1f)
                 platforms[i].currentProgress -= 1f;
             else if (platforms[i].currentProgress < 0f)
                 platforms[i].currentProgress += 1f;
 
-            // Mettre a jour position
             Vector3 newPosition = GetSplinePosition(platforms[i].currentProgress);
             platforms[i].transform.position = newPosition;
 
-            // Calculer et envoyer la velocite
             Vector3 velocity = (newPosition - lastPositions[i]) / Time.deltaTime;
             platforms[i].SetVelocity(velocity);
             lastPositions[i] = newPosition;
@@ -94,20 +85,12 @@ public class PlatformTrainManager : MonoBehaviour
 
     private Vector3 GetSplinePosition(float progress)
     {
-        Vector3 position = splineContainer.EvaluatePosition(progress);
-
-        // Offset Y selon collider comme dans RoamingObstacle
-        // A ajuster selon la taille de tes plateformes dans l'Inspector
-        return position;
+        return splineContainer.EvaluatePosition(progress);
     }
 
-    // Petit helper car InteractPressed se reset chaque frame dans LateUpdate
-    // On a besoin de detecter le maintien, pas juste le tap
-    private bool IsInteractHeld()
+    private bool IsPlayerOnTrain()
     {
-        return UnityEngine.InputSystem.Keyboard.current != null &&
-               UnityEngine.InputSystem.Keyboard.current.eKey.isPressed ||
-               UnityEngine.InputSystem.Gamepad.current != null &&
-               UnityEngine.InputSystem.Gamepad.current.buttonSouth.isPressed;
+        if (player == null) return false;
+        return player.GetCurrentPlatform() is PlatformTrainCar;
     }
 }
