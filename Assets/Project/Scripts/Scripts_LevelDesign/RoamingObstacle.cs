@@ -20,6 +20,10 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     [Header("Push Settings")]
     [SerializeField] private float speedThreshold = 1f;
     [SerializeField] private float knockdownThreshold = 3f;
+    [SerializeField] private AudioClip softPushSound;
+    [SerializeField] private AudioClip pushSound;
+    [SerializeField] private AudioClip sweepSound;
+    [SerializeField] private float impactVolume = 1f;
     private const float PUSH_FORCE_MULTIPLIER = 0.5f;
     private const float PUSH_DURATION = 0.5f;
 
@@ -241,6 +245,8 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
             if (speed < speedThreshold)
             {
+                if (softPushSound != null)
+                    proximityAudioSource.PlayOneShot(softPushSound, impactVolume);
                 Debug.Log("[RoamingObstacle] Vitesse sous threshold - physique pure");
                 return;
             }
@@ -255,12 +261,19 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
                 float calculatedForce = speed * PUSH_FORCE_MULTIPLIER;
 
-                playerMovement.ApplyProgressivePush(pushDirection, calculatedForce, PUSH_DURATION);
-
                 if (speed >= knockdownThreshold)
                 {
+                    if (sweepSound != null)
+                        proximityAudioSource.PlayOneShot(sweepSound, impactVolume);
+                    playerMovement.ApplyProgressivePush(pushDirection, calculatedForce, PUSH_DURATION);
                     playerMovement.TriggerSweepFromObstacle();
                     Debug.Log($"[RoamingObstacle] Knockdown declenche (vitesse: {speed})");
+                }
+                else
+                {
+                    if (pushSound != null)
+                        proximityAudioSource.PlayOneShot(pushSound, impactVolume);
+                    playerMovement.ApplyProgressivePush(pushDirection, calculatedForce, PUSH_DURATION);
                 }
             }
         }

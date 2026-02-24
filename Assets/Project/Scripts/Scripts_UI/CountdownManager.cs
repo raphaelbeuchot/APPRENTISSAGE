@@ -27,6 +27,11 @@ public class CountdownManager : MonoBehaviour
         ambientAudioSource = gameObject.AddComponent<AudioSource>();
         ambientAudioSource.loop = true;
         ambientAudioSource.playOnAwake = false;
+        if (countdownStartSound != null)
+            countdownStartSound.LoadAudioData();
+
+        if (ambientTrack != null)
+            ambientTrack.LoadAudioData();
     }
 
     void Start()
@@ -133,5 +138,11 @@ public class CountdownManager : MonoBehaviour
     void OnDestroy()
     {
         StopAmbient();
+
+        if (countdownStartSound != null)
+            countdownStartSound.UnloadAudioData();
+
+        if (ambientTrack != null)
+            ambientTrack.UnloadAudioData();
     }
 }
