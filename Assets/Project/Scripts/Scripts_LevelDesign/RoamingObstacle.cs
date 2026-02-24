@@ -16,10 +16,11 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     [SerializeField] private AudioClip[] proximitySounds;
     [SerializeField] private float proximityVolume = 0.7f;
     [SerializeField] private float pitchVariation = 0.1f;
-   
+
     [Header("Push Settings")]
     [SerializeField] private float speedThreshold = 1f;
-    private const float PUSH_FORCE_MULTIPLIER = 1f;
+    [SerializeField] private float knockdownThreshold = 3f;
+    private const float PUSH_FORCE_MULTIPLIER = 0.5f;
     private const float PUSH_DURATION = 0.5f;
 
 
@@ -236,7 +237,9 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Human"))
         {
-            if (currentVelocity.magnitude < speedThreshold)
+            float speed = currentVelocity.magnitude;
+
+            if (speed < speedThreshold)
             {
                 Debug.Log("[RoamingObstacle] Vitesse sous threshold - physique pure");
                 return;
@@ -250,11 +253,15 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
                 pushDirection.y = 0f;
                 pushDirection.Normalize();
 
-                float calculatedForce = currentVelocity.magnitude * PUSH_FORCE_MULTIPLIER;
+                float calculatedForce = speed * PUSH_FORCE_MULTIPLIER;
 
                 playerMovement.ApplyProgressivePush(pushDirection, calculatedForce, PUSH_DURATION);
 
-                Debug.Log($"[RoamingObstacle] Push progressif applique au player (force: {calculatedForce})");
+                if (speed >= knockdownThreshold)
+                {
+                    playerMovement.TriggerSweepFromObstacle();
+                    Debug.Log($"[RoamingObstacle] Knockdown declenche (vitesse: {speed})");
+                }
             }
         }
     }
