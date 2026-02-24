@@ -16,9 +16,11 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     [SerializeField] private AudioClip[] proximitySounds;
     [SerializeField] private float proximityVolume = 0.7f;
     [SerializeField] private float pitchVariation = 0.1f;
+   
     [Header("Push Settings")]
-    [SerializeField] private float pushForceMultiplier = 1f; // Multiplicateur de la vitesse
-    [SerializeField] private float pushDuration = 0.5f;
+    [SerializeField] private float speedThreshold = 1f;
+    private const float PUSH_FORCE_MULTIPLIER = 1f;
+    private const float PUSH_DURATION = 0.5f;
 
 
     [Header("Spline")]
@@ -232,26 +234,25 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
     void OnCollisionEnter(Collision collision)
     {
-        // Verifier si c'est le player (layer "Human")
         if (collision.gameObject.layer == LayerMask.NameToLayer("Human"))
         {
-            // Recuperer le script PlayerPhysicsMovement
+            if (currentVelocity.magnitude < speedThreshold)
+            {
+                Debug.Log("[RoamingObstacle] Vitesse sous threshold - physique pure");
+                return;
+            }
+
             PlayerPhysicsMovement playerMovement = collision.gameObject.GetComponent<PlayerPhysicsMovement>();
 
             if (playerMovement != null)
             {
-                // Calculer direction du push (de l'obstacle vers le player)
                 Vector3 pushDirection = (collision.transform.position - transform.position).normalized;
-
-                // Garder seulement la direction horizontale
                 pushDirection.y = 0f;
                 pushDirection.Normalize();
 
-                // Calculer la force en fonction de la vitesse de l'obstacle
-                float calculatedForce = currentVelocity.magnitude * pushForceMultiplier;
+                float calculatedForce = currentVelocity.magnitude * PUSH_FORCE_MULTIPLIER;
 
-                // Appliquer le push progressif via PlayerPhysicsMovement
-                playerMovement.ApplyProgressivePush(pushDirection, calculatedForce, pushDuration);
+                playerMovement.ApplyProgressivePush(pushDirection, calculatedForce, PUSH_DURATION);
 
                 Debug.Log($"[RoamingObstacle] Push progressif applique au player (force: {calculatedForce})");
             }
