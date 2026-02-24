@@ -71,6 +71,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private Coroutine standUpCoroutine = null;
     private bool isPushing = false;
     private bool isSweeping = false;
+    private bool isGroggyReached = false;
 
     // Stamina runtime
     private float currentStamina;
@@ -179,7 +180,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (!canMove && grabState == GrabState.None && !gameManager.stunBySentinel && !isGroggy && !isSweeping)
             canMove = true;
 
-        if (isGroggy && !isSweeping && PlayerInputManager.Instance.SprintPressed && standUpCoroutine == null)
+        if (isGroggy && isGroggyReached && !isSweeping && PlayerInputManager.Instance.SprintPressed && standUpCoroutine == null)
         {
             standUpCoroutine = StartCoroutine(StandUpCoroutine());
         }
@@ -225,10 +226,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (isFrozen) return;
         if (isGroggy) return;
         if (isPushing) return;
-
-
-        // AJOUTER CETTE LIGNE :
-        if (isDashing) return; // Skip tout pendant le dash
+        if (isSweeping) return; // AJOUT
+        if (isDashing) return;
 
         HandleStepClimb();
         HandleMovement();
@@ -236,7 +235,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void HandleInput()
     {
-        if (grabState != GrabState.None || gameManager.stunBySentinel || !canMove || isClimbing || isGroggy)
+        if (grabState != GrabState.None || gameManager.stunBySentinel || !canMove || isClimbing || isGroggy || isSweeping)
         {
             moveInput = Vector3.zero;
             return;
@@ -345,34 +344,33 @@ public class PlayerPhysicsMovement : MonoBehaviour
         StartCoroutine(ProgressivePushCoroutine(direction, force, duration));
     }
 
-    public void TriggerSweepFromObstacle()
+
+   IEnumerator SweepCoroutine()
 {
-    StartCoroutine(SweepFromObstacleCoroutine());
-}
-    IEnumerator SweepCoroutine()
+    isSweeping = true;
+    canMove = false;
+    isGroggyReached = false;
+    rb.linearVelocity = Vector3.zero;
+
+    animator.SetTrigger("Sweep");
+
+    yield return null;
+
+    while (animator.GetCurrentAnimatorStateInfo(0).IsName("Sweep") &&
+           animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.95f)
     {
-        isSweeping = true;
-        canMove = false;
-        rb.linearVelocity = Vector3.zero;
-
-        animator.SetTrigger("Sweep");
-
         yield return null;
-
-        while (animator.GetCurrentAnimatorStateInfo(0).IsName("Sweep") &&
-               animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.95f)
-        {
-            yield return null;
-        }
-
-        isSweeping = false;
-        EnterGroggyState();
     }
+
+    isSweeping = false;
+    // EnterGroggyState() supprime
+}
 
     IEnumerator SweepFromObstacleCoroutine()
     {
         isSweeping = true;
         canMove = false;
+        isGroggyReached = false;
         rb.linearVelocity = Vector3.zero;
 
         animator.SetTrigger("Sweep");
@@ -386,7 +384,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
 
         isSweeping = false;
-        EnterGroggyState();
+        // EnterGroggyState() supprime - c'est l'animation event qui s'en charge
     }
 
     IEnumerator ProgressivePushCoroutine(Vector3 direction, float force, float duration)
@@ -417,7 +415,12 @@ public class PlayerPhysicsMovement : MonoBehaviour
         canMove = false;
         Debug.Log("[Player] Entre en etat groggy");
     }
-
+    public void OnGroggyStart()
+    {
+        isSweeping = false;
+        isGroggyReached = true;
+        EnterGroggyState();
+    }
     IEnumerator StandUpCoroutine()
     {
         animator.SetTrigger("StandUp");
@@ -435,8 +438,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         isGroggy = false;
         canMove = true;
+        isGroggyReached = false;
         standUpCoroutine = null;
-        Debug.Log("[Player] Sorti de l'etat groggy");
     }
 
     IEnumerator KnockbackCoroutine(Vector3 knockbackVel, float duration)
@@ -845,10 +848,21 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     public void TriggerSweep()
     {
+        isSweeping = true;
+        isDashing = false;
+        canMove = false;
         StartCoroutine(SweepCoroutine());
     }
 
-   
+    public void TriggerSweepFromObstacle()
+    {
+        isSweeping = true;
+        isDashing = false;
+        canMove = false;
+        StartCoroutine(SweepFromObstacleCoroutine());
+    }
+
+
     public IMovingPlatform GetCurrentPlatform()
     {
         return currentPlatform;

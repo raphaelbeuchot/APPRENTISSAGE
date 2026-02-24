@@ -3,11 +3,14 @@ using UnityEngine;
 public class PlayerAnimationEvents : MonoBehaviour
 {
     private BroomAttackSystem broomAttack;
+    private PlayerPhysicsMovement playerMovement;
+
 
     void Start()
     {
         broomAttack = GetComponentInParent<BroomAttackSystem>();
         meleeAttack = GetComponentInParent<MeleeAttackSystem>();
+        playerMovement = GetComponentInParent<PlayerPhysicsMovement>();
 
     }
 
@@ -23,5 +26,10 @@ public class PlayerAnimationEvents : MonoBehaviour
     {
         if (meleeAttack != null)
             meleeAttack.OnSprayHit();
+    }
+    public void OnGroggyStart()
+    {
+        if (playerMovement != null)
+            playerMovement.OnGroggyStart();
     }
 }
