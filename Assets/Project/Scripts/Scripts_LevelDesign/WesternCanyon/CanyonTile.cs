@@ -26,8 +26,8 @@ public class CanyonTile : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        if (other.gameObject.layer != LayerMask.NameToLayer("Human")) return;
-        if (hasFallen || isAnimating) return;
+        if (other.gameObject.layer != LayerMask.NameToLayer("Human") &&
+            other.gameObject.layer != LayerMask.NameToLayer("Zombie")) return; if (hasFallen || isAnimating) return;
         StartCoroutine(ShakeAndFall());
     }
 
