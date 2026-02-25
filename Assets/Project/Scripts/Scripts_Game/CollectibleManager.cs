@@ -28,6 +28,17 @@ public class CollectibleManager : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
+    // Cree l'instance automatiquement si elle n'existe pas encore
+    public static CollectibleManager GetOrCreate()
+    {
+        if (Instance == null)
+        {
+            GameObject go = new GameObject("CollectibleManager");
+            go.AddComponent<CollectibleManager>();
+        }
+        return Instance;
+    }
+
     void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;

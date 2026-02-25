@@ -196,6 +196,9 @@ public class LevelManager : MonoBehaviour
         levelCompleted = true;
         Debug.Log("=== NIVEAU COMPLETE! ===");
 
+        if (CollectibleManager.Instance != null)
+            CollectibleManager.Instance.ConfirmRunCollectibles();
+
         // Stop ambient track a la victoire
         CountdownManager countdown = FindObjectOfType<CountdownManager>();
         if (countdown != null) countdown.StopAmbient();

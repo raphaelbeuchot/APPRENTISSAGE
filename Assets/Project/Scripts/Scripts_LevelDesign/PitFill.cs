@@ -17,6 +17,11 @@ public class PitFill : MonoBehaviour
     public MeshFilter fillMeshFilter;
     public MeshRenderer fillRenderer;
 
+    [Header("Border Settings")]
+    public float borderWidth = 0.3f;
+    public MeshFilter borderMeshFilter;
+    public MeshRenderer borderRenderer;
+
     private void Awake()
     {
         if (pitZone == null)
@@ -66,7 +71,8 @@ public class PitFill : MonoBehaviour
 
         Debug.Log("PitFill: Generated fill content - " + fillType.contentName + " at " + GetFillHeightMeters().ToString("F2") + "m");
 
-        // Ajoute le damage controller s'il n'existe pas
+        GenerateBorderMesh();
+
         PitFillDamageController damageController = GetComponent<PitFillDamageController>();
         if (damageController == null)
         {
@@ -75,7 +81,6 @@ public class PitFill : MonoBehaviour
             damageController.pitZone = pitZone;
         }
 
-        // Met a jour le floor detector avec la reference au damage controller
         if (pitZone != null && pitZone.floorMeshFilter != null)
         {
             PitFloorCollisionDetector detector = pitZone.floorMeshFilter.GetComponent<PitFloorCollisionDetector>();
@@ -85,7 +90,6 @@ public class PitFill : MonoBehaviour
             }
         }
     }
-
     private void SetupFillMeshObjects()
     {
         if (fillMeshFilter == null)
@@ -160,6 +164,139 @@ public class PitFill : MonoBehaviour
         return mesh;
     }
 
+    public void GenerateBorderMesh()
+    {
+        if (pitZone == null || pitZone.gridData == null) return;
+
+        Dictionary<Vector2Int, float> ownedCells = pitZone.gridData.GetCellsForZone(pitZone.zoneID);
+        if (ownedCells.Count == 0) return;
+
+        float cellSize = pitZone.gridData.gridCellSize;
+        float surfaceY = GetFillSurfaceHeight() + 0.005f;
+
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> triangles = new List<int>();
+        List<Vector2> uvs = new List<Vector2>();
+
+        Vector2Int[] directions = new Vector2Int[]
+        {
+        new Vector2Int(0, 1),  // Nord
+        new Vector2Int(0, -1), // Sud
+        new Vector2Int(1, 0),  // Est
+        new Vector2Int(-1, 0)  // Ouest
+        };
+
+        foreach (var kvp in ownedCells)
+        {
+            Vector2Int cellPos = kvp.Key;
+            Vector3 cellWorldPos = pitZone.gridData.CellToWorld(cellPos);
+
+            foreach (Vector2Int dir in directions)
+            {
+                Vector2Int neighborPos = cellPos + dir;
+
+                // Si le voisin existe dans le pit, pas de bordure de ce cote
+                if (ownedCells.ContainsKey(neighborPos)) continue;
+
+                // Ce cote est un bord, on genere un quad
+                AddBorderQuad(vertices, triangles, uvs, cellWorldPos, cellSize, surfaceY, dir, borderWidth);
+            }
+        }
+
+        if (vertices.Count == 0) return;
+
+        SetupBorderMeshObjects();
+
+        Mesh mesh = new Mesh();
+        mesh.name = "BorderMesh";
+        mesh.vertices = vertices.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.uv = uvs.ToArray();
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        borderMeshFilter.sharedMesh = mesh;
+
+        Debug.Log("PitFill: Generated border mesh with " + vertices.Count / 4 + " quads");
+    }
+
+    private void AddBorderQuad(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
+        Vector3 cellWorldPos, float cellSize, float surfaceY, Vector2Int direction, float width)
+    {
+        int startIndex = vertices.Count;
+
+        Vector3 v0, v1, v2, v3;
+
+        if (direction == new Vector2Int(0, 1)) // Nord
+        {
+            v0 = cellWorldPos + new Vector3(0, surfaceY, cellSize);
+            v1 = cellWorldPos + new Vector3(cellSize, surfaceY, cellSize);
+            v2 = cellWorldPos + new Vector3(cellSize, surfaceY, cellSize - width);
+            v3 = cellWorldPos + new Vector3(0, surfaceY, cellSize - width);
+        }
+        else if (direction == new Vector2Int(0, -1)) // Sud
+        {
+            v0 = cellWorldPos + new Vector3(0, surfaceY, width);
+            v1 = cellWorldPos + new Vector3(cellSize, surfaceY, width);
+            v2 = cellWorldPos + new Vector3(cellSize, surfaceY, 0);
+            v3 = cellWorldPos + new Vector3(0, surfaceY, 0);
+        }
+        else if (direction == new Vector2Int(1, 0)) // Est
+        {
+            v0 = cellWorldPos + new Vector3(cellSize, surfaceY, 0);
+            v1 = cellWorldPos + new Vector3(cellSize, surfaceY, cellSize);
+            v2 = cellWorldPos + new Vector3(cellSize - width, surfaceY, cellSize);
+            v3 = cellWorldPos + new Vector3(cellSize - width, surfaceY, 0);
+        }
+        else // Ouest
+        {
+            v0 = cellWorldPos + new Vector3(0, surfaceY, 0);
+            v1 = cellWorldPos + new Vector3(0, surfaceY, cellSize);
+            v2 = cellWorldPos + new Vector3(width, surfaceY, cellSize);
+            v3 = cellWorldPos + new Vector3(width, surfaceY, 0);
+        }
+
+        vertices.Add(v0);
+        vertices.Add(v1);
+        vertices.Add(v2);
+        vertices.Add(v3);
+
+        // U=0 cote mur, U=1 cote interieur
+        uvs.Add(new Vector2(0, 0));
+        uvs.Add(new Vector2(0, 1));
+        uvs.Add(new Vector2(1, 1));
+        uvs.Add(new Vector2(1, 0));
+
+        triangles.Add(startIndex);
+        triangles.Add(startIndex + 2);
+        triangles.Add(startIndex + 1);
+
+        triangles.Add(startIndex);
+        triangles.Add(startIndex + 3);
+        triangles.Add(startIndex + 2);
+    }
+
+    private void SetupBorderMeshObjects()
+    {
+        // Cherche ou cree un child GameObject dedie
+        Transform borderChild = transform.Find("BorderMesh");
+        if (borderChild == null)
+        {
+            borderChild = new GameObject("BorderMesh").transform;
+            borderChild.SetParent(transform);
+            borderChild.localPosition = Vector3.zero;
+            borderChild.localRotation = Quaternion.identity;
+            borderChild.localScale = Vector3.one;
+        }
+
+        borderMeshFilter = borderChild.GetComponent<MeshFilter>();
+        if (borderMeshFilter == null)
+            borderMeshFilter = borderChild.gameObject.AddComponent<MeshFilter>();
+
+        borderRenderer = borderChild.GetComponent<MeshRenderer>();
+        if (borderRenderer == null)
+            borderRenderer = borderChild.gameObject.AddComponent<MeshRenderer>();
+    }
     private void AddSurfaceQuad(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
                             Vector3 cellWorldPos, float cellSize, float surfaceY)
     {
