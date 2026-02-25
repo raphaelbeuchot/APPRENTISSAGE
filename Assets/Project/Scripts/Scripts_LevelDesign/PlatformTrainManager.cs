@@ -19,6 +19,7 @@ public class PlatformTrainManager : MonoBehaviour
     private float splineLength = 0f;
     private Vector3[] lastPositions;
     private PlayerPhysicsMovement player;
+    private bool hasStarted = false;
 
     void Start()
     {
@@ -51,16 +52,18 @@ public class PlatformTrainManager : MonoBehaviour
             platforms[i].transform.position = lastPositions[i];
         }
 
-        currentSpeed = trainSpeed;
+        currentSpeed = 0f;
         player = FindFirstObjectByType<PlayerPhysicsMovement>();
     }
 
     void Update()
     {
-        bool holdingX = PlayerInputManager.Instance.InteractHeld && IsPlayerOnTrain();
+        if (!hasStarted) return;
 
+        bool holdingX = PlayerInputManager.Instance.InteractHeld && IsPlayerOnTrain();
         float targetSpeed = holdingX ? 0f : trainSpeed;
         float inertia = holdingX ? stopInertia : startInertia;
+
         currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, inertia * Time.deltaTime);
 
         float progressIncrement = (currentSpeed / splineLength) * Time.deltaTime;
@@ -79,8 +82,14 @@ public class PlatformTrainManager : MonoBehaviour
 
             Vector3 velocity = (newPosition - lastPositions[i]) / Time.deltaTime;
             platforms[i].SetVelocity(velocity);
+
             lastPositions[i] = newPosition;
         }
+    }
+
+    public void StartTrain()
+    {
+        hasStarted = true;
     }
 
     private Vector3 GetSplinePosition(float progress)

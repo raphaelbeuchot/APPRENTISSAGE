@@ -30,8 +30,7 @@ public class MetalShutter : MonoBehaviour
             // Si arrivé en haut
             if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
             {
-                Debug.Log($"[MetalShutter] Montée terminée, destruction dans {destroyDelay}s");
-                Destroy(gameObject, destroyDelay);
+                
                 isOpening = false;
             }
         }
@@ -42,8 +41,11 @@ public class MetalShutter : MonoBehaviour
     {
         if (!isOpening)
         {
-            Debug.Log("[MetalShutter] Début ouverture");
             isOpening = true;
+            PlatformTrainManager train = FindFirstObjectByType<PlatformTrainManager>();
+            if (train != null)
+                train.StartTrain();
+            Destroy(gameObject, destroyDelay);
         }
     }
 
