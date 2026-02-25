@@ -1,0 +1,102 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections.Generic;
+
+public class CollectibleManager : MonoBehaviour
+{
+    public static CollectibleManager Instance { get; private set; }
+
+    // Collectibles definitvement acquis (persiste entre les niveaux)
+    private HashSet<string> permanentlyCollected = new HashSet<string>();
+
+    // Collectibles ramasses dans le run actuel (reset a chaque rechargement)
+    private HashSet<string> collectedThisRun = new HashSet<string>();
+
+    private const string PREFS_KEY = "PermanentCollectibles";
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        LoadPermanent();
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        collectedThisRun.Clear();
+        Debug.Log("[CollectibleManager] Run reset pour scene : " + scene.name);
+    }
+
+    // Appele par Collectible.cs au ramassage
+    public void CollectThisRun(string id)
+    {
+        collectedThisRun.Add(id);
+        Debug.Log("[CollectibleManager] Ramasse ce run : " + id);
+    }
+
+    // Appele par LevelManager quand le joueur finit le niveau
+    public void ConfirmRunCollectibles()
+    {
+        foreach (string id in collectedThisRun)
+        {
+            permanentlyCollected.Add(id);
+            Debug.Log("[CollectibleManager] Confirme definitivement : " + id);
+        }
+        SavePermanent();
+        collectedThisRun.Clear();
+    }
+
+    public bool IsPermanentlyCollected(string id)
+    {
+        return permanentlyCollected.Contains(id);
+    }
+
+    public bool IsCollectedThisRun(string id)
+    {
+        return collectedThisRun.Contains(id);
+    }
+
+    // Nombre total ramasses definitivement (utile pour UI plus tard)
+    public int GetPermanentCount()
+    {
+        return permanentlyCollected.Count;
+    }
+
+    // --- Sauvegarde PlayerPrefs ---
+    // On serialise le HashSet en une seule string separee par des virgules
+
+    void SavePermanent()
+    {
+        string joined = string.Join(",", permanentlyCollected);
+        PlayerPrefs.SetString(PREFS_KEY, joined);
+        PlayerPrefs.Save();
+        Debug.Log("[CollectibleManager] Sauvegarde : " + joined);
+    }
+
+    void LoadPermanent()
+    {
+        permanentlyCollected.Clear();
+        string saved = PlayerPrefs.GetString(PREFS_KEY, "");
+        if (string.IsNullOrEmpty(saved)) return;
+
+        string[] ids = saved.Split(',');
+        foreach (string id in ids)
+        {
+            if (!string.IsNullOrEmpty(id))
+                permanentlyCollected.Add(id);
+        }
+        Debug.Log("[CollectibleManager] Charge depuis PlayerPrefs : " + saved);
+    }
+}
