@@ -30,7 +30,7 @@ public class SentinelCycleManager : MonoBehaviour
     [SerializeField] private Color spotColorCompensated = new Color(0.5f, 0.8f, 1f, 1f);
     [SerializeField] private EpervierManager epervierManager;
     [SerializeField] private EpervierManagerLoop epervierManagerLoop;
-    [SerializeField] private TileBridgeManager tileBridgeManager;
+    [SerializeField] private CanyonTileManager canyonTileManager;
 
 
 
@@ -310,8 +310,9 @@ public class SentinelCycleManager : MonoBehaviour
                 epervierManager.OnRedLight();
             if (epervierManagerLoop != null)
                 epervierManagerLoop.OnRedLight();
-            if (tileBridgeManager != null)
-                tileBridgeManager.OnRedLight();
+            
+            if (canyonTileManager != null)
+                canyonTileManager.OnRedLight();
 
             targetDuration = GetDynamicRedLightDuration();
 
@@ -359,9 +360,7 @@ public class SentinelCycleManager : MonoBehaviour
             if (gameManager != null)
                 gameManager.ResetAllTracking();
 
-            if (tileBridgeManager != null)
-                tileBridgeManager.OnRelease();
-
+          
 
             if (audioSource != null)
             {
