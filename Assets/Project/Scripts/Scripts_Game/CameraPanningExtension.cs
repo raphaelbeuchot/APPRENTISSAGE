@@ -5,7 +5,6 @@ using UnityEngine;
 public class CameraPanningExtension : CinemachineExtension
 {
     [Header("Camera active sans pupitre")]
-
     [SerializeField] private bool startWithFreeCameraEnabled = false;
 
     [Header("Vertical Panning")]
@@ -14,17 +13,10 @@ public class CameraPanningExtension : CinemachineExtension
     [SerializeField] private float initialRiseDuration = 2f;
 
     [Header("View Toggle")]
-    [SerializeField] private float lowCameraOffset = -5f;
-    [SerializeField] private float viewToggleDuration = 2f;
-    [SerializeField] private float lowCameraOffsetInWater = 2f;
-
-    [Header("Lateral Panning")]
-    [SerializeField] private float lateralOffset = 5f;
-    [SerializeField] private float lateralPanDuration = 1f;
-    [SerializeField] private float lateralThreshold = 0.7f;
-
-    [Header("Camera Z Clamp")]
-    [SerializeField] private float cameraZMarginFromPlayer = 2f;
+    [SerializeField] private CinemachineCamera normalCamera;
+    [SerializeField] private CinemachineCamera lowViewCamera;
+    [SerializeField] private int activePriority = 20;
+    [SerializeField] private int inactivePriority = 0;
 
     [Header("Start Zone")]
     [SerializeField] private CountdownManager countdownManager;
@@ -33,67 +25,59 @@ public class CameraPanningExtension : CinemachineExtension
     [SerializeField] private float playerHeightOffset = 0.5f;
     [SerializeField] private LayerMask obstacleHidingLayers;
     [SerializeField] private Material transparentMaterial;
-    [SerializeField] private float detectionRadius = 1f;
 
     [Header("Target Group Radius")]
     [SerializeField] private CinemachineTargetGroup targetGroup;
     [SerializeField] private float maxRadius = 3f;
     [SerializeField] private float radiusGrowSpeed = 3f;
 
-    private float baseRadius;
-    private float lastPlayerZ;
-
     private Vector3 currentPanOffset;
-    private Vector3 currentLateralOffset = Vector3.zero;
     private bool isHighPosition = false;
     public bool isLowView = false;
     private Transform playerTransform;
-    // NOUVEAU
     private Dictionary<Renderer, Material[]> originalMaterials = new Dictionary<Renderer, Material[]>();
     private HashSet<Renderer> occludedRenderers = new HashSet<Renderer>();
     private Camera mainCamera;
+    private float baseRadius;
+    private float lastPlayerZ;
+    private CinemachineCamera activePrimaryCamera;
+
     private void Start()
     {
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
-        {
             playerTransform = player.transform;
-        }
 
-        if (targetGroup != null && targetGroup.Targets.Count > 0)
-        {
-            baseRadius = targetGroup.Targets[0].Radius;
-        }
-
-        if (playerTransform != null)
-            lastPlayerZ = playerTransform.position.z;
         mainCamera = Camera.main;
         if (mainCamera == null)
-        {
             mainCamera = FindObjectOfType<Camera>();
-        }
 
         if (countdownManager == null)
-        {
             countdownManager = FindObjectOfType<CountdownManager>();
-        }
 
-        // Reset tous les offsets au demarrage
         currentPanOffset = Vector3.zero;
-        currentLateralOffset = Vector3.zero;
+        activePrimaryCamera = normalCamera;
 
-        // NOUVEAU : Activer la camera libre si demandé
+        if (lowViewCamera != null) lowViewCamera.Priority = inactivePriority;
+        if (normalCamera != null) normalCamera.Priority = activePriority;
+
         if (startWithFreeCameraEnabled)
         {
             isHighPosition = true;
             isLowView = false;
-            Debug.Log("[CameraPanning] Camera libre activée dès le départ (niveau tuto)");
+            Debug.Log("[CameraPanning] Camera libre activee des le depart");
         }
         else
         {
             isHighPosition = false;
             isLowView = false;
         }
+
+        if (targetGroup != null && targetGroup.Targets.Count > 0)
+            baseRadius = targetGroup.Targets[0].Radius;
+
+        if (playerTransform != null)
+            lastPlayerZ = playerTransform.position.z;
 
         Debug.Log($"[CameraPanning] START - isHighPosition: {isHighPosition}, isLowView: {isLowView}");
     }
@@ -104,13 +88,32 @@ public class CameraPanningExtension : CinemachineExtension
         isHighPosition = true;
     }
 
+    public void SetPrimaryCamera(CinemachineCamera newPrimary)
+    {
+        if (activePrimaryCamera != null) activePrimaryCamera.Priority = inactivePriority;
+        activePrimaryCamera = newPrimary;
+        isLowView = false;
+        if (lowViewCamera != null) lowViewCamera.Priority = inactivePriority;
+        if (activePrimaryCamera != null) activePrimaryCamera.Priority = activePriority;
+    }
+
     private void Update()
     {
-        
-
         if (isHighPosition && PlayerInputManager.Instance.ToggleCameraViewPressed)
         {
             isLowView = !isLowView;
+
+            if (isLowView)
+            {
+                if (lowViewCamera != null) lowViewCamera.Priority = activePriority;
+                if (activePrimaryCamera != null) activePrimaryCamera.Priority = inactivePriority;
+            }
+            else
+            {
+                if (lowViewCamera != null) lowViewCamera.Priority = inactivePriority;
+                if (activePrimaryCamera != null) activePrimaryCamera.Priority = activePriority;
+            }
+
             Debug.Log($"[CameraPanning] Toggle view - isLowView: {isLowView}");
         }
 
@@ -145,8 +148,6 @@ public class CameraPanningExtension : CinemachineExtension
     {
         if (isHighPosition && isLowView && playerTransform != null && mainCamera != null)
         {
-
-
             Vector3 cameraPos = mainCamera.transform.position;
             Vector3 playerCenter = playerTransform.position + Vector3.up * playerHeightOffset;
             Vector3 direction = playerCenter - cameraPos;
@@ -156,42 +157,30 @@ public class CameraPanningExtension : CinemachineExtension
 
             HashSet<Renderer> currentlyBlocking = new HashSet<Renderer>();
 
-            // Un seul SphereCast avec petit rayon vers le centre du player
-            float smallRadius = 0.1f;  // Petite marge autour du player
-            RaycastHit[] hits = Physics.SphereCastAll(cameraPos, smallRadius, direction.normalized, distance, obstacleHidingLayers);
+            RaycastHit[] hits = Physics.SphereCastAll(cameraPos, 0.1f, direction.normalized, distance, obstacleHidingLayers);
 
             foreach (RaycastHit hit in hits)
             {
-                if (hit.collider.gameObject != playerTransform.gameObject)
+                if (hit.collider.gameObject != playerTransform.gameObject && hit.distance < distance)
                 {
-                    // Verifier que l'obstacle est vraiment entre camera et player
-                    float distToObstacle = hit.distance;
-
-                    if (distToObstacle < distance)
+                    Renderer rend = hit.collider.GetComponent<Renderer>();
+                    if (rend != null)
                     {
-                        Renderer rend = hit.collider.GetComponent<Renderer>();
-                        if (rend != null)
+                        currentlyBlocking.Add(rend);
+                        if (!occludedRenderers.Contains(rend))
                         {
-                            currentlyBlocking.Add(rend);
-
-                            if (!occludedRenderers.Contains(rend))
-                            {
-                                SaveAndSwapToTransparent(rend);
-                                occludedRenderers.Add(rend);
-                            }
+                            SaveAndSwapToTransparent(rend);
+                            occludedRenderers.Add(rend);
                         }
                     }
                 }
             }
 
-            // Restaurer les renderers qui n'occludent plus
             List<Renderer> toRestore = new List<Renderer>();
             foreach (Renderer rend in occludedRenderers)
             {
                 if (rend != null && !currentlyBlocking.Contains(rend))
-                {
                     toRestore.Add(rend);
-                }
             }
 
             foreach (Renderer rend in toRestore)
@@ -202,126 +191,46 @@ public class CameraPanningExtension : CinemachineExtension
         }
         else
         {
-            // Restaurer tous les matériaux si pas en vue basse
             RestoreAllMaterials();
-        }
-
-        if (playerTransform != null && mainCamera != null)
-        {
-            Vector3 camPos = mainCamera.transform.position;
-            float maxZ = playerTransform.position.z - cameraZMarginFromPlayer;
-            if (camPos.z > maxZ)
-            {
-                mainCamera.transform.position = new Vector3(camPos.x, camPos.y, maxZ);
-            }
         }
     }
 
     protected override void PostPipelineStageCallback(
-    CinemachineVirtualCameraBase vcam,
-    CinemachineCore.Stage stage,
-    ref CameraState state,
-    float deltaTime)
+        CinemachineVirtualCameraBase vcam,
+        CinemachineCore.Stage stage,
+        ref CameraState state,
+        float deltaTime)
     {
         if (stage == CinemachineCore.Stage.Body)
         {
-            Vector2 lookInput = PlayerInputManager.Instance.LookInput;
             Vector3 targetOffset = Vector3.zero;
             float speed = verticalPanSpeed;
 
             if (isHighPosition)
             {
-                if (isLowView)
-                {
-                    bool isInWater = false;
-                    if (playerTransform != null)
-                    {
-                        PlayerPitInteractable pitInteractable = playerTransform.GetComponent<PlayerPitInteractable>();
-                        isInWater = pitInteractable != null && pitInteractable.IsInWater();
-                    }
-
-                    float offsetToUse = isInWater ? lowCameraOffsetInWater : lowCameraOffset;
-                    targetOffset = Vector3.up * offsetToUse;
-                    speed = 1f / viewToggleDuration;
-                }
-                else
-                {
-                    targetOffset = Vector3.up * verticalOffset;
-                    speed = 1f / initialRiseDuration;
-                }
+                targetOffset = Vector3.up * verticalOffset;
+                speed = 1f / initialRiseDuration;
             }
-            else
-            {
-                targetOffset = Vector3.zero;
-                speed = verticalPanSpeed;
-            }
-
-            Vector3 targetLateralOffset = currentLateralOffset;
-
-            bool canPan = isHighPosition || (countdownManager != null && countdownManager.countdownFinished);
-
-            if (canPan && Mathf.Abs(lookInput.y) < 0.5f)
-            {
-                Vector3 cameraRight = state.RawOrientation * Vector3.right;
-                cameraRight.y = 0f;
-                cameraRight.Normalize();
-
-                float horizontalInput = lookInput.x;
-                float deadzone = 0.15f;
-
-                if (Mathf.Abs(horizontalInput) < deadzone)
-                {
-                    horizontalInput = 0f;
-                }
-                else
-                {
-                    float sign = Mathf.Sign(horizontalInput);
-                    float absValue = Mathf.Abs(horizontalInput);
-
-                    if (absValue >= lateralThreshold)
-                    {
-                        horizontalInput = sign * 1f;
-                    }
-                    else
-                    {
-                        horizontalInput = sign * Mathf.InverseLerp(deadzone, lateralThreshold, absValue);
-                    }
-                }
-
-                if (Mathf.Abs(horizontalInput) > 0.01f)
-                {
-                    targetLateralOffset = -cameraRight * lateralOffset * horizontalInput;
-                }
-            }
-
-            float lateralSpeed = 1f / lateralPanDuration;
-            currentLateralOffset = Vector3.Lerp(currentLateralOffset, targetLateralOffset, lateralSpeed * deltaTime);
 
             currentPanOffset = Vector3.Lerp(currentPanOffset, targetOffset, speed * deltaTime);
-            state.PositionCorrection += currentPanOffset + currentLateralOffset;
+            state.PositionCorrection += currentPanOffset;
         }
     }
 
     private void SaveAndSwapToTransparent(Renderer renderer)
     {
         if (!originalMaterials.ContainsKey(renderer))
-        {
             originalMaterials[renderer] = renderer.sharedMaterials;
-        }
 
         Material[] transparents = new Material[renderer.sharedMaterials.Length];
         for (int i = 0; i < transparents.Length; i++)
-        {
             transparents[i] = transparentMaterial;
-        }
+
         renderer.sharedMaterials = transparents;
     }
 
-    
-
     private void RestoreMaterials(Renderer renderer)
     {
-        // NULL CHECK
         if (renderer == null)
         {
             originalMaterials.Remove(renderer);
@@ -337,33 +246,24 @@ public class CameraPanningExtension : CinemachineExtension
 
     private void RestoreAllMaterials()
     {
-        // Copier la liste pour éviter modification pendant iteration
         List<Renderer> toProcess = new List<Renderer>(occludedRenderers);
-
         foreach (Renderer rend in toProcess)
         {
             if (rend != null)
-            {
                 RestoreMaterials(rend);
-            }
         }
 
         occludedRenderers.Clear();
 
-        // Cleanup des entrées null dans le dictionnaire
         List<Renderer> nullKeys = new List<Renderer>();
         foreach (var kvp in originalMaterials)
         {
             if (kvp.Key == null)
-            {
                 nullKeys.Add(kvp.Key);
-            }
         }
 
         foreach (var key in nullKeys)
-        {
             originalMaterials.Remove(key);
-        }
     }
 
     private void OnDisable()
