@@ -14,6 +14,9 @@ public class SimpleLateralPanning : CinemachineExtension
     [SerializeField] private float lowCameraOffsetInWater = 2f;
     [SerializeField] private float viewToggleDuration = 2f;
 
+    [Header("Camera Z Clamp")]
+    [SerializeField] private float cameraZMarginFromPlayer = 2f;
+
     private Vector3 currentLateralOffset = Vector3.zero;
     private bool isLowView = false;
     private Vector3 currentVerticalOffset = Vector3.zero;
@@ -39,7 +42,19 @@ public class SimpleLateralPanning : CinemachineExtension
             Debug.Log("[SimpleLateralPanning] Toggle view - isLowView: " + isLowView);
         }
     }
-
+    private void LateUpdate()
+    {
+        Camera mainCamera = Camera.main;
+        if (playerTransform != null && mainCamera != null)
+        {
+            Vector3 camPos = mainCamera.transform.position;
+            float maxZ = playerTransform.position.z - cameraZMarginFromPlayer;
+            if (camPos.z > maxZ)
+            {
+                mainCamera.transform.position = new Vector3(camPos.x, camPos.y, maxZ);
+            }
+        }
+    }
     protected override void PostPipelineStageCallback(
         CinemachineVirtualCameraBase vcam,
         CinemachineCore.Stage stage,
@@ -115,5 +130,10 @@ public class SimpleLateralPanning : CinemachineExtension
 
             state.PositionCorrection += currentVerticalOffset + currentLateralOffset;
         }
+    }
+    public void ResetOffsets()
+    {
+        currentLateralOffset = Vector3.zero;
+        currentVerticalOffset = Vector3.zero;
     }
 }

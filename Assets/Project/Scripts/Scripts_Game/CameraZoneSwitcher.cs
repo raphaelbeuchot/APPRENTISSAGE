@@ -11,18 +11,20 @@ public class CameraZoneSwitcher : MonoBehaviour
     [SerializeField] private int activePriority = 20;
     [SerializeField] private int inactivePriority = 10;
 
+    [SerializeField] private SimpleLateralPanning zoneCameraExtension;
+
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            // Active la camera de zone
+            if (zoneCameraExtension != null)
+                zoneCameraExtension.ResetOffsets();
+
             zoneCamera.Priority = activePriority;
             normalCamera.Priority = inactivePriority;
-
-            Debug.Log("Switch vers camera de zone");
         }
     }
-
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))

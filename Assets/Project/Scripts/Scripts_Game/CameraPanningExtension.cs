@@ -23,6 +23,9 @@ public class CameraPanningExtension : CinemachineExtension
     [SerializeField] private float lateralPanDuration = 1f;
     [SerializeField] private float lateralThreshold = 0.7f;
 
+    [Header("Camera Z Clamp")]
+    [SerializeField] private float cameraZMarginFromPlayer = 2f;
+
     [Header("Start Zone")]
     [SerializeField] private CountdownManager countdownManager;
 
@@ -32,10 +35,18 @@ public class CameraPanningExtension : CinemachineExtension
     [SerializeField] private Material transparentMaterial;
     [SerializeField] private float detectionRadius = 1f;
 
+    [Header("Target Group Radius")]
+    [SerializeField] private CinemachineTargetGroup targetGroup;
+    [SerializeField] private float maxRadius = 3f;
+    [SerializeField] private float radiusGrowSpeed = 3f;
+
+    private float baseRadius;
+    private float lastPlayerZ;
+
     private Vector3 currentPanOffset;
     private Vector3 currentLateralOffset = Vector3.zero;
     private bool isHighPosition = false;
-    private bool isLowView = false;
+    public bool isLowView = false;
     private Transform playerTransform;
     // NOUVEAU
     private Dictionary<Renderer, Material[]> originalMaterials = new Dictionary<Renderer, Material[]>();
@@ -48,6 +59,14 @@ public class CameraPanningExtension : CinemachineExtension
         {
             playerTransform = player.transform;
         }
+
+        if (targetGroup != null && targetGroup.Targets.Count > 0)
+        {
+            baseRadius = targetGroup.Targets[0].Radius;
+        }
+
+        if (playerTransform != null)
+            lastPlayerZ = playerTransform.position.z;
         mainCamera = Camera.main;
         if (mainCamera == null)
         {
@@ -93,6 +112,32 @@ public class CameraPanningExtension : CinemachineExtension
         {
             isLowView = !isLowView;
             Debug.Log($"[CameraPanning] Toggle view - isLowView: {isLowView}");
+        }
+
+        if (playerTransform != null && targetGroup != null && targetGroup.Targets.Count > 0)
+        {
+            float playerZDelta = playerTransform.position.z - lastPlayerZ;
+            lastPlayerZ = playerTransform.position.z;
+
+            float radiusOffset = targetGroup.Targets[0].Radius - baseRadius;
+
+            if (playerZDelta < 0f)
+            {
+                radiusOffset += -playerZDelta;
+                radiusOffset = Mathf.Min(radiusOffset, maxRadius - baseRadius);
+            }
+            else if (playerZDelta > 0f)
+            {
+                radiusOffset -= playerZDelta;
+                radiusOffset = Mathf.Max(0f, radiusOffset);
+            }
+
+            targetGroup.Targets[0] = new CinemachineTargetGroup.Target
+            {
+                Object = targetGroup.Targets[0].Object,
+                Weight = targetGroup.Targets[0].Weight,
+                Radius = baseRadius + radiusOffset
+            };
         }
     }
 
@@ -159,6 +204,16 @@ public class CameraPanningExtension : CinemachineExtension
         {
             // Restaurer tous les matériaux si pas en vue basse
             RestoreAllMaterials();
+        }
+
+        if (playerTransform != null && mainCamera != null)
+        {
+            Vector3 camPos = mainCamera.transform.position;
+            float maxZ = playerTransform.position.z - cameraZMarginFromPlayer;
+            if (camPos.z > maxZ)
+            {
+                mainCamera.transform.position = new Vector3(camPos.x, camPos.y, maxZ);
+            }
         }
     }
 

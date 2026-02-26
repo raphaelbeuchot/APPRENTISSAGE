@@ -32,6 +32,8 @@ public class MetalShutter : MonoBehaviour
             {
                 
                 isOpening = false;
+                Destroy(gameObject, destroyDelay);
+
             }
         }
     }
@@ -45,7 +47,6 @@ public class MetalShutter : MonoBehaviour
             PlatformTrainManager train = FindFirstObjectByType<PlatformTrainManager>();
             if (train != null)
                 train.StartTrain();
-            Destroy(gameObject, destroyDelay);
         }
     }
 

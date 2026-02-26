@@ -2696,7 +2696,7 @@ MonoBehaviour:
   - Object: {fileID: 4617868051715933207}
     Weight: 1.5
     Radius: 1.5
-  - Object: {fileID: 887716756}
+  - Object: {fileID: 873940037}
     Weight: 0.75
     Radius: 0.5
   m_LegacyTargets: []
@@ -2708,8 +2708,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 44089342}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3307181, y: 0.6250005, z: 0.01629458, w: 0.70691895}
-  m_LocalPosition: {x: 0.7217334, y: 2.0666666, z: 8.07386}
+  m_LocalRotation: {x: 0, y: 0.52573115, z: 0, w: 0.8506508}
+  m_LocalPosition: {x: 0.68837994, y: -0.6, z: 2.5583434}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15182,6 +15182,7 @@ MonoBehaviour:
   lateralOffset: 5
   lateralPanDuration: 1
   lateralThreshold: 0.7
+  cameraZMarginFromPlayer: 2
   countdownManager: {fileID: 0}
   playerHeightOffset: 0.5
   obstacleHidingLayers:
@@ -15189,6 +15190,7 @@ MonoBehaviour:
     m_Bits: 0
   transparentMaterial: {fileID: 0}
   detectionRadius: 1
+  isLowView: 0
 --- !u!1001 &279651966
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -68144,6 +68146,57 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
+--- !u!1 &873940036
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 873940037}
+  - component: {fileID: 873940038}
+  m_Layer: 0
+  m_Name: TragetGroupProxy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &873940037
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 873940036}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.06514, y: -2, z: 13.03503}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &873940038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 873940036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1afaaaea395eab488c01dad7514d53e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetGroupProxy
+  player: {fileID: 4617868051715933207}
+  referenceGO: {fileID: 887716756}
+  yOffsetMultiplier: 2
+  maxZTravelForYOffset: 5
+  zOffsetMultiplier: 2
+  maxZTravelForZOffset: 5
+  cameraPanning: {fileID: 1231677643}
 --- !u!1001 &874607648
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -87082,7 +87135,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1231677631}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.04325561, y: 0.072591536, z: -0.0031512773, w: 0.99641836}
+  m_LocalRotation: {x: 0.2548197, y: 0.12734418, z: -0.03387357, w: 0.9579682}
   m_LocalPosition: {x: -1, y: 3.1, z: -3.68}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -87161,9 +87214,10 @@ MonoBehaviour:
   lowCameraOffset: -0.5
   viewToggleDuration: 0.5
   lowCameraOffsetInWater: 1
-  lateralOffset: 3
+  lateralOffset: 1.5
   lateralPanDuration: 1.5
   lateralThreshold: 0.7
+  cameraZMarginFromPlayer: 4
   countdownManager: {fileID: 510246361}
   playerHeightOffset: 0.5
   obstacleHidingLayers:
@@ -87171,6 +87225,7 @@ MonoBehaviour:
     m_Bits: 8
   transparentMaterial: {fileID: 2100000, guid: 1eba45ffb888cbe4e8d93add8b65d3bf, type: 2}
   detectionRadius: 1
+  isLowView: 0
 --- !u!1 &1231733566
 GameObject:
   m_ObjectHideFlags: 0
@@ -92482,13 +92537,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 803de3099b8a89043bbc93b7b51b0f67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimpleLateralPanning
-  lateralOffset: 2
+  lateralOffset: 1.5
   lateralPanDuration: 1.5
   lateralThreshold: 0.7
-  highCameraOffset: 5
-  lowCameraOffset: -5
+  highCameraOffset: 3
+  lowCameraOffset: -2
   lowCameraOffsetInWater: 2
   viewToggleDuration: 2
+  cameraZMarginFromPlayer: 2
 --- !u!4 &1344928689 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 8c6fa7ab62026104b805b357479e7e2d, type: 3}
@@ -93495,6 +93551,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraConfiner
   boundingVolume: {fileID: 1740174171}
+  player: {fileID: 4617868051715933207}
+  cameraZMarginFromPlayer: 2
 --- !u!4 &1361428632 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
@@ -94064,6 +94122,7 @@ MonoBehaviour:
   zoneCamera: {fileID: 1344271813}
   activePriority: 20
   inactivePriority: 10
+  zoneCameraExtension: {fileID: 1344271816}
 --- !u!23 &1371529847
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -105447,7 +105506,7 @@ Transform:
   m_GameObject: {fileID: 1558432564}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.45, y: 0.1, z: 29.56}
+  m_LocalPosition: {x: 4.04, y: 0.4, z: 29.56}
   m_LocalScale: {x: 4, y: 0.2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -105818,7 +105877,7 @@ Transform:
   m_GameObject: {fileID: 1560967251}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4, y: 0, z: 27.1}
+  m_LocalPosition: {x: 4, y: 0.3, z: 27.1}
   m_LocalScale: {x: 12, y: 0.1, z: 8}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -138220,6 +138279,7 @@ SceneRoots:
   - {fileID: 1231677635}
   - {fileID: 1952080594}
   - {fileID: 1344271815}
+  - {fileID: 873940037}
   - {fileID: 44089344}
   - {fileID: 722609676}
   - {fileID: 1740174172}
