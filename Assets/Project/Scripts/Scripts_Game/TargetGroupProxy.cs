@@ -2,13 +2,18 @@ using UnityEngine;
 
 public class TargetGroupProxy : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] private Transform player;
-    [SerializeField] private Transform referenceGO;
+    [SerializeField] private Transform referenceMainSentinel;
+    [SerializeField] private CameraPanningExtension cameraPanning;
+
+    [Header("Y Offset")]
     [SerializeField] private float yOffsetMultiplier = 2f;
     [SerializeField] private float maxZTravelForYOffset = 5f;
+
+    [Header("Z Offset")]
     [SerializeField] private float zOffsetMultiplier = 2f;
     [SerializeField] private float maxZTravelForZOffset = 5f;
-    [SerializeField] private CameraPanningExtension cameraPanning;
 
     private float yOffset = 0f;
     private float zOffset = 0f;
@@ -29,7 +34,6 @@ public class TargetGroupProxy : MonoBehaviour
 
         bool isLowView = cameraPanning != null && cameraPanning.isLowView;
 
-        // Offset Y (desactive en vue basse)
         if (!isLowView)
         {
             if (playerZDelta < 0f)
@@ -44,7 +48,6 @@ public class TargetGroupProxy : MonoBehaviour
             }
         }
 
-        // Offset Z (toujours actif)
         if (playerZDelta < 0f)
         {
             zOffset += -playerZDelta;
@@ -56,8 +59,8 @@ public class TargetGroupProxy : MonoBehaviour
             zOffset = Mathf.Max(0f, zOffset);
         }
 
-        float baseY = referenceGO != null ? referenceGO.position.y : transform.position.y;
-        float baseZ = referenceGO != null ? referenceGO.position.z : transform.position.z;
+        float baseY = referenceMainSentinel != null ? referenceMainSentinel.position.y : transform.position.y;
+        float baseZ = referenceMainSentinel != null ? referenceMainSentinel.position.z : transform.position.z;
 
         transform.position = new Vector3(
             player.position.x,
