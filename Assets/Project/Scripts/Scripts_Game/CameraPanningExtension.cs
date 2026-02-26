@@ -91,10 +91,19 @@ public class CameraPanningExtension : CinemachineExtension
     public void SetPrimaryCamera(CinemachineCamera newPrimary)
     {
         if (activePrimaryCamera != null) activePrimaryCamera.Priority = inactivePriority;
+
         activePrimaryCamera = newPrimary;
-        isLowView = false;
-        if (lowViewCamera != null) lowViewCamera.Priority = inactivePriority;
-        if (activePrimaryCamera != null) activePrimaryCamera.Priority = activePriority;
+
+        if (isLowView)
+        {
+            if (lowViewCamera != null) lowViewCamera.Priority = activePriority;
+            if (activePrimaryCamera != null) activePrimaryCamera.Priority = inactivePriority;
+        }
+        else
+        {
+            if (lowViewCamera != null) lowViewCamera.Priority = inactivePriority;
+            if (activePrimaryCamera != null) activePrimaryCamera.Priority = activePriority;
+        }
     }
 
     private void Update()

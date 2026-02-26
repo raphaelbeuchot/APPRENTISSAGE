@@ -49628,7 +49628,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GoalDoor
   isActive: 1
   doorRenderer: {fileID: 871157099}
-  activeMaterial: {fileID: 2100000, guid: 514822785fd99084193079fb1d20b82d, type: 2}
+  activeMaterial: {fileID: 2100000, guid: e9e73c7ed777b064d8861a8a0ed08d30, type: 2}
   inactiveMaterial: {fileID: 2100000, guid: 23d8ea2022ab1654c87fc6d911610a35, type: 2}
   doorReachedSound: {fileID: 8300000, guid: 66f5647459bc04147be64765d5fd4af9, type: 3}
   doorActivatedSound: {fileID: 0}
@@ -98636,7 +98636,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1697455044
 Transform:
   m_ObjectHideFlags: 0
@@ -125278,8 +125278,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4165431843132101587}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0553683, y: 0.9358811, z: -0.17100981, w: -0.3030127}
-  m_LocalPosition: {x: 5.54, y: 5, z: 21.46}
+  m_LocalRotation: {x: -0.09265362, y: 0.90152705, z: -0.24012855, w: -0.34785432}
+  m_LocalPosition: {x: 4, y: 5, z: 18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -125544,6 +125544,10 @@ PrefabInstance:
       propertyPath: cameraPanning
       value: 
       objectReference: {fileID: 7878394541195324554}
+    - target: {fileID: 1209062817010400342, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
+      propertyPath: referenceMainSentinel
+      value: 
+      objectReference: {fileID: 887716756}
     - target: {fileID: 4055502531201931116, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
       propertyPath: Targets.Array.data[0].Object
       value: 
@@ -125929,7 +125933,7 @@ Transform:
   m_GameObject: {fileID: 5092360626681464662}
   serializedVersion: 2
   m_LocalRotation: {x: 0.28871602, y: -0.5147443, z: 0.18938118, w: 0.7847396}
-  m_LocalPosition: {x: 3.1880078, y: 3.9856787, z: -4.4988117}
+  m_LocalPosition: {x: 3.1880078, y: 3.9856787, z: -4.4988112}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -126105,9 +126109,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraPanningController
   startWithFreeCameraEnabled: 0
-  verticalOffset: 5
-  verticalPanSpeed: 10
-  initialRiseDuration: 2
+  verticalOffset: 4
+  verticalPanSpeed: 5
+  initialRiseDuration: 1.5
   normalCamera: {fileID: 131512928579484547}
   lowViewCamera: {fileID: 3058642237321737406}
   activePriority: 20
@@ -126136,7 +126140,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
     Enabled: 1
-    m_Value: 20
+    m_Value: 30
   OutputChannel: 1
   StandbyUpdate: 2
   m_StreamingVersion: 20241001
