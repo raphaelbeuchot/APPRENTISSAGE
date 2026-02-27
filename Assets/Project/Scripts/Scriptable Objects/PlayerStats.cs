@@ -88,8 +88,6 @@ public class PlayerStats : ScriptableObject
     public float bottleStunDuration = 0.5f;
     [Tooltip("Prefab de la bouteille jetee")]
     public GameObject bottlePrefab;
-    [Tooltip("Son du lancer")]
-    public AudioClip bottleThrowSound;
     [Tooltip("Son de l'impact blong")]
     public AudioClip bottleImpactSound;
 

@@ -476,10 +476,7 @@ public class MeleeAttackSystem : MonoBehaviour
             }
 
             // Play sounds
-            if (audioSource != null && stats.bottleThrowSound != null)
-            {
-                audioSource.PlayOneShot(stats.bottleThrowSound);
-            }
+           
             if (stats.bottleImpactSound != null)
             {
                 AudioSource.PlayClipAtPoint(stats.bottleImpactSound, hit.point);

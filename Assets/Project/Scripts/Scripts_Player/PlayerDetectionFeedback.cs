@@ -1,5 +1,4 @@
 using System.Collections;
-using TreeEditor;
 using UnityEngine;
 
 public class PlayerDetectionFeedback : MonoBehaviour
@@ -8,11 +7,14 @@ public class PlayerDetectionFeedback : MonoBehaviour
     [SerializeField] private AudioClip detectionSound;
     [Header("Shot Flash Settings")]
     [SerializeField] private float shotFlashDuration = 0.4f;
+    [Header("Silhouette Materials")]
+    [SerializeField] private Material whiteMaterial;
+    [SerializeField] private Material redMaterial;
 
     private SkinnedMeshRenderer[] playerMeshRenderers;
     private Material[][] originalMaterials;
-    private Material whiteMaterial;
-    private Material redMaterial;
+
+
     [HideInInspector]
     public bool isCurrentlyDetected = false;
     private AudioSource audioSource;
@@ -26,14 +28,7 @@ public class PlayerDetectionFeedback : MonoBehaviour
             audioSource = gm.GetComponent<AudioSource>();
         }
 
-        // Creer material blanc
-        whiteMaterial = new Material(Shader.Find("Unlit/Color"));
-        whiteMaterial.color = Color.white;
-
-        // NOUVEAU : Creer material rouge
-        redMaterial = new Material(Shader.Find("Unlit/Color"));
-        redMaterial.color = Color.red;
-
+       
         // Recuperer TOUS les SkinnedMeshRenderer dans les enfants
         playerMeshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
 

@@ -12,6 +12,9 @@ public class BroomAttackSystem : MonoBehaviour
     private PlayerPhysicsMovement movement;
     private AudioSource audioSource;
 
+    [Header("Impact Effects")]
+    [SerializeField] private GameObject[] broomImpactEffects;
+
 
 
     private bool isAttacking = false;
@@ -175,7 +178,13 @@ public class BroomAttackSystem : MonoBehaviour
             if (enemyHealth != null && !enemyHealth.IsDead())
             {
                 hitSomething = true;
-                
+
+                if (broomImpactEffects != null && broomImpactEffects.Length > 0)
+                {
+                    int randomIndex = Random.Range(0, broomImpactEffects.Length);
+                    Instantiate(broomImpactEffects[randomIndex], hit.bounds.center, Quaternion.identity);
+                }
+
                 // CALCULER DIRECTION KNOCKBACK D'ABORD
                 Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
                 knockbackDir.y = 0;

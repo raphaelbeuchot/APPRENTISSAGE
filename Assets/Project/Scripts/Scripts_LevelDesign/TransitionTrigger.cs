@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
 
 public class TransitionTrigger : MonoBehaviour
 {
@@ -12,7 +14,8 @@ public class TransitionTrigger : MonoBehaviour
     [SerializeField] private Collider zone2Confiner;
 
     [Header("Fade")]
-    [SerializeField] private FadeManager fadeManager;
+    [SerializeField] private CanvasGroup fadeCanvasGroup;
+    [SerializeField] private float fadeDuration = 0.5f;
     [SerializeField] private float waitTimeInBlack = 1f;
 
     [Header("Debug")]
@@ -20,107 +23,80 @@ public class TransitionTrigger : MonoBehaviour
 
     private void Start()
     {
-        // Force la desactivation de Zone2 au demarrage
+        if (fadeCanvasGroup != null)
+            fadeCanvasGroup.alpha = 0f;
+
         if (zone2 != null)
         {
             zone2.SetActive(false);
             Debug.Log("[TransitionTrigger] Zone 2 forcee en desactive au Start");
         }
 
-        // Verifications au demarrage
         BoxCollider col = GetComponent<BoxCollider>();
         if (col == null)
-        {
             Debug.LogError("[TransitionTrigger] PAS DE BOXCOLLIDER SUR CE GAMEOBJECT !");
-        }
         else if (!col.isTrigger)
-        {
-            Debug.LogError("[TransitionTrigger] BoxCollider.isTrigger = FALSE ! Il doit etre a TRUE !");
-        }
+            Debug.LogError("[TransitionTrigger] BoxCollider.isTrigger = FALSE !");
         else
-        {
             Debug.Log("[TransitionTrigger] BoxCollider OK, isTrigger = true");
-        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"[TransitionTrigger] ========== TRIGGER TOUCHE ==========");
-        Debug.Log($"[TransitionTrigger] GameObject: {other.gameObject.name}");
-        Debug.Log($"[TransitionTrigger] Tag: {other.tag}");
-        Debug.Log($"[TransitionTrigger] Layer: {LayerMask.LayerToName(other.gameObject.layer)}");
-
-        if (hasTriggered)
-        {
-            Debug.Log("[TransitionTrigger] Deja triggere, ignore");
-            return;
-        }
+        if (hasTriggered) return;
 
         if (other.CompareTag("Player"))
         {
             Debug.Log("[TransitionTrigger] TAG PLAYER DETECTE ! Activation Zone 2...");
-            ActivateZone2();
-        }
-        else
-        {
-            Debug.LogWarning($"[TransitionTrigger] Tag incorrect : '{other.tag}' au lieu de 'Player'");
+            hasTriggered = true;
+            StartCoroutine(FadeTransitionSequence());
         }
     }
 
-    private void ActivateZone2()
-    {
-        hasTriggered = true;
-        Debug.Log("[TransitionTrigger] ========== ACTIVATION ZONE 2 ==========");
-
-        StartCoroutine(FadeTransitionSequence());
-    }
-
-    private System.Collections.IEnumerator FadeTransitionSequence()
+    private IEnumerator FadeTransitionSequence()
     {
         // 1. Fade to black
-        if (fadeManager != null)
-        {
-            Debug.Log("[TransitionTrigger] Fade to black...");
-            yield return StartCoroutine(fadeManager.FadeToBlack());
-        }
+        yield return StartCoroutine(Fade(0f, 1f));
 
         // 2. Pendant le noir : tout changer
         yield return new WaitForSeconds(waitTimeInBlack);
 
-        // Activer Zone 2
         if (zone2 != null)
-        {
             zone2.SetActive(true);
-            Debug.Log("[TransitionTrigger] Zone 2 activee");
-        }
 
-        // Switch cameras
         if (zone1Camera != null)
-        {
             zone1Camera.SetActive(false);
-            Debug.Log("[TransitionTrigger] Camera Zone 1 desactivee");
-        }
 
         if (zone2Camera != null)
-        {
             zone2Camera.SetActive(true);
-            Debug.Log("[TransitionTrigger] Camera Zone 2 activee");
-        }
 
-        // Update confiner
         if (mainCameraConfiner != null && zone2Confiner != null)
-        {
             mainCameraConfiner.SetBoundingVolume(zone2Confiner);
-            Debug.Log("[TransitionTrigger] Confiner Main Camera mis a jour vers Zone 2");
-        }
 
         // 3. Fade from black
-        if (fadeManager != null)
-        {
-            Debug.Log("[TransitionTrigger] Fade from black...");
-            yield return StartCoroutine(fadeManager.FadeFromBlack());
-        }
+        yield return StartCoroutine(Fade(1f, 0f));
 
         Debug.Log("[TransitionTrigger] Transition complete !");
+    }
+
+    private IEnumerator Fade(float from, float to)
+    {
+        if (fadeCanvasGroup == null) yield break;
+
+        fadeCanvasGroup.blocksRaycasts = true;
+        fadeCanvasGroup.alpha = from;
+
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            fadeCanvasGroup.alpha = Mathf.Lerp(from, to, elapsed / fadeDuration);
+            yield return null;
+        }
+
+        fadeCanvasGroup.alpha = to;
+
+        if (to == 0f)
+            fadeCanvasGroup.blocksRaycasts = false;
     }
 }

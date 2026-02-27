@@ -15,25 +15,23 @@ public class BottleProjectile : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 0f;
+        audioSource.playOnAwake = false;
     }
-
     void OnCollisionEnter(Collision collision)
     {
         Debug.Log("Bottle collision with: " + collision.gameObject.name + ", layer: " + LayerMask.LayerToName(collision.gameObject.layer));
-
         // Impact sur ennemi
         if (!hasHitEnemy && collision.gameObject.layer == LayerMask.NameToLayer("Zombie"))
         {
             hasHitEnemy = true;
             HitEnemy(collision.gameObject);
+            // Son uniquement au hit ennemi
+            if (audioSource != null && stats != null && stats.bottleImpactSound != null)
+            {
+                audioSource.PlayOneShot(stats.bottleImpactSound);
+            }
         }
-
-        // Son impact
-        if (audioSource != null && stats != null && stats.bottleImpactSound != null)
-        {
-            AudioSource.PlayClipAtPoint(stats.bottleImpactSound, transform.position);
-        }
-
         // La bouteille reste au sol pour pickup
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
