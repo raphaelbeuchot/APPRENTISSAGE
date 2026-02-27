@@ -188,12 +188,12 @@ public class LevelManager : MonoBehaviour
         if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
         {
             Debug.Log("Chargement du niveau " + nextSceneIndex + "...");
-            SceneManager.LoadScene(nextSceneIndex);
+            FindObjectOfType<SceneFadeOut>().FadeToScene(nextSceneIndex);
         }
         else
         {
             Debug.Log("TOUS LES NIVEAUX COMPLETES! Recommencer...");
-            SceneManager.LoadScene(0);
+            FindObjectOfType<SceneFadeOut>().FadeToScene(0);
         }
     }
 
