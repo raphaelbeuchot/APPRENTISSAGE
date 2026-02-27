@@ -4,7 +4,7 @@ using System.Collections;
 public class SceneFadeIn : MonoBehaviour
 {
     [SerializeField] private CanvasGroup canvasGroup;
-    [SerializeField] private float fadeDuration = 10f;
+    [SerializeField] private float fadeDuration = 1f;
 
     void Awake()
     {
