@@ -112,7 +112,7 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     {
         if (splineContainer == null) return;
 
-        float splineLength = splineContainer.Spline.GetLength();
+        float splineLength = splineContainer.Spline.GetLength() * splineContainer.transform.lossyScale.x;
         float distanceThisFrame = moveSpeed * Time.deltaTime;
         float progressIncrement = distanceThisFrame / splineLength;
 
@@ -242,6 +242,7 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
         if (collision.gameObject.layer == LayerMask.NameToLayer("Human"))
         {
             float speed = currentVelocity.magnitude;
+            Debug.Log($"[RoamingObstacle] Vitesse mesuree a la collision : {speed}");
 
             if (speed < speedThreshold)
             {
