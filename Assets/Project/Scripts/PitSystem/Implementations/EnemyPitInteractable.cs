@@ -64,6 +64,10 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         if (pitFill.fillType.category == PitContentType.ContentCategory.Empty)
         {
             isFallingInPit = true;
+            if (enemyHealth != null && enemyHealth.stats.fallSound != null)
+            {
+                AudioSource.PlayClipAtPoint(enemyHealth.stats.fallSound, Camera.main.transform.position);
+            }
             if (enemyHealth != null && enemyHealth.healthBarUI != null)
             {
                 enemyHealth.healthBarUI.Show();
@@ -105,6 +109,10 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         // INSTANT KILL (Lava, Acid, etc.)
         else if (pitFill.fillType.category == PitContentType.ContentCategory.InstantKill)
         {
+            if (enemyHealth != null && enemyHealth.stats.lavaSplashSound != null)
+            {
+                AudioSource.PlayClipAtPoint(enemyHealth.stats.lavaSplashSound, Camera.main.transform.position);
+            }
             // Desactiver AI
             if (enemyAI != null)
             {

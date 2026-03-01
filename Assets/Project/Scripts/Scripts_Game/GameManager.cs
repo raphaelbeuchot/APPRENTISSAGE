@@ -672,6 +672,11 @@ public class GameManager : MonoBehaviour
                         {
                             alreadyShot.Add(col.gameObject);
                         }
+                        if (enemyHealth != null)
+                        {
+                            EnemyDetectionFeedback enemyFeedback = col.GetComponent<EnemyDetectionFeedback>();
+                            if (enemyFeedback != null) enemyFeedback.OnDetected();
+                        }
                         else if (humanHealth != null && !humanHealth.IsDead())
                         {
                             alreadyShot.Add(col.gameObject);
@@ -694,6 +699,11 @@ public class GameManager : MonoBehaviour
                     if (enemyHealth != null && !enemyHealth.IsDead())
                     {
                         alreadyShot.Add(col.gameObject);
+                    }
+                    if (enemyHealth != null)
+                    {
+                        EnemyDetectionFeedback enemyFeedback = col.GetComponent<EnemyDetectionFeedback>();
+                        if (enemyFeedback != null) enemyFeedback.OnDetected();
                     }
                     else if (humanHealth != null && !humanHealth.IsDead())
                     {
@@ -804,6 +814,8 @@ public class GameManager : MonoBehaviour
         StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
 
         enemyHealth.TakeSentinelShot(isHeadshot);
+        EnemyDetectionFeedback enemyFeedback = enemy.GetComponent<EnemyDetectionFeedback>();
+        if (enemyFeedback != null) enemyFeedback.OnShotBySentinel();
 
         if (enemyHealth.IsDead())
             Debug.Log(enemy.name + " MORT!");

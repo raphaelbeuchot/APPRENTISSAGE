@@ -1186,6 +1186,7 @@ GameObject:
   - component: {fileID: 8892766351190233867}
   - component: {fileID: 196313481047820832}
   - component: {fileID: -1765412710480583640}
+  - component: {fileID: 4582366830139996830}
   m_Layer: 6
   m_Name: ZombieChaser
   m_TagString: Untagged
@@ -1291,6 +1292,7 @@ MonoBehaviour:
   targetHuman: {fileID: 0}
   isInPitMode: 0
   isOnRotatingPlatform: 0
+  lastPathDestination: {x: Infinity, y: Infinity, z: Infinity}
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
@@ -1467,6 +1469,24 @@ MonoBehaviour:
   maxStepHeight: 0.4
   stepCheckDistance: 0.4
   stepRayHeightOffset: 0.05
+--- !u!114 &4582366830139996830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5248851035368284380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe557b50ac916334f904460385e4d631, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyDetectionFeedback
+  whiteMaterial: {fileID: 2100000, guid: f0de86f2557323747b1bea6982df5e7c, type: 2}
+  redMaterial: {fileID: 2100000, guid: 91de5bbeda2c9e34b8bd3af87554b8ae, type: 2}
+  detectionFlashDuration: 0.3
+  shotFlashDuration: 0.4
+  detectionSound: {fileID: 8300000, guid: 66b2237cb72ac9745889eb9aa927646d, type: 3}
+  detectionSoundVolume: 0.3
 --- !u!1 &5275224879802208621
 GameObject:
   m_ObjectHideFlags: 0

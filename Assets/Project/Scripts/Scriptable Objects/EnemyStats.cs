@@ -197,6 +197,11 @@ public class EnemyStats : ScriptableObject
     [Header("AUDIO")]
     [Tooltip("Son joue quand le zombie tombe dans l'eau")]
     public AudioClip waterSplashSound;
+    [Tooltip("Son joue quand le zombie tombe dans la lave/acide")]
+    public AudioClip lavaSplashSound;
+
+    [Tooltip("Son joue quand le zombie tombe dans le vide")]
+    public AudioClip fallSound;
 
     [Tooltip("Dégâts pris par spray")]
     public float sprayDamageTaken = 25f;

@@ -301,7 +301,13 @@ public class PitFillDamageController : MonoBehaviour
 
             case PitContentType.ContentCategory.InstantKill:
                 Debug.Log("[PitFill DEBUG] Category is InstantKill - starting death coroutine");
-                // Lava, Acid: mort progressive immediate
+                EnemyPitInteractable enemyPitLava = interactable as EnemyPitInteractable;
+                if (enemyPitLava != null)
+                {
+                    EnemyHealth ehLava = go.GetComponent<EnemyHealth>();
+                    if (ehLava != null && ehLava.stats.lavaSplashSound != null)
+                        AudioSource.PlayClipAtPoint(ehLava.stats.lavaSplashSound, Camera.main.transform.position);
+                }
                 StartProgressiveDeathCoroutine(go, data, fillType);
                 break;
 

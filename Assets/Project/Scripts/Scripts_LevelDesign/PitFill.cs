@@ -71,7 +71,6 @@ public class PitFill : MonoBehaviour
 
         Debug.Log("PitFill: Generated fill content - " + fillType.contentName + " at " + GetFillHeightMeters().ToString("F2") + "m");
 
-        GenerateBorderMesh();
 
         PitFillDamageController damageController = GetComponent<PitFillDamageController>();
         if (damageController == null)
@@ -164,61 +163,7 @@ public class PitFill : MonoBehaviour
         return mesh;
     }
 
-    public void GenerateBorderMesh()
-    {
-        if (pitZone == null || pitZone.gridData == null) return;
-
-        Dictionary<Vector2Int, float> ownedCells = pitZone.gridData.GetCellsForZone(pitZone.zoneID);
-        if (ownedCells.Count == 0) return;
-
-        float cellSize = pitZone.gridData.gridCellSize;
-        float surfaceY = GetFillSurfaceHeight() + 0.005f;
-
-        List<Vector3> vertices = new List<Vector3>();
-        List<int> triangles = new List<int>();
-        List<Vector2> uvs = new List<Vector2>();
-
-        Vector2Int[] directions = new Vector2Int[]
-        {
-        new Vector2Int(0, 1),  // Nord
-        new Vector2Int(0, -1), // Sud
-        new Vector2Int(1, 0),  // Est
-        new Vector2Int(-1, 0)  // Ouest
-        };
-
-        foreach (var kvp in ownedCells)
-        {
-            Vector2Int cellPos = kvp.Key;
-            Vector3 cellWorldPos = pitZone.gridData.CellToWorld(cellPos);
-
-            foreach (Vector2Int dir in directions)
-            {
-                Vector2Int neighborPos = cellPos + dir;
-
-                // Si le voisin existe dans le pit, pas de bordure de ce cote
-                if (ownedCells.ContainsKey(neighborPos)) continue;
-
-                // Ce cote est un bord, on genere un quad
-                AddBorderQuad(vertices, triangles, uvs, cellWorldPos, cellSize, surfaceY, dir, borderWidth);
-            }
-        }
-
-        if (vertices.Count == 0) return;
-
-        SetupBorderMeshObjects();
-
-        Mesh mesh = new Mesh();
-        mesh.name = "BorderMesh";
-        mesh.vertices = vertices.ToArray();
-        mesh.triangles = triangles.ToArray();
-        mesh.uv = uvs.ToArray();
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
-
-        borderMeshFilter.sharedMesh = mesh;
-
-        Debug.Log("PitFill: Generated border mesh with " + vertices.Count / 4 + " quads");
-    }
+    
 
     private void AddBorderQuad(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
         Vector3 cellWorldPos, float cellSize, float surfaceY, Vector2Int direction, float width)
