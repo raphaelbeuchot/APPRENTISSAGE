@@ -357,8 +357,11 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
         player.ForceStop();
 
+        // APRÈS
         playerRb.constraints = RigidbodyConstraints.FreezeAll;
-        enemyRb.constraints = RigidbodyConstraints.FreezeAll;
+        enemyRb.constraints = RigidbodyConstraints.FreezeRotation;
+        Vector3 grabOffset = enemyTransform.position - player.transform.position;
+
 
         if (playerMelee) playerMelee.OnGrabStart();
 
@@ -401,7 +404,17 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                     if (ph != null) ph.TakeDamage((int)stats.biteTickDamage);
                     nextDamageIndex++;
                 }
+                // COLLAGE AU PLAYER
+                // Si une plateforme (ou autre) déplace le player, l'enemy maintient
+                // sa position relative en utilisant MovePosition (respecte la physique).
+                Vector3 desiredEnemyPos = player.transform.position + grabOffset;
+                if (Vector3.Distance(enemyRb.position, desiredEnemyPos) > 0.01f)
+                {
+                    enemyRb.MovePosition(desiredEnemyPos);
+                }
+                //
 
+                yield return null;
                 yield return null;
             }
 

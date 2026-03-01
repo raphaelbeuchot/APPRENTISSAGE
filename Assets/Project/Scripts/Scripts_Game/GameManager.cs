@@ -471,11 +471,27 @@ public class GameManager : MonoBehaviour
                 continue;
             }
 
+            bool isWindingUp = grabSystem != null && grabSystem.isInWindup;
+
+            if (isWindingUp && hasLOS && !trackData.isBeingShot
+                && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown
+                && !alreadyShot.Contains(col.gameObject))
+            {
+                if (enemyHealth != null && !enemyHealth.IsDead())
+                {
+                    ShootEnemy(col.gameObject, enemyHealth, "WINDUP", sentinelPos, finalTargetPos, trackData.isHeadshot);
+                    trackData.lastShotTime = Time.time;
+                    lastActualShotTime = Time.time;
+                    alreadyShot.Add(col.gameObject);
+                    trackData.wasInLOS = hasLOS;
+                    trackData.hasBeenTrackedBefore = true;
+                }
+                continue;
+            }
             EnemyAI_AStar ai = col.GetComponent<EnemyAI_AStar>();
             if (ai != null && hasLOS)
                 ai.isDetectedBySentinel = true;
 
-            bool playerImmune = (col.gameObject == player.gameObject && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed);
 
             //Punition si meleeattack, spray
             Rigidbody rb = col.GetComponent<Rigidbody>();
@@ -592,7 +608,9 @@ public class GameManager : MonoBehaviour
                     }
                 }
             }
-
+            bool playerImmune = (col.gameObject == player.gameObject
+                             && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed
+                             && !isMoving);
             bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit) && !playerImmune;
             EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isInShallowWater)
