@@ -322,9 +322,8 @@ public class BroomAttackSystem : MonoBehaviour
 
         if (zombieForRotation != null && healthForRotation != null && !healthForRotation.IsDead())
         {
-            if (healthForRotation.stats != null)
+            if (healthForRotation.stats != null && !zombieForRotation.isOnRotatingPlatform)
             {
-                // Inverser la direction : le zombie doit regarder VERS le point d'impact (le player)
                 Vector3 impactDirection = -knockbackDirection;
                 zombieForRotation.StartRotationToImpact(impactDirection, healthForRotation.stats.rotationToImpactDuration);
                 Debug.Log($"[BROOM] Started rotation to impact for {target.name}");

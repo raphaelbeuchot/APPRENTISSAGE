@@ -861,7 +861,18 @@ public class PlayerPhysicsMovement : MonoBehaviour
         canMove = false;
         StartCoroutine(SweepFromObstacleCoroutine());
     }
+    public RisingPlatform GetCurrentRisingPlatform()
+    {
+        float rayLength = 0.3f;
+        Vector3 rayStart = transform.position + Vector3.up * 0.1f;
+        RaycastHit hit;
 
+        if (Physics.Raycast(rayStart, Vector3.down, out hit, rayLength, LayerMask.GetMask("Ground", "LavaTrain")))
+        {
+            return hit.collider.GetComponent<RisingPlatform>();
+        }
+        return null;
+    }
 
     public IMovingPlatform GetCurrentPlatform()
     {

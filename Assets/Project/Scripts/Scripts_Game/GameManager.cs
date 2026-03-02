@@ -532,7 +532,6 @@ public class GameManager : MonoBehaviour
                     if (worldSpaceVelocity > sentinelSettings.movementThreshold)
                     {
                         isMoving = true;
-                        Debug.Log($"[WORLD MOVEMENT] Player velocity: {worldSpaceVelocity:F3} m/s");
                     }
 
                     trackData.lastCheckPosition = col.transform.position;

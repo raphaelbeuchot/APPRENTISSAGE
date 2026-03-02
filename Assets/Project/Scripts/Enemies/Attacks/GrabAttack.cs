@@ -117,7 +117,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
 
-        
+        IMovingPlatform playerPlatform = player.GetCurrentPlatform();
+        Debug.Log($"[GRAB DEBUG] Player platform: {(playerPlatform != null ? playerPlatform.GetTransform().name : "NULL")}");
 
         // === CHECK IMMUNITE GRABS ===
         if (player != null && player.isImmuneToGrab)
@@ -125,6 +126,13 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             Debug.Log($"{gameObject.name} cannot grab - player is immune (climbing/falling)");
             return;
         }
+        // Pas de grab si player sur rotating platform
+        if (playerPlatform != null && playerPlatform.GetTransform().GetComponent<RotatingPlatform>() != null)
+        {
+            Debug.Log($"{gameObject.name} cannot grab - player is on rotating platform");
+            return;
+        }
+
 
         float dist = Vector3.Distance(transform.position, player.transform.position);
         if (dist > stats.attackRange) return;
@@ -259,7 +267,25 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 }
                 // === FIN RE-CHECK ===
 
+                IMovingPlatform playerPlatform = player.GetCurrentPlatform();
+                if (playerPlatform != null && playerPlatform.GetTransform().GetComponent<RotatingPlatform>() != null)
+                {
+                    Debug.Log($"{gameObject.name} WINDUP COMPLETE - grab cancelled, player on rotating platform");
+                    enemy.currentState = EnemyAI_AStar.State.Chasing;
+                    yield break;
+                }
                 Debug.Log($"{gameObject.name} WINDUP COMPLETE - starting grab");
+                // Snap zombie vers player
+                Vector3 dirToPlayer = (player.transform.position - transform.position).normalized;
+                dirToPlayer.y = 0f;
+
+                // Rotation instantanée vers le player
+                transform.rotation = Quaternion.LookRotation(dirToPlayer);
+
+                // Teleport à attackRange * 0.5f du player
+                Vector3 snapPosition = player.transform.position - dirToPlayer * (stats.attackRange * 0.5f);
+                snapPosition.y = transform.position.y;
+                transform.position = snapPosition;
                 StartCoroutine(GrabCoroutine());
             }
             else
@@ -383,6 +409,13 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             {
                 if (enemyHealth == null || enemyHealth.IsDead())
                 {
+                    EndGrab(false);
+                    yield break;
+                }
+                // Annuler grab si player touché par sentinelle
+                if (gameManager != null && gameManager.stunBySentinel)
+                {
+                    Debug.Log($"{gameObject.name} grab cancelled - player shot by sentinel");
                     EndGrab(false);
                     yield break;
                 }

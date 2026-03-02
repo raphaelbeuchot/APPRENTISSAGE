@@ -9,6 +9,9 @@ public class Collectible : MonoBehaviour
     public AudioClip collectSound;
     public GameObject collectParticlesPrefab;
 
+    [Header("Audio")]
+    public AudioSource audioSource2D; // AudioSource non spatialise (2D)
+
     private bool collected = false;
 
     void Start()
@@ -39,11 +42,15 @@ public class Collectible : MonoBehaviour
 
         CollectibleManager.GetOrCreate().CollectThisRun(collectibleID);
 
-        if (collectSound != null)
-            AudioSource.PlayClipAtPoint(collectSound, transform.position);
+        if (collectSound != null && audioSource2D != null)
+        {
+            audioSource2D.PlayOneShot(collectSound);
+        }
 
         if (collectParticlesPrefab != null)
+        {
             Instantiate(collectParticlesPrefab, transform.position, Quaternion.identity);
+        }
 
         Destroy(gameObject);
     }
