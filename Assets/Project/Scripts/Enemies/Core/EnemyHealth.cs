@@ -11,6 +11,9 @@ public class EnemyHealth : MonoBehaviour
     [Header("Enemy Stats")]
     public EnemyStats stats;
 
+    [SerializeField] private GameObject stunSpiralPrefab;
+    private GameObject activeSpiral;
+
     [Header("Audio")]
     [Tooltip("Son joue quand le zombie meurt noye (non spatialise)")]
     public AudioClip crowdLaughterSound;
@@ -20,7 +23,6 @@ public class EnemyHealth : MonoBehaviour
     private float sentinelHitDisplayDuration = 3f; // Durée d'affichage après hit sentinelle
     private Coroutine sentinelHitDisplayCoroutine;
 
-    [SerializeField] private GameObject stunSpiralPrefab;
 
 
     [Header("Knockback State")]
@@ -190,6 +192,31 @@ public class EnemyHealth : MonoBehaviour
         }
     }
 
+    public void ShowSpiral()
+    {
+        if (isDead) return; // AJOUT
+        if (stunSpiralPrefab == null) return;
+        if (activeSpiral != null) return;
+        activeSpiral = Instantiate(stunSpiralPrefab, transform.position + Vector3.up * 1.5f, Quaternion.identity, transform);
+    }
+
+    public void HideSpiral()
+    {
+        if (activeSpiral != null)
+        {
+            Destroy(activeSpiral);
+            activeSpiral = null;
+        }
+
+        // Nettoyage de securite : detruire tous les enfants avec "Spiral" dans le nom
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            Transform child = transform.GetChild(i);
+            if (child.name.Contains("Spiral"))
+                Destroy(child.gameObject);
+        }
+    }
+
     public void SetKnockbackState(float duration)
     {
         isInKnockback = true;
@@ -275,33 +302,9 @@ public class EnemyHealth : MonoBehaviour
     }
 
 
-    public void StartStunSpiral()
-    {
-        if (stunSpiralCoroutine != null)
-        {
-            StopCoroutine(stunSpiralCoroutine);
-            stunSpiralCoroutine = null;
-        }
-        if (stunSpiralPrefab == null) return;
+   
 
-        if (activeStunSpiral != null)
-        {
-            Destroy(activeStunSpiral);
-            activeStunSpiral = null;
-        }
-
-        Vector3 spawnPos = transform.position + Vector3.up * 1.0f;
-        activeStunSpiral = Instantiate(stunSpiralPrefab, spawnPos, Quaternion.identity, transform);
-    }
-
-    public void StopStunSpiral()
-    {
-        if (activeStunSpiral != null)
-        {
-            Destroy(activeStunSpiral);
-            activeStunSpiral = null;
-        }
-    }
+   
     // Version pour dégâts directs (pits, environnement, etc.)
     // VERSION 1 : Pour attaques joueur (spray/broom/bottle)
     public void TakeMeleeDamage(AttackType attackType)
@@ -535,8 +538,10 @@ public class EnemyHealth : MonoBehaviour
         if (isDead) return;
 
         isDead = true;
+        HideSpiral();
+
+
         Debug.Log(string.Format("{0} is dead!", gameObject.name));
-        StopStunSpiral();
         OnDeath?.Invoke();
 
         // AJOUTER ICI : Désinscrire le timer UI
@@ -741,26 +746,9 @@ public class EnemyHealth : MonoBehaviour
     public void ApplySprayStun(float duration)
     {
         sprayStunTimer = duration;
-        if (stunSpiralPrefab != null)
-        {
-            Vector3 spawnPos = transform.position + Vector3.up * 1f;
-            if (activeStunSpiral != null)
-            {
-                Destroy(activeStunSpiral);
-                activeStunSpiral = null;
-            }
-            activeStunSpiral = Instantiate(stunSpiralPrefab, spawnPos, Quaternion.identity, transform);
-            if (stunSpiralCoroutine != null)
-                StopCoroutine(stunSpiralCoroutine);
-            stunSpiralCoroutine = StartCoroutine(DestroyStunSpiralAfter(duration));
-        }
         Debug.Log($"{gameObject.name} spray stun applied - {duration}s");
     }
-    IEnumerator DestroyStunSpiralAfter(float duration)
-    {
-        yield return new WaitForSeconds(duration);
-        StopStunSpiral();
-    }
+
     public bool IsRecovering() => isRecovering;
     public float GetCurrentHealth() => currentHealth;
     public float GetMaxHealth() => stats.maxHealth;

@@ -776,6 +776,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
     public void EnableRotatingPlatformMode(RotatingPlatform platform)
     {
+        if (isDead) return;
         isOnRotatingPlatform = true;
         currentRotatingPlatform = platform;
         centrifugalDrift = 0f;
@@ -785,8 +786,8 @@ public class EnemyAI_AStar : MonoBehaviour
         {
             aiPath.enabled = false;
         }
-        if (health != null)
-            health.StartStunSpiral();
+        if (health != null) health.ShowSpiral();
+
     }
 
     public void DisableRotatingPlatformMode()
@@ -798,11 +799,11 @@ public class EnemyAI_AStar : MonoBehaviour
         recoveryEndTime = Time.time + 1.5f;
 
         currentState = State.Idle;
-        if (health != null)
-            health.StopStunSpiral();
+        if (health != null) health.HideSpiral();
+
     }
 
-    
+
     protected virtual void HandleOnRotatingPlatformState()
     {
         // La rotation est geree par RotatingPlatform.Update()
@@ -812,12 +813,11 @@ public class EnemyAI_AStar : MonoBehaviour
     protected virtual void HandleStunBySprayState()
     {
         StopMovement();
-
         if (health != null && health.GetSprayStunTimeRemaining() <= 0f)
         {
             currentState = State.Idle;
-            lastPathDestination = Vector3.positiveInfinity; // Force recalcul path
-            DetectHumans(); // Force détection immédiate
+            lastPathDestination = Vector3.positiveInfinity;
+            DetectHumans();
         }
     }
 

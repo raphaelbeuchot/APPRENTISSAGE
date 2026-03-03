@@ -33,15 +33,16 @@ public class EnemyDetectionFeedback : MonoBehaviour
 
     public void OnDetected()
     {
+        if (GetComponent<EnemyHealth>()?.IsDead() == true) return; // AJOUT
         StopAllCoroutines();
         StartCoroutine(FlashCoroutine(whiteMaterial, detectionFlashDuration));
-
         if (detectionSound != null)
             audioSource.PlayOneShot(detectionSound, detectionSoundVolume);
     }
 
     public void OnShotBySentinel()
     {
+        if (GetComponent<EnemyHealth>()?.IsDead() == true) return; // AJOUT
         StopAllCoroutines();
         StartCoroutine(FlashCoroutine(redMaterial, shotFlashDuration));
     }
