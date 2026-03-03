@@ -20,6 +20,9 @@ public class EnemyHealth : MonoBehaviour
     private float sentinelHitDisplayDuration = 3f; // Durée d'affichage après hit sentinelle
     private Coroutine sentinelHitDisplayCoroutine;
 
+    [SerializeField] private GameObject stunSpiralPrefab;
+
+
     [Header("Knockback State")]
     public bool isInKnockback = false;
     private float knockbackEndTime = 0f;
@@ -44,6 +47,11 @@ public class EnemyHealth : MonoBehaviour
     private float maxTheoreticalStun = 0f;
 
     private Rigidbody rb;
+
+    private GameObject activeStunSpiral;
+    private Coroutine stunSpiralCoroutine;
+
+
 
     public event Action OnDeath;
     public event Action<float, float> OnHealthChanged;
@@ -266,6 +274,34 @@ public class EnemyHealth : MonoBehaviour
         transform.localScale = originalScale;
     }
 
+
+    public void StartStunSpiral()
+    {
+        if (stunSpiralCoroutine != null)
+        {
+            StopCoroutine(stunSpiralCoroutine);
+            stunSpiralCoroutine = null;
+        }
+        if (stunSpiralPrefab == null) return;
+
+        if (activeStunSpiral != null)
+        {
+            Destroy(activeStunSpiral);
+            activeStunSpiral = null;
+        }
+
+        Vector3 spawnPos = transform.position + Vector3.up * 1.0f;
+        activeStunSpiral = Instantiate(stunSpiralPrefab, spawnPos, Quaternion.identity, transform);
+    }
+
+    public void StopStunSpiral()
+    {
+        if (activeStunSpiral != null)
+        {
+            Destroy(activeStunSpiral);
+            activeStunSpiral = null;
+        }
+    }
     // Version pour dégâts directs (pits, environnement, etc.)
     // VERSION 1 : Pour attaques joueur (spray/broom/bottle)
     public void TakeMeleeDamage(AttackType attackType)
@@ -500,7 +536,7 @@ public class EnemyHealth : MonoBehaviour
 
         isDead = true;
         Debug.Log(string.Format("{0} is dead!", gameObject.name));
-
+        StopStunSpiral();
         OnDeath?.Invoke();
 
         // AJOUTER ICI : Désinscrire le timer UI
@@ -705,9 +741,26 @@ public class EnemyHealth : MonoBehaviour
     public void ApplySprayStun(float duration)
     {
         sprayStunTimer = duration;
+        if (stunSpiralPrefab != null)
+        {
+            Vector3 spawnPos = transform.position + Vector3.up * 1f;
+            if (activeStunSpiral != null)
+            {
+                Destroy(activeStunSpiral);
+                activeStunSpiral = null;
+            }
+            activeStunSpiral = Instantiate(stunSpiralPrefab, spawnPos, Quaternion.identity, transform);
+            if (stunSpiralCoroutine != null)
+                StopCoroutine(stunSpiralCoroutine);
+            stunSpiralCoroutine = StartCoroutine(DestroyStunSpiralAfter(duration));
+        }
         Debug.Log($"{gameObject.name} spray stun applied - {duration}s");
     }
-
+    IEnumerator DestroyStunSpiralAfter(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        StopStunSpiral();
+    }
     public bool IsRecovering() => isRecovering;
     public float GetCurrentHealth() => currentHealth;
     public float GetMaxHealth() => stats.maxHealth;

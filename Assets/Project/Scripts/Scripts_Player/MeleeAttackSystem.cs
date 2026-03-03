@@ -6,6 +6,8 @@ public class MeleeAttackSystem : MonoBehaviour
     [Header("Player Stats")]
     public PlayerStats stats;
 
+    [SerializeField] private GameObject sprayImpactPrefab;
+
     [Header("References")]
     private Rigidbody rb;
     private PlayerHealth health;
@@ -197,6 +199,11 @@ public class MeleeAttackSystem : MonoBehaviour
 
     public void OnSprayHit()
     {
+        if (sprayImpactPrefab != null)
+        {
+            Vector3 spawnPos = transform.position + transform.forward * 0.7f + Vector3.up * 1f;
+            Instantiate(sprayImpactPrefab, spawnPos, Quaternion.identity);
+        }
         Debug.Log("SPRAY ATTACK!");
 
         // CONSOMMER LA MUNITION DIRECTEMENT (peu importe si on touche ou pas)
@@ -335,7 +342,7 @@ public class MeleeAttackSystem : MonoBehaviour
                     EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
                     if (enemyHealth != null && !enemyHealth.IsDead())
                     {
-                        Vector3 vfxPos = hit.bounds.center;
+                        Vector3 vfxPos = transform.position + transform.forward * 0.7f + Vector3.up * 1f;
                         Instantiate(stats.sprayVFX, vfxPos, Quaternion.identity);
                         break;
                     }

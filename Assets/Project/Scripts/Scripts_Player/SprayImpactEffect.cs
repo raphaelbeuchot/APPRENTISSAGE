@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BroomImpactEffect : MonoBehaviour
+public class SprayImpactEffect : MonoBehaviour
 {
     private Animator animator;
     private Camera mainCamera;
@@ -14,10 +14,8 @@ public class BroomImpactEffect : MonoBehaviour
         sr.material = new Material(sr.material);
         sr.material.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.Always);
 
-        // Random rotation Z (0-180)
         transform.rotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 180f));
 
-        // Random scale (ajuste les valeurs min/max selon ton goût)
         float randomScale = Random.Range(0.1f, 0.2f);
         transform.localScale = Vector3.one * randomScale;
 

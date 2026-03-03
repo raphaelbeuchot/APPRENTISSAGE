@@ -785,7 +785,8 @@ public class EnemyAI_AStar : MonoBehaviour
         {
             aiPath.enabled = false;
         }
-
+        if (health != null)
+            health.StartStunSpiral();
     }
 
     public void DisableRotatingPlatformMode()
@@ -797,7 +798,8 @@ public class EnemyAI_AStar : MonoBehaviour
         recoveryEndTime = Time.time + 1.5f;
 
         currentState = State.Idle;
-
+        if (health != null)
+            health.StopStunSpiral();
     }
 
     
