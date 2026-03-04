@@ -197,7 +197,7 @@ public class EnemyHealth : MonoBehaviour
         if (isDead) return; // AJOUT
         if (stunSpiralPrefab == null) return;
         if (activeSpiral != null) return;
-        activeSpiral = Instantiate(stunSpiralPrefab, transform.position + Vector3.up * 1.5f, Quaternion.identity, transform);
+        activeSpiral = Instantiate(stunSpiralPrefab, transform.position + Vector3.up * 1.8f, Quaternion.identity, transform);
     }
 
     public void HideSpiral()

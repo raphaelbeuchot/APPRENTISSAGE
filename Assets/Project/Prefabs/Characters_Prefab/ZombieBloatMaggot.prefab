@@ -475,9 +475,11 @@ MonoBehaviour:
   targetHuman: {fileID: 2360765802615539265, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
   isInPitMode: 0
   isOnRotatingPlatform: 0
+  lastPathDestination: {x: Infinity, y: Infinity, z: Infinity}
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!114 &5781334577023210688
@@ -493,6 +495,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   stats: {fileID: 11400000, guid: 2c78e39192de1e840bd8c014db42eb28, type: 2}
+  stunSpiralPrefab: {fileID: 1267014287564623383, guid: 3b92e98228291b7499f0cf96a7602515, type: 3}
   crowdLaughterSound: {fileID: 0}
   recentlyHitBySentinel: 0
   isInKnockback: 0
