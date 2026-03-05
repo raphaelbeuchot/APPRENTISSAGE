@@ -11,6 +11,9 @@ public class Collectible : MonoBehaviour
     [Header("Animation")]
     public float rotationSpeed = 90f;
 
+    [Header("References")]
+    public ParticleSystem idleParticles;
+
 
     private bool collected = false;
 
@@ -46,6 +49,11 @@ public class Collectible : MonoBehaviour
         CollectibleManager.GetOrCreate().CollectThisRun(collectibleID);
 
         CollectibleManager.GetOrCreate().PlayCollectSound(collectSound);
+
+        if (idleParticles != null)
+        {
+            idleParticles.Stop();
+        }
 
         if (collectParticlesPrefab != null)
         {
