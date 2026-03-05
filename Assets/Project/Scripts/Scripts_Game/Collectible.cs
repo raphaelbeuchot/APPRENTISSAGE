@@ -8,9 +8,9 @@ public class Collectible : MonoBehaviour
     [Header("Feedback")]
     public AudioClip collectSound;
     public GameObject collectParticlesPrefab;
+    [Header("Animation")]
+    public float rotationSpeed = 90f;
 
-    [Header("Audio")]
-    public AudioSource audioSource2D; // AudioSource non spatialise (2D)
 
     private bool collected = false;
 
@@ -28,6 +28,10 @@ public class Collectible : MonoBehaviour
             return;
         }
     }
+    void Update()
+    {
+        transform.Rotate(0f, rotationSpeed * Time.deltaTime, 0f);
+    }
 
     void OnTriggerEnter(Collider other)
     {
@@ -39,19 +43,14 @@ public class Collectible : MonoBehaviour
     void Collect()
     {
         collected = true;
-
         CollectibleManager.GetOrCreate().CollectThisRun(collectibleID);
 
-        if (collectSound != null && audioSource2D != null)
-        {
-            audioSource2D.PlayOneShot(collectSound);
-        }
+        CollectibleManager.GetOrCreate().PlayCollectSound(collectSound);
 
         if (collectParticlesPrefab != null)
         {
             Instantiate(collectParticlesPrefab, transform.position, Quaternion.identity);
         }
-
         Destroy(gameObject);
     }
 }

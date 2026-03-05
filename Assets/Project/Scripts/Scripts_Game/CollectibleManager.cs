@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
+
+
 public class CollectibleManager : MonoBehaviour
 {
     public static CollectibleManager Instance { get; private set; }
@@ -13,6 +15,11 @@ public class CollectibleManager : MonoBehaviour
     private HashSet<string> collectedThisRun = new HashSet<string>();
 
     private const string PREFS_KEY = "PermanentCollectibles";
+    private AudioSource audioSource;
+
+
+    [Header("Dev")]
+    public bool devMode = true;
 
     void Awake()
     {
@@ -26,6 +33,8 @@ public class CollectibleManager : MonoBehaviour
 
         LoadPermanent();
         SceneManager.sceneLoaded += OnSceneLoaded;
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 0f;
     }
 
     // Cree l'instance automatiquement si elle n'existe pas encore
@@ -37,6 +46,12 @@ public class CollectibleManager : MonoBehaviour
             go.AddComponent<CollectibleManager>();
         }
         return Instance;
+    }
+    public void PlayCollectSound(AudioClip clip)
+    {
+        Debug.Log("[Collectible] PlayCollectSound appelé, clip : " + (clip != null ? clip.name : "NULL") + ", audioSource : " + (audioSource != null ? "OK" : "NULL"));
+        if (clip != null && audioSource != null)
+            audioSource.PlayOneShot(clip);
     }
 
     void OnDestroy()
@@ -71,11 +86,13 @@ public class CollectibleManager : MonoBehaviour
 
     public bool IsPermanentlyCollected(string id)
     {
+        if (devMode) return false;
         return permanentlyCollected.Contains(id);
     }
 
     public bool IsCollectedThisRun(string id)
     {
+        if (devMode) return false;
         return collectedThisRun.Contains(id);
     }
 
