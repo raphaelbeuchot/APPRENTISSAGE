@@ -103,6 +103,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private IMovingPlatform currentPlatform;
     private Vector3 lastPlatformPosition;
 
+    [HideInInspector] public bool isInContactWithEnemy = false;
+    private int enemyContactCount = 0;
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -884,6 +886,29 @@ public class PlayerPhysicsMovement : MonoBehaviour
     public IMovingPlatform GetCurrentPlatform()
     {
         return currentPlatform;
+    }
+    void OnCollisionEnter(Collision collision)
+    {
+        if (!PlayerInputManager.Instance.BroomLowActive) return;
+        EnemyHealth eh = collision.gameObject.GetComponent<EnemyHealth>();
+        if (eh == null) return;
+        enemyContactCount++;
+        isInContactWithEnemy = true;
+        Rigidbody hitRb = collision.rigidbody;
+        if (hitRb != null)
+            hitRb.linearVelocity = Vector3.zero;
+    }
+
+    void OnCollisionExit(Collision collision)
+    {
+        EnemyHealth eh = collision.gameObject.GetComponent<EnemyHealth>();
+        if (eh == null) return;
+        enemyContactCount--;
+        if (enemyContactCount <= 0)
+        {
+            enemyContactCount = 0;
+            isInContactWithEnemy = false;
+        }
     }
 
 }

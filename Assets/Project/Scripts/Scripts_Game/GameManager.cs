@@ -537,6 +537,11 @@ public class GameManager : MonoBehaviour
                     trackData.lastCheckPosition = col.transform.position;
                     trackData.lastCheckTime = Time.time;
                 }
+                // Broom basse : ignorer mouvement detecte par poussee si zero input joueuer
+                if (PlayerInputManager.Instance.BroomLowActive
+    && PlayerInputManager.Instance.MoveInput.magnitude < 0.1f
+    && player.isInContactWithEnemy)
+                    isMoving = false;
             }
             // CAS ZOMBIES : Logique existante + world space en complement
             else if (rb != null)
