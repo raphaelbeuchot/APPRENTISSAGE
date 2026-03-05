@@ -188,14 +188,21 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (PlayerInputManager.Instance.CrouchPressed)
         {
             if (isCrouching)
+            {
+                PlayerInputManager.Instance.ForceBroomLowOff();
                 ExitCrouch();
+            }
             else
+            {
+                PlayerInputManager.Instance.ForceBroomLowOff();
                 EnterCrouch();
+            }
         }
 
         // Sortie crouch si dash
         if (PlayerInputManager.Instance.SprintPressed && isCrouching)
         {
+            PlayerInputManager.Instance.ForceBroomLowOff();
             ExitCrouch();
         }
 

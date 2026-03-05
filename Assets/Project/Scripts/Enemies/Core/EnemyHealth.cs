@@ -709,6 +709,7 @@ public class EnemyHealth : MonoBehaviour
                     hasExplosionEffect = true;
                 }
             }
+
         }
 
         // Event pour autres comportements a la mort
@@ -724,6 +725,9 @@ public class EnemyHealth : MonoBehaviour
                 }
             }
         }
+        DeadBodyPhysics deadBody = GetComponent<DeadBodyPhysics>();
+        if (deadBody != null)
+            deadBody.Activate();
     }
 
     void UpdateSpeed()

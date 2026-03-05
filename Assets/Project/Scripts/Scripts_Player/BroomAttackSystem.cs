@@ -63,7 +63,10 @@ public class BroomAttackSystem : MonoBehaviour
         {
             return false;
         }
-
+        if (PlayerInputManager.Instance.BroomLowActive)
+        {
+            return false;
+        }
         // CHECK STAMINA
         if (movement != null && movement.GetCurrentStamina() < stats.broomStaminaCost)
         {

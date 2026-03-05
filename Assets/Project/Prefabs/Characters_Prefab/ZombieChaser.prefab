@@ -1187,6 +1187,7 @@ GameObject:
   - component: {fileID: 196313481047820832}
   - component: {fileID: -1765412710480583640}
   - component: {fileID: 4582366830139996830}
+  - component: {fileID: -2056432718933974352}
   m_Layer: 6
   m_Name: ZombieChaser
   m_TagString: Untagged
@@ -1488,6 +1489,22 @@ MonoBehaviour:
   shotFlashDuration: 0.4
   detectionSound: {fileID: 8300000, guid: 27981f61a097d9d47ad776a5b7898095, type: 3}
   detectionSoundVolume: 0.3
+--- !u!114 &-2056432718933974352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5248851035368284380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf7fdf9d96cfc7e44acad20a5eb09d8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeadBodyPhysics
+  deadMass: 50
+  deadDrag: 5
+  broomLowMass: 5
+  broomLowDrag: 0.5
 --- !u!1 &5275224879802208621
 GameObject:
   m_ObjectHideFlags: 0

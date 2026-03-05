@@ -27,8 +27,13 @@ public class PlayerInputManager : MonoBehaviour
     public bool ToggleCameraViewPressed { get; private set; }
     public bool CancelPressed { get; private set; }
     public bool PausePressed { get; private set; }
+    public bool BroomLowActive { get; private set; }
 
+    [Header("Broom Hold Threshold")]
+    [SerializeField] private float broomHoldThreshold = 0.7f;
 
+    private float broomPressStartTime;
+    private bool broomIsHeld;
 
     private void Awake()
     {
@@ -46,7 +51,15 @@ public class PlayerInputManager : MonoBehaviour
         // Initialiser l'Input Action Asset
         inputActions = new PlayerInputActions();
     }
+    private void Update()
+    {
+        if (broomIsHeld && !BroomLowActive && Time.time - broomPressStartTime >= broomHoldThreshold)
+        {
+            BroomLowActive = true;
+            Debug.Log("BROOM LOW ACTIF");
 
+        }
+    }
     private void OnEnable()
     {
         // Activer l'action map Player
@@ -65,8 +78,26 @@ public class PlayerInputManager : MonoBehaviour
         inputActions.Player.SprayAttack.performed += OnSprayAttack;
         inputActions.Player.SprayAttack.canceled += OnSprayAttack;
 
-        inputActions.Player.BroomAttack.performed += ctx => BroomAttackPressed = true;
-        inputActions.Player.BroomAttack.canceled += ctx => BroomAttackPressed = false;
+        inputActions.Player.BroomAttack.started += ctx =>
+        {
+            broomIsHeld = true;
+            broomPressStartTime = Time.time;
+        };
+
+        inputActions.Player.BroomAttack.canceled += ctx =>
+        {
+            broomIsHeld = false;
+            if (BroomLowActive)
+            {
+                BroomLowActive = false;
+            }
+            else
+            {
+                float duration = Time.time - broomPressStartTime;
+                if (duration < broomHoldThreshold)
+                    BroomAttackPressed = true;
+            }
+        };
 
         inputActions.Player.LockOn.performed += ctx => LockOnHeld = true;
         inputActions.Player.LockOn.canceled += ctx => LockOnHeld = false;
@@ -165,7 +196,11 @@ public class PlayerInputManager : MonoBehaviour
 
         InteractHeld = context.ReadValueAsButton();
     }
-
+    public void ForceBroomLowOff()
+    {
+        BroomLowActive = false;
+        broomIsHeld = false;
+    }
 
     private void LateUpdate()
     {
