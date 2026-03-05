@@ -19,7 +19,9 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
     [Tooltip("Multiplicateur de vitesse dans l'eau shallow")]
     public float waterSlowdownMultiplier = 0.5f;
 
-    
+    private AudioSource audioSource2D;
+
+
     // References
     private EnemyHealth enemyHealth;
     private EnemyAI_AStar enemyAI; // MODIFIE : _AStar
@@ -42,6 +44,9 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         {
             characterCenterHeight = capsuleCollider.height / 2f;
         }
+        audioSource2D = gameObject.AddComponent<AudioSource>();
+        audioSource2D.spatialBlend = 0f;
+        audioSource2D.playOnAwake = false;
     }
 
     public void OnEnterPit(PitZone pitZone)
@@ -66,7 +71,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
             isFallingInPit = true;
             if (enemyHealth != null && enemyHealth.stats.fallSound != null)
             {
-                AudioSource.PlayClipAtPoint(enemyHealth.stats.fallSound, Camera.main.transform.position);
+                audioSource2D.PlayOneShot(enemyHealth.stats.fallSound);
             }
             if (enemyHealth != null && enemyHealth.healthBarUI != null)
             {
@@ -83,7 +88,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
             // Son splash non spatialise
             if (enemyHealth != null && enemyHealth.stats.waterSplashSound != null)
             {
-                AudioSource.PlayClipAtPoint(enemyHealth.stats.waterSplashSound, Camera.main.transform.position);
+                audioSource2D.PlayOneShot(enemyHealth.stats.waterSplashSound);
                 Debug.Log(string.Format("[AUDIO] {0} water splash (shallow)", name));
             }
 
@@ -95,7 +100,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
             // Son splash AVANT de desactiver AI
             if (enemyHealth != null && enemyHealth.stats.waterSplashSound != null)
             {
-                AudioSource.PlayClipAtPoint(enemyHealth.stats.waterSplashSound, Camera.main.transform.position);
+                audioSource2D.PlayOneShot(enemyHealth.stats.waterSplashSound);
                 Debug.Log(string.Format("[AUDIO] {0} water splash (deep)", name));
             }
 
@@ -111,7 +116,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         {
             if (enemyHealth != null && enemyHealth.stats.lavaSplashSound != null)
             {
-                AudioSource.PlayClipAtPoint(enemyHealth.stats.lavaSplashSound, Camera.main.transform.position);
+                audioSource2D.PlayOneShot(enemyHealth.stats.lavaSplashSound);
             }
             // Desactiver AI
             if (enemyAI != null)

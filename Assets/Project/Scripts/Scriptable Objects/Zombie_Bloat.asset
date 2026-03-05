@@ -68,10 +68,9 @@ MonoBehaviour:
   rechargeDelayAfterHit: 1
   bourradeDuration: 2
   bourradeCooldown: 1
-  cumulativeStunPerSpray: 0.3
-  stunSprayDuration: 0.3
-  sprayWindowDuration: 0.7
-  backstabStunDuration: 0.8
+  sprayStunDuration: 2.5
+  knockbackStunDuration: 0.5
+  rotationToImpactDuration: 1.5
   startingArmCount: 2
   startingLegCount: 2
   swellDuration: 1.5
@@ -82,7 +81,9 @@ MonoBehaviour:
   hasWeapon: 0
   weaponPrefab: {fileID: 0}
   sentinelDamageTaken: 25
-  waterSplashSound: {fileID: 0}
+  waterSplashSound: {fileID: 8300000, guid: 38b5f6da335ccd44fa7acd2dd8005b43, type: 3}
+  lavaSplashSound: {fileID: 8300000, guid: 5647dca86543bf84e8dd6628935dbfed, type: 3}
+  fallSound: {fileID: 0}
   sprayDamageTaken: 0
   broomDamageTaken: 0
   bottleDamageTaken: 0

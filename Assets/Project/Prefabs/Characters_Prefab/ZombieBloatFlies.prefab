@@ -370,6 +370,7 @@ GameObject:
   - component: {fileID: 6330834604665272936}
   - component: {fileID: 5292348613030770792}
   - component: {fileID: 670925382924841455}
+  - component: {fileID: 6205866075143822969}
   m_Layer: 6
   m_Name: ZombieBloatFlies
   m_TagString: Untagged
@@ -475,9 +476,11 @@ MonoBehaviour:
   targetHuman: {fileID: 2360765802615539265, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
   isInPitMode: 0
   isOnRotatingPlatform: 0
+  lastPathDestination: {x: Infinity, y: Infinity, z: Infinity}
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
 --- !u!114 &5781334577023210688
@@ -493,6 +496,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   stats: {fileID: 11400000, guid: 2c78e39192de1e840bd8c014db42eb28, type: 2}
+  stunSpiralPrefab: {fileID: 0}
   crowdLaughterSound: {fileID: 0}
   recentlyHitBySentinel: 0
   isInKnockback: 0
@@ -650,6 +654,24 @@ MonoBehaviour:
   swarmStats: {fileID: 11400000, guid: 2e88c5c30b711fc4cb7445611d12258f, type: 2}
   swarmPrefab: {fileID: 5553161441910049392, guid: 1a3fd3ca4dd2d84498ccec886dabcd29, type: 3}
   spawnOffset: {x: 0, y: 0.5, z: 0}
+--- !u!114 &6205866075143822969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832123752479731275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe557b50ac916334f904460385e4d631, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyDetectionFeedback
+  whiteMaterial: {fileID: 2100000, guid: f0de86f2557323747b1bea6982df5e7c, type: 2}
+  redMaterial: {fileID: 2100000, guid: 91de5bbeda2c9e34b8bd3af87554b8ae, type: 2}
+  detectionFlashDuration: 0.3
+  shotFlashDuration: 0.4
+  detectionSound: {fileID: 8300000, guid: 27981f61a097d9d47ad776a5b7898095, type: 3}
+  detectionSoundVolume: 0.3
 --- !u!1 &1899051634784710806
 GameObject:
   m_ObjectHideFlags: 0

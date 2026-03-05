@@ -24,6 +24,8 @@ public class PitFillDamageController : MonoBehaviour
     [Header("Debug")]
     public bool showDebugLogs = false;
 
+    private AudioSource audioSource2D;
+
     private Dictionary<GameObject, FillEntityData> entitiesInFill = new Dictionary<GameObject, FillEntityData>();
     private Dictionary<GameObject, Coroutine> activeDeathCoroutines = new Dictionary<GameObject, Coroutine>();
 
@@ -43,6 +45,9 @@ public class PitFillDamageController : MonoBehaviour
         {
             Debug.LogError("PitFillDamageController: Missing PitFill or PitZone reference!");
         }
+        audioSource2D = gameObject.AddComponent<AudioSource>();
+        audioSource2D.spatialBlend = 0f;
+        audioSource2D.playOnAwake = false;
     }
 
     /*void Update()
@@ -306,7 +311,7 @@ public class PitFillDamageController : MonoBehaviour
                 {
                     EnemyHealth ehLava = go.GetComponent<EnemyHealth>();
                     if (ehLava != null && ehLava.stats.lavaSplashSound != null)
-                        AudioSource.PlayClipAtPoint(ehLava.stats.lavaSplashSound, Camera.main.transform.position);
+                        audioSource2D.PlayOneShot(ehLava.stats.lavaSplashSound);
                 }
                 StartProgressiveDeathCoroutine(go, data, fillType);
                 break;
