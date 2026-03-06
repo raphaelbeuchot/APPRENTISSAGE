@@ -516,6 +516,7 @@ GameObject:
   - component: {fileID: 3495955434770472436}
   - component: {fileID: 2648491535902742078}
   - component: {fileID: 1517332640135311895}
+  - component: {fileID: 6716210810580982141}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -674,6 +675,7 @@ MonoBehaviour:
   playerRenderer: {fileID: 0}
   normalMaterial: {fileID: 0}
   freezeMaterial: {fileID: 2100000, guid: 26b31e705b708e543922911c423d9d8f, type: 2}
+  isInContactWithEnemy: 0
 --- !u!114 &6799459239508200490
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -793,6 +795,19 @@ MonoBehaviour:
   whiteMaterial: {fileID: 2100000, guid: f0de86f2557323747b1bea6982df5e7c, type: 2}
   redMaterial: {fileID: 2100000, guid: 91de5bbeda2c9e34b8bd3af87554b8ae, type: 2}
   isCurrentlyDetected: 1
+--- !u!114 &6716210810580982141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5794444067654349612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d5dbd36bdd6bc54ebe3409a231fc336, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BroomLowWall
+  wallRadius: 0.4
 --- !u!1001 &640906551379516490
 PrefabInstance:
   m_ObjectHideFlags: 0
