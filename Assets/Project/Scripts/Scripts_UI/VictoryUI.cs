@@ -52,13 +52,11 @@ public class VictoryUI : MonoBehaviour
     {
         isTransitioning = true;
         Time.timeScale = 1f;
-
         LevelManager levelManager = FindObjectOfType<LevelManager>();
         if (levelManager != null)
-            levelManager.LoadNextLevel();
+            levelManager.LoadLevelSelect();
         else
             Debug.LogWarning("LevelManager not found!");
-
         yield break;
     }
 

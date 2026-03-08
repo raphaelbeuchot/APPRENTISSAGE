@@ -129,6 +129,10 @@ public class LevelManager : MonoBehaviour
         if (CollectibleManager.Instance != null)
             CollectibleManager.Instance.ConfirmRunCollectibles();
 
+        // NOUVEAU : notifie la progression
+        if (LevelProgressionManager.Instance != null)
+            LevelProgressionManager.Instance.CompleteLevel(SceneManager.GetActiveScene().buildIndex);
+
         CountdownManager countdown = FindObjectOfType<CountdownManager>();
         if (countdown != null) countdown.StopAmbient();
 
@@ -137,7 +141,7 @@ public class LevelManager : MonoBehaviour
 
         if (skipVictoryUI)
         {
-            LoadNextLevel();
+            LoadLevelSelect();
         }
         else
         {
@@ -145,8 +149,8 @@ public class LevelManager : MonoBehaviour
                 victoryUI.Show(playerHealth);
             else
             {
-                Debug.LogWarning("VictoryUI non trouve! Chargement automatique.");
-                Invoke(nameof(LoadNextLevel), delayBeforeNextLevel);
+                Debug.LogWarning("VictoryUI non trouve! Chargement LevelSelect automatique.");
+                Invoke(nameof(LoadLevelSelect), delayBeforeNextLevel);
             }
         }
     }
@@ -178,23 +182,11 @@ public class LevelManager : MonoBehaviour
     // NAVIGATION DE NIVEAU
     // ============================================
 
-    public void LoadNextLevel()
+    public void LoadLevelSelect()
     {
-        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-        int nextSceneIndex = currentSceneIndex + 1;
-
         Time.timeScale = 1f;
-
-        if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
-        {
-            Debug.Log("Chargement du niveau " + nextSceneIndex + "...");
-            FindObjectOfType<SceneFadeOut>().FadeToScene(nextSceneIndex);
-        }
-        else
-        {
-            Debug.Log("TOUS LES NIVEAUX COMPLETES! Recommencer...");
-            FindObjectOfType<SceneFadeOut>().FadeToScene(0);
-        }
+        LoadingScreenManager.TargetSceneIndex = 18;
+        SceneManager.LoadScene(16);
     }
 
     public void RestartLevel()
@@ -237,7 +229,7 @@ public class LevelManager : MonoBehaviour
         if (player != null)
             player.enabled = false;
 
-        Invoke(nameof(LoadNextLevel), 0.5f);
+        Invoke(nameof(LoadLevelSelect), 0.5f);
     }
 
     // ============================================

@@ -1,140 +1,132 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using TMPro;
-
+using System.Collections.Generic;
 
 public class MainMenuUI : MonoBehaviour
 {
-    [Header("Buttons")]
-    public GameObject btnStartWithTuto;
-    public GameObject btnSkipTuto;
-    public GameObject btnCommandes;
+    [Header("Menu Options")]
+    [SerializeField] private TextMeshProUGUI newGameText;
+    [SerializeField] private TextMeshProUGUI continueText;
+    [SerializeField] private TextMeshProUGUI optionsText;
 
-    [Header("Commandes Panel")]
-    public GameObject commandesPanel;
-    public Image commandesImage;
-    public Sprite commandesSprite;
+    [Header("Visual Settings")]
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color selectedColor = Color.yellow;
+    [SerializeField] private Color lockedColor = new Color(0.3f, 0.3f, 0.3f, 1f);
+    [SerializeField] private float selectedScale = 1.2f;
+    [SerializeField] private float transitionSpeed = 10f;
 
-    [Header("Navigation")]
-    public Color selectedColor = Color.white;
-    public Color unselectedColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-    public Vector3 selectedScale = new Vector3(1.1f, 1.1f, 1.1f);
-    public Vector3 unselectedScale = Vector3.one;
-    public float navigationCooldown = 0.2f;
-
-    private int selectedIndex = 0;
-    private int optionCount = 3;
-    private float lastNavTime = 0f;
-    private bool commandesPanelOpen = false;
+    private List<TextMeshProUGUI> menuTexts = new List<TextMeshProUGUI>();
+    private int currentSelection = 0;
+    private Vector3 normalScale = Vector3.one;
+    private float navigationCooldown = 0f;
+    private float cooldownDuration = 0.2f;
+    private bool hasSave = false;
 
     void Start()
     {
-        if (commandesPanel != null)
-        {
-            commandesPanel.SetActive(false);
-
-            if (commandesImage != null && commandesSprite != null)
-                commandesImage.sprite = commandesSprite;
-        }
-
         Time.timeScale = 1f;
+
+        hasSave = LevelProgressionManager.Instance != null && LevelProgressionManager.Instance.HasSave();
+
+        menuTexts.Add(newGameText);
+        menuTexts.Add(continueText);
+        menuTexts.Add(optionsText);
+
         UpdateVisuals();
     }
 
     void Update()
     {
-        if (commandesPanelOpen)
-        {
-            if (AnyFaceButtonPressed())
-                CloseCommandesPanel();
-            return;
-        }
-
         HandleNavigation();
-        HandleConfirm();
+        UpdateVisuals();
     }
 
     void HandleNavigation()
     {
-        if (Time.unscaledTime - lastNavTime < navigationCooldown) return;
+        if (navigationCooldown > 0f)
+        {
+            navigationCooldown -= Time.unscaledDeltaTime;
+            return;
+        }
 
         Vector2 input = PlayerInputManager.Instance.MoveInput;
 
-        if (input.y < -0.5f)
+        if (input.y > 0.5f)
         {
-            selectedIndex = (selectedIndex + 1) % optionCount;
-            lastNavTime = Time.unscaledTime;
-            UpdateVisuals();
+            currentSelection = (currentSelection - 1 + menuTexts.Count) % menuTexts.Count;
+            navigationCooldown = cooldownDuration;
         }
-        else if (input.y > 0.5f)
+        else if (input.y < -0.5f)
         {
-            selectedIndex = (selectedIndex - 1 + optionCount) % optionCount;
-            lastNavTime = Time.unscaledTime;
-            UpdateVisuals();
+            currentSelection = (currentSelection + 1) % menuTexts.Count;
+            navigationCooldown = cooldownDuration;
+        }
+
+        if (AnyFaceButtonPressed())
+            SelectCurrentOption();
+    }
+
+    void SelectCurrentOption()
+    {
+        switch (currentSelection)
+        {
+            case 0:
+                NewGame();
+                break;
+            case 1:
+                if (hasSave) Continue();
+                break;
+            case 2:
+                OpenOptions();
+                break;
         }
     }
 
-    void HandleConfirm()
+    void NewGame()
     {
-        if (!AnyFaceButtonPressed()) return;
+        if (LevelProgressionManager.Instance != null)
+            LevelProgressionManager.Instance.ResetProgression();
 
-        switch (selectedIndex)
-        {
-            case 0: StartWithTuto(); break;
-            case 1: SkipTuto(); break;
-            case 2: OpenCommandesPanel(); break;
-        }
-    }
-
-    void StartWithTuto()
-    {
-        LoadingScreenManager.TargetSceneIndex = 1;
+        LoadingScreenManager.TargetSceneIndex = 18;
         SceneManager.LoadScene(16);
     }
 
-    void SkipTuto()
+    void Continue()
     {
-        LoadingScreenManager.TargetSceneIndex = 3;
+        LoadingScreenManager.TargetSceneIndex = 18;
         SceneManager.LoadScene(16);
     }
 
-    void OpenCommandesPanel()
+    void OpenOptions()
     {
-        commandesPanelOpen = true;
-        if (commandesPanel != null)
-            commandesPanel.SetActive(true);
-    }
-
-    void CloseCommandesPanel()
-    {
-        commandesPanelOpen = false;
-        if (commandesPanel != null)
-            commandesPanel.SetActive(false);
+        Debug.Log("Options - a implementer");
     }
 
     void UpdateVisuals()
     {
-        SetButtonVisual(btnStartWithTuto, selectedIndex == 0);
-        SetButtonVisual(btnSkipTuto, selectedIndex == 1);
-        SetButtonVisual(btnCommandes, selectedIndex == 2);
+        for (int i = 0; i < menuTexts.Count; i++)
+        {
+            if (menuTexts[i] == null) continue;
+
+            Color targetColor;
+            if (i == 1 && !hasSave)
+                targetColor = lockedColor;
+            else
+                targetColor = (i == currentSelection) ? selectedColor : normalColor;
+
+            menuTexts[i].color = Color.Lerp(menuTexts[i].color, targetColor, Time.unscaledDeltaTime * transitionSpeed);
+
+            Vector3 targetScale = (i == currentSelection && !(i == 1 && !hasSave))
+                ? normalScale * selectedScale
+                : normalScale;
+            menuTexts[i].transform.localScale = Vector3.Lerp(menuTexts[i].transform.localScale, targetScale, Time.unscaledDeltaTime * transitionSpeed);
+        }
     }
 
-    void SetButtonVisual(GameObject btn, bool isSelected)
-    {
-        if (btn == null) return;
-
-        btn.transform.localScale = isSelected ? selectedScale : unselectedScale;
-
-        TMP_Text txt = btn.GetComponentInChildren<TMP_Text>();
-        if (txt != null)
-            txt.color = isSelected ? selectedColor : unselectedColor;
-    }
     bool AnyFaceButtonPressed()
     {
-        return PlayerInputManager.Instance.InteractPressed
-            || PlayerInputManager.Instance.ReloadPressed
-            || PlayerInputManager.Instance.SprayAttackPressed
-            || PlayerInputManager.Instance.BroomAttackPressed;
+        return Input.GetButtonDown("Submit");
     }
 }

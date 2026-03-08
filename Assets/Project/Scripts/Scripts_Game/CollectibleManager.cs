@@ -127,4 +127,12 @@ public class CollectibleManager : MonoBehaviour
         }
         Debug.Log("[CollectibleManager] Charge depuis PlayerPrefs : " + saved);
     }
+
+    public void ResetAllCollectibles()
+    {
+        permanentlyCollected.Clear();
+        PlayerPrefs.DeleteKey(PREFS_KEY);
+        PlayerPrefs.Save();
+        Debug.Log("[CollectibleManager] Tous les collectibles reinitialises.");
+    }
 }
