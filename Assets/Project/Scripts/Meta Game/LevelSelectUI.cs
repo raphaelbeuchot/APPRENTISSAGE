@@ -160,15 +160,13 @@ public class LevelSelectUI : MonoBehaviour
             if (!visible) continue;
 
             TMP_Text nameText = entries[i].transform.Find("LevelName")?.GetComponent<TMP_Text>();
-            TMP_Text starText = entries[i].transform.Find("Star")?.GetComponent<TMP_Text>();
 
             bool isRetour = i == levels.Count;
             bool isSelected = i == currentSelection;
+
             if (isRetour)
             {
-                Debug.Log("[LevelSelect] Retour : i=" + i + " visible=" + visible + " displayIndex=" + displayIndex + " scrollOffset=" + scrollOffset + " currentSelection=" + currentSelection);
                 SetEntryVisual(nameText, "RETOUR", isSelected, true, false);
-                if (starText != null) starText.gameObject.SetActive(false);
                 continue;
             }
 
@@ -176,18 +174,12 @@ public class LevelSelectUI : MonoBehaviour
             bool isUnlocked = LevelProgressionManager.Instance.IsUnlocked(data.sceneIndex);
             bool isCompleted = LevelProgressionManager.Instance.IsCompleted(data.sceneIndex);
 
-            // Nom avec ??? si verrouille
-            string displayName = isUnlocked ? data.levelName : "???";
-            SetEntryVisual(nameText, displayName, isSelected, isUnlocked, isCompleted);
+            int collected = LevelProgressionManager.Instance.GetCollectedCountForLevel(data.sceneIndex);
+            int total = LevelProgressionManager.Instance.GetTotalCollectiblesForLevel(data.sceneIndex);
+            bool hasAllCollectibles = total > 0 && collected >= total;
 
-            // Etoile si collectible ramasse
-            if (starText != null)
-            {
-                int collected = LevelProgressionManager.Instance.GetCollectedCountForLevel(data.sceneIndex);
-                int total = LevelProgressionManager.Instance.GetTotalCollectiblesForLevel(data.sceneIndex);
-                bool showStar = isUnlocked && total > 0 && collected >= total;
-                starText.gameObject.SetActive(showStar);
-            }
+            string displayName = isUnlocked ? data.levelName + (hasAllCollectibles ? " *" : "") : "???";
+            SetEntryVisual(nameText, displayName, isSelected, isUnlocked, isCompleted);
         }
     }
 
