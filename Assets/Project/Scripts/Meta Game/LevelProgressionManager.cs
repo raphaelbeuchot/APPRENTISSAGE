@@ -84,7 +84,6 @@ public class LevelProgressionManager : MonoBehaviour
         unlockedLevels.Clear();
         if (levels.Count > 0) unlockedLevels.Add(0);
         if (levels.Count > 1) unlockedLevels.Add(1);
-        if (levels.Count > 2) unlockedLevels.Add(2);
         Save();
         Debug.Log("[LevelProgression] Progression reinitalisee.");
         if (CollectibleManager.Instance != null)
@@ -149,7 +148,6 @@ public class LevelProgressionManager : MonoBehaviour
         // Le premier niveau est toujours debloque, ainsi que les 2 tutos
         if (levels.Count > 0) unlockedLevels.Add(0);
         if (levels.Count > 1) unlockedLevels.Add(1);
-        if (levels.Count > 2) unlockedLevels.Add(2);
 
         Debug.Log("[LevelProgression] Charge. Completes : " + completedLevels.Count + " | Debloques : " + unlockedLevels.Count);
     }

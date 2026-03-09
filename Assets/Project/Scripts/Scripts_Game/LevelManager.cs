@@ -123,15 +123,26 @@ public class LevelManager : MonoBehaviour
     {
         if (levelCompleted || gameOver) return;
 
+        if (SceneManager.GetActiveScene().buildIndex == 1)
+        {
+            if (player != null) player.enabled = false;
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(2);
+            return;
+        }
+
         levelCompleted = true;
         Debug.Log("=== NIVEAU COMPLETE! ===");
 
         if (CollectibleManager.Instance != null)
             CollectibleManager.Instance.ConfirmRunCollectibles();
 
-        // NOUVEAU : notifie la progression
+        // NOUVEAU : notifie la progression, exception tuto2
         if (LevelProgressionManager.Instance != null)
-            LevelProgressionManager.Instance.CompleteLevel(SceneManager.GetActiveScene().buildIndex);
+        {
+            int sceneToComplete = SceneManager.GetActiveScene().buildIndex == 2 ? 1 : SceneManager.GetActiveScene().buildIndex;
+            LevelProgressionManager.Instance.CompleteLevel(sceneToComplete);
+        }
 
         CountdownManager countdown = FindObjectOfType<CountdownManager>();
         if (countdown != null) countdown.StopAmbient();

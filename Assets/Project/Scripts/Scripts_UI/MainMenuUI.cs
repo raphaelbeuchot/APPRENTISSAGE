@@ -30,17 +30,31 @@ public class MainMenuUI : MonoBehaviour
 
         hasSave = LevelProgressionManager.Instance != null && LevelProgressionManager.Instance.HasSave();
 
-        menuTexts.Add(newGameText);
-        menuTexts.Add(continueText);
-        menuTexts.Add(optionsText);
+        if (!hasSave)
+        {
+            continueText.gameObject.SetActive(false);
+            optionsText.transform.position = continueText.transform.position;
+            menuTexts.Add(newGameText);
+            menuTexts.Add(optionsText);
+        }
+        else
+        {
+            menuTexts.Add(newGameText);
+            menuTexts.Add(continueText);
+            menuTexts.Add(optionsText);
+        }
+
+       
 
         UpdateVisuals();
     }
 
     void Update()
     {
+        
         HandleNavigation();
         UpdateVisuals();
+       
     }
 
     void HandleNavigation()
@@ -70,17 +84,22 @@ public class MainMenuUI : MonoBehaviour
 
     void SelectCurrentOption()
     {
-        switch (currentSelection)
+        if (!hasSave)
         {
-            case 0:
-                NewGame();
-                break;
-            case 1:
-                if (hasSave) Continue();
-                break;
-            case 2:
-                OpenOptions();
-                break;
+            switch (currentSelection)
+            {
+                case 0: NewGame(); break;
+                case 1: OpenOptions(); break;
+            }
+        }
+        else
+        {
+            switch (currentSelection)
+            {
+                case 0: NewGame(); break;
+                case 1: Continue(); break;
+                case 2: OpenOptions(); break;
+            }
         }
     }
 
@@ -110,15 +129,10 @@ public class MainMenuUI : MonoBehaviour
         {
             if (menuTexts[i] == null) continue;
 
-            Color targetColor;
-            if (i == 1 && !hasSave)
-                targetColor = lockedColor;
-            else
-                targetColor = (i == currentSelection) ? selectedColor : normalColor;
-
+            Color targetColor = (i == currentSelection) ? selectedColor : normalColor;
             menuTexts[i].color = Color.Lerp(menuTexts[i].color, targetColor, Time.unscaledDeltaTime * transitionSpeed);
 
-            Vector3 targetScale = (i == currentSelection && !(i == 1 && !hasSave))
+            Vector3 targetScale = (i == currentSelection)
                 ? normalScale * selectedScale
                 : normalScale;
             menuTexts[i].transform.localScale = Vector3.Lerp(menuTexts[i].transform.localScale, targetScale, Time.unscaledDeltaTime * transitionSpeed);

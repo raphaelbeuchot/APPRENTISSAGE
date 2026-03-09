@@ -18,8 +18,7 @@ public class CollectibleManager : MonoBehaviour
     private AudioSource audioSource;
 
 
-    [Header("Dev")]
-    public bool devMode = true;
+    
 
     void Awake()
     {
@@ -86,13 +85,11 @@ public class CollectibleManager : MonoBehaviour
 
     public bool IsPermanentlyCollected(string id)
     {
-        if (devMode) return false;
         return permanentlyCollected.Contains(id);
     }
 
     public bool IsCollectedThisRun(string id)
     {
-        if (devMode) return false;
         return collectedThisRun.Contains(id);
     }
 

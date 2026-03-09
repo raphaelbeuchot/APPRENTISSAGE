@@ -206,11 +206,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelProgressionManager
   levels:
-  - levelName: Tutorial part 1
+  - levelName: Tutorial
     sceneIndex: 1
-    collectibleIDs: []
-  - levelName: Tutorial part 2
-    sceneIndex: 2
     collectibleIDs: []
   - levelName: Flower Power I
     sceneIndex: 3
@@ -266,6 +263,52 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.35174, y: 0, z: 12.33962}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &894221296
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 894221298}
+  - component: {fileID: 894221297}
+  m_Layer: 0
+  m_Name: DevManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &894221297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 894221296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fee43977cca0b148907d9af41e9b540, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DevManager
+  startFromZero: 0
+  devMode: 0
+--- !u!4 &894221298
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 894221296}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.58864, y: 0, z: 14.11065}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -359,7 +402,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ee8ad85b37b17849960fb94246f07a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleManager
-  devMode: 0
 --- !u!4 &1272398100
 Transform:
   m_ObjectHideFlags: 0
@@ -1247,3 +1289,4 @@ SceneRoots:
   - {fileID: 8449310102172266477}
   - {fileID: 807845534}
   - {fileID: 1272398100}
+  - {fileID: 894221298}
