@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2343798395522347646
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5407367588092900109}
+  - component: {fileID: 1472013402509314578}
+  m_Layer: 0
+  m_Name: LevelProgressionManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5407367588092900109
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2343798395522347646}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.35174, y: 0, z: 12.33962}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1472013402509314578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2343798395522347646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 469fbda5d4e78504ea9ca670e614b4e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelProgressionManager
+  levels:
+  - levelName: Tutorial
+    sceneIndex: 1
+    collectibleIDs: []
+  - levelName: Flower Power I
+    sceneIndex: 3
+    collectibleIDs:
+    - FlowerPower
+  - levelName: Brigh Eyes
+    sceneIndex: 4
+    collectibleIDs: []
+  - levelName: Lava Train I
+    sceneIndex: 5
+    collectibleIDs:
+    - LavaTrain_01
+  - levelName: Lava Train II
+    sceneIndex: 6
+    collectibleIDs: []
+  - levelName: Pit'em All
+    sceneIndex: 7
+    collectibleIDs:
+    - Lvl004
+  - levelName: Western Canyon
+    sceneIndex: 8
+    collectibleIDs:
+    - WesternCanyon_01
+  - levelName: Rush Hour I
+    sceneIndex: 9
+    collectibleIDs: []
+  - levelName: Rush Hour II
+    sceneIndex: 10
+    collectibleIDs: []
+  - levelName: Rush Hour III
+    sceneIndex: 11
+    collectibleIDs: []
+  - levelName: Rush Hour IV
+    sceneIndex: 12
+    collectibleIDs:
+    - TrafficJam_04
+  - levelName: Bulldog I
+    sceneIndex: 13
+    collectibleIDs: []
+  - levelName: Bulldog II
+    sceneIndex: 14
+    collectibleIDs: []
+  - levelName: Pot Pourri I
+    sceneIndex: 15
+    collectibleIDs: []

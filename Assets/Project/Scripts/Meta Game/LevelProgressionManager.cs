@@ -11,12 +11,32 @@ public class LevelData
 
 public class LevelProgressionManager : MonoBehaviour
 {
-    public static LevelProgressionManager Instance { get; private set; }
+    private static LevelProgressionManager _instance;
+
+    public static LevelProgressionManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                GameObject prefab = Resources.Load<GameObject>("LevelProgressionManager");
+                if (prefab != null)
+                {
+                    Instantiate(prefab);
+                    Debug.Log("[LevelProgressionManager] Auto-instancie depuis Resources.");
+                }
+                else
+                {
+                    Debug.LogError("[LevelProgressionManager] Prefab introuvable dans Resources !");
+                }
+            }
+            return _instance;
+        }
+    }
 
     [Header("Configuration niveaux")]
     public List<LevelData> levels = new List<LevelData>();
     public int lastUnlockedLevelIndex { get; private set; } = -1;
-
 
     private HashSet<int> completedLevels = new HashSet<int>();
     private HashSet<int> unlockedLevels = new HashSet<int>();
@@ -26,17 +46,16 @@ public class LevelProgressionManager : MonoBehaviour
 
     void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (_instance != null && _instance != this)
         {
             Destroy(gameObject);
             return;
         }
-        Instance = this;
+        _instance = this;
         DontDestroyOnLoad(gameObject);
         Load();
     }
 
-    // Appele par LevelManager quand le joueur passe la GoalDoor
     public void CompleteLevel(int sceneIndex)
     {
         int idx = GetLevelIndex(sceneIndex);
@@ -48,7 +67,6 @@ public class LevelProgressionManager : MonoBehaviour
 
         completedLevels.Add(idx);
 
-        // Debloque le niveau suivant
         if (idx + 1 < levels.Count)
             unlockedLevels.Add(idx + 1);
         lastUnlockedLevelIndex = idx + 1;
@@ -71,13 +89,11 @@ public class LevelProgressionManager : MonoBehaviour
         return unlockedLevels.Contains(idx);
     }
 
-    // True si au moins une sauvegarde existe
     public bool HasSave()
     {
         return PlayerPrefs.HasKey(PREFS_UNLOCKED);
     }
 
-    // Appele par MainMenu sur New Game
     public void ResetProgression()
     {
         completedLevels.Clear();
@@ -90,7 +106,6 @@ public class LevelProgressionManager : MonoBehaviour
             CollectibleManager.Instance.ResetAllCollectibles();
     }
 
-    // Nombre de collectibles ramasses definitivement pour un niveau
     public int GetCollectedCountForLevel(int sceneIndex)
     {
         int idx = GetLevelIndex(sceneIndex);
@@ -121,8 +136,6 @@ public class LevelProgressionManager : MonoBehaviour
         return levels;
     }
 
-    // --- Helpers prive ---
-
     private int GetLevelIndex(int sceneIndex)
     {
         for (int i = 0; i < levels.Count; i++)
@@ -145,7 +158,6 @@ public class LevelProgressionManager : MonoBehaviour
         completedLevels = DeserializeSet(PlayerPrefs.GetString(PREFS_COMPLETED, ""));
         unlockedLevels = DeserializeSet(PlayerPrefs.GetString(PREFS_UNLOCKED, ""));
 
-        // Le premier niveau est toujours debloque, ainsi que les 2 tutos
         if (levels.Count > 0) unlockedLevels.Add(0);
         if (levels.Count > 1) unlockedLevels.Add(1);
 

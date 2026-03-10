@@ -176,98 +176,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: db2f7414d90062d469fc2d2d27b9cbce, type: 3}
---- !u!1 &807845532
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 807845534}
-  - component: {fileID: 807845533}
-  m_Layer: 0
-  m_Name: LevelProgressionManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &807845533
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 807845532}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 469fbda5d4e78504ea9ca670e614b4e7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LevelProgressionManager
-  levels:
-  - levelName: Tutorial
-    sceneIndex: 1
-    collectibleIDs: []
-  - levelName: Flower Power I
-    sceneIndex: 3
-    collectibleIDs:
-    - FlowerPower
-  - levelName: Brigh Eyes
-    sceneIndex: 4
-    collectibleIDs: []
-  - levelName: Lava Train I
-    sceneIndex: 5
-    collectibleIDs:
-    - LavaTrain_01
-  - levelName: Lava Train II
-    sceneIndex: 6
-    collectibleIDs: []
-  - levelName: Pit'em All
-    sceneIndex: 7
-    collectibleIDs:
-    - Lvl004
-  - levelName: Western Canyon
-    sceneIndex: 8
-    collectibleIDs:
-    - WesternCanyon_01
-  - levelName: Rush Hour I
-    sceneIndex: 9
-    collectibleIDs: []
-  - levelName: Rush Hour II
-    sceneIndex: 10
-    collectibleIDs: []
-  - levelName: Rush Hour III
-    sceneIndex: 11
-    collectibleIDs: []
-  - levelName: Rush Hour IV
-    sceneIndex: 12
-    collectibleIDs:
-    - TrafficJam_04
-  - levelName: Bulldog I
-    sceneIndex: 13
-    collectibleIDs: []
-  - levelName: Bulldog II
-    sceneIndex: 14
-    collectibleIDs: []
-  - levelName: Pot Pourri I
-    sceneIndex: 15
-    collectibleIDs: []
---- !u!4 &807845534
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 807845532}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.35174, y: 0, z: 12.33962}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &894221296
 GameObject:
   m_ObjectHideFlags: 0
@@ -869,6 +777,63 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 1
   m_Version: 2
+--- !u!1001 &709479986720397585
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2343798395522347646, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: m_Name
+      value: LevelProgressionManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 5407367588092900109, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.35174
+      objectReference: {fileID: 0}
+    - target: {fileID: 5407367588092900109, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5407367588092900109, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 12.33962
+      objectReference: {fileID: 0}
+    - target: {fileID: 5407367588092900109, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5407367588092900109, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5407367588092900109, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5407367588092900109, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5407367588092900109, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5407367588092900109, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5407367588092900109, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
 --- !u!1 &1565502821616889264
 GameObject:
   m_ObjectHideFlags: 0
@@ -1287,6 +1252,6 @@ SceneRoots:
   - {fileID: 6467952572570724069}
   - {fileID: 469893269}
   - {fileID: 8449310102172266477}
-  - {fileID: 807845534}
+  - {fileID: 709479986720397585}
   - {fileID: 1272398100}
   - {fileID: 894221298}

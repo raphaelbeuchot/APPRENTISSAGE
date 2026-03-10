@@ -27,7 +27,7 @@ public class Collectible : MonoBehaviour
 
         if (CollectibleManager.GetOrCreate().IsPermanentlyCollected(collectibleID))
         {
-            Destroy(gameObject);
+            Destroy(transform.parent.gameObject);
             return;
         }
     }
@@ -59,6 +59,6 @@ public class Collectible : MonoBehaviour
         {
             Instantiate(collectParticlesPrefab, transform.position, Quaternion.identity);
         }
-        Destroy(gameObject);
+        Destroy(transform.parent.gameObject);
     }
 }

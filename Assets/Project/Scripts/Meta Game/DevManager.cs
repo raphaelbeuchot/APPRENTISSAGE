@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class DevManager : MonoBehaviour
 {
@@ -9,8 +8,6 @@ public class DevManager : MonoBehaviour
 
     void Awake()
     {
-        
-
         if (startFromZero)
         {
             if (LevelProgressionManager.Instance != null)
