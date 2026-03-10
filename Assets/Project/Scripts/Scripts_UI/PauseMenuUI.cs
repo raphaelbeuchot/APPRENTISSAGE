@@ -240,18 +240,7 @@ public class PauseMenuUI : MonoBehaviour
         Time.timeScale = 1f;
         isPaused = false;
 
-        LevelManager levelManager = FindObjectOfType<LevelManager>();
-        if (levelManager != null)
-        {
-            levelManager.QuitGame();
-        }
-        else
-        {
-            Application.Quit();
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#endif
-        }
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 
     public bool IsPaused()
