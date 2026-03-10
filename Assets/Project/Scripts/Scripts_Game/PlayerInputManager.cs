@@ -34,6 +34,8 @@ public class PlayerInputManager : MonoBehaviour
 
     private float broomPressStartTime;
     private bool broomIsHeld;
+    private bool wasInBroomLow = false;
+
 
     private void Awake()
     {
@@ -57,7 +59,13 @@ public class PlayerInputManager : MonoBehaviour
         {
             BroomLowActive = true;
             Debug.Log("BROOM LOW ACTIF");
+        }
 
+        // Sortie immediate si bouton relache
+        if (BroomLowActive && !inputActions.Player.BroomAttack.IsPressed())
+        {
+            BroomLowActive = false;
+            wasInBroomLow = true;
         }
     }
     private void OnEnable()
@@ -87,9 +95,10 @@ public class PlayerInputManager : MonoBehaviour
         inputActions.Player.BroomAttack.canceled += ctx =>
         {
             broomIsHeld = false;
-            if (BroomLowActive)
+            if (BroomLowActive || wasInBroomLow)
             {
                 BroomLowActive = false;
+                wasInBroomLow = false;
             }
             else
             {

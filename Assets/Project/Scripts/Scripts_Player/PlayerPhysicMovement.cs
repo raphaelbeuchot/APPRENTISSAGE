@@ -178,7 +178,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         HandleInput();
         HandleStamina();
-        // Securite anti-freeze
+
         if (!canMove && grabState == GrabState.None && !gameManager.stunBySentinel && !isGroggy && !isSweeping)
             canMove = true;
 
@@ -201,7 +201,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
             }
         }
 
-        // Sortie crouch si dash
         if (PlayerInputManager.Instance.SprintPressed && isCrouching)
         {
             PlayerInputManager.Instance.ForceBroomLowOff();
@@ -210,23 +209,28 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         if (animator != null)
         {
-            // Calculer la vitesse dans le référentiel LOCAL du personnage
             Vector3 localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
-
-            // SpeedX = vitesse latérale (gauche/droite)
-            // SpeedZ = vitesse avant/arrière
             animator.SetFloat("SpeedX", localVelocity.x);
             animator.SetFloat("SpeedZ", localVelocity.z);
             animator.SetBool("IsCrouching", isCrouching);
+
+            bool broomLowIdle = PlayerInputManager.Instance.BroomLowActive && moveInput.magnitude < 0.1f;
+            bool broomLowMoving = PlayerInputManager.Instance.BroomLowActive && moveInput.magnitude >= 0.1f;
+
+            animator.SetBool("BroomLowIdle", broomLowIdle);
+            animator.SetBool("BroomLowMoving", broomLowMoving);
+
+            int broomLowLayerIndex = animator.GetLayerIndex("BroomLow");
+            float targetBroomLowWeight = broomLowMoving ? 1f : 0f;
+            float currentBroomLowWeight = animator.GetLayerWeight(broomLowLayerIndex);
+            animator.SetLayerWeight(broomLowLayerIndex, Mathf.Lerp(currentBroomLowWeight, targetBroomLowWeight, 10f * Time.deltaTime));
         }
 
-        // === IMMUNITÉ GRABS ===
-        if (!isClimbing) // Ne pas override l'immunité du climb
+        if (!isClimbing)
         {
-            isImmuneToGrab = !IsGrounded() || isDashing; // En l'air OU en dash = immune
+            isImmuneToGrab = !IsGrounded() || isDashing;
         }
     }
-
 
     void FixedUpdate()
     {
