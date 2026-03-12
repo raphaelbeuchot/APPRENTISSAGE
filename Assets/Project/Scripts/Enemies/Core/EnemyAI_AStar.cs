@@ -172,6 +172,7 @@ public class EnemyAI_AStar : MonoBehaviour
         if (isStunnedBySentinel)
         {
             StopMovement();
+            currentState = State.Idle;
             return;
         }
 
@@ -275,6 +276,7 @@ public class EnemyAI_AStar : MonoBehaviour
             yield return new WaitForSeconds(stats.detectionCheckInterval);
             if (isDead) continue;
             if (gameManager != null && gameManager.zombieStunBySentinel) continue;
+            if (isStunnedBySentinel) continue;
             DetectHumans();
         }
     }
