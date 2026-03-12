@@ -183,15 +183,13 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         Debug.Log($"{gameObject.name} START WINDUP");
 
-        // Demarrer pulse visuel
-        Coroutine pulseCoroutine = StartCoroutine(WindupPulseEffect(stats.grabWindupDuration));
+        
 
         while (elapsed < stats.grabWindupDuration)
         {
             // Check annulation si zombie meurt
             if (enemyHealth == null || enemyHealth.IsDead())
             {
-                StopCoroutine(pulseCoroutine);
                 CancelWindup();
                 yield break;
             }
@@ -200,7 +198,6 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             if (enemyHealth != null && enemyHealth.IsRecovering())
             {
                 Debug.Log($"{gameObject.name} WINDUP CANCELLED - hit by sentinel");
-                StopCoroutine(pulseCoroutine);
                 CancelWindup();
                 yield break;
             }
@@ -208,7 +205,6 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             // Check si player sort de range
             if (player == null)
             {
-                StopCoroutine(pulseCoroutine);
                 CancelWindup();
                 yield break;
             }
@@ -217,7 +213,6 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             if (dist > stats.attackRange * 1.2f) // 20% marge
             {
                 Debug.Log($"{gameObject.name} WINDUP CANCELLED - player too far");
-                StopCoroutine(pulseCoroutine);
                 CancelWindup();
                 yield break;
             }
@@ -228,7 +223,6 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             if (angleToPlayer > 90f) // Si player à plus de 90° (derrière)
             {
                 Debug.Log($"{gameObject.name} WINDUP CANCELLED - player behind zombie");
-                StopCoroutine(pulseCoroutine);
                 CancelWindup();
                 yield break;
             }
