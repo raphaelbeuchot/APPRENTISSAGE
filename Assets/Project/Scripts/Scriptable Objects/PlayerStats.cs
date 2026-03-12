@@ -151,6 +151,7 @@ public class PlayerStats : ScriptableObject
     public AudioClip footstepSound;
     public AudioClip attackSound;        // Swing à vide (existant)
     public AudioClip attackHitSound;     // Impact sur ennemi (nouveau)
+    public AudioClip sprayEmptySound;
     [Tooltip("Son de douleur")]
     public AudioClip hurtSound;
     [Tooltip("Son de mort")]

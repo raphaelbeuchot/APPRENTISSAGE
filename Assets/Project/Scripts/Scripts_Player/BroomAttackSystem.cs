@@ -301,11 +301,9 @@ public class BroomAttackSystem : MonoBehaviour
     IEnumerator KnockdownTarget(GameObject target, Vector3 knockbackDirection)
     {
         EnemyAI_AStar zombieAI_AStar = target.GetComponent<EnemyAI_AStar>();
-
-        // NOUVEAU : Ne pas desactiver si sur rotating platform
         bool shouldDisableAI = zombieAI_AStar != null
             && !zombieAI_AStar.isInPitMode
-            && !zombieAI_AStar.isOnRotatingPlatform; // AJOUT DE CETTE LIGNE
+            && !zombieAI_AStar.isOnRotatingPlatform;
 
         if (shouldDisableAI)
         {
@@ -319,7 +317,6 @@ public class BroomAttackSystem : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
-        // DÉMARRER ROTATION VERS POINT D'IMPACT
         EnemyAI_AStar zombieForRotation = target.GetComponent<EnemyAI_AStar>();
         EnemyHealth healthForRotation = target.GetComponent<EnemyHealth>();
 
@@ -341,8 +338,6 @@ public class BroomAttackSystem : MonoBehaviour
             }
             else if (zombieAI_AStar.isOnRotatingPlatform)
             {
-                // Sur rotplat : juste reactiver AIPath mais GARDER l'AI active
-                // (elle gère déjà la rotation dans HandleOnRotatingPlatformState)
                 zombieAI_AStar.enabled = true;
             }
             else
@@ -354,11 +349,9 @@ public class BroomAttackSystem : MonoBehaviour
                 }
                 zombieAI_AStar.enabled = true;
             }
-            // NOUVEAU : Force la détection après knockdown
             zombieAI_AStar.lastPathDestination = Vector3.positiveInfinity;
             zombieAI_AStar.DetectHumans();
         }
-        
     }
 
     public void OnGrabStart()

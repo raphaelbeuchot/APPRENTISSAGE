@@ -107,7 +107,7 @@ public class MeleeAttackSystem : MonoBehaviour
             }
         }
 
-        // === SPRAY = RB/R1 uniquement ===
+        // === SPRAY = RB/R2 uniquement ===
         // Tap simple
         if (PlayerInputManager.Instance.SprayAttackPressed && CanAttack())
         {
@@ -119,11 +119,23 @@ public class MeleeAttackSystem : MonoBehaviour
             lastSprayTime = Time.time;
             StartCoroutine(PerformAttack());
         }
-
-        // === THROW BOTTLE = RT/R2 + lock-on (ThrowBottlePressed) ===
-        if (PlayerInputManager.Instance.ThrowBottlePressed && CanThrowBottle())
+        // Son spray vide - tap
+        else if (PlayerInputManager.Instance.SprayAttackPressed && currentSprayAmmo <= 0 && !isReloading && !isGrabbed && !isAttacking && Time.time >= lastSprayTime + stats.sprayFireRate)
         {
-            ThrowBottle();
+            lastSprayTime = Time.time;
+            if (audioSource != null && stats.sprayEmptySound != null)
+                audioSource.PlayOneShot(stats.sprayEmptySound);
+            if (animator != null)
+                animator.SetTrigger("SprayAttack");
+        }
+        // Son spray vide - hold
+        else if (PlayerInputManager.Instance.SprayAttackHeld && currentSprayAmmo <= 0 && !isReloading && !isGrabbed && !isAttacking && Time.time >= lastSprayTime + stats.sprayFireRate)
+        {
+            lastSprayTime = Time.time;
+            if (audioSource != null && stats.sprayEmptySound != null)
+                audioSource.PlayOneShot(stats.sprayEmptySound);
+            if (animator != null)
+                animator.SetTrigger("SprayAttack");
         }
     }
     void HandleReload()
@@ -199,6 +211,8 @@ public class MeleeAttackSystem : MonoBehaviour
 
     public void OnSprayHit()
     {
+        if (currentSprayAmmo <= 0) return;
+
         if (sprayImpactPrefab != null)
         {
             Vector3 spawnPos = transform.position + transform.forward * 0.7f + Vector3.up * 1f;

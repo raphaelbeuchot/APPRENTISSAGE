@@ -583,8 +583,12 @@ public class EnemyHealth : MonoBehaviour
         }
 
         // Desactiver l'IA et les scripts de controle
-        EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>(); // MODIFIE : _AStar
-        if (ai != null) ai.enabled = false;
+        EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
+        if (ai != null)
+        {
+            ai.SetDead(true); // Set isDead = true ET currentState = Dead
+            ai.enabled = false;
+        }
 
         GrabAttack grabAttack = GetComponent<GrabAttack>();
         if (grabAttack != null) grabAttack.enabled = false;

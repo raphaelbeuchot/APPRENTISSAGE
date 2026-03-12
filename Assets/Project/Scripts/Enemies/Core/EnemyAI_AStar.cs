@@ -172,7 +172,8 @@ public class EnemyAI_AStar : MonoBehaviour
         if (isStunnedBySentinel)
         {
             StopMovement();
-            currentState = State.Idle;
+            if (currentState != State.OnRotatingPlatform)
+                currentState = State.Idle;
             return;
         }
 
@@ -557,13 +558,11 @@ public class EnemyAI_AStar : MonoBehaviour
         else if (isGoingToLastKnownPosition)
         {
             float distanceToLastPos = Vector3.Distance(transform.position, lastKnownPlayerPosition);
-
             if (distanceToLastPos <= arrivalThreshold)
             {
                 StartCoroutine(LookAroundCoroutine());
                 return;
             }
-
             if (isInPitMode)
                 MoveInPitMode();
             else
@@ -859,14 +858,12 @@ public class EnemyAI_AStar : MonoBehaviour
     protected virtual void HandleRotatingToImpactState()
     {
         StopMovement();
-
         if (Time.time >= rotationToImpactEndTime)
         {
             isRotatingToImpact = false;
             currentState = State.Idle;
             return;
         }
-
         if (impactDirection.magnitude > 0.1f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(impactDirection);
@@ -879,7 +876,6 @@ public class EnemyAI_AStar : MonoBehaviour
         impactDirection = impactDir;
         impactDirection.y = 0;
         impactDirection.Normalize();
-
         rotationToImpactEndTime = Time.time + duration;
         isRotatingToImpact = true;
         currentState = State.RotatingToImpact;

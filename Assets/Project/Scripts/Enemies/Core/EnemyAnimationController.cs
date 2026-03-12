@@ -15,7 +15,8 @@ public class EnemyAnimationController : MonoBehaviour
     {
         if (animator == null || enemyAI == null) return;
 
-        bool isChasing = (enemyAI.currentState == EnemyAI_AStar.State.Chasing
+        bool isChasing = enemyAI.enabled
+               && (enemyAI.currentState == EnemyAI_AStar.State.Chasing
                || enemyAI.currentState == EnemyAI_AStar.State.Attacking)
                && !enemyAI.isDead;
 
