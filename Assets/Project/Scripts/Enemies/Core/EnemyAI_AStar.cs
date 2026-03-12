@@ -392,8 +392,11 @@ public class EnemyAI_AStar : MonoBehaviour
             return;
         }
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, stats.detectionRadius, stats.targetLayer);
-        Transform closestHuman = null;
+        float effectiveDetectionRadius = (currentState == State.RotatingToImpact)
+            ? stats.detectionRadius * 2f
+            : stats.detectionRadius;
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, effectiveDetectionRadius, stats.targetLayer); Transform closestHuman = null;
         float closestDistance = Mathf.Infinity;
 
         foreach (Collider hit in hits)
