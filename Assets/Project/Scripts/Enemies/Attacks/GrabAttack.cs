@@ -20,6 +20,12 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     public bool isInWindup = false;
     private Coroutine windupCoroutine;
 
+    public bool willBeGrabbed = false;
+    public float windupEndTime = 0f;
+
+    public bool isLockedInIdle = false;
+
+
     // Visuel windup
     private Renderer enemyRenderer;
     private Material originalMaterial;
@@ -116,7 +122,24 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             }
         }
     }
-
+    IEnumerator LockInIdleCoroutine(float duration)
+    {
+        isLockedInIdle = true;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            if (enemy != null)
+            {
+                enemy.currentState = EnemyAI_AStar.State.Idle;
+                enemy.StopMovement();
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        if (enemy != null)
+            enemy.ResetChaseState();
+        isLockedInIdle = false;
+    }
     public bool CanAttack() => !isInBourradeDuration && !isInBourradeCooldown;
     public bool IsAttacking() => isGrabbing;
     public bool IsInSpecialState() => isInBourradeDuration || isInBourradeCooldown || isInWindup;
@@ -184,7 +207,6 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     {
         if (isInWindup || isGrabbing || IsInBourrade()) return;
         if (animator != null)
-            animator.SetTrigger("GrabTrigger");
         windupCoroutine = StartCoroutine(WindupCoroutine());
     }
 
@@ -193,120 +215,60 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         isInWindup = true;
         if (animator != null)
             animator.SetTrigger("WindUpTrigger");
-        float elapsed = 0f;
-
-        Debug.Log($"{gameObject.name} START WINDUP");
-
-
 
         windupAnimComplete = false;
         StartCoroutine(WindupPulseEffect());
-
 
         while (!windupAnimComplete)
         {
             if (enemyHealth == null || enemyHealth.IsDead())
             {
-                CancelWindup();
+                isInWindup = false;
+                RestoreVisual();
+                enemy.currentState = EnemyAI_AStar.State.Idle;
                 yield break;
             }
 
-            if (enemyHealth != null && enemyHealth.IsRecovering())
+            if (enemyHealth.IsRecovering())
             {
-                Debug.Log($"{gameObject.name} WINDUP CANCELLED - hit by sentinel");
-                CancelWindup();
-                yield break;
-            }
-
-            if (player == null)
-            {
-                CancelWindup();
-                yield break;
-            }
-
-            float dist = Vector3.Distance(transform.position, player.transform.position);
-            if (dist > stats.attackRange * 1.2f)
-            {
-                Debug.Log($"{gameObject.name} WINDUP CANCELLED - player too far");
-                CancelWindup();
-                yield break;
-            }
-
-            Vector3 dirToPlayer = (player.transform.position - transform.position).normalized;
-            float angleToPlayer = Vector3.Angle(transform.forward, dirToPlayer);
-            if (angleToPlayer > 90f)
-            {
-                Debug.Log($"{gameObject.name} WINDUP CANCELLED - player behind zombie");
-                CancelWindup();
+                isInWindup = false;
+                RestoreVisual();
+                enemy.currentState = EnemyAI_AStar.State.Idle;
                 yield break;
             }
 
             yield return null;
         }
-
-        // Windup complete - restaurer visuel
         RestoreVisual();
-
         isInWindup = false;
+        windupEndTime = Time.time;
 
-        // Verification finale avant grab reel
-        if (player != null && player.grabState == PlayerPhysicsMovement.GrabState.None)
+        float finalDist = Vector3.Distance(transform.position, player.transform.position);
+        bool playerFree = player.grabState == PlayerPhysicsMovement.GrabState.None;
+        bool playerInRange = finalDist <= stats.attackRange;
+
+        Vector3 dirToPlayer = (player.transform.position - transform.position).normalized;
+        float angleToPlayer = Vector3.Angle(transform.forward, dirToPlayer);
+        bool playerInCone = angleToPlayer <= stats.detectionAngle / 2f;
+
+        willBeGrabbed = playerInRange && playerFree && playerInCone;
+
+        if (!willBeGrabbed)
         {
-            float finalDist = Vector3.Distance(transform.position, player.transform.position);
-            if (finalDist <= stats.attackRange)
-            {
-                // === RE-CHECK LINE-OF-SIGHT AVANT GRAB ===
-                Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
-                Vector3 targetPoint = player.transform.position + Vector3.up * 0.5f;
-                Vector3 directionToTarget = (targetPoint - rayOrigin).normalized;
-                float distance = Vector3.Distance(rayOrigin, targetPoint);
-
-                RaycastHit hitInfo;
-                if (Physics.Raycast(rayOrigin,
-                                    directionToTarget,
-                                    out hitInfo,
-                                    distance,
-                                    LayerMask.GetMask("Obstacle")))
-                {
-                    Debug.Log($"[GRAB] {gameObject.name} WINDUP COMPLETE but player behind obstacle ({hitInfo.collider.name})");
-                    enemy.currentState = EnemyAI_AStar.State.Chasing;
-                    yield break;
-                }
-                // === FIN RE-CHECK ===
-
-                IMovingPlatform playerPlatform = player.GetCurrentPlatform();
-                if (playerPlatform != null && playerPlatform.GetTransform().GetComponent<RotatingPlatform>() != null)
-                {
-                    Debug.Log($"{gameObject.name} WINDUP COMPLETE - grab cancelled, player on rotating platform");
-                    enemy.currentState = EnemyAI_AStar.State.Chasing;
-                    yield break;
-                }
-                Debug.Log($"{gameObject.name} WINDUP COMPLETE - starting grab");
-                // Snap zombie vers player
-                Vector3 dirToPlayer = (player.transform.position - transform.position).normalized;
-                dirToPlayer.y = 0f;
-
-                // Rotation instantanée vers le player
-                transform.rotation = Quaternion.LookRotation(dirToPlayer);
-
-                // Teleport à attackRange * 0.5f du player
-                Vector3 snapPosition = player.transform.position - dirToPlayer * (stats.attackRange * 0.5f);
-                snapPosition.y = transform.position.y;
-                transform.position = snapPosition;
-                StartCoroutine(GrabCoroutine());
-            }
-            else
-            {
-                Debug.Log($"{gameObject.name} WINDUP COMPLETE but player escaped");
-                enemy.currentState = EnemyAI_AStar.State.Chasing;
-            }
+            StartCoroutine(LockInIdleCoroutine(2.5f));
+            yield break;
         }
-        else
-        {
-            Debug.Log($"{gameObject.name} WINDUP COMPLETE but player escaped");
-            enemy.lastPathDestination = Vector3.positiveInfinity;
-            enemy.currentState = EnemyAI_AStar.State.Chasing;
-        }
+
+        // Grab confirme
+        if (animator != null)
+            animator.SetTrigger("GrabTrigger");
+        Vector3 dirToPlayerSnap = (player.transform.position - transform.position).normalized;
+        dirToPlayerSnap.y = 0f;
+        transform.rotation = Quaternion.LookRotation(dirToPlayerSnap);
+        Vector3 snapPosition = player.transform.position - dirToPlayerSnap * (stats.attackRange * 0.5f);
+        snapPosition.y = transform.position.y;
+        transform.position = snapPosition;
+        StartCoroutine(GrabCoroutine());
     }
 
     public void OnWindupComplete()
@@ -378,6 +340,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
     IEnumerator GrabCoroutine()
     {
+        animator.SetTrigger("GrabTrigger");
         isGrabbing = true;
 
 

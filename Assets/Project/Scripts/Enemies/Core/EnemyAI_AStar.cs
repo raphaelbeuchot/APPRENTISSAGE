@@ -78,7 +78,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
     private bool isBlinder = false;
 
-    public enum State { Idle, Wandering, Chasing, Attacking, PreGrab, StunBySpray, OnRotatingPlatform, RotatingToImpact, Dead }
+    public enum State { Idle, Wandering, Chasing, Attacking, StunBySpray, OnRotatingPlatform, RotatingToImpact, Dead }
     public State currentState = State.Idle;
 
     protected virtual void Start()
@@ -236,6 +236,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
         if (attackBehavior != null && attackBehavior.IsInSpecialState())
         {
+            StopMovement();
             return;
         }
 
@@ -253,9 +254,6 @@ public class EnemyAI_AStar : MonoBehaviour
             case State.Attacking:
                 HandleAttackingState();
                 break;
-            case State.PreGrab:
-                HandlePreGrabState();
-                break;
             case State.StunBySpray:
                 HandleStunBySprayState();
                 break;
@@ -271,7 +269,7 @@ public class EnemyAI_AStar : MonoBehaviour
         }
 
     }
-    
+
     protected IEnumerator DetectionLoop()
     {
         while (true)
@@ -280,6 +278,8 @@ public class EnemyAI_AStar : MonoBehaviour
             if (isDead) continue;
             if (gameManager != null && gameManager.zombieStunBySentinel) continue;
             if (isStunnedBySentinel) continue;
+            GrabAttack grab = GetComponent<GrabAttack>();
+            if (grab != null && (grab.isInWindup || Time.time - grab.windupEndTime < 0.5f)) continue;
             DetectHumans();
         }
     }
@@ -352,8 +352,10 @@ public class EnemyAI_AStar : MonoBehaviour
 
     public virtual void DetectHumans()
     {
-        
-        if (currentState == State.StunBySpray)
+        GrabAttack grab = GetComponent<GrabAttack>();
+        if (grab != null && grab.isLockedInIdle) return;
+
+        if (grab != null && grab.isInWindup) return; if (currentState == State.StunBySpray)
             return;
         
         // Ignorer detection si sur plateforme rotative
@@ -620,7 +622,6 @@ public class EnemyAI_AStar : MonoBehaviour
                 GrabAttack grabAttack = attackBehavior as GrabAttack;
                 if (grabAttack != null)
                 {
-                    currentState = State.PreGrab;
                     grabAttack.StartWindup();
                 }
                 else
@@ -709,7 +710,7 @@ public class EnemyAI_AStar : MonoBehaviour
     }
 
 
-    protected void StopMovement()
+    public void StopMovement()
     {
         if (aiPath != null)
         {
@@ -718,6 +719,14 @@ public class EnemyAI_AStar : MonoBehaviour
         }
 
         rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+    }
+
+    public void ResetChaseState()
+    {
+        wasChasing = false;
+        isGoingToLastKnownPosition = false;
+        targetHuman = null;
+        lastPathDestination = Vector3.positiveInfinity;
     }
 
     public void UpdateSpeed(float currentHealth, bool isCrawler)
@@ -830,28 +839,7 @@ public class EnemyAI_AStar : MonoBehaviour
         }
     }
 
-    protected virtual void HandlePreGrabState()
-    {
-        if (wanderBehavior != null) wanderBehavior.StopWandering();
-
-        if (targetHuman != null)
-        {
-            Vector3 direction = (targetHuman.position - transform.position).normalized;
-            direction.y = 0;
-
-            if (direction.magnitude > 0.1f)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
-            }
-        }
-
-        GrabAttack grab = attackBehavior as GrabAttack;
-        if (grab != null && !grab.isInWindup)
-        {
-            currentState = State.Chasing;
-        }
-    }
+  
 
     protected virtual void OnDrawGizmosSelected()
     {
