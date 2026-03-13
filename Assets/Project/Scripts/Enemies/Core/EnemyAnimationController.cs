@@ -16,7 +16,7 @@ public class EnemyAnimationController : MonoBehaviour
         if (animator == null || enemyAI == null) return;
 
         GrabAttack grabAttack = enemyAI.GetComponent<GrabAttack>();
-        bool isInBourrade = grabAttack != null && grabAttack.isInBourradeCooldown;
+        bool isInBourrade = grabAttack != null && grabAttack.IsInBourrade();
 
         Debug.Log($"[AnimController] state={enemyAI.currentState} isInBourrade={isInBourrade} cooldown={grabAttack?.isInBourradeCooldown}");
 
