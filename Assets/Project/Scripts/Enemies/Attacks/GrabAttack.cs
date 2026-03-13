@@ -219,7 +219,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         windupAnimComplete = false;
         StartCoroutine(WindupPulseEffect());
 
-        while (!windupAnimComplete)
+        while (isInWindup && !windupAnimComplete)
         {
             if (enemyHealth == null || enemyHealth.IsDead())
             {
@@ -233,10 +233,24 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             {
                 isInWindup = false;
                 RestoreVisual();
+                if (animator != null)
+                {
+                    animator.SetTrigger("WindupFailTrigger");
+                    animator.SetLayerWeight(2, 0f);
+                }
                 enemy.currentState = EnemyAI_AStar.State.Idle;
                 yield break;
             }
-
+            if (player != null)
+            {
+                Vector3 dirToPlayerWindup = (player.transform.position - transform.position).normalized;
+                dirToPlayerWindup.y = 0f;
+                if (dirToPlayerWindup.magnitude > 0.1f)
+                {
+                    Quaternion targetRot = Quaternion.LookRotation(dirToPlayerWindup);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 8f);
+                }
+            }
             yield return null;
         }
         RestoreVisual();
@@ -255,6 +269,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         if (!willBeGrabbed)
         {
+            if (animator != null)
+                animator.SetTrigger("WindupFailTrigger");
             StartCoroutine(LockInIdleCoroutine(2.5f));
             yield break;
         }
@@ -310,24 +326,20 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         if (!isInWindup) return;
 
         isInWindup = false;
+        windupAnimComplete = true; // STOPPE WindupPulseEffect
         if (windupCoroutine != null)
         {
             StopCoroutine(windupCoroutine);
             windupCoroutine = null;
         }
         if (animator != null)
-            animator.SetTrigger("GrabEndTrigger");
-        // Restaurer visuel
+            animator.SetTrigger("WindupFailTrigger");
         RestoreVisual();
 
-        Debug.Log($"{gameObject.name} WINDUP CANCELLED");
-
-        // Retour Chase
         if (enemy != null)
         {
             enemy.currentState = EnemyAI_AStar.State.Idle;
             enemy.lastPathDestination = Vector3.positiveInfinity;
-
         }
     }
 
@@ -416,7 +428,6 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 }
                 //
 
-                yield return null;
                 yield return null;
             }
 
