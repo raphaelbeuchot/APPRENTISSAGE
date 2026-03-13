@@ -14,9 +14,6 @@ public class SentinelCycleManager : MonoBehaviour
 
     private float initialPlayerSentinelDistance;
 
-    [Header("Audio")]
-    private AudioSource audioSource;
-
     [Header("References")]
     public Transform playerTransform;
     public Transform sentinelTransform;
@@ -32,7 +29,16 @@ public class SentinelCycleManager : MonoBehaviour
     [SerializeField] private EpervierManagerLoop epervierManagerLoop;
     [SerializeField] private CanyonTileManager canyonTileManager;
 
-
+    [Header("Audio")]
+    private AudioSource audioSource;
+    [SerializeField] private AudioClip greenLightMusicLoop;
+    [SerializeField, Range(1f, 3f)] private float maxMusicPitch = 1.5f;
+    private AudioSource musicAudioSource;
+    private AudioHighPassFilter musicHighPassFilter;
+    [SerializeField, Range(0f, 1f)] private float musicVolume = 1f;
+    [SerializeField] private float vinylSlowDownDuration = 0.8f;
+    [SerializeField] private float vinylHighPassMaxFrequency = 8000f;
+    private Coroutine vinylCoroutine;
 
     [Header("State")]
     public GameState currentState = GameState.GreenLight;
@@ -51,7 +57,6 @@ public class SentinelCycleManager : MonoBehaviour
 
     private Coroutine alertCoroutine;
     public float alertDuration;
-    // NOUVEAU : Reference au GameObject temporaire du son d'alerte
     private GameObject tempAlertAudioGO = null;
 
     void OnEnable()
@@ -69,6 +74,17 @@ public class SentinelCycleManager : MonoBehaviour
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
+
+        GameObject musicGO = new GameObject("MusicSource_GreenLight");
+        musicGO.transform.SetParent(transform);
+        musicAudioSource = musicGO.AddComponent<AudioSource>();
+        musicAudioSource.spatialBlend = 0f;
+        musicAudioSource.loop = true;
+        musicAudioSource.playOnAwake = false;
+
+        musicHighPassFilter = musicGO.AddComponent<AudioHighPassFilter>();
+        musicHighPassFilter.cutoffFrequency = 10f;
+        musicHighPassFilter.highpassResonanceQ = 1f;
 
         if (aerialLight != null)
         {
@@ -242,6 +258,28 @@ public class SentinelCycleManager : MonoBehaviour
         return finalDuration;
     }
 
+    private IEnumerator VinylSlowDownCoroutine()
+    {
+        float startPitch = musicAudioSource.pitch;
+        float elapsed = 0f;
+
+        while (elapsed < vinylSlowDownDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / vinylSlowDownDuration;
+            musicAudioSource.pitch = Mathf.Lerp(startPitch, 0f, t);
+            if (musicHighPassFilter != null)
+                musicHighPassFilter.cutoffFrequency = Mathf.Lerp(10f, vinylHighPassMaxFrequency, t);
+            yield return null;
+        }
+
+        musicAudioSource.Stop();
+        musicAudioSource.pitch = 1f;
+        if (musicHighPassFilter != null)
+            musicHighPassFilter.cutoffFrequency = 10f;
+        vinylCoroutine = null;
+    }
+
     public void StartNewCycle(GameState newState)
     {
         currentState = newState;
@@ -249,7 +287,6 @@ public class SentinelCycleManager : MonoBehaviour
 
         if (newState == GameState.GreenLight)
         {
-            // AJOUTER CES 2 LIGNES AU DÉBUT :
             if (gameManager != null)
                 gameManager.ResetAllTracking();
             if (epervierManager != null)
@@ -259,6 +296,31 @@ public class SentinelCycleManager : MonoBehaviour
 
             targetDuration = GetDynamicGreenLightDuration();
             Debug.Log(string.Format("[CYCLE] GreenLight - Duree: {0:F1}s", targetDuration));
+
+            if (musicAudioSource != null && greenLightMusicLoop != null)
+            {
+                float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
+                float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+
+                float enemyFactor = 0f;
+                if (gameManager != null)
+                {
+                    int totalEnemies = gameManager.GetTotalEnemies();
+                    int enemiesKilled = gameManager.GetEnemiesKilled();
+                    if (totalEnemies > 0)
+                    {
+                        float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
+                        enemyFactor = 1f - enemyRatio;
+                    }
+                }
+
+                float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
+                musicAudioSource.volume = musicVolume;
+                musicAudioSource.pitch = Mathf.Lerp(1f, maxMusicPitch, combinedFactor);
+                musicAudioSource.clip = greenLightMusicLoop;
+                musicAudioSource.Play();
+                Debug.Log($"[MUSIC] GreenLight - pitch: {musicAudioSource.pitch:F2}");
+            }
 
             if (marqueeLightController != null)
                 marqueeLightController.StartGreenLightPattern();
@@ -271,6 +333,10 @@ public class SentinelCycleManager : MonoBehaviour
         }
         else if (newState == GameState.Alert)
         {
+            if (vinylCoroutine != null)
+                StopCoroutine(vinylCoroutine);
+            vinylCoroutine = StartCoroutine(VinylSlowDownCoroutine());
+
             if (audioSource != null && audioSource.loop)
             {
                 audioSource.loop = false;
@@ -304,13 +370,15 @@ public class SentinelCycleManager : MonoBehaviour
         }
         else if (newState == GameState.RedLight)
         {
+            if (musicAudioSource != null)
+                musicAudioSource.Stop();
             if (gameManager != null)
                 gameManager.ResetAllTracking();
             if (epervierManager != null)
                 epervierManager.OnRedLight();
             if (epervierManagerLoop != null)
                 epervierManagerLoop.OnRedLight();
-            
+
             if (canyonTileManager != null)
                 canyonTileManager.OnRedLight();
 
@@ -354,19 +422,13 @@ public class SentinelCycleManager : MonoBehaviour
         {
             targetDuration = sentinelSettings.releaseDuration;
 
-
-
-            // stop blanc detection
             if (gameManager != null)
                 gameManager.ResetAllTracking();
-
-          
 
             if (audioSource != null)
             {
                 audioSource.Stop();
             }
-
 
             if (audioSource != null && sentinelSettings.greenlightAmbientSound != null)
             {
@@ -472,7 +534,6 @@ public class SentinelCycleManager : MonoBehaviour
     {
         if (clip == null || audioSource == null) return null;
 
-        // Detruire l'ancien si il existe encore
         if (tempAlertAudioGO != null)
         {
             Destroy(tempAlertAudioGO);
@@ -535,31 +596,33 @@ public class SentinelCycleManager : MonoBehaviour
     {
         return gameStarted;
     }
-    /// <summary>
-    /// Arrete completement le cycle de la sentinelle (appele par GoalDoor)
-    /// </summary>
+
     public void StopCycle()
     {
         Debug.Log("[CYCLE] ARRET COMPLET - GoalDoor atteinte !");
 
-        // Arrete le systeme de cycle
         gameStarted = false;
 
-        // Stoppe la coroutine d'alerte si elle tourne
         if (alertCoroutine != null)
         {
             StopCoroutine(alertCoroutine);
             alertCoroutine = null;
         }
 
-        // Stoppe tous les sons (jingles BeethovenAlert, RedLight, etc.)
+        if (vinylCoroutine != null)
+        {
+            StopCoroutine(vinylCoroutine);
+            vinylCoroutine = null;
+        }
+        if (musicAudioSource != null)
+            musicAudioSource.Stop();
+
         if (audioSource != null)
         {
             audioSource.Stop();
             audioSource.loop = false;
         }
 
-        // NOUVEAU : Detruit le GameObject temporaire du BeethovenAlert s'il existe
         if (tempAlertAudioGO != null)
         {
             Destroy(tempAlertAudioGO);

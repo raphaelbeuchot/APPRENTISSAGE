@@ -45,14 +45,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SentinelCycleManager
   sentinelSettings: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
-  sentinelLightRenderer: {fileID: 0}
-  greenMaterial: {fileID: 2100000, guid: a19b7620065a88048b9a99477e1cfabe, type: 2}
-  redMaterial: {fileID: 2100000, guid: 0c114cfc24f6bda43853259369fef79a, type: 2}
-  yellowMaterial: {fileID: 2100000, guid: 6d8a0364de6a4db4990c870535d0a17f, type: 2}
+  minCycleDurationMultiplier: 0.3
   playerTransform: {fileID: 0}
   sentinelTransform: {fileID: 0}
   startZoneTransform: {fileID: 0}
   gameManager: {fileID: 0}
   marqueeLightController: {fileID: 0}
+  lightsToDisableInRedLight: []
+  sentinelCentralLight: {fileID: 0}
+  redLightVolumeController: {fileID: 0}
+  playerSpotLight: {fileID: 0}
+  spotColorCompensated: {r: 0.5, g: 0.8, b: 1, a: 1}
+  epervierManager: {fileID: 0}
+  epervierManagerLoop: {fileID: 0}
+  canyonTileManager: {fileID: 0}
+  greenLightMusicLoop: {fileID: 8300000, guid: 0aa7a84ba97d27f46b02b067f7c60011, type: 3}
+  maxMusicPitch: 1.5
+  musicVolume: 0.75
+  vinylSlowDownDuration: 3
   currentState: 0
+  isTutorialMode: 0
+  tutorialPromptUI: {fileID: 0}
+  redLightTutorialSprite: {fileID: 0}
   aerialLight: {fileID: 0}
+  alertDuration: 0
