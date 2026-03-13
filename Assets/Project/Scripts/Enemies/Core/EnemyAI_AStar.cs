@@ -36,6 +36,7 @@ public class EnemyAI_AStar : MonoBehaviour
     private Seeker seeker;
     private BlinderWanderBehavior wanderBehavior;
     private EnemyPitInteractable pitInteractable;
+    private Animator animator;
 
 
     [Header("Pit Mode")]
@@ -94,6 +95,7 @@ public class EnemyAI_AStar : MonoBehaviour
         seeker = GetComponent<Seeker>();
         wanderBehavior = GetComponent<BlinderWanderBehavior>();
         pitInteractable = GetComponent<EnemyPitInteractable>();
+        animator = GetComponentInChildren<Animator>();
 
         isBlinder = stats.attackType == EnemyStats.AttackType.Blinder;
 
@@ -791,7 +793,8 @@ public class EnemyAI_AStar : MonoBehaviour
             aiPath.enabled = false;
         }
         if (health != null) health.ShowSpiral();
-
+        if (animator != null)
+            animator.SetLayerWeight(1, 1f);
     }
 
     public void DisableRotatingPlatformMode()
@@ -804,7 +807,8 @@ public class EnemyAI_AStar : MonoBehaviour
 
         currentState = State.Idle;
         if (health != null) health.HideSpiral();
-
+        if (animator != null)
+            animator.SetLayerWeight(1, 0f);
     }
 
 
