@@ -350,7 +350,7 @@ public class BroomAttackSystem : MonoBehaviour
                 zombieAI_AStar.enabled = true;
             }
             zombieAI_AStar.lastPathDestination = Vector3.positiveInfinity;
-            zombieAI_AStar.DetectHumans();
+            // SUPPRIMER : zombieAI_AStar.DetectHumans();
         }
     }
 

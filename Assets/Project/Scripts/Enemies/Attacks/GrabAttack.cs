@@ -265,8 +265,15 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         float angleToPlayer = Vector3.Angle(transform.forward, dirToPlayer);
         bool playerInCone = angleToPlayer <= stats.detectionAngle / 2f;
 
-        willBeGrabbed = playerInRange && playerFree && playerInCone;
+        // Juste avant le calcul de willBeGrabbed
+        Vector3 losOrigin = transform.position + Vector3.up * 0.5f;
+        Vector3 losTarget = player.transform.position + Vector3.up * 0.5f;
+        Vector3 losDir = (losTarget - losOrigin).normalized;
+        float losDist = Vector3.Distance(losOrigin, losTarget);
 
+        bool hasLOS = !Physics.Raycast(losOrigin, losDir, losDist, LayerMask.GetMask("Obstacle"));
+
+        willBeGrabbed = playerInRange && playerFree && playerInCone && hasLOS;
         if (!willBeGrabbed)
         {
             if (animator != null)

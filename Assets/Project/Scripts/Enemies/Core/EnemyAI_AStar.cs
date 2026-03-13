@@ -661,12 +661,13 @@ public class EnemyAI_AStar : MonoBehaviour
             lastPathDestination = newDestination;
         }
 
-        direction.y = 0;
-        direction.Normalize();
+        // APRES
+        Vector3 moveDir = aiPath.desiredVelocity;
+        moveDir.y = 0;
 
-        if (direction.magnitude > 0.1f)
+        if (moveDir.magnitude > 0.1f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            Quaternion targetRotation = Quaternion.LookRotation(moveDir);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
         }
     }
