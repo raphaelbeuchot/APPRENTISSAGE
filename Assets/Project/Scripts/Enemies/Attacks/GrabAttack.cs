@@ -303,6 +303,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
         else
         {
+            Debug.Log($"{gameObject.name} WINDUP COMPLETE but player escaped");
+            enemy.lastPathDestination = Vector3.positiveInfinity;
             enemy.currentState = EnemyAI_AStar.State.Chasing;
         }
     }
@@ -361,7 +363,9 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         // Retour Chase
         if (enemy != null)
         {
-            enemy.currentState = EnemyAI_AStar.State.Chasing;
+            enemy.currentState = EnemyAI_AStar.State.Idle;
+            enemy.lastPathDestination = Vector3.positiveInfinity;
+
         }
     }
 
