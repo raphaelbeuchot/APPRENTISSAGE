@@ -509,7 +509,6 @@ public class EnemyHealth : MonoBehaviour
         {
             zombieAI.canMove = true;
             zombieAI.lastPathDestination = Vector3.positiveInfinity;
-            zombieAI.DetectHumans();
         }
 
         isRecovering = false;
