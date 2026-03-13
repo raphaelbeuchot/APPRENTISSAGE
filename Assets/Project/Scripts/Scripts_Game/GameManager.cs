@@ -830,11 +830,19 @@ public class GameManager : MonoBehaviour
         ai.isStunnedBySentinel = true;
         yield return new WaitForSeconds(sentinel.stunZombieDuration);
 
-        // CHECK si le zombie existe encore
         if (ai == null) yield break;
 
         ai.isStunnedBySentinel = false;
         alreadyShot.Remove(ai.gameObject);
+
+        // Reset cooldown pour eviter re-tir immediat apres stun
+        if (trackedTargets.ContainsKey(ai.gameObject))
+        {
+            trackedTargets[ai.gameObject].lastShotTime = Time.time;
+        }
+
+        // Reset lastPathDestination pour forcer recalcul path a la reprise
+        ai.lastPathDestination = Vector3.positiveInfinity;
     }
 
     void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, bool isHeadshot = false)
