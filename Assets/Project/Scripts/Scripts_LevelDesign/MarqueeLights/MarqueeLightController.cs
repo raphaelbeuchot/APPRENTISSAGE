@@ -30,7 +30,6 @@ public class MarqueeLightController : MonoBehaviour
 
         if (bulbsContainer == null)
         {
-            Debug.LogError("[MarqueeLightController] CirclesRuntimeContainer introuvable !");
             return;
         }
 
@@ -45,11 +44,9 @@ public class MarqueeLightController : MonoBehaviour
             {
                 List<MarqueeLightBulb> circleList = new List<MarqueeLightBulb>(circleBulbs);
                 circles.Add(circleList);
-                Debug.Log($"[MarqueeLightController] Cercle {i} : {circleBulbs.Length} bulbs");
             }
         }
 
-        Debug.Log($"[MarqueeLightController] {circles.Count} cercles collectes");
 
         foreach (var circle in circles)
         {
@@ -58,7 +55,6 @@ public class MarqueeLightController : MonoBehaviour
                 bulb.SetGreenLightMode();
             }
         }
-        Debug.Log("[MarqueeLightController] Marquee lights allumees en GreenLight au demarrage");
     }
 
     public void StartGreenLightPattern()

@@ -352,6 +352,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
     public virtual void DetectHumans()
     {
+        
         if (currentState == State.StunBySpray)
             return;
         

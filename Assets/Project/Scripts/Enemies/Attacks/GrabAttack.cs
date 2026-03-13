@@ -474,8 +474,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
             if (player != null && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed)
                 player.grabState = PlayerPhysicsMovement.GrabState.None;
-            if (animator != null)
-                animator.SetTrigger("GrabEndTrigger");
+           
 
             isGrabbing = false;
         }
@@ -518,6 +517,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
     void EndGrab(bool givePlayerRecoil = true)
     {
+        if (animator != null)
+            animator.SetTrigger("GrabEndTrigger");
         grabElapsedTime = 0f;
         nextDamageIndex = 0;
 
@@ -606,6 +607,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         enemyRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         isInBourradeDuration = true;
+        if (animator != null)
+            animator.SetTrigger("BourradeTrigger");
         isInBourradeCooldown = false;
 
         try
@@ -629,6 +632,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
             isInBourradeDuration = false;
             isInBourradeCooldown = true;
+            if (animator != null)
+                animator.SetBool("isChasing", false);
             enemyRb.linearVelocity = Vector3.zero;
 
             yield return new WaitForSeconds(stats.bourradeCooldown);
@@ -639,11 +644,18 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             isInBourradeCooldown = false;
             enemyRb.linearVelocity = Vector3.zero;
             enemyRb.constraints = RigidbodyConstraints.FreezeRotation;
-
             if (hadAIPath && aiPath != null)
             {
                 aiPath.enabled = true;
             }
+
+            // Force Idle pour eviter walk flash
+            EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
+            if (ai != null && !ai.isDead)
+                ai.currentState = EnemyAI_AStar.State.Idle;
+
+            if (animator != null)
+                animator.SetBool("isChasing", false);
 
             Debug.Log(gameObject.name + " > Bourrade ended cleanly");
         }
@@ -652,6 +664,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     public void ForceStop()
     {
         StopAllCoroutines();
+        if (animator != null)
+            animator.SetTrigger("GrabEndTrigger");
 
         isGrabbing = false;
         isInBourradeDuration = false;

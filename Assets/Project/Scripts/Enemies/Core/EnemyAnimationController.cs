@@ -15,10 +15,16 @@ public class EnemyAnimationController : MonoBehaviour
     {
         if (animator == null || enemyAI == null) return;
 
+        GrabAttack grabAttack = enemyAI.GetComponent<GrabAttack>();
+        bool isInBourrade = grabAttack != null && grabAttack.isInBourradeCooldown;
+
+        Debug.Log($"[AnimController] state={enemyAI.currentState} isInBourrade={isInBourrade} cooldown={grabAttack?.isInBourradeCooldown}");
+
         bool isChasing = enemyAI.enabled
                && (enemyAI.currentState == EnemyAI_AStar.State.Chasing
                || enemyAI.currentState == EnemyAI_AStar.State.Attacking)
-               && !enemyAI.isDead;
+               && !enemyAI.isDead
+               && !isInBourrade;
 
         animator.SetBool("isChasing", isChasing);
     }

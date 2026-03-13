@@ -73,14 +73,12 @@ public class PupitreInteraction : MonoBehaviour
         if (normalCamera != null)
             normalCamera.Priority.Value = inactivePriority;
 
-        Debug.Log("[Pupitre] Cameras initialisees apres 1 frame");
     }
 
     private void LateUpdate()
     {
         if (needsRespawn)
         {
-            Debug.LogError($"[Pupitre] LATEUPDATE frame {respawnFrameCount} - Player pos: {player.position}");
             respawnFrameCount++;
 
             // Forcer le respawn pendant les 3 premieres frames
@@ -90,7 +88,6 @@ public class PupitreInteraction : MonoBehaviour
             }
             else
             {
-                Debug.Log("[Pupitre] Fin force respawn, activation auto");
                 needsRespawn = false;
                 ActivatePupitreOnRestart();
             }
@@ -114,11 +111,9 @@ public class PupitreInteraction : MonoBehaviour
     {
         if (player == null)
         {
-            Debug.LogError("[Pupitre] Player NULL dans RespawnPlayerAtPupitre !");
             return;
         }
 
-        Debug.LogError($"[Pupitre] RESPAWN CALLED - Player pos AVANT: {player.position}, Pupitre pos: {transform.position}");
 
         // Position devant le pupitre (en coordonnees LOCALES du pupitre)
         Vector3 spawnPos = transform.position - transform.forward * restartSpawnDistance;
@@ -148,13 +143,11 @@ public class PupitreInteraction : MonoBehaviour
             movement.canMove = true;
         }
 
-        Debug.LogError($"[Pupitre] Player position APRES respawn : {player.position}");
     }
 
     private void ActivatePupitre()
     {
         hasActivated = true;
-        Debug.Log("[Pupitre] === ACTIVATION MANUELLE ===");
 
         StartCoroutine(SinkPupitreCoroutine());
         SwitchToNormalCamera();
@@ -183,7 +176,6 @@ public class PupitreInteraction : MonoBehaviour
     private void ActivatePupitreOnRestart()
     {
         hasActivated = true;
-        Debug.Log("[Pupitre] === ACTIVATION AUTO (RESTART) ===");
 
         transform.position = transform.position + Vector3.down * sinkDistance;
         SwitchToNormalCamera();
@@ -194,14 +186,12 @@ public class PupitreInteraction : MonoBehaviour
 
     private void SwitchToNormalCamera()
     {
-        Debug.Log($"[Pupitre] AVANT switch - StartZone priority: {startZoneCamera?.Priority.Value}, Normal priority: {normalCamera?.Priority.Value}");
 
         if (normalCamera != null)
             normalCamera.Priority.Value = activePriority;
         if (startZoneCamera != null)
             startZoneCamera.Priority.Value = inactivePriority;
 
-        Debug.Log($"[Pupitre] APRES switch - StartZone priority: {startZoneCamera?.Priority.Value}, Normal priority: {normalCamera?.Priority.Value}");
 
         CameraPanningExtension panningExt = FindAnyObjectByType<CameraPanningExtension>();
         if (panningExt != null)
