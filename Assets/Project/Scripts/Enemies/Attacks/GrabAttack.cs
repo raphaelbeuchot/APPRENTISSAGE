@@ -271,7 +271,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         {
             if (animator != null)
                 animator.SetTrigger("WindupFailTrigger");
-            StartCoroutine(LockInIdleCoroutine(2.5f));
+            StartCoroutine(LockInIdleCoroutine(1.5f));
             yield break;
         }
 
@@ -628,9 +628,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             }
 
             // Force Idle pour eviter walk flash
-            EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
-            if (ai != null && !ai.isDead)
-                ai.currentState = EnemyAI_AStar.State.Idle;
+            if (enemy != null && !enemy.isDead)
+                StartCoroutine(LockInIdleCoroutine(1.5f));
 
             if (animator != null)
                 animator.SetBool("isChasing", false);
