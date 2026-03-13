@@ -39,7 +39,6 @@ public class EnemyHealth : MonoBehaviour
     private bool isDead = false;
 
     private bool isRecovering = false;
-    private float recoverUntilTime = 0f;
 
     private float originalLinearDamping;
     private float originalAngularDamping;
@@ -157,11 +156,7 @@ public class EnemyHealth : MonoBehaviour
             }
         }
 
-        if (isRecovering && Time.time >= recoverUntilTime)
-        {
-            isRecovering = false;
-            Debug.Log($"{gameObject.name} recovered from gunshot!");
-        }
+        
 
         // Desactiver knockback state quand timer expire
         if (isInKnockback && Time.time >= knockbackEndTime)
@@ -474,62 +469,18 @@ public class EnemyHealth : MonoBehaviour
 
         isRecovering = true;
 
-        // NOUVEAU : Utiliser A AIPath au lieu de NavMeshAgent
-        Pathfinding.AIPath aiPath = GetComponent<Pathfinding.AIPath>();
-        EnemyAI_AStar zombieAI = GetComponent<EnemyAI_AStar>(); // CORRIGE : _AStar
-
-        // AJOUT : Annuler la recherche de derniere position
+        EnemyAI_AStar zombieAI = GetComponent<EnemyAI_AStar>();
         if (zombieAI != null)
-        {
             zombieAI.CancelLastKnownPositionSearch();
-        }
-
-        float originalSpeed = 0f;
-        if (aiPath != null)
-        {
-            originalSpeed = aiPath.maxSpeed;
-            aiPath.canMove = false;   // Stop la navigation A
-        }
-
-        if (zombieAI != null)
-            zombieAI.canMove = false;       // Stoppe les actions de l'AI
-
-        Debug.Log($"{gameObject.name} stunned for 2 seconds");
 
         yield return new WaitForSeconds(2f);
 
-        // Restauration apres stun
-        if (aiPath != null)
-        {
-            aiPath.canMove = true;
-            aiPath.maxSpeed = originalSpeed;
-        }
-
-        if (zombieAI != null)
-        {
-            zombieAI.canMove = true;
-            zombieAI.lastPathDestination = Vector3.positiveInfinity;
-        }
-
         isRecovering = false;
-        Debug.Log($"{gameObject.name} stun ended");
     }
 
 
 
-    void StartRecovery()
-    {
-        isRecovering = true;
-        recoverUntilTime = Time.time + 2f;
-
-        GrabAttack grabAttack = GetComponent<GrabAttack>();
-        if (grabAttack != null && grabAttack.IsGrabbing())
-        {
-            grabAttack.ForceStop();
-        }
-
-        Debug.Log($"{gameObject.name} starts recovery (stunned for 2s)");
-    }
+   
 
     void Die()
     {

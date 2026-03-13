@@ -86,6 +86,7 @@ public class EnemyStats : ScriptableObject
     public float attackCooldown = 1f;
 
     [Header("ATTAQUE - GRABBER (si attackType = Grabber)")]
+    public Material windupMaterial;
     [Tooltip("Durée du grab avant morsure")]
     public float grabDuration = 4f;
     [Tooltip("Dégâts de la morsure")]

@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class GrabAttack : MonoBehaviour, IAttackBehavior
 {
-    public Material redMaterial;
+    private Material windupMaterial;
 
     private EnemyAI_AStar enemy;
     private PlayerPhysicsMovement player;
@@ -15,6 +15,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     private GameManager gameManager;
     private MeleeAttackSystem playerMelee;
     private EnemyHealth enemyHealth;
+    private Animator animator;
 
     public bool isInWindup = false;
     private Coroutine windupCoroutine;
@@ -34,6 +35,9 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     public bool isInBourradeDuration = false;
     public bool isInBourradeCooldown = false;
     public bool isFakeGrabbing = false;
+    private bool windupAnimComplete = false;
+
+
     private System.Collections.Generic.List<EnemyAI_AStar> fakeGrabbers = new System.Collections.Generic.List<EnemyAI_AStar>();
     public bool IsInBourrade() => isInBourradeDuration || isInBourradeCooldown;
 
@@ -60,10 +64,17 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         // Setup visuel
         enemyRenderer = GetComponentInChildren<Renderer>();
         if (enemyRenderer != null)
+            originalMaterial = new Material(enemyRenderer.material);
+        windupMaterial = stats.windupMaterial;
+
+        if (enemyRenderer != null)
         {
             originalMaterial = enemyRenderer.material;
         }
         originalScale = transform.localScale;
+        animator = GetComponent<Animator>();
+        if (animator != null)
+            animator.SetLayerWeight(2, 1f);
     }
 
     void UpdateFakeGrabbers()
@@ -172,29 +183,34 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     public void StartWindup()
     {
         if (isInWindup || isGrabbing || IsInBourrade()) return;
-
+        if (animator != null)
+            animator.SetTrigger("GrabTrigger");
         windupCoroutine = StartCoroutine(WindupCoroutine());
     }
 
     IEnumerator WindupCoroutine()
     {
         isInWindup = true;
+        if (animator != null)
+            animator.SetTrigger("WindUpTrigger");
         float elapsed = 0f;
 
         Debug.Log($"{gameObject.name} START WINDUP");
 
-        
 
-        while (elapsed < stats.grabWindupDuration)
+
+        windupAnimComplete = false;
+        StartCoroutine(WindupPulseEffect());
+
+
+        while (!windupAnimComplete)
         {
-            // Check annulation si zombie meurt
             if (enemyHealth == null || enemyHealth.IsDead())
             {
                 CancelWindup();
                 yield break;
             }
 
-            // NOUVEAU : Check annulation si tir sentinelle
             if (enemyHealth != null && enemyHealth.IsRecovering())
             {
                 Debug.Log($"{gameObject.name} WINDUP CANCELLED - hit by sentinel");
@@ -202,7 +218,6 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 yield break;
             }
 
-            // Check si player sort de range
             if (player == null)
             {
                 CancelWindup();
@@ -210,24 +225,22 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             }
 
             float dist = Vector3.Distance(transform.position, player.transform.position);
-            if (dist > stats.attackRange * 1.2f) // 20% marge
+            if (dist > stats.attackRange * 1.2f)
             {
                 Debug.Log($"{gameObject.name} WINDUP CANCELLED - player too far");
                 CancelWindup();
                 yield break;
             }
 
-            // NOUVEAU : Check si player derriere le zombie
             Vector3 dirToPlayer = (player.transform.position - transform.position).normalized;
             float angleToPlayer = Vector3.Angle(transform.forward, dirToPlayer);
-            if (angleToPlayer > 90f) // Si player à plus de 90° (derrière)
+            if (angleToPlayer > 90f)
             {
                 Debug.Log($"{gameObject.name} WINDUP CANCELLED - player behind zombie");
                 CancelWindup();
                 yield break;
             }
 
-            elapsed += Time.deltaTime;
             yield return null;
         }
 
@@ -294,44 +307,38 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
     }
 
-    IEnumerator WindupPulseEffect(float duration)
+    public void OnWindupComplete()
+    {
+        windupAnimComplete = true;
+    }
+
+    IEnumerator WindupPulseEffect()
     {
         float elapsed = 0f;
         float pulseSpeed = 3f;
 
-        while (elapsed < duration)
+        while (!windupAnimComplete)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / duration; // 0 -> 1
 
-            // Pulse scale (subtil)
             float scaleMultiplier = 1f + Mathf.Sin(elapsed * pulseSpeed) * 0.1f;
             transform.localScale = originalScale * scaleMultiplier;
 
-            // Rougir progressif
-            if (enemyRenderer != null)
-            {
-                Color lerpedColor = Color.Lerp(Color.white, Color.red, t);
-                enemyRenderer.material.color = lerpedColor;
-            }
+            if (enemyRenderer != null && windupMaterial != null)
+                enemyRenderer.material = windupMaterial;
 
             yield return null;
         }
 
-        // Force final state
         RestoreVisual();
     }
 
     void RestoreVisual()
     {
-        // Restaurer scale
         transform.localScale = originalScale;
 
-        // Restaurer couleur
         if (enemyRenderer != null && originalMaterial != null)
-        {
-            enemyRenderer.material.color = originalMaterial.color;
-        }
+            enemyRenderer.material = originalMaterial;
     }
 
     public void CancelWindup()
@@ -344,7 +351,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             StopCoroutine(windupCoroutine);
             windupCoroutine = null;
         }
-
+        if (animator != null)
+            animator.SetTrigger("GrabEndTrigger");
         // Restaurer visuel
         RestoreVisual();
 
@@ -466,6 +474,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
             if (player != null && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed)
                 player.grabState = PlayerPhysicsMovement.GrabState.None;
+            if (animator != null)
+                animator.SetTrigger("GrabEndTrigger");
 
             isGrabbing = false;
         }
