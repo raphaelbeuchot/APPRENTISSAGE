@@ -541,7 +541,12 @@ public class EnemyHealth : MonoBehaviour
         }
 
         GrabAttack grabAttack = GetComponent<GrabAttack>();
-        if (grabAttack != null) grabAttack.enabled = false;
+        if (grabAttack != null)
+        {
+            if (grabAttack.isInWindup)
+                grabAttack.CancelWindup();
+            grabAttack.enabled = false;
+        }
 
         // NOUVEAU : Desactiver AIPath au lieu de NavMeshAgent
         Pathfinding.AIPath aiPath = GetComponent<Pathfinding.AIPath>();
