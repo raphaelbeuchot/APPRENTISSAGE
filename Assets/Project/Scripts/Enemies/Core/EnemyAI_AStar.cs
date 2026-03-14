@@ -236,7 +236,10 @@ public class EnemyAI_AStar : MonoBehaviour
 
         if (attackBehavior != null && attackBehavior.IsInSpecialState())
         {
-            StopMovement();
+            GrabAttack grab = attackBehavior as GrabAttack;
+            bool inBourrade = grab != null && grab.isInBourradeDuration;
+            if (!inBourrade)
+                StopMovement();
             return;
         }
 
