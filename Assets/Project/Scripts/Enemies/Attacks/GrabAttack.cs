@@ -139,6 +139,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         if (enemy != null)
             enemy.ResetChaseState();
         isLockedInIdle = false;
+        enemy.DetectHumans();
     }
     public bool CanAttack() => !isInBourradeDuration && !isInBourradeCooldown;
     public bool IsAttacking() => isGrabbing;
@@ -407,7 +408,12 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                     EndGrab(false);
                     yield break;
                 }
-
+                if (enemy != null && enemy.isStunnedBySentinel)
+                {
+                    Debug.Log($"{gameObject.name} grab cancelled - shot by sentinel during grab");
+                    EndGrab(false);
+                    yield break;
+                }
                 UpdateFakeGrabbers();
 
                 if (PlayerInputManager.Instance.MashEscapePressed)
@@ -600,7 +606,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         {
             Vector3 dir = (transform.position - player.transform.position).normalized;
             dir.y = 0;
-
+            yield return null;
             enemyRb.linearVelocity = dir * playerStats.bourradeForce;
 
             Vector3 vel = enemyRb.linearVelocity;

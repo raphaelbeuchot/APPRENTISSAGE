@@ -395,7 +395,6 @@ Transform:
   - {fileID: 4177712697037283593}
   - {fileID: 4674961973394281890}
   - {fileID: 4771439297419668079}
-  - {fileID: 1049831692332445247}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8849206077028774910
@@ -1382,12 +1381,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4991777997104058860}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.68, z: 0}
+  m_LocalRotation: {x: 0.000000037252896, y: -2.6700677e-12, z: -4.6115076e-13, w: 1}
+  m_LocalPosition: {x: 0, y: 0.33526224, z: 0.097193375}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4295875408224688438}
+  m_Father: {fileID: 4279971853319006349}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!198 &5764847275197485328
 ParticleSystem:
@@ -1397,7 +1396,7 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4991777997104058860}
   serializedVersion: 8
-  lengthInSec: 1
+  lengthInSec: 60
   simulationSpeed: 1
   stopAction: 0
   cullingMode: 0
@@ -1472,7 +1471,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 2
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -1525,7 +1524,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.05
+      scalar: 0.01
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -1643,7 +1642,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.1
+      scalar: 0.2
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -7429,13 +7428,21 @@ PrefabInstance:
     - target: {fileID: 8597865178428971248, guid: ff2e6261dc16fd5498cf6eabc8065958, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: c10c248b7a67659439adf2511fcc7ff3, type: 2}
+      objectReference: {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
     m_RemovedComponents:
     - {fileID: 5866666021909216657, guid: ff2e6261dc16fd5498cf6eabc8065958, type: 3}
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 9140253385185518857, guid: ff2e6261dc16fd5498cf6eabc8065958, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1049831692332445247}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ff2e6261dc16fd5498cf6eabc8065958, type: 3}
+--- !u!4 &4279971853319006349 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9140253385185518857, guid: ff2e6261dc16fd5498cf6eabc8065958, type: 3}
+  m_PrefabInstance: {fileID: 5025234055792463236}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4771439297419668079 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: ff2e6261dc16fd5498cf6eabc8065958, type: 3}

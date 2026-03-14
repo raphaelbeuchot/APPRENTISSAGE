@@ -57,6 +57,8 @@ public class GameManager : MonoBehaviour
         public float lostLOSTime;
         public float reacquiredTime;
         public bool canShoot;
+        public bool scheduledDuringWindup = false;
+
 
         // Variables pour securiser les tirs
         public bool isBeingShot = false;
@@ -217,7 +219,10 @@ public class GameManager : MonoBehaviour
 
             EnemyHealth enemyHealth = col.GetComponent<EnemyHealth>();
             if (enemyHealth != null && enemyHealth.IsRecovering()) continue;
-
+            
+            EnemyAI_AStar stunnedCheck = col.GetComponent<EnemyAI_AStar>();
+            if (stunnedCheck != null && stunnedCheck.isStunnedBySentinel) continue;
+            
             GrabAttack grabSystem = col.GetComponent<GrabAttack>();
             bool isInBourrade = grabSystem != null && grabSystem.isInBourradeDuration;
             bool isFakeGrabber = grabSystem != null && grabSystem.isFakeGrabbing;
@@ -472,22 +477,6 @@ public class GameManager : MonoBehaviour
             }
 
             bool isWindingUp = grabSystem != null && grabSystem.isInWindup;
-
-            if (isWindingUp && hasLOS && !trackData.isBeingShot
-                && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown
-                && !alreadyShot.Contains(col.gameObject))
-            {
-                if (enemyHealth != null && !enemyHealth.IsDead())
-                {
-                    ShootEnemy(col.gameObject, enemyHealth, "WINDUP", sentinelPos, finalTargetPos, trackData.isHeadshot);
-                    trackData.lastShotTime = Time.time;
-                    lastActualShotTime = Time.time;
-                    alreadyShot.Add(col.gameObject);
-                    trackData.wasInLOS = hasLOS;
-                    trackData.hasBeenTrackedBefore = true;
-                }
-                continue;
-            }
             EnemyAI_AStar ai = col.GetComponent<EnemyAI_AStar>();
             if (ai != null && hasLOS)
                 ai.isDetectedBySentinel = true;
@@ -615,6 +604,8 @@ public class GameManager : MonoBehaviour
             bool playerImmune = (col.gameObject == player.gameObject
                              && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed
                              && !isMoving);
+            if (isWindingUp) isMoving = true;
+
             bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit) && !playerImmune;
             EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isInShallowWater)
@@ -622,7 +613,8 @@ public class GameManager : MonoBehaviour
             }
 
             // FIN DU DELAI : Si toujours visible : TIR REUSSI
-            if (trackData.isBeingShot && Time.time >= trackData.shootScheduledTime && hasLOS)
+            bool losCheck = trackData.scheduledDuringWindup ? true : hasLOS;
+            if (trackData.isBeingShot && Time.time >= trackData.shootScheduledTime && losCheck)
             {
                 // NOUVEAU : Verifier qu'on n'a pas tire trop recemment dans ce scan
                 if (Time.time - lastActualShotTime < SHOT_SPACING_WINDOW)
@@ -650,7 +642,7 @@ public class GameManager : MonoBehaviour
                 trackData.isBeingShot = false;
                 trackData.shootScheduledTime = -1f;
                 trackData.lastShotTime = Time.time;
-
+                trackData.scheduledDuringWindup = false;
                 continue;
             }
 
@@ -666,6 +658,8 @@ public class GameManager : MonoBehaviour
                     if (trackData.consecutiveLOSScans >= sentinelSettings.minimumExposureScans)
                     {
                         trackData.isBeingShot = true;
+                        trackData.scheduledDuringWindup = isWindingUp; // AJOUTER
+
                         float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
                         trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
                         trackData.lastShotTime = Time.time;
@@ -694,6 +688,8 @@ public class GameManager : MonoBehaviour
                 else
                 {
                     trackData.isBeingShot = true;
+                    trackData.scheduledDuringWindup = isWindingUp; // AJOUTER
+
                     float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
                     trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
                     trackData.lastShotTime = Time.time;
@@ -838,7 +834,14 @@ public class GameManager : MonoBehaviour
         // Reset cooldown pour eviter re-tir immediat apres stun
         if (trackedTargets.ContainsKey(ai.gameObject))
         {
-            trackedTargets[ai.gameObject].lastShotTime = Time.time;
+            TargetTrackingData td = trackedTargets[ai.gameObject];
+            td.lastShotTime = Time.time - sentinelSettings.shootCooldown;
+            td.isBeingShot = false;
+            td.shootScheduledTime = -1f;
+            td.wasInLOS = false;
+            td.consecutiveLOSScans = 0;
+            td.lastCheckPosition = ai.transform.position;
+            td.lastCheckTime = Time.time;
         }
 
         // Reset lastPathDestination pour forcer recalcul path a la reprise

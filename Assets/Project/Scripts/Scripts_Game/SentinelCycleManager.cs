@@ -39,6 +39,8 @@ public class SentinelCycleManager : MonoBehaviour
     [SerializeField] private float vinylSlowDownDuration = 0.8f;
     [SerializeField] private float vinylHighPassMaxFrequency = 8000f;
     private Coroutine vinylCoroutine;
+    [SerializeField] private float vinylMinPitch = 0.2f;
+
 
     [Header("State")]
     public GameState currentState = GameState.GreenLight;
@@ -269,12 +271,12 @@ public class SentinelCycleManager : MonoBehaviour
             float t = elapsed / vinylSlowDownDuration;
             musicAudioSource.pitch = Mathf.Lerp(startPitch, 0f, t);
             if (musicHighPassFilter != null)
-                musicHighPassFilter.cutoffFrequency = Mathf.Lerp(10f, vinylHighPassMaxFrequency, t);
+                musicAudioSource.pitch = Mathf.Lerp(startPitch, vinylMinPitch, t);
             yield return null;
         }
 
         musicAudioSource.Stop();
-        musicAudioSource.pitch = 1f;
+        musicAudioSource.pitch = vinylMinPitch;
         if (musicHighPassFilter != null)
             musicHighPassFilter.cutoffFrequency = 10f;
         vinylCoroutine = null;

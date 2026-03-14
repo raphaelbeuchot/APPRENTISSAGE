@@ -18,7 +18,6 @@ public class EnemyAnimationController : MonoBehaviour
         GrabAttack grabAttack = enemyAI.GetComponent<GrabAttack>();
         bool isInBourrade = grabAttack != null && grabAttack.IsInBourrade();
 
-        Debug.Log($"[AnimController] state={enemyAI.currentState} isInBourrade={isInBourrade} cooldown={grabAttack?.isInBourradeCooldown}");
 
         bool isChasing = enemyAI.enabled
                && (enemyAI.currentState == EnemyAI_AStar.State.Chasing
