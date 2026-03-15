@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: -1765412710480583640}
   - component: {fileID: 4582366830139996830}
   - component: {fileID: -2056432718933974352}
+  - component: {fileID: 3175957205576492235}
   m_Layer: 6
   m_Name: ZombieChaser
   m_TagString: Untagged
@@ -350,6 +351,24 @@ MonoBehaviour:
   deadDrag: 5
   broomLowMass: 5
   broomLowDrag: 0.5
+--- !u!114 &3175957205576492235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5248851035368284380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be122048be0ad3a489c1c1ef067bbe63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyIdleVariant
+  idleVariants:
+  - {fileID: 9100000, guid: 9d9ca0e0cc0377c488a38a800512e521, type: 2}
+  - {fileID: 22100000, guid: fff735021c369f446a56005793e40ddf, type: 2}
+  - {fileID: 22100000, guid: 8a98e23c2241e6d44be843d8e66b9def, type: 2}
+  - {fileID: 22100000, guid: f39831ddc3718a2458711fc3eef11309, type: 2}
+  - {fileID: 22100000, guid: 33ea26d07d0eb2c4c87d6bbb0b0af187, type: 2}
 --- !u!1001 &2105122973771687815
 PrefabInstance:
   m_ObjectHideFlags: 0

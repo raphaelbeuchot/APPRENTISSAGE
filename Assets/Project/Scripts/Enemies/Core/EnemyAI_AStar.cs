@@ -96,6 +96,7 @@ public class EnemyAI_AStar : MonoBehaviour
         wanderBehavior = GetComponent<BlinderWanderBehavior>();
         pitInteractable = GetComponent<EnemyPitInteractable>();
         animator = GetComponentInChildren<Animator>();
+        animator.Play("Idle", 0, Random.value);
 
         isBlinder = stats.attackType == EnemyStats.AttackType.Blinder;
 
