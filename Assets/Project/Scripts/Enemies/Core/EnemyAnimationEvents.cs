@@ -14,4 +14,10 @@ public class EnemyAnimationEvents : MonoBehaviour
         if (hitAttack != null)
             hitAttack.OnHitLand();
     }
+
+    public void OnWindupComplete()
+    {
+        if (hitAttack != null)
+            hitAttack.OnWindupComplete();
+    }
 }

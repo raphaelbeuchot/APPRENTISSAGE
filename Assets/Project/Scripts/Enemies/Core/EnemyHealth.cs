@@ -448,6 +448,14 @@ public class EnemyHealth : MonoBehaviour
             grabCheck.CancelWindup();
             Debug.Log($"[SENTINEL] Cancelled {gameObject.name} grab windup");
         }
+        // ANNULER WINDUP HITTER SI EN COURS
+
+        HitAttack hitAttackCheck = GetComponent<HitAttack>();
+        if (hitAttackCheck != null && (hitAttackCheck.isInWindup || hitAttackCheck.IsAttacking()))
+        {
+            hitAttackCheck.CancelAttack();
+            Debug.Log($"[SENTINEL] Cancelled {gameObject.name} hit attack");
+        }
 
         // Déclencher le stun de 2s pour TOUS les zombies, indépendamment du grab
         StartCoroutine(StunCoroutine());

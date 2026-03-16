@@ -15,6 +15,10 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
     private Material originalMaterial;
     private Material whiteMaterial;
 
+    private bool isCancelled = false;
+    private bool willHit = false;
+
+
     public bool isInWindup = false;
     private bool windupAnimComplete = false;
     private Coroutine windupCoroutine;
@@ -64,6 +68,8 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
     public void StartWindup()
     {
         if (isInWindup || isAttacking || isLockedInIdle) return;
+        isCancelled = false;
+        willHit = false;
         windupCoroutine = StartCoroutine(WindupCoroutine());
     }
 
@@ -104,6 +110,22 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         }
 
         isInWindup = false;
+
+        float dist = Vector3.Distance(transform.position, player.transform.position);
+        Vector3 dirToPlayer = (player.transform.position - transform.position).normalized;
+        float angle = Vector3.Angle(transform.forward, dirToPlayer);
+        Vector3 losOrigin = transform.position + Vector3.up * 0.5f;
+        Vector3 losTarget = player.transform.position + Vector3.up * 0.5f;
+        bool hasLOS = !Physics.Raycast(losOrigin, (losTarget - losOrigin).normalized, Vector3.Distance(losOrigin, losTarget), LayerMask.GetMask("Obstacle"));
+
+        willHit = dist <= stats.attackRange && angle <= stats.detectionAngle / 1.75f && hasLOS;
+
+        if (!willHit)
+        {
+            if (animator != null)
+                animator.SetTrigger("HitFailTrigger");
+            StartCoroutine(LockInIdleCoroutine(1.5f));
+        }
     }
 
     IEnumerator WindupWhiteEffect()
@@ -119,6 +141,8 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
 
     public void CancelAttack()
     {
+        isCancelled = true;
+
         if (isInWindup)
         {
             CancelWindup();
@@ -132,7 +156,9 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
             windupAnimComplete = true;
             RestoreVisual();
             if (animator != null)
-                animator.SetTrigger("HitFailTrigger");
+            {
+                animator.Play("Sad Idle", 0, 0f);
+            }
             StartCoroutine(LockInIdleCoroutine(1.5f));
         }
     }
@@ -145,6 +171,8 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
     // Appele par EnemyAnimationEvents via Animation Event
     public void OnHitLand()
     {
+        if (!willHit) return;
+
         if (enemyHealth != null && enemyHealth.IsRecovering()) return;
 
         if (player == null) return;
@@ -158,7 +186,7 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
 
         Vector3 dirToPlayer = (player.transform.position - transform.position).normalized;
         float angle = Vector3.Angle(transform.forward, dirToPlayer);
-        if (angle > stats.detectionAngle / 2f)
+        if (angle > stats.detectionAngle / 1.75f)
         {
             FailHit();
             return;
@@ -222,8 +250,9 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         if (!isInWindup) return;
 
         isInWindup = false;
+        isCancelled = true;
         windupAnimComplete = true;
-
+        willHit = false;
         if (windupCoroutine != null)
         {
             StopCoroutine(windupCoroutine);
@@ -233,7 +262,7 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         RestoreVisual();
 
         if (animator != null)
-            animator.SetTrigger("HitFailTrigger");
+            animator.Play("Sad Idle", 0, 0f);
 
         StartCoroutine(LockInIdleCoroutine(1.5f));
     }
@@ -247,7 +276,6 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
             if (enemy != null)
             {
                 enemy.currentState = EnemyAI_AStar.State.Idle;
-                enemy.StopMovement();
             }
             elapsed += Time.deltaTime;
             yield return null;
@@ -268,9 +296,14 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         RestoreVisual();
 
         if (animator != null)
-            animator.SetTrigger("HitFailTrigger");
+            animator.Play("Sad Idle", 0, 0f);
 
         if (enemyRb != null)
             enemyRb.linearVelocity = Vector3.zero;
+    }
+
+    public void OnWindupComplete()
+    {
+        windupAnimComplete = true;
     }
 }

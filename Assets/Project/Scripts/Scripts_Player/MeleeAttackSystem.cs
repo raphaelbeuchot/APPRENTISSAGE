@@ -95,6 +95,11 @@ public class MeleeAttackSystem : MonoBehaviour
                 movement.ExitCrouch();
         }
 
+        if (PlayerInputManager.Instance.ThrowBottlePressed && CanThrowBottle())
+        {
+            ThrowBottle();
+        }
+
         HandleReload();
 
         // Check bottle pickup
