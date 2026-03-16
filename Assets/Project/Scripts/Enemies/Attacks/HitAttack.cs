@@ -117,6 +117,25 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         RestoreVisual();
     }
 
+    public void CancelAttack()
+    {
+        if (isInWindup)
+        {
+            CancelWindup();
+            return;
+        }
+        if (isAttacking)
+        {
+            StopAllCoroutines();
+            isAttacking = false;
+            isInWindup = false;
+            windupAnimComplete = true;
+            RestoreVisual();
+            if (animator != null)
+                animator.SetTrigger("HitFailTrigger");
+            StartCoroutine(LockInIdleCoroutine(1.5f));
+        }
+    }
     void RestoreVisual()
     {
         if (enemyRenderer != null && originalMaterial != null)
@@ -126,6 +145,8 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
     // Appele par EnemyAnimationEvents via Animation Event
     public void OnHitLand()
     {
+        if (enemyHealth != null && enemyHealth.IsRecovering()) return;
+
         if (player == null) return;
 
         float dist = Vector3.Distance(transform.position, player.transform.position);

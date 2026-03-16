@@ -298,6 +298,15 @@ public class MeleeAttackSystem : MonoBehaviour
                     grab.CancelWindup();
                     Debug.Log($"[SPRAY] Cancelled {enemyHealth.gameObject.name} grab windup");
                 }
+
+                //CANCEL WINDUP HITTER
+                HitAttack hitAttack = enemyHealth.GetComponent<HitAttack>();
+                if (hitAttack != null && (hitAttack.isInWindup || hitAttack.IsAttacking()))
+                {
+                    hitAttack.CancelAttack();
+                    Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} hit attack");
+                }
+
                 // ANNULER ROTATION TO IMPACT SI EN COURS
                 if (enemyAI_AStar != null && enemyAI_AStar.currentState == EnemyAI_AStar.State.RotatingToImpact)
                 {

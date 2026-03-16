@@ -215,10 +215,10 @@ public class BroomAttackSystem : MonoBehaviour
 
                 // ANNULER WINDUP HIT SI EN COURS
                 HitAttack hitAttack = enemyHealth.GetComponent<HitAttack>();
-                if (hitAttack != null && hitAttack.isInWindup)
+                if (hitAttack != null && (hitAttack.isInWindup || hitAttack.IsAttacking()))
                 {
-                    hitAttack.CancelWindup();
-                    Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} hit windup");
+                    hitAttack.CancelAttack();
+                    Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} hit attack");
                 }
 
                 // ANNULER ROTATION TO IMPACT SI EN COURS
