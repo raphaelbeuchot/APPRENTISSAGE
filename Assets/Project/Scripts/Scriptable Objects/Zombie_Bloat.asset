@@ -21,13 +21,13 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 8
-  walkSpeed: 0.4
-  chaseSpeed: 0.6
+  walkSpeed: 0.5
+  chaseSpeed: 0.8
   rotationSpeed: 3
   crawlSpeed: 0.2
   speedReductionPerHealthPercent: 0.3
   detectionRadius: 4
-  detectionAngle: 90
+  detectionAngle: 150
   detectionCheckInterval: 0.5
   targetLayer:
     serializedVersion: 2
@@ -40,6 +40,7 @@ MonoBehaviour:
   chasePersistenceDuration: 10
   attackRange: 1.5
   attackCooldown: 2
+  windupMaterial: {fileID: 2100000, guid: f0de86f2557323747b1bea6982df5e7c, type: 2}
   grabDuration: 5
   biteDamage: 5
   oneArmMashReduction: 0.5
