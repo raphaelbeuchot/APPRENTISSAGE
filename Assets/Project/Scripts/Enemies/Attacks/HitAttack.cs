@@ -93,6 +93,13 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
                 yield break;
             }
 
+            // AJOUT SENTINELLE
+            if (enemy != null && enemy.isStunnedBySentinel)
+            {
+                CancelWindup();
+                yield break;
+            }
+
             yield return null;
         }
 
