@@ -120,12 +120,11 @@ public class EnemyAI_AStar : MonoBehaviour
                 attackBehavior = GetComponent<GrabAttack>() ?? gameObject.AddComponent<GrabAttack>();
                 break;
             case EnemyStats.AttackType.Hitter:
+                attackBehavior = GetComponent<HitAttack>() ?? gameObject.AddComponent<HitAttack>();
                 break;
             case EnemyStats.AttackType.Spitter:
                 break;
-            case EnemyStats.AttackType.Blinder:
-                attackBehavior = GetComponent<ChargeAttack>() ?? gameObject.AddComponent<ChargeAttack>();
-                break;
+                           
             default:
                 break;
         }
@@ -624,9 +623,15 @@ public class EnemyAI_AStar : MonoBehaviour
                 lastAttackTime = Time.time;
 
                 GrabAttack grabAttack = attackBehavior as GrabAttack;
+                HitAttack hitAttack = attackBehavior as HitAttack;
+
                 if (grabAttack != null)
                 {
                     grabAttack.StartWindup();
+                }
+                else if (hitAttack != null)
+                {
+                    hitAttack.StartWindup();
                 }
                 else
                 {

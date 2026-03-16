@@ -2,15 +2,16 @@ using UnityEngine;
 
 public class EnemyAnimationEvents : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private HitAttack hitAttack;
+
     void Start()
     {
-        
+        hitAttack = GetComponent<HitAttack>();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void OnHitLand()
     {
-        
+        if (hitAttack != null)
+            hitAttack.OnHitLand();
     }
 }

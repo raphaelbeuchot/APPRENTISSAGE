@@ -213,6 +213,14 @@ public class BroomAttackSystem : MonoBehaviour
                     Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} grab windup");
                 }
 
+                // ANNULER WINDUP HIT SI EN COURS
+                HitAttack hitAttack = enemyHealth.GetComponent<HitAttack>();
+                if (hitAttack != null && hitAttack.isInWindup)
+                {
+                    hitAttack.CancelWindup();
+                    Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} hit windup");
+                }
+
                 // ANNULER ROTATION TO IMPACT SI EN COURS
                 EnemyAI_AStar zombieAI = hit.GetComponent<EnemyAI_AStar>();
                 if (zombieAI != null && zombieAI.currentState == EnemyAI_AStar.State.RotatingToImpact)

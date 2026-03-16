@@ -108,6 +108,8 @@ public class EnemyStats : ScriptableObject
     public float meleeKnockbackForce = 8f;
     [Tooltip("Durée de l'animation de melee")]
     public float meleeAttackDuration = 0.8f;
+    public AudioClip hitWindupSound;
+    public AudioClip hitLandSound;
 
     [Header("ATTAQUE - SPITTER (si attackType = Spitter)")]
     [Tooltip("Dégâts du projectile")]
