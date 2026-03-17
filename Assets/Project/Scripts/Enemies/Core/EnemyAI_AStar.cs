@@ -173,7 +173,8 @@ public class EnemyAI_AStar : MonoBehaviour
 
         if (isStunnedBySentinel)
         {
-            StopMovement();
+            if (health == null || !health.isInKnockback)
+                StopMovement();
             if (currentState != State.OnRotatingPlatform)
                 currentState = State.Idle;
             return;

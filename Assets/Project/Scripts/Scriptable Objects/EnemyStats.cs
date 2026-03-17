@@ -196,6 +196,8 @@ public class EnemyStats : ScriptableObject
     [Header("DAMAGE TAKEN")]
     [Tooltip("Dégâts pris par tir sentinelle")]
     public float sentinelDamageTaken = 50f;  // existant
+    [Tooltip("Force de recul sur tir sentinelle non-létal")]
+    public float sentinelKnockbackForce = 5f;
 
     [Header("AUDIO")]
     [Tooltip("Son joue quand le zombie tombe dans l'eau")]

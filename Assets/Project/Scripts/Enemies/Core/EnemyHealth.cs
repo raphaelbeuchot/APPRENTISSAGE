@@ -457,10 +457,22 @@ public class EnemyHealth : MonoBehaviour
             Debug.Log($"[SENTINEL] Cancelled {gameObject.name} hit attack");
         }
 
-        // Déclencher le stun de 2s pour TOUS les zombies, indépendamment du grab
+        
+        Animator enemyAnimator = GetComponentInChildren<Animator>();
+        if (enemyAnimator != null)
+            enemyAnimator.SetTrigger("HitReaction");
         StartCoroutine(StunCoroutine());
 
         UpdateSpeed();
+        // Knockback non-létal
+        if (rb != null)
+        {
+            Vector3 knockbackDir = lastImpactDirection;
+            knockbackDir.y = 0f;
+            knockbackDir.Normalize();
+            SetKnockbackState(0.5f);
+            rb.AddForce(knockbackDir * stats.sentinelKnockbackForce, ForceMode.Impulse);
+        }
     }
 
     // Coroutine pour reset le flag (déjà présente en haut du script)
@@ -471,6 +483,13 @@ public class EnemyHealth : MonoBehaviour
         recentlyHitBySentinel = false;
     }
 
+    private IEnumerator DelayedKnockback(Vector3 force)
+    {
+        yield return new WaitForFixedUpdate();
+        yield return new WaitForFixedUpdate();
+        if (!isDead && rb != null)
+            rb.AddForce(force, ForceMode.Impulse);
+    }
     private IEnumerator StunCoroutine()
     {
         if (isDead) yield break;
