@@ -283,6 +283,13 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         if (enemy != null)
             enemy.ResetChaseState();
         isLockedInIdle = false;
+
+        if (enemy != null)
+        {
+            enemy.DetectHumans();
+            if (enemy.isOnIslandPlatform)
+                enemy.currentState = EnemyAI_AStar.State.OnIslandPlatform;
+        }
     }
     public void ForceStop()
     {

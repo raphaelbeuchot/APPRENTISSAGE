@@ -139,7 +139,13 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         if (enemy != null)
             enemy.ResetChaseState();
         isLockedInIdle = false;
-        enemy.DetectHumans();
+
+        if (enemy != null)
+        {
+            enemy.DetectHumans();
+            if (enemy.isOnIslandPlatform)
+                enemy.currentState = EnemyAI_AStar.State.OnIslandPlatform;
+        }
     }
     public bool CanAttack() => !isInBourradeDuration && !isInBourradeCooldown;
     public bool IsAttacking() => isGrabbing;
