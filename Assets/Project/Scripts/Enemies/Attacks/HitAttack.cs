@@ -13,7 +13,6 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
     private Animator animator;
     private Renderer enemyRenderer;
     private Material originalMaterial;
-    private Material whiteMaterial;
 
     private bool isCancelled = false;
     private bool willHit = false;
@@ -48,8 +47,6 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         if (enemyRenderer != null)
         {
             originalMaterial = enemyRenderer.material;
-            whiteMaterial = new Material(originalMaterial);
-            whiteMaterial.color = Color.white;
         }
     }
 
@@ -81,7 +78,10 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         if (animator != null)
             animator.SetTrigger("HitWindupTrigger");
         if (audioSource != null && stats.hitWindupSound != null)
-            audioSource.PlayOneShot(stats.hitWindupSound);
+        {
+            audioSource.clip = stats.hitWindupSound;
+            audioSource.Play();
+        }
 
         StartCoroutine(WindupWhiteEffect());
 
@@ -122,9 +122,7 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
 
         if (!willHit)
         {
-            if (animator != null)
-                animator.SetTrigger("HitFailTrigger");
-            StartCoroutine(LockInIdleCoroutine(1.5f));
+            FailHit();
         }
     }
 
@@ -132,8 +130,8 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
     {
         while (isInWindup)
         {
-            if (enemyRenderer != null && whiteMaterial != null)
-                enemyRenderer.material = whiteMaterial;
+            if (enemyRenderer != null && stats.windupMaterial != null)
+                enemyRenderer.material = stats.windupMaterial;
             yield return null;
         }
         RestoreVisual();
@@ -227,6 +225,10 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
 
     void FailHit()
     {
+        if (audioSource != null)
+            audioSource.Stop();
+        if (audioSource != null && stats.hitWindupFailSound != null)
+            audioSource.PlayOneShot(stats.hitWindupFailSound);
         windupAnimComplete = true;
         isInWindup = false;
         RestoreVisual();
@@ -252,6 +254,8 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         isInWindup = false;
         isCancelled = true;
         windupAnimComplete = true;
+        if (audioSource != null)
+            audioSource.Stop();
         willHit = false;
         if (windupCoroutine != null)
         {

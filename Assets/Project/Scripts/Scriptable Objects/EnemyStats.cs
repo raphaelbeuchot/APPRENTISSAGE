@@ -110,6 +110,8 @@ public class EnemyStats : ScriptableObject
     public float meleeAttackDuration = 0.8f;
     public AudioClip hitWindupSound;
     public AudioClip hitLandSound;
+    public AudioClip hitWindupFailSound;
+
 
     [Header("ATTAQUE - SPITTER (si attackType = Spitter)")]
     [Tooltip("Dégâts du projectile")]

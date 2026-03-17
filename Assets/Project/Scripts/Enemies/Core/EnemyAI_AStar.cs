@@ -548,6 +548,12 @@ public class EnemyAI_AStar : MonoBehaviour
 
     protected virtual void HandleIdleState()
     {
+        if (isOnIslandPlatform)
+        {
+            currentState = State.OnIslandPlatform;
+            return;
+        }
+
         StopMovement();
 
         if (wanderBehavior != null && !wanderBehavior.IsWandering())
@@ -932,7 +938,7 @@ public class EnemyAI_AStar : MonoBehaviour
         Debug.Log($"[Island] cap={cap != null} halfHeight={halfHeight} state={currentState}");
         Vector3 edgeCheckOrigin = transform.position + Vector3.up * halfHeight + transform.forward * 0.4f;
         int islandLayer = LayerMask.GetMask("IslandPlatform");
-        bool groundAhead = Physics.Raycast(edgeCheckOrigin, Vector3.down, 3f, islandLayer);
+        bool groundAhead = Physics.Raycast(edgeCheckOrigin, Vector3.down, 2f, islandLayer);
 
         Debug.Log($"[Island] groundAhead={groundAhead}");
 

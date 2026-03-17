@@ -196,8 +196,8 @@ public class LevelManager : MonoBehaviour
     public void LoadLevelSelect()
     {
         Time.timeScale = 1f;
-        LoadingScreenManager.TargetSceneIndex = 18;
-        SceneManager.LoadScene(16);
+        LoadingScreenManager.TargetSceneIndex = 2;
+        SceneManager.LoadScene(1);
     }
 
     public void RestartLevel()

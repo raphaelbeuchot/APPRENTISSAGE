@@ -181,8 +181,9 @@ public class PauseMenuUI : MonoBehaviour
         // Pause ambient track
         CountdownManager countdown = FindObjectOfType<CountdownManager>();
         if (countdown != null) countdown.PauseAmbient();
+        SentinelCycleManager cycle = FindObjectOfType<SentinelCycleManager>();
+        if (cycle != null) cycle.PauseMusic();
 
-        Debug.Log("Game paused");
     }
 
     public void Resume()
@@ -194,8 +195,9 @@ public class PauseMenuUI : MonoBehaviour
         // Resume ambient track
         CountdownManager countdown = FindObjectOfType<CountdownManager>();
         if (countdown != null) countdown.ResumeAmbient();
+        SentinelCycleManager cycle = FindObjectOfType<SentinelCycleManager>();
+        if (cycle != null) cycle.ResumeMusic();
 
-        Debug.Log("Game resumed");
     }
     void Hide()
     {

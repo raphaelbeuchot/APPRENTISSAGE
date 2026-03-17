@@ -123,30 +123,30 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
     }
     IEnumerator LockInIdleCoroutine(float duration)
+{
+    isLockedInIdle = true;
+    float elapsed = 0f;
+    while (elapsed < duration)
     {
-        isLockedInIdle = true;
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            if (enemy != null)
-            {
-                enemy.currentState = EnemyAI_AStar.State.Idle;
-                enemy.StopMovement();
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-        if (enemy != null)
-            enemy.ResetChaseState();
-        isLockedInIdle = false;
-
         if (enemy != null)
         {
-            enemy.DetectHumans();
-            if (enemy.isOnIslandPlatform)
-                enemy.currentState = EnemyAI_AStar.State.OnIslandPlatform;
+            enemy.currentState = EnemyAI_AStar.State.Idle;
+            enemy.StopMovement();
         }
+        elapsed += Time.deltaTime;
+        yield return null;
     }
+    if (enemy != null)
+        enemy.ResetChaseState();
+    isLockedInIdle = false;
+
+    if (enemy != null)
+    {
+        enemy.DetectHumans();
+        if (enemy.isOnIslandPlatform)
+            enemy.currentState = EnemyAI_AStar.State.OnIslandPlatform;
+    }
+}
     public bool CanAttack() => !isInBourradeDuration && !isInBourradeCooldown;
     public bool IsAttacking() => isGrabbing;
     public bool IsInSpecialState() => isInBourradeDuration || isInBourradeCooldown || isInWindup;

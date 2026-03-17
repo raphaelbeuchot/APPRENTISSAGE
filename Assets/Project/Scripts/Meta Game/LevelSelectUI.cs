@@ -103,7 +103,6 @@ public class LevelSelectUI : MonoBehaviour
 
     void SelectCurrentOption()
     {
-        // Dernier item = Retour
         if (currentSelection == levels.Count)
         {
             GoBack();
@@ -115,13 +114,13 @@ public class LevelSelectUI : MonoBehaviour
             return;
 
         LoadingScreenManager.TargetSceneIndex = data.sceneIndex;
-        SceneManager.LoadScene(16);
+        SceneManager.LoadScene(1);
     }
 
     void GoBack()
     {
         LoadingScreenManager.TargetSceneIndex = 0;
-        SceneManager.LoadScene(16);
+        SceneManager.LoadScene(1);
     }
 
     void BuildList()

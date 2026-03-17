@@ -188,6 +188,9 @@ public class GameOverUI : MonoBehaviour
         // NOUVEAU : Freeze le temps comme en pause
         Time.timeScale = 0f;
 
+        SentinelCycleManager cycle = FindObjectOfType<SentinelCycleManager>();
+        if (cycle != null) cycle.PauseMusic();
+
         if (gameOverCanvasGroup != null)
         {
             gameOverCanvasGroup.alpha = 1f;

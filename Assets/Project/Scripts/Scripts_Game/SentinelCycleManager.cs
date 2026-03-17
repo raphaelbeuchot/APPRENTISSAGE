@@ -634,4 +634,16 @@ public class SentinelCycleManager : MonoBehaviour
 
         Debug.Log("[CYCLE] Cycle arrete - Sons coupes");
     }
+
+    public void PauseMusic()
+    {
+        if (musicAudioSource != null && musicAudioSource.isPlaying)
+            musicAudioSource.Pause();
+    }
+
+    public void ResumeMusic()
+    {
+        if (musicAudioSource != null && !musicAudioSource.isPlaying && currentState == GameState.GreenLight)
+            musicAudioSource.UnPause();
+    }
 }

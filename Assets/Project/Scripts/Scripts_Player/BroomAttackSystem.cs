@@ -352,15 +352,13 @@ public class BroomAttackSystem : MonoBehaviour
             {
                 Pathfinding.AIPath aiPath = target.GetComponent<Pathfinding.AIPath>();
                 if (aiPath != null)
-                {
                     aiPath.enabled = true;
-                }
                 zombieAI_AStar.enabled = true;
             }
 
             zombieAI_AStar.lastPathDestination = Vector3.positiveInfinity;
 
-            if (zombieAI_AStar.isOnIslandPlatform)
+            if (zombieAI_AStar.isOnIslandPlatform && zombieAI_AStar.currentState != EnemyAI_AStar.State.RotatingToImpact)
             {
                 zombieAI_AStar.currentState = EnemyAI_AStar.State.OnIslandPlatform;
                 zombieAI_AStar.DetectHumans();
