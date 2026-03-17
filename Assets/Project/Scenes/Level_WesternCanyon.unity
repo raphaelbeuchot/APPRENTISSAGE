@@ -65387,7 +65387,8 @@ GameObject:
   - component: {fileID: 759637115}
   - component: {fileID: 759637114}
   - component: {fileID: 759637113}
-  m_Layer: 3
+  - component: {fileID: 759637116}
+  m_Layer: 13
   m_Name: Refuge_003
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -65486,6 +65487,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 759637111}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &759637116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 759637111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 338eeb8f543aae04191a0f6652208033, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IslandPlatform
 --- !u!1 &760088981
 GameObject:
   m_ObjectHideFlags: 0
@@ -121521,68 +121534,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1642869892}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1001 &1644433749
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1697455044}
-    m_Modifications:
-    - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-      propertyPath: m_Name
-      value: ZombieChaser06
-      objectReference: {fileID: 0}
-    - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -2.416048
-      objectReference: {fileID: 0}
-    - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 2.4433174
-      objectReference: {fileID: 0}
-    - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: -0.9566579
-      objectReference: {fileID: 0}
-    - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0.2912143
-      objectReference: {fileID: 0}
-    - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 326.139
-      objectReference: {fileID: 0}
-    - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
---- !u!4 &1644433750 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
-  m_PrefabInstance: {fileID: 1644433749}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1645449246 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
@@ -125157,7 +125108,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1432951499076031157}
-  - {fileID: 1644433750}
   - {fileID: 1473443654}
   - {fileID: 1397167344}
   - {fileID: 1647027124}
@@ -140840,7 +140790,8 @@ GameObject:
   - component: {fileID: 1939539253}
   - component: {fileID: 1939539252}
   - component: {fileID: 1939539251}
-  m_Layer: 3
+  - component: {fileID: 1939539254}
+  m_Layer: 13
   m_Name: Refuge_005
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -140939,6 +140890,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1939539249}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1939539254
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1939539249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 338eeb8f543aae04191a0f6652208033, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IslandPlatform
 --- !u!4 &1940517803 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}

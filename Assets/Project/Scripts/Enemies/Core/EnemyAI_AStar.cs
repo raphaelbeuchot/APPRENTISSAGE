@@ -858,6 +858,8 @@ public class EnemyAI_AStar : MonoBehaviour
         if (health != null) health.ShowSpiral();
         if (animator != null)
             animator.SetLayerWeight(1, 1f);
+        if (animator != null)
+            animator.SetBool("OnRotPlat", true);
     }
 
     public void DisableRotatingPlatformMode()
@@ -872,6 +874,8 @@ public class EnemyAI_AStar : MonoBehaviour
         if (health != null) health.HideSpiral();
         if (animator != null)
             animator.SetLayerWeight(1, 0f);
+        if (animator != null)
+            animator.SetBool("OnRotPlat", false);
     }
 
     public void EnableIslandMode()
