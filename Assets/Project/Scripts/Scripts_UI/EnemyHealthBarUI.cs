@@ -87,7 +87,6 @@ public class EnemyHealthBarUI : MonoBehaviour
     {
         if (this == null || gameObject == null) return;
 
-        Debug.Log($"[HealthBarUI] SHOW called on {gameObject.name}");
 
         if (fadeCoroutine != null)
             StopCoroutine(fadeCoroutine);
@@ -98,7 +97,6 @@ public class EnemyHealthBarUI : MonoBehaviour
         if (cg != null)
         {
             cg.alpha = 1f;
-            Debug.Log($"[HealthBarUI] CanvasGroup alpha set to 1");
         }
     }
 

@@ -49,6 +49,11 @@ public class EnemyAI_AStar : MonoBehaviour
     private float recoveryEndTime = 0f;
     private bool isRecoveringFromPlatform = false;
 
+    [Header("Island Platform Mode")]
+    [HideInInspector] public bool isOnIslandPlatform = false;
+    private float islandCheckInterval = 0.2f;
+    private float lastIslandCheckTime = 0f;
+
     [Header("Pathfinding Optimization")]
     [HideInInspector] public Vector3 lastPathDestination = Vector3.positiveInfinity;
     private float pathUpdateThreshold = 0.5f; // Distance min pour recalculer path
@@ -78,7 +83,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
     private bool isBlinder = false;
 
-    public enum State { Idle, Wandering, Chasing, Attacking, StunBySpray, OnRotatingPlatform, RotatingToImpact, Dead }
+    public enum State { Idle, Wandering, Chasing, Attacking, StunBySpray, OnRotatingPlatform, RotatingToImpact, OnIslandPlatform, Dead }
     public State currentState = State.Idle;
 
     protected virtual void Start()
@@ -204,7 +209,27 @@ public class EnemyAI_AStar : MonoBehaviour
                 return;
             }
         }
+        if (Time.time - lastIslandCheckTime >= islandCheckInterval)
+        {
+            lastIslandCheckTime = Time.time;
+            int islandLayer = LayerMask.GetMask("IslandPlatform");
+            RaycastHit islandHit;
+            CapsuleCollider cap = GetComponent<CapsuleCollider>();
+            float halfHeight = cap != null ? cap.height / 2f : 1f;
+            Vector3 origin = transform.position + Vector3.up * halfHeight + transform.forward * 0.2f;
+            bool onIsland = Physics.Raycast(origin, Vector3.down, out islandHit, 3f, islandLayer);
 
+            if (onIsland && !isOnIslandPlatform)
+            {
+                Debug.Log($"[Island] Enable island mode - hit={islandHit.collider?.name}");
+                EnableIslandMode();
+            }
+            else if (!onIsland && isOnIslandPlatform)
+            {
+                Debug.Log($"[Island] Disable island mode");
+                DisableIslandMode();
+            }
+        }
         if (!canMove)
         {
             if (aiPath != null)
@@ -266,6 +291,9 @@ public class EnemyAI_AStar : MonoBehaviour
                 break;
             case State.RotatingToImpact:
                 HandleRotatingToImpactState();
+                break;
+            case State.OnIslandPlatform:
+                HandleOnIslandPlatformState();
                 break;
             case State.Dead:
                 StopMovement();
@@ -359,10 +387,11 @@ public class EnemyAI_AStar : MonoBehaviour
         GrabAttack grab = GetComponent<GrabAttack>();
         if (grab != null && grab.isLockedInIdle) return;
 
-        if (grab != null && grab.isInWindup) return; if (currentState == State.StunBySpray)
+        if (grab != null && grab.isInWindup) return;
+
+        if (currentState == State.StunBySpray)
             return;
-        
-        // Ignorer detection si sur plateforme rotative
+
         if (currentState == State.OnRotatingPlatform)
             return;
 
@@ -405,7 +434,8 @@ public class EnemyAI_AStar : MonoBehaviour
             ? stats.detectionRadius * 2f
             : stats.detectionRadius;
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, effectiveDetectionRadius, stats.targetLayer); Transform closestHuman = null;
+        Collider[] hits = Physics.OverlapSphere(transform.position, effectiveDetectionRadius, stats.targetLayer);
+        Transform closestHuman = null;
         float closestDistance = Mathf.Infinity;
 
         foreach (Collider hit in hits)
@@ -451,10 +481,13 @@ public class EnemyAI_AStar : MonoBehaviour
             lostTargetTime = -999f;
             hasCalculatedAnticipatedPosition = false;
 
-            if (closestDistance <= stats.attackRange)
-                currentState = State.Attacking;
-            else
-                currentState = State.Chasing;
+            if (!isOnIslandPlatform)
+            {
+                if (closestDistance <= stats.attackRange)
+                    currentState = State.Attacking;
+                else
+                    currentState = State.Chasing;
+            }
         }
         else
         {
@@ -486,8 +519,11 @@ public class EnemyAI_AStar : MonoBehaviour
                     hasCalculatedAnticipatedPosition = true;
                 }
 
-                isGoingToLastKnownPosition = true;
-                currentState = State.Chasing;
+                if (!isOnIslandPlatform)
+                {
+                    isGoingToLastKnownPosition = true;
+                    currentState = State.Chasing;
+                }
             }
             else if (!isForcedChase)
             {
@@ -495,7 +531,7 @@ public class EnemyAI_AStar : MonoBehaviour
                 wasChasing = false;
                 isGoingToLastKnownPosition = false;
 
-                if (currentState == State.Chasing || currentState == State.Attacking)
+                if (!isOnIslandPlatform && (currentState == State.Chasing || currentState == State.Attacking))
                     currentState = State.Idle;
             }
         }
@@ -832,6 +868,25 @@ public class EnemyAI_AStar : MonoBehaviour
             animator.SetLayerWeight(1, 0f);
     }
 
+    public void EnableIslandMode()
+    {
+        if (isDead) return;
+        isOnIslandPlatform = true;
+        currentState = State.OnIslandPlatform;
+        if (aiPath != null)
+            aiPath.enabled = false;
+        Debug.Log($"[IslandMode] {name} enabled");
+    }
+
+    public void DisableIslandMode()
+    {
+        isOnIslandPlatform = false;
+        if (currentState == State.OnIslandPlatform)
+            currentState = State.Idle;
+        if (aiPath != null)
+            aiPath.enabled = true;
+        Debug.Log($"[IslandMode] {name} disabled");
+    }
 
     protected virtual void HandleOnRotatingPlatformState()
     {
@@ -839,18 +894,94 @@ public class EnemyAI_AStar : MonoBehaviour
         StopMovement();
     }
 
+    protected virtual void HandleOnIslandPlatformState()
+    {
+        if (targetHuman == null)
+        {
+            StopMovement();
+            return;
+        }
+
+        float distance = Vector3.Distance(transform.position, targetHuman.position);
+        if (distance <= stats.attackRange)
+        {
+            StopMovement();
+            if (attackBehavior != null && attackBehavior.CanAttack())
+            {
+                if (Time.time - lastAttackTime >= stats.attackCooldown)
+                {
+                    lastAttackTime = Time.time;
+                    GrabAttack grabAttack = attackBehavior as GrabAttack;
+                    HitAttack hitAttack = attackBehavior as HitAttack;
+                    if (grabAttack != null)
+                        grabAttack.StartWindup();
+                    else if (hitAttack != null)
+                        hitAttack.StartWindup();
+                }
+            }
+            return;
+        }
+
+        MoveOnIslandPlatform();
+    }
+
+    protected virtual void MoveOnIslandPlatform()
+    {
+        CapsuleCollider cap = GetComponent<CapsuleCollider>();
+        float halfHeight = cap != null ? cap.height / 2f : 1f;
+        Debug.Log($"[Island] cap={cap != null} halfHeight={halfHeight} state={currentState}");
+        Vector3 edgeCheckOrigin = transform.position + Vector3.up * halfHeight + transform.forward * 0.4f;
+        int islandLayer = LayerMask.GetMask("IslandPlatform");
+        bool groundAhead = Physics.Raycast(edgeCheckOrigin, Vector3.down, 3f, islandLayer);
+
+        Debug.Log($"[Island] groundAhead={groundAhead}");
+
+        if (!groundAhead)
+        {
+            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+
+            Vector3 dirToBord = (targetHuman.position - transform.position);
+            dirToBord.y = 0;
+            dirToBord.Normalize();
+
+            if (dirToBord.magnitude > 0.1f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(dirToBord);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
+            }
+            return;
+        }
+
+        Vector3 directionToPlayer = (targetHuman.position - transform.position);
+        directionToPlayer.y = 0;
+        directionToPlayer.Normalize();
+
+        if (directionToPlayer.magnitude > 0.1f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
+        }
+
+        float speed = stats.walkSpeed;
+        Vector3 moveDirection = transform.forward * speed;
+        rb.linearVelocity = new Vector3(moveDirection.x, rb.linearVelocity.y, moveDirection.z);
+    }
+
     protected virtual void HandleStunBySprayState()
     {
         StopMovement();
         if (health != null && health.GetSprayStunTimeRemaining() <= 0f)
         {
-            currentState = State.Idle;
+            if (isOnIslandPlatform)
+                currentState = State.OnIslandPlatform;
+            else
+                currentState = State.Idle;
             lastPathDestination = Vector3.positiveInfinity;
             DetectHumans();
         }
     }
 
-  
+
 
     protected virtual void OnDrawGizmosSelected()
     {

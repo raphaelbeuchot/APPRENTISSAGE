@@ -357,8 +357,14 @@ public class BroomAttackSystem : MonoBehaviour
                 }
                 zombieAI_AStar.enabled = true;
             }
+
             zombieAI_AStar.lastPathDestination = Vector3.positiveInfinity;
-            // SUPPRIMER : zombieAI_AStar.DetectHumans();
+
+            if (zombieAI_AStar.isOnIslandPlatform)
+            {
+                zombieAI_AStar.currentState = EnemyAI_AStar.State.OnIslandPlatform;
+                zombieAI_AStar.DetectHumans();
+            }
         }
     }
 
