@@ -123,11 +123,11 @@ public class LevelManager : MonoBehaviour
     {
         if (levelCompleted || gameOver) return;
 
-        if (SceneManager.GetActiveScene().buildIndex == 1)
+        if (SceneManager.GetActiveScene().buildIndex == 3)
         {
             if (player != null) player.enabled = false;
             Time.timeScale = 1f;
-            SceneManager.LoadScene(2);
+            SceneManager.LoadScene(4);
             return;
         }
 
@@ -140,7 +140,8 @@ public class LevelManager : MonoBehaviour
         // NOUVEAU : notifie la progression, exception tuto2
         if (LevelProgressionManager.Instance != null)
         {
-            int sceneToComplete = SceneManager.GetActiveScene().buildIndex == 2 ? 1 : SceneManager.GetActiveScene().buildIndex;
+            int sceneToComplete = SceneManager.GetActiveScene().buildIndex == 4 ? 3 : SceneManager.GetActiveScene().buildIndex;
+            
             LevelProgressionManager.Instance.CompleteLevel(sceneToComplete);
         }
 
