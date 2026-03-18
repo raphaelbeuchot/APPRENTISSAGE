@@ -31,6 +31,7 @@ public class PupitreTuto : MonoBehaviour
 
         if (PlayerInputManager.Instance != null && PlayerInputManager.Instance.InteractPressed)
         {
+            if (promptUI.IsVisible) return;
             ShowTutorial();
         }
     }

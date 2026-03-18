@@ -26,6 +26,7 @@ public class TutorialPromptUI : MonoBehaviour
     };
 
     private bool isVisible = false;
+    public bool IsVisible => isVisible;
     private Coroutine waitCoroutine;
 
     void Start()
@@ -42,7 +43,6 @@ public class TutorialPromptUI : MonoBehaviour
             canvasGroup.blocksRaycasts = false;
         }
 
-        gameObject.SetActive(false);
         isVisible = false;
     }
     void OnDestroy()
@@ -82,7 +82,6 @@ public class TutorialPromptUI : MonoBehaviour
             tutorialImage.sprite = tutorialSprite;
         }
 
-        gameObject.SetActive(true);
         isVisible = true;
 
         Time.timeScale = 0f;
@@ -101,8 +100,6 @@ public class TutorialPromptUI : MonoBehaviour
 
         Debug.Log("[TutorialPromptUI] Masquage tutorial");
 
-        isVisible = false;
-
         if (waitCoroutine != null)
         {
             StopCoroutine(waitCoroutine);
@@ -112,7 +109,7 @@ public class TutorialPromptUI : MonoBehaviour
         StartCoroutine(FadeCoroutine(0f, () =>
         {
             Time.timeScale = 1f;
-            gameObject.SetActive(false);
+            isVisible = false;
         }));
     }
 
