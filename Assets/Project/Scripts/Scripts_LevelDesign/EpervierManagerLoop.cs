@@ -49,6 +49,9 @@ public class EpervierManagerLoop : MonoBehaviour
         public float currentZ;
         public float[] currentX;
         public Coroutine activeCoroutine;
+        public float[] traverseStartDelay;
+
+
     }
 
     private const int POOL_SIZE = 1;
@@ -163,6 +166,9 @@ public class EpervierManagerLoop : MonoBehaviour
             line.obstacles = new GameObject[obstacleCount];
             line.isGap = new bool[numberOfSlots];
             line.currentX = new float[obstacleCount];
+            line.traverseStartDelay = new float[obstacleCount];
+
+
             line.currentY = spawnPoint.position.y;
             line.currentZ = spawnPoint.position.z;
             line.state = LineState.Idle;
@@ -184,6 +190,8 @@ public class EpervierManagerLoop : MonoBehaviour
                 obs.transform.position = new Vector3(slotXPositions[j], spawnPoint.position.y, spawnPoint.position.z);
                 line.obstacles[j] = obs;
                 obs.layer = LayerMask.NameToLayer("Obstacle");
+                obs.tag = "EpervierObstacle";
+
 
                 if (obstacleMaterials != null && j < obstacleMaterials.Length && obstacleMaterials[j] != null)
                 {
@@ -346,24 +354,42 @@ public class EpervierManagerLoop : MonoBehaviour
         StartTraverse(idx);
     }
 
-   
+
 
     IEnumerator TraverseCoroutine(int idx)
     {
         EpervierLine line = lines[idx];
         float targetZ = arrivalPoint.position.z;
 
-        while (Mathf.Abs(line.currentZ - targetZ) > 0.02f)
+        int doneCount = 0;
+        for (int i = 0; i < line.obstacles.Length; i++)
+        {
+            float delay = Random.Range(0f, 0.2f);
+            StartCoroutine(MoveObstacle(line.obstacles[i], line, i, targetZ, delay, () => doneCount++));
+        }
+
+        yield return new WaitUntil(() => doneCount >= line.obstacles.Length);
+
+        line.currentZ = targetZ;
+        line.state = LineState.Returning;
+        line.activeCoroutine = StartCoroutine(ReturnCoroutine(idx));
+    }
+
+    IEnumerator MoveObstacle(GameObject obs, EpervierLine line, int i, float targetZ, float delay, System.Action onDone)
+    {
+        yield return new WaitForSeconds(delay);
+
+        float currentZ = obs.transform.position.z;
+        while (Mathf.Abs(currentZ - targetZ) > 0.02f)
         {
             float speed = isRedLight ? traverseSpeedRedLight : traverseSpeed;
-            line.currentZ = Mathf.MoveTowards(line.currentZ, targetZ, speed * Time.deltaTime); ApplyLineTransform(idx);
+            currentZ = Mathf.MoveTowards(currentZ, targetZ, speed * Time.deltaTime);
+            obs.transform.position = new Vector3(line.currentX[i], line.currentY, currentZ);
             yield return null;
         }
 
-        line.currentZ = targetZ;
-        ApplyLineTransform(idx);
-        line.state = LineState.Returning;
-        line.activeCoroutine = StartCoroutine(ReturnCoroutine(idx));
+        obs.transform.position = new Vector3(line.currentX[i], line.currentY, targetZ);
+        onDone();
     }
 
     IEnumerator ReturnCoroutine(int idx)

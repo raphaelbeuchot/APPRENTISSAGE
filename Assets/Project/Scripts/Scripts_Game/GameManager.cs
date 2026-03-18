@@ -606,7 +606,7 @@ public class GameManager : MonoBehaviour
                              && !isMoving);
             if (isWindingUp) isMoving = true;
 
-            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit) && !playerImmune;
+            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit || (ai != null && ai.isKnockedDownByEpervier)) && !playerImmune;
             EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isInShallowWater)
             {

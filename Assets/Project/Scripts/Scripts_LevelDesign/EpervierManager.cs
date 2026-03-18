@@ -25,6 +25,7 @@ public class EpervierManager : MonoBehaviour
     [SerializeField] private float returnSpeed = 10f;
     [SerializeField] private float rearrangeSpeed = 4f;
     [SerializeField] private float greenLightDelay = 1f;
+    [SerializeField] private float maxTraverseDelay = 0.3f;
 
     [Header("Player Escape")]
     [SerializeField] private Rigidbody playerRigidbody;
@@ -39,8 +40,8 @@ public class EpervierManager : MonoBehaviour
     private bool isEscaping = false;
     private bool isFirstDrop = true;
 
-
     [SerializeField] private Material[] obstacleMaterials;
+
     private enum LineState { Idle, Rearranging, Dropping, Ready, Traversing, Returning }
 
     private class EpervierLine
@@ -49,7 +50,7 @@ public class EpervierManager : MonoBehaviour
         public bool[] isGap;
         public LineState state = LineState.Idle;
         public float currentY;
-        public float currentZ;
+        public float[] currentZ;
         public float[] currentX;
         public Coroutine activeCoroutine;
     }
@@ -99,6 +100,7 @@ public class EpervierManager : MonoBehaviour
         {
             Debug.Log("[Epervier] Raycast ne touche rien");
         }
+
         if (!isSweeping)
         {
             Vector3 sweepRayOrigin = playerRigidbody.position + Vector3.up * 0.6f;
@@ -122,12 +124,42 @@ public class EpervierManager : MonoBehaviour
                 }
             }
         }
+
+        EnemyAI_AStar[] enemies = FindObjectsOfType<EnemyAI_AStar>();
+        foreach (EnemyAI_AStar enemy in enemies)
+        {
+            if (enemy.isDead || enemy.isKnockedDownByEpervier) continue;
+
+            Rigidbody enemyRb = enemy.GetComponent<Rigidbody>();
+            if (enemyRb == null) continue;
+
+            Vector3 enemyRayOrigin = enemyRb.position + Vector3.up * 1.4f;
+            RaycastHit enemyHit;
+
+            if (Physics.Raycast(enemyRayOrigin, Vector3.up, out enemyHit, escapeRaycastHeight, obstacleLayer))
+            {
+                for (int i = 0; i < POOL_SIZE; i++)
+                {
+                    if (lines[i].state != LineState.Dropping && lines[i].state != LineState.Rearranging) continue;
+                    foreach (GameObject obs in lines[i].obstacles)
+                    {
+                        if (obs == enemyHit.collider.gameObject)
+                        {
+                            enemyRb.AddForce(enemy.transform.forward * escapeForce, ForceMode.VelocityChange);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
+
     IEnumerator SweepResetCoroutine()
     {
         yield return new WaitForSeconds(0.5f);
         isSweeping = false;
     }
+
     IEnumerator EscapeCoroutine()
     {
         isEscaping = true;
@@ -139,6 +171,11 @@ public class EpervierManager : MonoBehaviour
 
         isEscaping = false;
     }
+
+    // -------------------------------------------------------
+    // SETUP
+    // -------------------------------------------------------
+
     void BuildSlotPositions()
     {
         slotXPositions = new float[numberOfSlots];
@@ -160,8 +197,8 @@ public class EpervierManager : MonoBehaviour
             line.obstacles = new GameObject[obstacleCount];
             line.isGap = new bool[numberOfSlots];
             line.currentX = new float[obstacleCount];
+            line.currentZ = new float[obstacleCount];
             line.currentY = spawnPoint.position.y;
-            line.currentZ = spawnPoint.position.z;
             line.state = LineState.Idle;
 
             GameObject root = new GameObject("EpervierLine_" + i);
@@ -178,9 +215,12 @@ public class EpervierManager : MonoBehaviour
                 rb.isKinematic = true;
 
                 line.currentX[j] = slotXPositions[j];
+                line.currentZ[j] = spawnPoint.position.z;
                 obs.transform.position = new Vector3(slotXPositions[j], spawnPoint.position.y, spawnPoint.position.z);
                 line.obstacles[j] = obs;
                 obs.layer = LayerMask.NameToLayer("Obstacle");
+                obs.tag = "EpervierObstacle";
+
                 if (obstacleMaterials != null && j < obstacleMaterials.Length && obstacleMaterials[j] != null)
                 {
                     Renderer rend = obs.GetComponent<Renderer>();
@@ -200,15 +240,9 @@ public class EpervierManager : MonoBehaviour
     public void OnGreenLight()
     {
         if (readyLineIndex >= 0)
-        {
-            // Une ligne est prete : on la traverse apres le delai
             StartCoroutine(DelayedGreenLightTraverse());
-        }
         else
-        {
-            // Premiere fois ou ligne pas encore prete : on active
             ActivateNextLine();
-        }
     }
 
     IEnumerator DelayedGreenLightTraverse()
@@ -238,11 +272,11 @@ public class EpervierManager : MonoBehaviour
         }
 
         EpervierLine line = lines[idx];
-
         AssignGaps(line);
 
         line.currentY = spawnPoint.position.y;
-        line.currentZ = spawnPoint.position.z;
+        for (int i = 0; i < line.currentZ.Length; i++)
+            line.currentZ[i] = spawnPoint.position.z;
 
         line.state = LineState.Rearranging;
         if (line.activeCoroutine != null) StopCoroutine(line.activeCoroutine);
@@ -285,7 +319,7 @@ public class EpervierManager : MonoBehaviour
             line.obstacles[i].transform.position = new Vector3(
                 line.currentX[i],
                 line.currentY,
-                line.currentZ
+                line.currentZ[i]
             );
         }
     }
@@ -347,7 +381,7 @@ public class EpervierManager : MonoBehaviour
     IEnumerator DropCoroutine(int idx)
     {
         EpervierLine line = lines[idx];
-        line.state = LineState.Dropping; // AJOUTER
+        line.state = LineState.Dropping;
         float targetY = groundY + obstacleHeight / 2f;
 
         while (Mathf.Abs(line.currentY - targetY) > 0.02f)
@@ -375,24 +409,41 @@ public class EpervierManager : MonoBehaviour
     {
         EpervierLine line = lines[idx];
         float targetZ = arrivalPoint.position.z;
+        int doneCount = 0;
 
-        while (Mathf.Abs(line.currentZ - targetZ) > 0.02f)
+        for (int i = 0; i < line.obstacles.Length; i++)
         {
-            line.currentZ = Mathf.MoveTowards(line.currentZ, targetZ, traverseSpeed * Time.deltaTime);
-            ApplyLineTransform(idx);
+            float delay = Random.Range(0f, maxTraverseDelay);
+            StartCoroutine(TraverseSingleObstacle(line, i, targetZ, delay, () => doneCount++));
+        }
+
+        yield return new WaitUntil(() => doneCount >= line.obstacles.Length);
+
+        line.state = LineState.Returning;
+        line.activeCoroutine = StartCoroutine(ReturnCoroutine(idx));
+    }
+
+    IEnumerator TraverseSingleObstacle(EpervierLine line, int i, float targetZ, float delay, System.Action onDone)
+    {
+        yield return new WaitForSeconds(delay);
+
+        while (Mathf.Abs(line.currentZ[i] - targetZ) > 0.02f)
+        {
+            line.currentZ[i] = Mathf.MoveTowards(line.currentZ[i], targetZ, traverseSpeed * Time.deltaTime);
+            line.obstacles[i].transform.position = new Vector3(line.currentX[i], line.currentY, line.currentZ[i]);
             yield return null;
         }
 
-        line.currentZ = targetZ;
-        ApplyLineTransform(idx);
-        line.state = LineState.Returning;
-        line.activeCoroutine = StartCoroutine(ReturnCoroutine(idx));
+        line.currentZ[i] = targetZ;
+        line.obstacles[i].transform.position = new Vector3(line.currentX[i], line.currentY, targetZ);
+        onDone();
     }
 
     IEnumerator ReturnCoroutine(int idx)
     {
         EpervierLine line = lines[idx];
 
+        // Remontee Y tous ensemble
         float targetY = spawnPoint.position.y;
         while (Mathf.Abs(line.currentY - targetY) > 0.02f)
         {
@@ -402,17 +453,27 @@ public class EpervierManager : MonoBehaviour
         }
         line.currentY = targetY;
 
+        // Retour Z tous ensemble, attend que tous soient revenus avant de continuer
         float targetZ = spawnPoint.position.z;
-        while (Mathf.Abs(line.currentZ - targetZ) > 0.02f)
+        bool allDone = false;
+        while (!allDone)
         {
-            line.currentZ = Mathf.MoveTowards(line.currentZ, targetZ, returnSpeed * Time.deltaTime);
+            allDone = true;
+            for (int i = 0; i < line.obstacles.Length; i++)
+            {
+                line.currentZ[i] = Mathf.MoveTowards(line.currentZ[i], targetZ, returnSpeed * Time.deltaTime);
+                if (Mathf.Abs(line.currentZ[i] - targetZ) > 0.02f)
+                    allDone = false;
+            }
             ApplyLineTransform(idx);
             yield return null;
         }
-        line.currentZ = targetZ;
+
+        for (int i = 0; i < line.obstacles.Length; i++)
+            line.currentZ[i] = targetZ;
+
         ApplyLineTransform(idx);
 
-        // Des que revenus en haut au fond : nouveaux gaps et reaarrangement immediat
         AssignGaps(line);
         line.state = LineState.Idle;
         line.activeCoroutine = StartCoroutine(RearrangeAndDropCoroutine(idx));

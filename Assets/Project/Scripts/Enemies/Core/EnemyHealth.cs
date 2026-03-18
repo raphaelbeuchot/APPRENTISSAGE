@@ -399,6 +399,9 @@ public class EnemyHealth : MonoBehaviour
 
         lastDeathType = DeathContext.DeathType.Sentinel;
 
+        EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
+        if (ai != null && ai.isKnockedDownByEpervier)
+            ai.wasAlreadyShotDuringEpervier = true;
         // Direction d'impact pour effets physiques
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null && gm.sentinelEye != null)

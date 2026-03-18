@@ -38,6 +38,12 @@ public class EnemyAI_AStar : MonoBehaviour
     private EnemyPitInteractable pitInteractable;
     private Animator animator;
 
+    [Header("Epervier Mode")]
+    [HideInInspector] public bool isKnockedDownByEpervier = false;
+    [HideInInspector] public bool wasAlreadyShotDuringEpervier = false;
+
+
+
 
     [Header("Pit Mode")]
     [HideInInspector] public bool isInPitMode = false;
@@ -269,6 +275,10 @@ public class EnemyAI_AStar : MonoBehaviour
             return;
         }
 
+        if (currentState == State.Chasing && !isInPitMode)
+        {
+            Debug.Log($"[DEBUG] {name} canMove={canMove} isStunned={isStunnedBySentinel} isRecovering={isRecoveringFromPlatform} isAttacking={attackBehavior?.IsAttacking()} isSpecial={attackBehavior?.IsInSpecialState()} aiPathEnabled={aiPath?.enabled} aiPathCanMove={aiPath?.canMove}");
+        }
         switch (currentState)
         {
             case State.Idle:
@@ -569,6 +579,54 @@ public class EnemyAI_AStar : MonoBehaviour
             }
         }
     }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log($"[Epervier] OnCollisionEnter - tag={collision.gameObject.tag} isDead={isDead} isKnockedDown={isKnockedDownByEpervier}");
+        if (isDead) return;
+        if (isKnockedDownByEpervier) return;
+        if (!collision.gameObject.CompareTag("EpervierObstacle")) return;
+
+        Debug.Log("[Epervier] Knockdown lance !");
+        StartCoroutine(EpervierKnockdownCoroutine());
+    }
+
+    IEnumerator EpervierKnockdownCoroutine()
+    {
+        isKnockedDownByEpervier = true;
+        canMove = false;
+        StopMovement();
+        if (aiPath != null) aiPath.enabled = false;
+
+        if (animator != null)
+            animator.SetTrigger("EpervierKnockdown");
+
+        yield return new WaitUntil(() =>
+            animator.GetCurrentAnimatorStateInfo(0).IsName("Sweep") &&
+            !animator.IsInTransition(0)
+        );
+
+        yield return new WaitUntil(() =>
+            !animator.GetCurrentAnimatorStateInfo(0).IsName("Sweep")
+        );
+
+        isKnockedDownByEpervier = false;
+
+        yield return new WaitUntil(() =>
+            animator.GetCurrentAnimatorStateInfo(0).IsName("Sad Idle") &&
+            !animator.IsInTransition(0)
+        );
+
+        wasAlreadyShotDuringEpervier = false;
+        lastPathDestination = Vector3.positiveInfinity;
+        if (aiPath != null)
+        {
+            aiPath.enabled = true;
+            aiPath.canMove = true;
+        }
+        canMove = true;
+    }
+
 
     protected virtual void HandleWanderingState()
     {
