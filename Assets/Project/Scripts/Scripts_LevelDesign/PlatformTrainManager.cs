@@ -16,9 +16,9 @@ public class PlatformTrainManager : MonoBehaviour
     [SerializeField] private float startInertia = 25f;
 
     [Header("Materials")]
-    [SerializeField] private Material baseMaterial;
-    [SerializeField] private Material movingMaterial;
-    [SerializeField] private Material stoppingMaterial;
+    [SerializeField] private Material lavaTrainBasic;
+    [SerializeField] private Material lavaTrainOn;
+    [SerializeField] private Material lavaTrainOff;
 
     private float currentSpeed = 0f;
     private float splineLength = 0f;
@@ -91,15 +91,15 @@ public class PlatformTrainManager : MonoBehaviour
             platforms[i].SetVelocity(velocity);
             lastPositions[i] = newPosition;
 
-            if (platforms[i].meshRenderer == null) continue;
+            if (platforms[i].lavaTrainFloor == null) continue;
 
             if (platforms[i] == playerCar)
             {
-                platforms[i].meshRenderer.sharedMaterial = holdingX ? stoppingMaterial : movingMaterial;
+                platforms[i].lavaTrainFloor.sharedMaterial = holdingX ? lavaTrainOff : lavaTrainOn;
             }
             else
             {
-                platforms[i].meshRenderer.sharedMaterial = baseMaterial;
+                platforms[i].lavaTrainFloor.sharedMaterial = lavaTrainBasic;
             }
         }
     }
