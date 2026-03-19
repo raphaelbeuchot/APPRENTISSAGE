@@ -8,10 +8,17 @@ public class ChainConstraint : MonoBehaviour
 
     [Header("Sound")]
     public AudioSource audioSource;
-    public AudioClip chainRattleSound;
+    public AudioClip[] chainRattleSounds;
     public float soundInterval = 0.2f;
+    public float soundVolume = 1f;
 
     private float lastSoundDistance = 0f;
+
+    void Start()
+    {
+        if (anchor != null)
+            lastSoundDistance = Vector3.Distance(transform.position, anchor.position);
+    }
 
     void FixedUpdate()
     {
@@ -27,16 +34,13 @@ public class ChainConstraint : MonoBehaviour
         }
 
         // Son de chaine deroulee
-        if (audioSource != null && chainRattleSound != null)
+        if (audioSource != null && chainRattleSounds.Length > 0)
         {
-            if (dist > lastSoundDistance + soundInterval)
+            if (Mathf.Abs(dist - lastSoundDistance) >= soundInterval)
             {
                 lastSoundDistance = dist;
-                audioSource.PlayOneShot(chainRattleSound);
-            }
-            else if (dist < lastSoundDistance - soundInterval)
-            {
-                lastSoundDistance = dist;
+                AudioClip clip = chainRattleSounds[Random.Range(0, chainRattleSounds.Length)];
+                audioSource.PlayOneShot(clip, soundVolume);
             }
         }
     }
