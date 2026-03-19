@@ -20,9 +20,16 @@ public class PlatformTrainManager : MonoBehaviour
     [SerializeField] private Material lavaTrainOn;
     [SerializeField] private Material lavaTrainOff;
 
+    [Header("Disc Scale")]
+    [SerializeField] private float discScaleBase = 0.8f;
+    [SerializeField] private float discScaleOnPlatform = 0.7f;
+    [SerializeField] private float discScaleHoldingX = 0.6f;
+    [SerializeField] private float discLerpSpeed = 5f;
+
     private float currentSpeed = 0f;
     private float splineLength = 0f;
     private Vector3[] lastPositions;
+    private float[] currentDiscScales;
     private PlayerPhysicsMovement player;
     private bool hasStarted = false;
 
@@ -51,10 +58,13 @@ public class PlatformTrainManager : MonoBehaviour
         }
 
         lastPositions = new Vector3[platforms.Count];
+        currentDiscScales = new float[platforms.Count];
+
         for (int i = 0; i < platforms.Count; i++)
         {
             lastPositions[i] = GetSplinePosition(platforms[i].currentProgress);
             platforms[i].transform.position = lastPositions[i];
+            currentDiscScales[i] = discScaleBase;
         }
 
         currentSpeed = 0f;
@@ -63,6 +73,9 @@ public class PlatformTrainManager : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!hasStarted && IsPlayerOnTrain())
+            StartTrain();
+
         if (!hasStarted) return;
 
         bool playerOnTrain = IsPlayerOnTrain();
@@ -93,6 +106,7 @@ public class PlatformTrainManager : MonoBehaviour
 
             if (platforms[i].lavaTrainFloor == null) continue;
 
+            // Material
             if (platforms[i] == playerCar)
             {
                 platforms[i].lavaTrainFloor.sharedMaterial = holdingX ? lavaTrainOff : lavaTrainOn;
@@ -101,6 +115,19 @@ public class PlatformTrainManager : MonoBehaviour
             {
                 platforms[i].lavaTrainFloor.sharedMaterial = lavaTrainBasic;
             }
+
+            // Scale disque
+            float targetScale;
+            if (platforms[i] == playerCar)
+                targetScale = holdingX ? discScaleHoldingX : discScaleOnPlatform;
+            else
+                targetScale = discScaleBase;
+
+            currentDiscScales[i] = Mathf.Lerp(currentDiscScales[i], targetScale, discLerpSpeed * Time.fixedDeltaTime);
+
+            Transform discTransform = platforms[i].lavaTrainFloor.transform;
+            Vector3 s = discTransform.localScale;
+            discTransform.localScale = new Vector3(currentDiscScales[i], s.y, currentDiscScales[i]);
         }
     }
 

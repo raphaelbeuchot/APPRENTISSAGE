@@ -44,9 +44,7 @@ public class MetalShutter : MonoBehaviour
         if (!isOpening)
         {
             isOpening = true;
-            PlatformTrainManager train = FindFirstObjectByType<PlatformTrainManager>();
-            if (train != null)
-                train.StartTrain();
+            
         }
     }
 
