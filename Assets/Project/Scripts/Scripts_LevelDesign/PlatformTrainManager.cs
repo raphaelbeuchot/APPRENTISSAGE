@@ -56,33 +56,25 @@ public class PlatformTrainManager : MonoBehaviour
         player = FindFirstObjectByType<PlayerPhysicsMovement>();
     }
 
-    void Update()
+    void FixedUpdate()
     {
         if (!hasStarted) return;
-
         bool holdingX = PlayerInputManager.Instance.InteractHeld && IsPlayerOnTrain();
         float targetSpeed = holdingX ? 0f : trainSpeed;
         float inertia = holdingX ? stopInertia : startInertia;
-
-        currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, inertia * Time.deltaTime);
-
-        float progressIncrement = (currentSpeed / splineLength) * Time.deltaTime;
-
+        currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, inertia * Time.fixedDeltaTime);
+        float progressIncrement = (currentSpeed / splineLength) * Time.fixedDeltaTime;
         for (int i = 0; i < platforms.Count; i++)
         {
             platforms[i].currentProgress += progressIncrement;
-
             if (platforms[i].currentProgress > 1f)
                 platforms[i].currentProgress -= 1f;
             else if (platforms[i].currentProgress < 0f)
                 platforms[i].currentProgress += 1f;
-
             Vector3 newPosition = GetSplinePosition(platforms[i].currentProgress);
             platforms[i].transform.position = newPosition;
-
-            Vector3 velocity = (newPosition - lastPositions[i]) / Time.deltaTime;
+            Vector3 velocity = (newPosition - lastPositions[i]) / Time.fixedDeltaTime;
             platforms[i].SetVelocity(velocity);
-
             lastPositions[i] = newPosition;
         }
     }
