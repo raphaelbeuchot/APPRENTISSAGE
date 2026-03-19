@@ -3,7 +3,14 @@ using UnityEngine;
 public class PlatformTrainCar : MonoBehaviour, IMovingPlatform
 {
     [HideInInspector] public float currentProgress = 0f;
+    [HideInInspector] public MeshRenderer meshRenderer;
+
     private Vector3 currentVelocity = Vector3.zero;
+
+    void Awake()
+    {
+        meshRenderer = GetComponent<MeshRenderer>();
+    }
 
     public void SetVelocity(Vector3 velocity)
     {

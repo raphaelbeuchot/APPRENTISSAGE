@@ -15,6 +15,11 @@ public class PlatformTrainManager : MonoBehaviour
     [SerializeField] private float stopInertia = 3f;
     [SerializeField] private float startInertia = 25f;
 
+    [Header("Materials")]
+    [SerializeField] private Material baseMaterial;
+    [SerializeField] private Material movingMaterial;
+    [SerializeField] private Material stoppingMaterial;
+
     private float currentSpeed = 0f;
     private float splineLength = 0f;
     private Vector3[] lastPositions;
@@ -59,11 +64,18 @@ public class PlatformTrainManager : MonoBehaviour
     void FixedUpdate()
     {
         if (!hasStarted) return;
-        bool holdingX = PlayerInputManager.Instance.InteractHeld && IsPlayerOnTrain();
+
+        bool playerOnTrain = IsPlayerOnTrain();
+        bool holdingX = PlayerInputManager.Instance.InteractHeld && playerOnTrain;
+
         float targetSpeed = holdingX ? 0f : trainSpeed;
         float inertia = holdingX ? stopInertia : startInertia;
         currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, inertia * Time.fixedDeltaTime);
+
         float progressIncrement = (currentSpeed / splineLength) * Time.fixedDeltaTime;
+
+        PlatformTrainCar playerCar = playerOnTrain ? player.GetCurrentPlatform() as PlatformTrainCar : null;
+
         for (int i = 0; i < platforms.Count; i++)
         {
             platforms[i].currentProgress += progressIncrement;
@@ -71,11 +83,24 @@ public class PlatformTrainManager : MonoBehaviour
                 platforms[i].currentProgress -= 1f;
             else if (platforms[i].currentProgress < 0f)
                 platforms[i].currentProgress += 1f;
+
             Vector3 newPosition = GetSplinePosition(platforms[i].currentProgress);
             platforms[i].transform.position = newPosition;
+
             Vector3 velocity = (newPosition - lastPositions[i]) / Time.fixedDeltaTime;
             platforms[i].SetVelocity(velocity);
             lastPositions[i] = newPosition;
+
+            if (platforms[i].meshRenderer == null) continue;
+
+            if (platforms[i] == playerCar)
+            {
+                platforms[i].meshRenderer.sharedMaterial = holdingX ? stoppingMaterial : movingMaterial;
+            }
+            else
+            {
+                platforms[i].meshRenderer.sharedMaterial = baseMaterial;
+            }
         }
     }
 

@@ -1838,7 +1838,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
+  - {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2883,7 +2883,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
+  - {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5982,7 +5982,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: a1437f6fced1b9e4eb5d5afd8c5b06b1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -9829,7 +9829,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.3000001
+      value: 0.46
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.z
@@ -25828,6 +25828,7 @@ MonoBehaviour:
   returnSpeed: 20
   rearrangeSpeed: 4
   greenLightDelay: 0
+  maxTraverseDelay: 0.3
   playerRigidbody: {fileID: 6978021389780206176}
   escapeRaycastHeight: 1.5
   escapeForceDuration: 0.2
@@ -26030,7 +26031,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: a1437f6fced1b9e4eb5d5afd8c5b06b1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -26179,6 +26180,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlatformTrainCar
   currentProgress: 0
+  meshRenderer: {fileID: 0}
 --- !u!65 &494729384
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -48272,9 +48274,6 @@ MonoBehaviour:
   fillHeightPercent: 1
   fillMeshFilter: {fileID: 507098296}
   fillRenderer: {fileID: 507098295}
-  borderWidth: 0.3
-  borderMeshFilter: {fileID: 0}
-  borderRenderer: {fileID: 0}
 --- !u!1 &507288179
 GameObject:
   m_ObjectHideFlags: 0
@@ -55151,7 +55150,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
+  - {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -56768,7 +56767,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
+  - {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -57622,6 +57621,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1499490821}
     m_Modifications:
+    - target: {fileID: 2094389620398102490, guid: 6e6f8dad640cdd64aaf665f7ea1161a8, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 6fbcce75087237a4486108758714c6d9, type: 2}
     - target: {fileID: 3635722709353272408, guid: 6e6f8dad640cdd64aaf665f7ea1161a8, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
@@ -78811,6 +78814,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlatformTrainCar
   currentProgress: 0
+  meshRenderer: {fileID: 0}
 --- !u!65 &1114112585
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -79355,6 +79359,8 @@ MonoBehaviour:
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
   arrivalThreshold: 0.5
   targetHuman: {fileID: 4617868051715933207}
+  isKnockedDownByEpervier: 0
+  wasAlreadyShotDuringEpervier: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -79401,6 +79407,7 @@ MonoBehaviour:
   recentlyHitBySentinel: 0
   isInKnockback: 0
   deathByPit: 0
+  destroyOnDeath: 1
   healthBarUI: {fileID: 0}
   pulseScaleMultiplier: 1.2
   pulseDuration: 0.3
@@ -82190,7 +82197,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.85
+      value: 0.35
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.z
@@ -90191,7 +90198,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
+  - {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -94186,7 +94193,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
+  - {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -96576,6 +96583,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlatformTrainCar
   currentProgress: 0
+  meshRenderer: {fileID: 0}
 --- !u!65 &1457093588
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -101223,7 +101231,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
+  - {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -103211,6 +103219,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlatformTrainCar
   currentProgress: 0
+  meshRenderer: {fileID: 0}
 --- !u!65 &1560637820
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -103368,7 +103377,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
+  - {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -103408,8 +103417,8 @@ Transform:
   m_GameObject: {fileID: 1560967251}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4, y: 0.3, z: 27}
-  m_LocalScale: {x: 12, y: 0.1, z: 6}
+  m_LocalPosition: {x: 4, y: -0.15, z: 27}
+  m_LocalScale: {x: 12, y: 1, z: 6}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -114028,6 +114037,8 @@ MonoBehaviour:
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
   arrivalThreshold: 0.5
   targetHuman: {fileID: 4617868051715933207}
+  isKnockedDownByEpervier: 0
+  wasAlreadyShotDuringEpervier: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -114089,6 +114100,7 @@ MonoBehaviour:
   recentlyHitBySentinel: 0
   isInKnockback: 0
   deathByPit: 0
+  destroyOnDeath: 1
   healthBarUI: {fileID: 0}
   pulseScaleMultiplier: 1.2
   pulseDuration: 0.3
@@ -117686,6 +117698,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlatformTrainCar
   currentProgress: 0
+  meshRenderer: {fileID: 0}
 --- !u!65 &1836808571
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -117772,7 +117785,7 @@ Transform:
   m_GameObject: {fileID: 1836808569}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.8, y: 0.3, z: 4.5}
+  m_LocalPosition: {x: 4.3, y: 0.3, z: 4.5}
   m_LocalScale: {x: 1, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -121319,6 +121332,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlatformTrainCar
   currentProgress: 0
+  meshRenderer: {fileID: 0}
 --- !u!65 &1893833566
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -123363,7 +123377,7 @@ GameObject:
   - component: {fileID: 1928912923}
   - component: {fileID: 1928912922}
   m_Layer: 0
-  m_Name: LavaTrain
+  m_Name: LavaTrain Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -123392,6 +123406,9 @@ MonoBehaviour:
   trainSpeed: 1
   stopInertia: 3
   startInertia: 25
+  baseMaterial: {fileID: 2100000, guid: 192262604b35a3941b9f9266ae3361f5, type: 2}
+  movingMaterial: {fileID: 2100000, guid: 57972a36ba692ab44abffee5db2aa4dc, type: 2}
+  stoppingMaterial: {fileID: 2100000, guid: 820e00f84e8137a4098a0467738b9d44, type: 2}
 --- !u!4 &1928912923
 Transform:
   m_ObjectHideFlags: 0
@@ -132896,7 +132913,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
+  - {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -133610,7 +133627,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
+  - {fileID: 2100000, guid: 0e03f9f2c5891ef419150c02e8d0304e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -133650,7 +133667,7 @@ Transform:
   m_GameObject: {fileID: 2136427731}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 0.3, z: 7}
+  m_LocalPosition: {x: 1, y: 0.3, z: 7.16}
   m_LocalScale: {x: 2, y: 0.1, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children: []
