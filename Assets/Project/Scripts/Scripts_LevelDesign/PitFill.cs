@@ -17,10 +17,7 @@ public class PitFill : MonoBehaviour
     public MeshFilter fillMeshFilter;
     public MeshRenderer fillRenderer;
 
-    [Header("Border Settings")]
-    public float borderWidth = 0.3f;
-    public MeshFilter borderMeshFilter;
-    public MeshRenderer borderRenderer;
+   
 
     private void Awake()
     {
@@ -234,13 +231,7 @@ public class PitFill : MonoBehaviour
             borderChild.localScale = Vector3.one;
         }
 
-        borderMeshFilter = borderChild.GetComponent<MeshFilter>();
-        if (borderMeshFilter == null)
-            borderMeshFilter = borderChild.gameObject.AddComponent<MeshFilter>();
-
-        borderRenderer = borderChild.GetComponent<MeshRenderer>();
-        if (borderRenderer == null)
-            borderRenderer = borderChild.gameObject.AddComponent<MeshRenderer>();
+       
     }
     private void AddSurfaceQuad(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
                             Vector3 cellWorldPos, float cellSize, float surfaceY)
@@ -339,6 +330,9 @@ public class PitFill : MonoBehaviour
         }
 
         Debug.Log("PitFill: Content cleared");
+        Transform borderChild = transform.Find("BorderMesh");
+        if (borderChild != null)
+            DestroyImmediate(borderChild.gameObject);
     }
 
     public float GetFillHeightMeters()

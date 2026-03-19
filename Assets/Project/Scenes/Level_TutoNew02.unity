@@ -39346,7 +39346,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.42
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.y
@@ -39354,7 +39354,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 13.17
+      value: 13.62
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalRotation.w
@@ -39416,6 +39416,14 @@ PrefabInstance:
       propertyPath: targetHuman
       value: 
       objectReference: {fileID: 4617868051715933207}
+    - target: {fileID: 8892766351190233867, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: chainRenderer
+      value: 
+      objectReference: {fileID: 926286100}
+    - target: {fileID: 8892766351190233867, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: destroyOnDeath
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8901219591732778159, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Layer
       value: 6
@@ -48323,13 +48331,13 @@ LineRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Positions:
-  - {x: 7.2356234, y: 1.2451321, z: 14.302073}
-  - {x: 7.5691056, y: 0.86640066, z: 14.153119}
-  - {x: 7.902588, y: 0.615493, z: 14.004167}
-  - {x: 8.236071, y: 0.49240896, z: 13.855213}
-  - {x: 8.569552, y: 0.49714872, z: 13.70626}
-  - {x: 8.903035, y: 0.6297121, z: 13.557306}
-  - {x: 9.236517, y: 0.8900992, z: 13.408354}
+  - {x: 7.4156237, y: 1.2451321, z: 14.752072}
+  - {x: 7.7233915, y: 0.87130046, z: 14.538834}
+  - {x: 8.031159, y: 0.6236593, z: 14.325595}
+  - {x: 8.338927, y: 0.50220853, z: 14.112356}
+  - {x: 8.646696, y: 0.5069483, z: 13.8991165}
+  - {x: 8.954464, y: 0.6378784, z: 13.685878}
+  - {x: 9.262232, y: 0.894999, z: 13.472639}
   - {x: 9.57, y: 1.27831, z: 13.2594}
   m_Parameters:
     serializedVersion: 3
@@ -57782,7 +57790,7 @@ MonoBehaviour:
   recentlyHitBySentinel: 0
   isInKnockback: 0
   deathByPit: 0
-  chainRenderer: {fileID: 0}
+  destroyOnDeath: 1
   healthBarUI: {fileID: 0}
   pulseScaleMultiplier: 1.2
   pulseDuration: 0.3
@@ -97766,7 +97774,7 @@ MonoBehaviour:
   recentlyHitBySentinel: 0
   isInKnockback: 0
   deathByPit: 0
-  chainRenderer: {fileID: 0}
+  destroyOnDeath: 1
   healthBarUI: {fileID: 0}
   pulseScaleMultiplier: 1.2
   pulseDuration: 0.3
