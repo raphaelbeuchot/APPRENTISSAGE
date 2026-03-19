@@ -52,6 +52,9 @@ public class EnemyHealth : MonoBehaviour
     private GameObject activeStunSpiral;
     private Coroutine stunSpiralCoroutine;
 
+    public bool destroyOnDeath = true;
+
+
 
 
     public event Action OnDeath;
@@ -523,6 +526,11 @@ public class EnemyHealth : MonoBehaviour
 
         Debug.Log(string.Format("{0} is dead!", gameObject.name));
         OnDeath?.Invoke();
+        
+        ChainConstraint cc = GetComponent<ChainConstraint>();
+        if (cc != null)
+            cc.enabled = false;
+
 
         // AJOUTER ICI : Désinscrire le timer UI
         if (stunTimerUI != null && StunTimerManager.Instance != null)

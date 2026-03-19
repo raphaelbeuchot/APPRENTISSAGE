@@ -25,30 +25,25 @@ public class ChainRenderer : MonoBehaviour
 
     void LateUpdate()
     {
-        if (anchor == null || zombieNeck == null || chainConstraint == null) return;
+        if (anchor == null || zombieNeck == null) return;
 
-        float dist = chainConstraint.GetCurrentDistance();
-        float chainLen = chainConstraint.GetChainLength();
+        float dist = chainConstraint != null ? chainConstraint.GetCurrentDistance() : 0f;
+        float chainLen = chainConstraint != null ? chainConstraint.GetChainLength() : 1f;
 
         float tension = Mathf.Clamp01(dist / chainLen);
         float sag = (1f - tension) * maxSag;
-        
+
         Vector3 start = zombieNeck.position;
         Vector3 end = anchor.position;
 
         for (int i = 0; i < pointCount; i++)
         {
             float t = (float)i / (pointCount - 1);
-
             Vector3 point = Vector3.Lerp(start, end, t);
-
-            // Parabole vers le bas
             float parabola = 4f * t * (1f - t);
             point.y -= parabola * sag;
-
-            // Clamp au sol
-            point.y = Mathf.Max(point.y, groundY + 0.05f);
-
+            if (i != 0)
+                point.y = Mathf.Max(point.y, groundY + 0.05f);
             lr.SetPosition(i, point);
         }
     }
