@@ -6,6 +6,13 @@ public class ChainConstraint : MonoBehaviour
     public Transform anchor;
     public float chainLength = 4f;
 
+    [Header("Sound")]
+    public AudioSource audioSource;
+    public AudioClip chainRattleSound;
+    public float soundInterval = 0.2f;
+
+    private float lastSoundDistance = 0f;
+
     void FixedUpdate()
     {
         if (anchor == null) return;
@@ -17,6 +24,20 @@ public class ChainConstraint : MonoBehaviour
         {
             Vector3 clamped = anchor.position + toZombie.normalized * chainLength;
             transform.position = new Vector3(clamped.x, transform.position.y, clamped.z);
+        }
+
+        // Son de chaine deroulee
+        if (audioSource != null && chainRattleSound != null)
+        {
+            if (dist > lastSoundDistance + soundInterval)
+            {
+                lastSoundDistance = dist;
+                audioSource.PlayOneShot(chainRattleSound);
+            }
+            else if (dist < lastSoundDistance - soundInterval)
+            {
+                lastSoundDistance = dist;
+            }
         }
     }
 

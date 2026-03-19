@@ -32,9 +32,9 @@ public class ChainRenderer : MonoBehaviour
 
         float tension = Mathf.Clamp01(dist / chainLen);
         float sag = (1f - tension) * maxSag;
-
-        Vector3 start = anchor.position;
-        Vector3 end = zombieNeck.position;
+        
+        Vector3 start = zombieNeck.position;
+        Vector3 end = anchor.position;
 
         for (int i = 0; i < pointCount; i++)
         {
