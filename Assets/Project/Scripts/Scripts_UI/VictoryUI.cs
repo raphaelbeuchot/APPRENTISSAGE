@@ -54,7 +54,7 @@ public class VictoryUI : MonoBehaviour
         Time.timeScale = 1f;
         LevelManager levelManager = FindObjectOfType<LevelManager>();
         if (levelManager != null)
-            levelManager.LoadLevelSelect();
+            levelManager.LoadWheelOfFortune();
         else
             Debug.LogWarning("LevelManager not found!");
         yield break;

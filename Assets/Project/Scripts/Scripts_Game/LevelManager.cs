@@ -153,7 +153,7 @@ public class LevelManager : MonoBehaviour
 
         if (skipVictoryUI)
         {
-            LoadLevelSelect();
+            LoadWheelOfFortune();
         }
         else
         {
@@ -161,8 +161,8 @@ public class LevelManager : MonoBehaviour
                 victoryUI.Show(playerHealth);
             else
             {
-                Debug.LogWarning("VictoryUI non trouve! Chargement LevelSelect automatique.");
-                Invoke(nameof(LoadLevelSelect), delayBeforeNextLevel);
+                Debug.LogWarning("VictoryUI non trouve! Chargement WheelOfFortune automatique.");
+                Invoke(nameof(LoadWheelOfFortune), delayBeforeNextLevel);
             }
         }
     }
@@ -199,6 +199,18 @@ public class LevelManager : MonoBehaviour
         Time.timeScale = 1f;
         LoadingScreenManager.TargetSceneIndex = 2;
         SceneManager.LoadScene(1);
+    }
+
+    public void LoadWheelOfFortune()
+    {
+        Time.timeScale = 1f;
+        if (SceneFader.Instance != null)
+            SceneFader.Instance.FadeToScene(19);
+        else
+        {
+            LoadingScreenManager.TargetSceneIndex = 2;
+            SceneManager.LoadScene(1);
+        }
     }
 
     public void RestartLevel()
