@@ -55125,6 +55125,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1499490821}
     m_Modifications:
+    - target: {fileID: 2094389620398102490, guid: 6e6f8dad640cdd64aaf665f7ea1161a8, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 6fbcce75087237a4486108758714c6d9, type: 2}
     - target: {fileID: 3635722709353272408, guid: 6e6f8dad640cdd64aaf665f7ea1161a8, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
@@ -64396,7 +64400,8 @@ Transform:
   m_LocalPosition: {x: 8.5, y: 6, z: 14.5}
   m_LocalScale: {x: 5, y: 0.5, z: 5}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1410599281}
   m_Father: {fileID: 1890326246}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &888936599
@@ -65018,74 +65023,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 8c6fa7ab62026104b805b357479e7e2d, type: 3}
   m_PrefabInstance: {fileID: 812593885}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &910748070
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 910748072}
-  - component: {fileID: 910748071}
-  - component: {fileID: 910748073}
-  m_Layer: 0
-  m_Name: ConcentricCircles
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &910748071
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 910748070}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01e4659abc7becc46963dae4216c2304, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ConcentricCirclesSpawner
-  bulbPrefab: {fileID: 5286527996802002972, guid: c93a49e0942bc6b4ba0f79e764b5bc15, type: 3}
-  radii:
-  - 3
-  - 3.5
-  - 4
-  - 4.5
-  bulbSpacing: 0.5
-  startAngle: 0
-  heightOffset: 0
---- !u!4 &910748072
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 910748070}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 8.5, y: 6, z: 14.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1890326246}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!114 &910748073
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 910748070}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2e827667d62f1e4cb31d46e2beab984, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightController
-  bulbsContainer: {fileID: 3334672207805439877, guid: c93a49e0942bc6b4ba0f79e764b5bc15, type: 3}
-  alertFlashCount: 4
 --- !u!1001 &910788149
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -89031,6 +88968,84 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
   m_PrefabInstance: {fileID: 891541202}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1410599280
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 887716756}
+    m_Modifications:
+    - target: {fileID: 1371746067569967026, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_Name
+      value: ConcentricCircles Manager
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.19999996
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2107340418705312904, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      propertyPath: sentinelTransform
+      value: 
+      objectReference: {fileID: 887716756}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+--- !u!4 &1410599281 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+  m_PrefabInstance: {fileID: 1410599280}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1410631172 stripped
 Transform:
@@ -113667,7 +113682,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 946305087}
-  - {fileID: 910748072}
   - {fileID: 1803505160}
   - {fileID: 1547379118}
   - {fileID: 2038059291}
@@ -125893,7 +125907,7 @@ PrefabInstance:
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: marqueeLightController
       value: 
-      objectReference: {fileID: 910748073}
+      objectReference: {fileID: 0}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: spotColorCompensated.b
       value: 0.4575472
