@@ -34,6 +34,9 @@ public class SentinelSettings : ScriptableObject
     [Tooltip("Son joue une fois, vitesse selon distance")]
     public AudioClip alertSound;
 
+    public AudioClip alertIgnitionSound;
+
+
     [Tooltip("Pitch minimum (loin du sentinel)")]
     [Range(0.5f, 2f)]
     public float minPitch = 0.7f;
@@ -49,6 +52,7 @@ public class SentinelSettings : ScriptableObject
     public float redlightMinDuration = 4f;
     public float redlightMaxDuration = 8f;
     public AnimationClip redlightAnimation;
+    public AudioClip redlightIgnitionSound;
     public AudioClip redlightSound;
     public AudioClip shootSound;
     public Color redlightLightColor = Color.red;

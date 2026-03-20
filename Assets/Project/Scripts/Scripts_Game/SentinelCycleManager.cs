@@ -21,7 +21,6 @@ public class SentinelCycleManager : MonoBehaviour
     public Transform sentinelTransform;
     [SerializeField] private Transform startZoneTransform;
     public GameManager gameManager;
-    [SerializeField] private MarqueeLightController marqueeLightController;
     [SerializeField] private Light[] lightsToDisableInRedLight;
     [SerializeField] private SentinelCentralLight sentinelCentralLight;
     [SerializeField] private RedLightVolumeController redLightVolumeController;
@@ -328,8 +327,7 @@ public class SentinelCycleManager : MonoBehaviour
                 Debug.Log($"[MUSIC] GreenLight - pitch: {musicAudioSource.pitch:F2}");
             }
 
-            if (marqueeLightController != null)
-                marqueeLightController.StartGreenLightPattern();
+            
 
             if (sentinelCentralLight != null)
                 sentinelCentralLight.TurnOff();
@@ -347,6 +345,12 @@ public class SentinelCycleManager : MonoBehaviour
             {
                 audioSource.loop = false;
                 audioSource.Stop();
+            }
+
+            if (audioSource != null && sentinelSettings.redlightIgnitionSound != null)
+            {
+                audioSource.spatialBlend = 0f;
+                audioSource.PlayOneShot(sentinelSettings.alertIgnitionSound);
             }
 
             if (alertCoroutine != null)
@@ -390,6 +394,12 @@ public class SentinelCycleManager : MonoBehaviour
 
             targetDuration = GetDynamicRedLightDuration();
 
+            if (audioSource != null && sentinelSettings.redlightIgnitionSound != null)
+            {
+                audioSource.spatialBlend = 0f;
+                audioSource.PlayOneShot(sentinelSettings.redlightIgnitionSound);
+            }
+
             if (audioSource != null && sentinelSettings.redlightSound != null)
             {
                 audioSource.clip = sentinelSettings.redlightSound;
@@ -408,9 +418,6 @@ public class SentinelCycleManager : MonoBehaviour
                 playerSpotLight.color = spotColorCompensated;
                 Debug.Log($"[SPOT] ALLUME en RedLight - intensity: {playerSpotLight.intensity}, enabled: {playerSpotLight.enabled}");
             }
-
-            if (marqueeLightController != null)
-                marqueeLightController.StartRedLightPattern();
 
             if (sentinelCentralLight != null)
                 sentinelCentralLight.StartRedLightPattern();
@@ -454,8 +461,7 @@ public class SentinelCycleManager : MonoBehaviour
             if (playerSpotLight != null)
                 playerSpotLight.enabled = false;
 
-            if (marqueeLightController != null)
-                marqueeLightController.StartReleaseFade(1f);
+          
 
             if (sentinelCentralLight != null)
                 sentinelCentralLight.TurnOff();
@@ -525,10 +531,7 @@ public class SentinelCycleManager : MonoBehaviour
         float soundDuration = sentinelSettings.alertSound.length / pitch;
         alertDuration = soundDuration;
 
-        if (marqueeLightController != null)
-        {
-            marqueeLightController.StartAlertPattern(soundDuration);
-        }
+       
 
         yield return new WaitForSeconds(soundDuration);
 

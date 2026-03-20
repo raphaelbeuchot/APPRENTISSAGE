@@ -9,9 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3334672207805439877}
-  - component: {fileID: -1138113726156990488}
-  - component: {fileID: 259115921502890264}
-  - component: {fileID: 8030473954851795889}
   - component: {fileID: 3750127728317337523}
   - component: {fileID: 225701764977124894}
   - component: {fileID: 4117654080234514251}
@@ -37,123 +34,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-1138113726156990488
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5286527996802002972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f501b904d074a8448d058724a2c4313, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MarqueeLightBulb
-  bulbRenderer: {fileID: 0}
-  redLightMaterial: {fileID: 2100000, guid: d652b769af683b34ea37c58aed9ca0c0, type: 2}
-  alertMaterial: {fileID: 2100000, guid: 3431493930b5b364ebf087c98eed91e1, type: 2}
-  greenLightMaterial: {fileID: 2100000, guid: d652b769af683b34ea37c58aed9ca0c0, type: 2}
-  lightOffMaterial: {fileID: 2100000, guid: 03701c57cb001804ba36e15f2d9664e6, type: 2}
-  redLightColor: {r: 1, g: 0.19916257, b: 0, a: 1}
-  redEmissionIntensity: 4
-  alertColor: {r: 1, g: 0.21621177, b: 0, a: 1}
-  alertEmissionIntensity: 10
-  greenLightColor: {r: 0.9056604, g: 0.8172018, b: 0, a: 1}
-  greenEmissionIntensity: 4
---- !u!108 &259115921502890264
-Light:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5286527996802002972}
-  m_Enabled: 0
-  serializedVersion: 11
-  m_Type: 2
-  m_Color: {r: 1, g: 0.65881014, b: 0, a: 1}
-  m_Intensity: 1
-  m_Range: 5
-  m_SpotAngle: 30
-  m_InnerSpotAngle: 21.80208
-  m_CookieSize: 10
-  m_Shadows:
-    m_Type: 0
-    m_Resolution: -1
-    m_CustomResolution: -1
-    m_Strength: 1
-    m_Bias: 0.05
-    m_NormalBias: 0.4
-    m_NearPlane: 0.2
-    m_CullingMatrixOverride:
-      e00: 1
-      e01: 0
-      e02: 0
-      e03: 0
-      e10: 0
-      e11: 1
-      e12: 0
-      e13: 0
-      e20: 0
-      e21: 0
-      e22: 1
-      e23: 0
-      e30: 0
-      e31: 0
-      e32: 0
-      e33: 1
-    m_UseCullingMatrixOverride: 0
-  m_Cookie: {fileID: 0}
-  m_DrawHalo: 0
-  m_Flare: {fileID: 0}
-  m_RenderMode: 0
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingLayerMask: 1
-  m_Lightmapping: 4
-  m_LightShadowCasterMode: 0
-  m_AreaSize: {x: 1, y: 1}
-  m_BounceIntensity: 1
-  m_ColorTemperature: 6570
-  m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
-  m_UseBoundingSphereOverride: 0
-  m_UseViewFrustumForShadowCasterCull: 1
-  m_ForceVisible: 0
-  m_ShadowRadius: 0
-  m_ShadowAngle: 0
-  m_LightUnit: 1
-  m_LuxAtDistance: 1
-  m_EnableSpotReflector: 1
---- !u!114 &8030473954851795889
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5286527996802002972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
-  m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
-  m_CustomShadowLayers: 0
-  m_LightCookieSize: {x: 1, y: 1}
-  m_LightCookieOffset: {x: 0, y: 0}
-  m_SoftShadowQuality: 0
-  m_RenderingLayersMask:
-    serializedVersion: 0
-    m_Bits: 1
-  m_ShadowRenderingLayersMask:
-    serializedVersion: 0
-    m_Bits: 1
-  m_Version: 4
-  m_LightLayerMask: 1
-  m_ShadowLayerMask: 1
-  m_RenderingLayers: 1
-  m_ShadowRenderingLayers: 1
 --- !u!212 &3750127728317337523
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -236,7 +116,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26a9bae7ac7239747a8d477ac2ef1bb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CycleReactiveRenderer
-  materialNeutral: {fileID: 2100000, guid: adfe2862458e1604db3c24c31cf64d6b, type: 2}
+  materialNeutral: {fileID: 2100000, guid: 7d702429bbd233c418fbf7a06f2fc12b, type: 2}
   materialGreenLight: {fileID: 2100000, guid: bf39c11c174fd284e965bc68d9885eef, type: 2}
   materialAlert: {fileID: 2100000, guid: 219ac8e1f43d2c14ebc513eb929e4298, type: 2}
   materialRedLight: {fileID: 2100000, guid: bc786e47a7f6da14e912c130175b90bf, type: 2}
