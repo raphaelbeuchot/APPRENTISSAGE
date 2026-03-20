@@ -9,38 +9,43 @@ public class ConcentricCirclesSpawner : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GameObject bulbPrefab;
+    [SerializeField] private Transform sentinelTransform; // NOUVEAU
 
     [Header("Circles Configuration")]
     [SerializeField] private float[] radii = { 5f, 7f, 9f, 11f, 13f, 15f };
-    [SerializeField] private float bulbSpacing = 0.5f; // Distance physique entre bulbs
-    [SerializeField] private float startAngle = 0f; // Angle de départ (0 = 3h, 90 = 12h)
+    [SerializeField] private float bulbSpacing = 0.5f;
+    [SerializeField] private float startAngle = 0f;
 
     [Header("Visual Settings")]
-    [SerializeField] private float heightOffset = 0f; // Hauteur Y des cercles
+    [SerializeField] private float heightOffset = 0f;
+    [SerializeField] private bool useBillboard = false; // NOUVEAU
 
-    // Preview data
     private List<GameObject> previewBulbs = new List<GameObject>();
     private Transform previewContainer;
-
-    // Runtime data
     private Transform runtimeContainer;
 
     void Start()
     {
-        Debug.Log("[DEBUG] ConcentricCirclesSpawner.Start() appelé"); // AJOUTE
+        Debug.Log("[DEBUG] ConcentricCirclesSpawner.Start() appelé");
 
         if (Application.isPlaying)
         {
-            Debug.Log("[DEBUG] Application.isPlaying = true, spawn..."); // AJOUTE
+            Debug.Log("[DEBUG] Application.isPlaying = true, spawn...");
             SpawnCircles();
         }
         else
         {
-            Debug.Log("[DEBUG] Application.isPlaying = false, pas de spawn"); // AJOUTE
+            Debug.Log("[DEBUG] Application.isPlaying = false, pas de spawn");
         }
     }
 
-    // ========== RUNTIME SPAWN ==========
+    // NOUVEAU : retourne le centre des cercles
+    private Vector3 GetCenter()
+    {
+        if (sentinelTransform != null)
+            return sentinelTransform.position;
+        return transform.position;
+    }
 
     void SpawnCircles()
     {
@@ -49,14 +54,13 @@ public class ConcentricCirclesSpawner : MonoBehaviour
             Debug.LogError("[ConcentricCirclesSpawner] Bulb prefab manquant !");
             return;
         }
-        // Creer container runtime
+
         GameObject containerObj = new GameObject("CirclesRuntimeContainer");
         containerObj.transform.SetParent(transform);
-        containerObj.transform.localRotation = Quaternion.identity;
-        containerObj.transform.localPosition = Vector3.zero;
+        containerObj.transform.position = GetCenter(); // MODIFIE
+        containerObj.transform.rotation = Quaternion.identity;
         runtimeContainer = containerObj.transform;
 
-        // Générer chaque cercle
         for (int circleIndex = 0; circleIndex < radii.Length; circleIndex++)
         {
             SpawnCircle(circleIndex, runtimeContainer, false);
@@ -64,8 +68,6 @@ public class ConcentricCirclesSpawner : MonoBehaviour
 
         Debug.Log($"[ConcentricCirclesSpawner] {radii.Length} cercles générés (runtime)");
     }
-
-    // ========== PREVIEW EDITOR ==========
 
     public void GeneratePreview()
     {
@@ -77,15 +79,13 @@ public class ConcentricCirclesSpawner : MonoBehaviour
             return;
         }
 
-        // Creer container preview
         GameObject containerObj = new GameObject("CirclesPreviewContainer");
         containerObj.transform.SetParent(transform, false);
-        containerObj.transform.localRotation = Quaternion.identity; // Force héritage rotation parent
-        containerObj.transform.localPosition = Vector3.zero;
+        containerObj.transform.position = GetCenter(); // MODIFIE
+        containerObj.transform.rotation = Quaternion.identity;
         containerObj.hideFlags = HideFlags.DontSave;
         previewContainer = containerObj.transform;
 
-        // Générer chaque cercle
         for (int circleIndex = 0; circleIndex < radii.Length; circleIndex++)
         {
             SpawnCircle(circleIndex, previewContainer, true);
@@ -96,7 +96,6 @@ public class ConcentricCirclesSpawner : MonoBehaviour
 
     public void ClearPreview()
     {
-        // Détruire bulbs trackées
         foreach (var bulb in previewBulbs)
         {
             if (bulb != null)
@@ -110,7 +109,6 @@ public class ConcentricCirclesSpawner : MonoBehaviour
         }
         previewBulbs.Clear();
 
-        // Détruire container
         if (previewContainer != null)
         {
 #if UNITY_EDITOR
@@ -122,17 +120,12 @@ public class ConcentricCirclesSpawner : MonoBehaviour
         }
     }
 
-    // ========== CORE LOGIC ==========
-
     void SpawnCircle(int circleIndex, Transform parentContainer, bool isPreview)
     {
         float radius = radii[circleIndex];
-
-        // Calculer nombre de bulbs pour espacement constant
         float circumference = 2f * Mathf.PI * radius;
         int bulbCount = Mathf.Max(1, Mathf.RoundToInt(circumference / bulbSpacing));
 
-        // Container pour ce cercle
         GameObject circleContainer = new GameObject($"Circle_{circleIndex}_R{radius:F1}m");
         circleContainer.transform.SetParent(parentContainer, false);
         circleContainer.transform.localPosition = Vector3.zero;
@@ -140,23 +133,22 @@ public class ConcentricCirclesSpawner : MonoBehaviour
         if (isPreview)
             circleContainer.hideFlags = HideFlags.DontSave;
 
-        // Générer les bulbs
         for (int i = 0; i < bulbCount; i++)
         {
-            // Angle en radians
             float angleRad = (startAngle + (360f * i / bulbCount)) * Mathf.Deg2Rad;
-
-            // Position LOCALE en coordonnees polaires
             float x = Mathf.Cos(angleRad) * radius;
-            float z = Mathf.Sin(angleRad) * radius;
-            Vector3 localPosition = new Vector3(x, heightOffset, z);
+            float y = Mathf.Sin(angleRad) * radius;
+            Vector3 localPosition = new Vector3(x, heightOffset + y, 0f);
 
-            // Spawn bulb (sans position/rotation initiale)
             GameObject bulb = Instantiate(bulbPrefab);
-            bulb.transform.SetParent(circleContainer.transform, false); // false = garde local space
-            bulb.transform.localPosition = localPosition; // Position LOCALE
-            bulb.transform.localRotation = Quaternion.LookRotation(-localPosition, Vector3.up); // Rotation LOCALE vers centre
+            bulb.transform.SetParent(circleContainer.transform, false);
+            bulb.transform.localPosition = localPosition;
+            bulb.transform.localRotation = Quaternion.identity;
             bulb.name = $"Bulb_{i:D3}";
+
+            // NOUVEAU : ajout BillboardRenderer si demande
+            if (useBillboard)
+                bulb.AddComponent<BillboardRenderer>();
 
             if (isPreview)
             {
@@ -166,8 +158,6 @@ public class ConcentricCirclesSpawner : MonoBehaviour
         }
     }
 
-    // ========== CLEANUP ==========
-
     private void OnDisable()
     {
         if (!Application.isPlaying)
@@ -176,17 +166,13 @@ public class ConcentricCirclesSpawner : MonoBehaviour
         }
     }
 
-    // ========== DEBUG GIZMOS ==========
-
     private void OnDrawGizmosSelected()
     {
         if (radii == null || radii.Length == 0)
             return;
 
         Gizmos.color = Color.cyan;
-
-        // Centre en world space
-        Vector3 center = transform.position;
+        Vector3 center = GetCenter(); // MODIFIE
 
         foreach (float radius in radii)
         {
@@ -197,18 +183,14 @@ public class ConcentricCirclesSpawner : MonoBehaviour
     void DrawCircleGizmo(Vector3 center, float radius)
     {
         int segments = 64;
-        Quaternion rotation = transform.rotation; // Rotation du GameObject
-
-        // Premier point en local, transformé en world
+        Quaternion rotation = transform.rotation;
         Vector3 localStart = new Vector3(radius, heightOffset, 0);
         Vector3 prevPoint = center + rotation * localStart;
 
         for (int i = 1; i <= segments; i++)
         {
             float angle = (360f * i / segments) * Mathf.Deg2Rad;
-            // Position locale dans le plan XZ
             Vector3 localPoint = new Vector3(Mathf.Cos(angle) * radius, heightOffset, Mathf.Sin(angle) * radius);
-            // Transformer en world space avec la rotation
             Vector3 newPoint = center + rotation * localPoint;
             Gizmos.DrawLine(prevPoint, newPoint);
             prevPoint = newPoint;
