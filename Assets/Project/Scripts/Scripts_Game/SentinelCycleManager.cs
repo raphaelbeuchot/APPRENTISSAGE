@@ -4,6 +4,8 @@ using UnityEngine;
 public class SentinelCycleManager : MonoBehaviour
 {
     public enum GameState { GreenLight, Alert, RedLight, Release }
+    public static event System.Action<GameState> OnCycleChanged;
+
 
     [Header("Sentinel Settings")]
     public SentinelSettings sentinelSettings;
@@ -286,6 +288,8 @@ public class SentinelCycleManager : MonoBehaviour
     {
         currentState = newState;
         cycleTimer = 0f;
+        OnCycleChanged?.Invoke(newState);
+
 
         if (newState == GameState.GreenLight)
         {
