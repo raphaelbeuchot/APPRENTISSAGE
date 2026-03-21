@@ -88,7 +88,8 @@ public class EnemyHealth : MonoBehaviour
             return;
         }
 
-        currentHealth = stats.maxHealth;
+        float enemyHealthMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.enemyMaxHealthMultiplier : 1f;
+        currentHealth = stats.maxHealth * enemyHealthMult;
         maxTheoreticalStun = stats.sprayStunDuration;
         SetupDeathEffect();
         SetupHealthBar();

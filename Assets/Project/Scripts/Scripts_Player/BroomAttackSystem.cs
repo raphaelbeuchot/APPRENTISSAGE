@@ -196,8 +196,8 @@ public class BroomAttackSystem : MonoBehaviour
                 Rigidbody targetRb = hit.GetComponent<Rigidbody>();
                 if (targetRb != null)
                 {
-                    targetRb.AddForce(knockbackDir * stats.broomKnockbackForce, ForceMode.VelocityChange);
-
+                    float knockbackMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.broomKnockbackMultiplier : 1f;
+                    targetRb.AddForce(knockbackDir * stats.broomKnockbackForce * knockbackMult, ForceMode.VelocityChange);
                     // ACTIVER LE FLAG KNOCKBACK
                     enemyHealth.SetKnockbackState(0.8f);
                 }

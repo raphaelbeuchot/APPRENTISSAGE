@@ -661,8 +661,8 @@ public class GameManager : MonoBehaviour
                         trackData.scheduledDuringWindup = isWindingUp; // AJOUTER
 
                         float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
-                        trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
-                        trackData.lastShotTime = Time.time;
+                        float furtiviteMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.sentinelExposureDelayMultiplier : 1f;
+                        trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay * furtiviteMult + randomOffset; trackData.lastShotTime = Time.time;
 
                         PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
@@ -691,7 +691,8 @@ public class GameManager : MonoBehaviour
                     trackData.scheduledDuringWindup = isWindingUp; // AJOUTER
 
                     float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
-                    trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
+                    float furtiviteMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.sentinelExposureDelayMultiplier : 1f;
+                    trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay * furtiviteMult + randomOffset;
                     trackData.lastShotTime = Time.time;
 
                     PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();

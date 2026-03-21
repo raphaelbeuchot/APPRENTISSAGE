@@ -1,30 +1,29 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 
 public class WheelUI : MonoBehaviour
 {
-    [Header("Wheel")]
-    [SerializeField] private Transform wheelTransform;
-    [SerializeField] private float spinSpeed = 720f;
+    [Header("Display")]
+    [SerializeField] private TextMeshProUGUI slotDisplayText;
+    [SerializeField] private TextMeshProUGUI resultText;
 
-    [Header("Buttons")]
+    [Header("Texts")]
     [SerializeField] private TextMeshProUGUI launchText;
     [SerializeField] private TextMeshProUGUI stopText;
     [SerializeField] private TextMeshProUGUI continueText;
 
-    [Header("Result")]
-    [SerializeField] private TextMeshProUGUI resultText;
-
     [Header("Config")]
-    [SerializeField] private float decelerationDuration = 1.5f;
+    [SerializeField] private float maxCyclesPerSecond = 10f;
+    [SerializeField] private float decelerationDuration = 2f;
 
     private enum WheelState { Idle, Spinning, Decelerating, Result }
     private WheelState state = WheelState.Idle;
 
-    private float currentSpeed = 0f;
     private int resultIndex = -1;
+    private int currentDisplayIndex = 0;
+    private float timeSinceLastSlotChange = 0f;
+    private float currentCyclesPerSecond = 0f;
 
     private string[] slotNames = new string[]
     {
@@ -49,16 +48,10 @@ public class WheelUI : MonoBehaviour
 
     void Update()
     {
-        if (state == WheelState.Spinning || state == WheelState.Decelerating)
-        {
-            if (wheelTransform != null)
-                wheelTransform.Rotate(0f, 0f, currentSpeed * Time.deltaTime);
-        }
-
         if (PlayerInputManager.Instance == null) return;
 
-        bool confirmPressed = (PlayerInputManager.Instance != null && PlayerInputManager.Instance.InteractPressed)
-     || Input.GetButtonDown("Submit");
+        bool confirmPressed = PlayerInputManager.Instance.InteractPressed
+            || Input.GetButtonDown("Submit");
 
         if (state == WheelState.Idle && confirmPressed)
             OnLaunchPressed();
@@ -66,6 +59,25 @@ public class WheelUI : MonoBehaviour
             OnStopPressed();
         else if (state == WheelState.Result && confirmPressed)
             OnContinuePressed();
+
+        if (state == WheelState.Spinning || state == WheelState.Decelerating)
+        {
+            timeSinceLastSlotChange += Time.deltaTime;
+            float interval = currentCyclesPerSecond > 0f ? 1f / currentCyclesPerSecond : 999f;
+
+            if (timeSinceLastSlotChange >= interval)
+            {
+                timeSinceLastSlotChange = 0f;
+
+                if (state == WheelState.Spinning)
+                {
+                    currentDisplayIndex = (currentDisplayIndex + 1) % slotNames.Length;
+                }
+
+                if (slotDisplayText != null)
+                    slotDisplayText.text = slotNames[currentDisplayIndex];
+            }
+        }
     }
 
     void SetState(WheelState newState)
@@ -75,45 +87,64 @@ public class WheelUI : MonoBehaviour
         if (launchText != null) launchText.gameObject.SetActive(newState == WheelState.Idle);
         if (stopText != null) stopText.gameObject.SetActive(newState == WheelState.Spinning);
         if (continueText != null) continueText.gameObject.SetActive(newState == WheelState.Result);
-
-        if (resultText != null)
-            resultText.gameObject.SetActive(newState == WheelState.Result);
+        if (slotDisplayText != null) slotDisplayText.gameObject.SetActive(newState == WheelState.Spinning || newState == WheelState.Decelerating);
+        if (resultText != null) resultText.gameObject.SetActive(newState == WheelState.Result);
     }
 
-    public void OnLaunchPressed()
+    void OnLaunchPressed()
     {
         if (state != WheelState.Idle) return;
-        currentSpeed = spinSpeed;
+        currentCyclesPerSecond = maxCyclesPerSecond;
+        currentDisplayIndex = 0;
+        timeSinceLastSlotChange = 0f;
         SetState(WheelState.Spinning);
     }
 
-    public void OnStopPressed()
+    void OnStopPressed()
     {
         if (state != WheelState.Spinning) return;
+        resultIndex = Random.Range(0, slotNames.Length);
         SetState(WheelState.Decelerating);
         StartCoroutine(DecelerateCoroutine());
     }
 
     IEnumerator DecelerateCoroutine()
     {
-        // Calculer le resultat maintenant
-        resultIndex = Random.Range(0, slotNames.Length);
-
         float elapsed = 0f;
-        float startSpeed = currentSpeed;
+        float startSpeed = currentCyclesPerSecond;
 
-        // S'assurer de faire au moins un tour complet
-        float minDuration = 360f / startSpeed;
-        float duration = Mathf.Max(decelerationDuration, minDuration);
-
-        while (elapsed < duration)
+        // Compter combien de slots restent avant le resultat
+        // On s'assure de faire au moins un tour complet
+        int slotsToResult = slotNames.Length;
+        int currentPos = currentDisplayIndex;
+        while (currentPos != resultIndex || slotsToResult < slotNames.Length)
         {
-            elapsed += Time.deltaTime;
-            currentSpeed = Mathf.Lerp(startSpeed, 0f, elapsed / duration);
-            yield return null;
+            currentPos = (currentPos + 1) % slotNames.Length;
+            slotsToResult++;
+            if (slotsToResult > slotNames.Length * 3) break; // securite max 3 tours
         }
 
-        currentSpeed = 0f;
+        float totalTime = decelerationDuration;
+        float timePerSlot = totalTime / slotsToResult;
+
+        for (int i = 0; i < slotsToResult; i++)
+        {
+            float progress = (float)i / slotsToResult;
+            float currentInterval = Mathf.Lerp(1f / startSpeed, timePerSlot * 3f, progress);
+
+            currentDisplayIndex = (currentDisplayIndex + 1) % slotNames.Length;
+            if (slotDisplayText != null)
+                slotDisplayText.text = slotNames[currentDisplayIndex];
+
+            yield return new WaitForSeconds(currentInterval);
+        }
+
+        // Forcer le resultat final
+        currentDisplayIndex = resultIndex;
+        if (slotDisplayText != null)
+            slotDisplayText.text = slotNames[currentDisplayIndex];
+
+        currentCyclesPerSecond = 0f;
         ShowResult();
     }
 
@@ -124,10 +155,14 @@ public class WheelUI : MonoBehaviour
         if (resultText != null)
             resultText.text = slotNames[resultIndex];
 
+        // Stocker le modifier
+        if (LevelProgressionManager.Instance != null)
+            LevelProgressionManager.Instance.SetActiveModifier((ModifierType)resultIndex);
+
         Debug.Log($"[WheelUI] Resultat : {slotNames[resultIndex]} (index {resultIndex})");
     }
 
-    public void OnContinuePressed()
+    void OnContinuePressed()
     {
         if (state != WheelState.Result) return;
         if (SceneFader.Instance != null)

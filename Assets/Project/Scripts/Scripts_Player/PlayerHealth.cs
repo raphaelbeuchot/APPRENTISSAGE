@@ -39,6 +39,7 @@ public class PlayerHealth : MonoBehaviour
         // Initialisation
         currentHealth = stats.maxHealth;
 
+
         // Informe le movement de la santé initiale
         if (movement != null)
         {
@@ -53,6 +54,15 @@ public class PlayerHealth : MonoBehaviour
     /// <summary>
     /// Inflige des dégâts au joueur
     /// </summary>
+
+    void Start()
+    {
+        float healthMultiplier = ModifierApplier.Instance != null ? ModifierApplier.Instance.playerMaxHealthMultiplier : 1f;
+        currentHealth = stats.maxHealth * healthMultiplier;
+
+        if (movement != null)
+            movement.UpdateHealth(currentHealth);
+    }
     public void TakeDamage(float damage)
     {
         if (isDead) return;

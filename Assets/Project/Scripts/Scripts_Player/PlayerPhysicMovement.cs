@@ -144,6 +144,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void Start()
     {
+        float enduranceMultiplier = ModifierApplier.Instance != null ? ModifierApplier.Instance.enduranceMultiplier : 1f;
+        currentStamina = stats.maxStamina * enduranceMultiplier;
+
         animator = GetComponentInChildren<Animator>();
 
         
@@ -284,7 +287,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         // Regen passive (pas de condition sprint)
         currentStamina += stats.staminaRegenPerSecond * Time.deltaTime;
-        currentStamina = Mathf.Min(stats.maxStamina, currentStamina);
+        float enduranceMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.enduranceMultiplier : 1f;
+        currentStamina = Mathf.Min(stats.maxStamina * enduranceMult, currentStamina);
     }
 
     void HandleStepClimb()

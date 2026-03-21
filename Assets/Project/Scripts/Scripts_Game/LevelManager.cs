@@ -32,8 +32,23 @@ public class LevelManager : MonoBehaviour
     private bool gameOver = false;
     private bool doorHasBeenActivated = false;
 
+    void Awake()
+    {
+        if (ModifierApplier.Instance == null)
+        {
+            GameObject go = new GameObject("ModifierApplier");
+            go.AddComponent<ModifierApplier>();
+        }
+    }
+
     void Start()
     {
+        if (ModifierApplier.Instance == null)
+        {
+            GameObject go = new GameObject("ModifierApplier");
+            go.AddComponent<ModifierApplier>();
+        }
+
         if (goalDoor == null)
             goalDoor = FindObjectOfType<GoalDoor>();
 

@@ -64,8 +64,9 @@ public class MeleeAttackSystem : MonoBehaviour
         originalScale = transform.localScale;
 
         // CORRIGE : Reserve = Total - Chargeur initial
-        currentSprayAmmo = stats.maxSprayAmmo;
-        totalSprayAmmo = stats.totalSprayAmmoStart - stats.maxSprayAmmo;
+        float ammoMultiplier = ModifierApplier.Instance != null ? ModifierApplier.Instance.sprayAmmoMultiplier : 1f;
+        currentSprayAmmo = Mathf.RoundToInt(stats.maxSprayAmmo * ammoMultiplier);
+        totalSprayAmmo = Mathf.RoundToInt((stats.totalSprayAmmoStart - stats.maxSprayAmmo) * ammoMultiplier);
     }
 
     void OnDisable()

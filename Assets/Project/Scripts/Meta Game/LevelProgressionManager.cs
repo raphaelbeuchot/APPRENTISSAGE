@@ -38,6 +38,8 @@ public class LevelProgressionManager : MonoBehaviour
     public List<LevelData> levels = new List<LevelData>();
     public int lastUnlockedLevelIndex { get; private set; } = -1;
 
+    private ModifierType activeModifier = ModifierType.None;
+
     private HashSet<int> completedLevels = new HashSet<int>();
     private HashSet<int> unlockedLevels = new HashSet<int>();
 
@@ -179,5 +181,15 @@ public class LevelProgressionManager : MonoBehaviour
                 result.Add(val);
         }
         return result;
+    }
+    public void SetActiveModifier(ModifierType modifier)
+    {
+        activeModifier = modifier;
+        Debug.Log($"[LevelProgression] Modifier actif : {modifier}");
+    }
+
+    public ModifierType GetActiveModifier()
+    {
+        return activeModifier;
     }
 }
