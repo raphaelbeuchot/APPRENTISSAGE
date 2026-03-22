@@ -10,5 +10,6 @@ public enum ModifierType
     MalusSpray,
     MalusEndurance,
     MalusVieEnnemis,
-    Neutre
+    Neutre,
+    Neutre2
 }

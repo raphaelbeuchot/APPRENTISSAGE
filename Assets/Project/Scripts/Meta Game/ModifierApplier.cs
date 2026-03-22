@@ -9,7 +9,7 @@ public class ModifierApplier : MonoBehaviour
     public float sprayAmmoMultiplier { get; private set; } = 1f;
     public float broomKnockbackMultiplier { get; private set; } = 1f;
     public float enduranceMultiplier { get; private set; } = 1f;
-    public float sentinelExposureDelayMultiplier { get; private set; } = 1f;
+    public float sentinelMovementThresholdMultiplier { get; private set; } = 1f;
     public float enemyMaxHealthMultiplier { get; private set; } = 1f;
     public bool noEnemy { get; private set; } = false;
 
@@ -50,7 +50,7 @@ public class ModifierApplier : MonoBehaviour
                 enduranceMultiplier = 1.5f;
                 break;
             case ModifierType.BonusFurtivite:
-                sentinelExposureDelayMultiplier = 2f;
+                sentinelMovementThresholdMultiplier = 10f;
                 break;
             case ModifierType.MalusViePlayer:
                 playerMaxHealthMultiplier = 0.5f;

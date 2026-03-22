@@ -191,12 +191,12 @@ public class GameManager : MonoBehaviour
 
     void CheckForMovingTargetsWithRaycast()
     {
+        float movementThreshold = sentinelSettings.movementThreshold * (ModifierApplier.Instance != null ? ModifierApplier.Instance.sentinelMovementThresholdMultiplier : 1f);
         Vector3 eyePosition = (sentinelEye != null) ? sentinelEye.position : transform.position;
         Vector3 sentinelPos = eyePosition + sentinelSettings.raycastOffset;
 
         Collider[] targets = Physics.OverlapSphere(sentinelPos, sentinelSettings.detectionRadius, sentinelSettings.targetLayers);
 
-        // Reinitialiser la detection
         foreach (var kvp in trackedTargets)
         {
             EnemyAI_AStar ai = kvp.Key != null ? kvp.Key.GetComponent<EnemyAI_AStar>() : null;
@@ -211,7 +211,6 @@ public class GameManager : MonoBehaviour
 
             TargetTrackingData trackData = trackedTargets[col.gameObject];
 
-            // NOUVEAU : Initialisation etat crouch si nouvelle entree
             if (col.gameObject == player.gameObject && !trackData.hasBeenTrackedBefore)
             {
                 trackData.wasPlayerCrouched = player.IsCrouching();
@@ -219,10 +218,10 @@ public class GameManager : MonoBehaviour
 
             EnemyHealth enemyHealth = col.GetComponent<EnemyHealth>();
             if (enemyHealth != null && enemyHealth.IsRecovering()) continue;
-            
+
             EnemyAI_AStar stunnedCheck = col.GetComponent<EnemyAI_AStar>();
             if (stunnedCheck != null && stunnedCheck.isStunnedBySentinel) continue;
-            
+
             GrabAttack grabSystem = col.GetComponent<GrabAttack>();
             bool isInBourrade = grabSystem != null && grabSystem.isInBourradeDuration;
             bool isFakeGrabber = grabSystem != null && grabSystem.isFakeGrabbing;
@@ -231,17 +230,14 @@ public class GameManager : MonoBehaviour
             Vector3 direction = (targetPos - sentinelPos).normalized;
             float distance = Vector3.Distance(sentinelPos, targetPos);
 
-            // SYSTEME DE LOS AVEC HEADSHOT
             RaycastHit hit;
             bool hasLOS = true;
             bool isHeadshot = false;
             Vector3 finalTargetPos = targetPos;
 
-            // Raycast 1 : vers centre
             if (Physics.Raycast(sentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers)
                 && hit.collider.gameObject != col.gameObject)
             {
-                // Centre cache, verifier si la tete depasse
                 Vector3 headPos = GetHeadPosition(col);
                 Vector3 directionToHead = (headPos - sentinelPos).normalized;
                 float distanceToHead = Vector3.Distance(sentinelPos, headPos);
@@ -250,14 +246,12 @@ public class GameManager : MonoBehaviour
                 if (Physics.Raycast(sentinelPos, directionToHead, out headHit, distanceToHead, sentinelSettings.obstacleLayers)
                     && headHit.collider.gameObject != col.gameObject)
                 {
-                    // Tete aussi cachee : vraiment safe
                     hasLOS = false;
                     Debug.DrawLine(sentinelPos, hit.point, Color.red, 0.2f);
                     Debug.DrawLine(sentinelPos, headHit.point, Color.red, 0.1f);
                 }
                 else
                 {
-                    // TETE VISIBLE = HEADSHOT !
                     hasLOS = true;
                     isHeadshot = true;
                     finalTargetPos = headPos;
@@ -266,31 +260,25 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                // Centre visible : tir normal
                 Debug.DrawLine(sentinelPos, targetPos, Color.green, 0.2f);
             }
-
 
             trackData.canShoot = hasLOS;
             trackData.isHeadshot = isHeadshot;
             trackData.lastKnownPosition = finalTargetPos;
 
-            // Check etat crouch du player
             bool isPlayerCrouched = false;
             if (col.gameObject == player.gameObject)
             {
                 isPlayerCrouched = player.IsCrouching();
             }
 
-
-            // Detection changement d'etat crouch (seulement si deja tracke avant)
             bool hasCrouchStateChanged = false;
             if (col.gameObject == player.gameObject && trackData.hasBeenTrackedBefore)
             {
                 hasCrouchStateChanged = (trackData.wasPlayerCrouched != isPlayerCrouched);
             }
 
-            // LANCEMENT TIMER CROUCH si changement detecte (peu importe visibilite)
             if (hasCrouchStateChanged && !trackData.crouchStateChangeInProgress && !trackData.isBeingShot)
             {
                 Debug.Log($"[CROUCH STATE CHANGE] {col.name} - Timer 0.3s lance!");
@@ -314,7 +302,6 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            // PENDANT LE TIMER CROUCH : Si perd LOS de la tete = RICOCHET ou ZOMBIE INTERCEPTE
             if (trackData.crouchStateChangeInProgress && !hasLOS)
             {
                 Vector3 lastSeenPos = trackData.lastKnownPosition;
@@ -323,19 +310,16 @@ public class GameManager : MonoBehaviour
                 RaycastHit obstacleHit;
                 if (Physics.Raycast(sentinelPos, dirToLastSeen, out obstacleHit, 100f, sentinelSettings.obstacleLayers))
                 {
-                    // NOUVEAU : Verifier si l'obstacle est un zombie
                     int enemyLayer = LayerMask.NameToLayer("Enemy");
                     int zombieLayer = LayerMask.NameToLayer("Zombie");
 
                     if (obstacleHit.collider.gameObject.layer == enemyLayer || obstacleHit.collider.gameObject.layer == zombieLayer)
                     {
-                        // C'est un zombie qui cache le player - le zombie prend le tir
                         EnemyHealth coverEnemyHealth = obstacleHit.collider.GetComponent<EnemyHealth>();
                         if (coverEnemyHealth != null && !coverEnemyHealth.IsDead())
                         {
                             ShootEnemy(obstacleHit.collider.gameObject, coverEnemyHealth, "BOUCLIER CROUCH", sentinelPos, obstacleHit.point, trackData.isHeadshot);
 
-                            // RESET immediat
                             trackData.crouchStateChangeInProgress = false;
                             trackData.crouchStateChangeScheduledTime = -1f;
                             trackData.consecutiveLOSScans = 0;
@@ -351,24 +335,18 @@ public class GameManager : MonoBehaviour
                         }
                     }
 
-                    
-
-                    // Son ricochet
                     if (audioSource != null && sentinelSettings.ricochetSound != null)
                         audioSource.PlayOneShot(sentinelSettings.ricochetSound);
 
-                    // VFX au point d'impact
                     if (sentinelSettings.ricochetVFX != null)
                     {
                         GameObject vfx = Instantiate(sentinelSettings.ricochetVFX, obstacleHit.point, Quaternion.LookRotation(obstacleHit.normal));
                         Destroy(vfx, sentinelSettings.ricochetVFXDuration);
                     }
 
-                    // Laser vers obstacle
                     StartCoroutine(ShowShootLaser(sentinelPos, obstacleHit.point, sentinelSettings.shootLaserFadeDuration));
                 }
 
-                // RESET immediat
                 trackData.crouchStateChangeInProgress = false;
                 trackData.crouchStateChangeScheduledTime = -1f;
                 trackData.consecutiveLOSScans = 0;
@@ -381,10 +359,8 @@ public class GameManager : MonoBehaviour
                 continue;
             }
 
-            // FIN TIMER CROUCH : Re-check visibilite et tirer
             if (trackData.crouchStateChangeInProgress && Time.time >= trackData.crouchStateChangeScheduledTime && hasLOS)
             {
-
                 PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
                 if (enemyHealth != null && !enemyHealth.IsDead())
@@ -396,45 +372,35 @@ public class GameManager : MonoBehaviour
                     ShootPlayer(col.gameObject, humanHealth, "CROUCH CHANGE", sentinelPos, finalTargetPos, trackData.isHeadshot);
                 }
 
-                // RESET apres tir
                 trackData.crouchStateChangeInProgress = false;
                 trackData.crouchStateChangeScheduledTime = -1f;
                 trackData.lastShotTime = Time.time;
                 trackData.wasPlayerCrouched = isPlayerCrouched;
 
-                // Enlever le blanc apres le tir (AJOUTER CETTE LIGNE)
                 if (playerDetectionFeedback != null)
                     playerDetectionFeedback.OnNoLongerDetected();
 
                 continue;
             }
 
-
-
-
-            // PENDANT LE DELAI : Si cache : RICOCHET IMMEDIAT ou ZOMBIE INTERCEPTE
             if (trackData.isBeingShot && !hasLOS)
             {
-                // Raycast vers DERNIERE POSITION CONNUE (ou la tete etait)
                 Vector3 lastSeenPos = trackData.lastKnownPosition;
                 Vector3 dirToLastSeen = (lastSeenPos - sentinelPos).normalized;
 
                 RaycastHit obstacleHit;
                 if (Physics.Raycast(sentinelPos, dirToLastSeen, out obstacleHit, 100f, sentinelSettings.obstacleLayers))
                 {
-                    // NOUVEAU : Verifier si l'obstacle est un zombie
                     int enemyLayer = LayerMask.NameToLayer("Enemy");
                     int zombieLayer = LayerMask.NameToLayer("Zombie");
 
                     if (obstacleHit.collider.gameObject.layer == enemyLayer || obstacleHit.collider.gameObject.layer == zombieLayer)
                     {
-                        // C'est un zombie qui cache la cible - le zombie prend le tir
                         EnemyHealth coverEnemyHealth = obstacleHit.collider.GetComponent<EnemyHealth>();
                         if (coverEnemyHealth != null && !coverEnemyHealth.IsDead())
                         {
                             ShootEnemy(obstacleHit.collider.gameObject, coverEnemyHealth, "BOUCLIER DELAI", sentinelPos, obstacleHit.point, trackData.isHeadshot);
 
-                            // RESET
                             trackData.isBeingShot = false;
                             trackData.shootScheduledTime = -1f;
                             trackData.consecutiveLOSScans = 0;
@@ -447,24 +413,18 @@ public class GameManager : MonoBehaviour
                         }
                     }
 
-                    
-
-                    // Son ricochet
                     if (audioSource != null && sentinelSettings.ricochetSound != null)
                         audioSource.PlayOneShot(sentinelSettings.ricochetSound);
 
-                    // VFX au point d'impact
                     if (sentinelSettings.ricochetVFX != null)
                     {
                         GameObject vfx = Instantiate(sentinelSettings.ricochetVFX, obstacleHit.point, Quaternion.LookRotation(obstacleHit.normal));
                         Destroy(vfx, sentinelSettings.ricochetVFXDuration);
                     }
 
-                    // Laser vers obstacle
                     StartCoroutine(ShowShootLaser(sentinelPos, obstacleHit.point, sentinelSettings.shootLaserFadeDuration));
                 }
 
-                // RESET immediat
                 trackData.isBeingShot = false;
                 trackData.shootScheduledTime = -1f;
                 trackData.consecutiveLOSScans = 0;
@@ -481,44 +441,36 @@ public class GameManager : MonoBehaviour
             if (ai != null && hasLOS)
                 ai.isDetectedBySentinel = true;
 
-
-            //Punition si meleeattack, spray
             Rigidbody rb = col.GetComponent<Rigidbody>();
             MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
             bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
 
-            // Check broom attack aussi
             BroomAttackSystem broomSystem = col.GetComponent<BroomAttackSystem>();
             bool isBroomAttacking = broomSystem != null && broomSystem.IsAttacking();
 
-            // Check climb
             TestClimbDetection climbSystem = col.GetComponent<TestClimbDetection>();
             bool isClimbing = climbSystem != null && climbSystem.IsClimbing();
 
-            // Check sortie de pit
             PlayerPitInteractable pitInteractable = col.GetComponent<PlayerPitInteractable>();
             bool isClimbingOutOfPit = pitInteractable != null && pitInteractable.IsClimbingOut();
 
             bool isMoving = false;
 
-            // CAS PLAYER : World space uniquement
             if (col.gameObject == player.gameObject && rb != null)
             {
-                // Initialiser position si premier scan
                 if (trackData.lastCheckTime == 0f)
                 {
                     trackData.lastCheckPosition = col.transform.position;
                     trackData.lastCheckTime = Time.time;
                 }
 
-                // Calculer deplacement depuis dernier scan
                 float timeSinceLastCheck = Time.time - trackData.lastCheckTime;
                 if (timeSinceLastCheck > 0.01f)
                 {
                     float distanceMoved = Vector3.Distance(col.transform.position, trackData.lastCheckPosition);
                     float worldSpaceVelocity = distanceMoved / timeSinceLastCheck;
 
-                    if (worldSpaceVelocity > sentinelSettings.movementThreshold)
+                    if (worldSpaceVelocity > movementThreshold)
                     {
                         isMoving = true;
                     }
@@ -526,27 +478,23 @@ public class GameManager : MonoBehaviour
                     trackData.lastCheckPosition = col.transform.position;
                     trackData.lastCheckTime = Time.time;
                 }
-                // Broom basse : ignorer mouvement detecte par poussee si zero input joueuer
+
                 if (PlayerInputManager.Instance.BroomLowActive
-    && PlayerInputManager.Instance.MoveInput.magnitude < 0.1f
-    && player.isInContactWithEnemy)
+                    && PlayerInputManager.Instance.MoveInput.magnitude < 0.1f
+                    && player.isInContactWithEnemy)
                     isMoving = false;
             }
-            // CAS ZOMBIES : Logique existante + world space en complement
             else if (rb != null)
             {
-                // Detection classique d'abord
                 EnemyAI_AStar zombieAI = col.GetComponent<EnemyAI_AStar>();
                 bool isInPitMode = zombieAI != null && zombieAI.isInPitMode;
 
                 if (isInPitMode)
                 {
-                    float effectiveThreshold = sentinelSettings.movementThreshold;
+                    float effectiveThreshold = movementThreshold;
                     EnemyPitInteractable enemyPit = col.GetComponent<EnemyPitInteractable>();
                     if (enemyPit != null && enemyPit.isInShallowWater)
-                    {
                         effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
-                    }
                     isMoving = rb.linearVelocity.magnitude > effectiveThreshold;
                 }
                 else
@@ -554,22 +502,19 @@ public class GameManager : MonoBehaviour
                     Pathfinding.AIPath aiPath = col.GetComponent<Pathfinding.AIPath>();
                     if (aiPath != null && aiPath.enabled && aiPath.canMove)
                     {
-                        float effectiveThreshold = sentinelSettings.movementThreshold;
+                        float effectiveThreshold = movementThreshold;
                         EnemyPitInteractable enemyPit = col.GetComponent<EnemyPitInteractable>();
                         if (enemyPit != null && enemyPit.isInShallowWater)
-                        {
                             effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
-                        }
                         isMoving = aiPath.velocity.magnitude > effectiveThreshold;
                     }
                     else
                     {
-                        float effectiveThreshold = sentinelSettings.movementThreshold;
+                        float effectiveThreshold = movementThreshold;
                         isMoving = rb.linearVelocity.magnitude > effectiveThreshold;
                     }
                 }
 
-                // AJOUT : World space detection EN COMPLEMENT (pour plateformes)
                 if (!isMoving)
                 {
                     if (trackData.lastCheckTime == 0f)
@@ -584,23 +529,20 @@ public class GameManager : MonoBehaviour
                         float distanceMoved = Vector3.Distance(col.transform.position, trackData.lastCheckPosition);
                         float worldSpaceVelocity = distanceMoved / timeSinceLastCheck;
 
-                        float effectiveThreshold = sentinelSettings.movementThreshold;
+                        float effectiveThreshold = movementThreshold;
                         EnemyPitInteractable enemyPit = col.GetComponent<EnemyPitInteractable>();
                         if (enemyPit != null && enemyPit.isInShallowWater)
-                        {
                             effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
-                        }
 
                         if (worldSpaceVelocity > effectiveThreshold)
-                        {
                             isMoving = true;
-                        }
 
                         trackData.lastCheckPosition = col.transform.position;
                         trackData.lastCheckTime = Time.time;
                     }
                 }
             }
+
             bool playerImmune = (col.gameObject == player.gameObject
                              && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed
                              && !isMoving);
@@ -612,18 +554,14 @@ public class GameManager : MonoBehaviour
             {
             }
 
-            // FIN DU DELAI : Si toujours visible : TIR REUSSI
             bool losCheck = trackData.scheduledDuringWindup ? true : hasLOS;
             if (trackData.isBeingShot && Time.time >= trackData.shootScheduledTime && losCheck)
             {
-                // NOUVEAU : Verifier qu'on n'a pas tire trop recemment dans ce scan
                 if (Time.time - lastActualShotTime < SHOT_SPACING_WINDOW)
                 {
-                    // Trop proche, reporter au prochain scan
                     trackData.shootScheduledTime += SHOT_SPACING_WINDOW;
                     continue;
                 }
-
 
                 PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
@@ -638,7 +576,6 @@ public class GameManager : MonoBehaviour
                     lastActualShotTime = Time.time;
                 }
 
-                // RESET apres tir reussi
                 trackData.isBeingShot = false;
                 trackData.shootScheduledTime = -1f;
                 trackData.lastShotTime = Time.time;
@@ -646,7 +583,6 @@ public class GameManager : MonoBehaviour
                 continue;
             }
 
-            // TIR SUR LA CIBLE SI ELLE EST EN MOUVEMENT ET VISIBLE
             if (shouldBeShot && hasLOS && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
             {
                 bool needsExposureDelay = !trackData.wasInLOS;
@@ -658,18 +594,17 @@ public class GameManager : MonoBehaviour
                     if (trackData.consecutiveLOSScans >= sentinelSettings.minimumExposureScans)
                     {
                         trackData.isBeingShot = true;
-                        trackData.scheduledDuringWindup = isWindingUp; // AJOUTER
+                        trackData.scheduledDuringWindup = isWindingUp;
 
                         float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
-                        float furtiviteMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.sentinelExposureDelayMultiplier : 1f;
-                        trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay * furtiviteMult + randomOffset; trackData.lastShotTime = Time.time;
+                        trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
+                        trackData.lastShotTime = Time.time;
 
                         PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
                         if (enemyHealth != null && !enemyHealth.IsDead())
-                        {
                             alreadyShot.Add(col.gameObject);
-                        }
+
                         if (enemyHealth != null)
                         {
                             EnemyDetectionFeedback enemyFeedback = col.GetComponent<EnemyDetectionFeedback>();
@@ -679,28 +614,24 @@ public class GameManager : MonoBehaviour
                         {
                             alreadyShot.Add(col.gameObject);
                             if (col.gameObject == player.gameObject && !playerAlarmTriggered)
-                            {
                                 playerAlarmTriggered = true;
-                            }
                         }
                     }
                 }
                 else
                 {
                     trackData.isBeingShot = true;
-                    trackData.scheduledDuringWindup = isWindingUp; // AJOUTER
+                    trackData.scheduledDuringWindup = isWindingUp;
 
                     float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
-                    float furtiviteMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.sentinelExposureDelayMultiplier : 1f;
-                    trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay * furtiviteMult + randomOffset;
+                    trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
                     trackData.lastShotTime = Time.time;
 
                     PlayerHealth humanHealth = col.GetComponent<PlayerHealth>();
 
                     if (enemyHealth != null && !enemyHealth.IsDead())
-                    {
                         alreadyShot.Add(col.gameObject);
-                    }
+
                     if (enemyHealth != null)
                     {
                         EnemyDetectionFeedback enemyFeedback = col.GetComponent<EnemyDetectionFeedback>();
@@ -710,9 +641,7 @@ public class GameManager : MonoBehaviour
                     {
                         alreadyShot.Add(col.gameObject);
                         if (col.gameObject == player.gameObject && !playerAlarmTriggered)
-                        {
                             playerAlarmTriggered = true;
-                        }
                     }
                 }
             }
@@ -721,35 +650,29 @@ public class GameManager : MonoBehaviour
                 trackData.consecutiveLOSScans = 0;
             }
 
-            // FEEDBACK VISUEL BLANC : Simple - visible ET (bouge OU changement crouch en cours) = blanc
             if (col.gameObject == player.gameObject)
             {
                 bool isInDanger = (shouldBeShot && hasLOS) || trackData.crouchStateChangeInProgress;
 
-                // IMPORTANT : Pas de blanc si stunne par sentinelle
                 if (stunBySentinel)
                     isInDanger = false;
 
                 if (isInDanger)
                 {
-                    // Player visible + bouge OU changement crouch = blanc
                     if (playerDetectionFeedback != null && !playerDetectionFeedback.isCurrentlyDetected)
                         playerDetectionFeedback.OnDetected();
                 }
                 else
                 {
-                    // Player cache OU immobile = pas blanc
                     if (playerDetectionFeedback != null && playerDetectionFeedback.isCurrentlyDetected)
                         playerDetectionFeedback.OnNoLongerDetected();
                 }
             }
 
-            // NOUVEAU : Update etat crouch pour prochain scan (A LA FIN)
             trackData.wasPlayerCrouched = isPlayerCrouched;
             trackData.wasInLOS = hasLOS;
             trackData.hasBeenTrackedBefore = true;
         }
-
     }
 
     // ============================================

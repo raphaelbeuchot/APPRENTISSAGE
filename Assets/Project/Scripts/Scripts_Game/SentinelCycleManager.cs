@@ -25,7 +25,7 @@ public class SentinelCycleManager : MonoBehaviour
     [SerializeField] private SentinelCentralLight sentinelCentralLight;
     [SerializeField] private RedLightVolumeController redLightVolumeController;
     [SerializeField] private Light playerSpotLight;
-    [SerializeField] private Color spotColorCompensated = new Color(0.5f, 0.8f, 1f, 1f);
+    //[SerializeField] private Color spotColorCompensated = new Color(0.5f, 0.8f, 1f, 1f);
     [SerializeField] private EpervierManager epervierManager;
     [SerializeField] private EpervierManagerLoop epervierManagerLoop;
     [SerializeField] private CanyonTileManager canyonTileManager;
@@ -415,7 +415,7 @@ public class SentinelCycleManager : MonoBehaviour
             if (playerSpotLight != null)
             {
                 playerSpotLight.enabled = true;
-                playerSpotLight.color = spotColorCompensated;
+                //playerSpotLight.color = spotColorCompensated;
                 Debug.Log($"[SPOT] ALLUME en RedLight - intensity: {playerSpotLight.intensity}, enabled: {playerSpotLight.enabled}");
             }
 

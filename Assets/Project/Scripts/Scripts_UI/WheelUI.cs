@@ -26,20 +26,20 @@ public class WheelUI : MonoBehaviour
     private float currentCyclesPerSecond = 0f;
 
     private string[] slotNames = new string[]
-    {
-        "+ Vie 50%",
-        "+ Vie 50%",
-        "+ Spray 50%",
-        "+ Knockback Broom 50%",
-        "+ Endurance 50%",
-        "+ Furtivite",
-        "- Vie 50%",
-        "- Spray 50%",
-        "- Endurance 50%",
-        "+ Vie Ennemis 50%",
-        "Rien",
-        "Rien"
-    };
+{
+    "Rien",
+    "+ Vie 50%",
+    "+ Spray 50%",
+    "+ Knockback Broom 50%",
+    "+ Endurance 50%",
+    "+ Furtivite",
+    "- Vie 50%",
+    "- Spray 50%",
+    "- Endurance 50%",
+    "+ Vie Ennemis 50%",
+    "Rien",
+    "Rien"
+};
 
     void Start()
     {
@@ -60,7 +60,7 @@ public class WheelUI : MonoBehaviour
         else if (state == WheelState.Result && confirmPressed)
             OnContinuePressed();
 
-        if (state == WheelState.Spinning || state == WheelState.Decelerating)
+        if (state == WheelState.Spinning)
         {
             timeSinceLastSlotChange += Time.deltaTime;
             float interval = currentCyclesPerSecond > 0f ? 1f / currentCyclesPerSecond : 999f;
@@ -68,12 +68,7 @@ public class WheelUI : MonoBehaviour
             if (timeSinceLastSlotChange >= interval)
             {
                 timeSinceLastSlotChange = 0f;
-
-                if (state == WheelState.Spinning)
-                {
-                    currentDisplayIndex = (currentDisplayIndex + 1) % slotNames.Length;
-                }
-
+                currentDisplayIndex = (currentDisplayIndex + 1) % slotNames.Length;
                 if (slotDisplayText != null)
                     slotDisplayText.text = slotNames[currentDisplayIndex];
             }
@@ -103,47 +98,7 @@ public class WheelUI : MonoBehaviour
     void OnStopPressed()
     {
         if (state != WheelState.Spinning) return;
-        resultIndex = Random.Range(0, slotNames.Length);
-        SetState(WheelState.Decelerating);
-        StartCoroutine(DecelerateCoroutine());
-    }
-
-    IEnumerator DecelerateCoroutine()
-    {
-        float elapsed = 0f;
-        float startSpeed = currentCyclesPerSecond;
-
-        // Compter combien de slots restent avant le resultat
-        // On s'assure de faire au moins un tour complet
-        int slotsToResult = slotNames.Length;
-        int currentPos = currentDisplayIndex;
-        while (currentPos != resultIndex || slotsToResult < slotNames.Length)
-        {
-            currentPos = (currentPos + 1) % slotNames.Length;
-            slotsToResult++;
-            if (slotsToResult > slotNames.Length * 3) break; // securite max 3 tours
-        }
-
-        float totalTime = decelerationDuration;
-        float timePerSlot = totalTime / slotsToResult;
-
-        for (int i = 0; i < slotsToResult; i++)
-        {
-            float progress = (float)i / slotsToResult;
-            float currentInterval = Mathf.Lerp(1f / startSpeed, timePerSlot * 3f, progress);
-
-            currentDisplayIndex = (currentDisplayIndex + 1) % slotNames.Length;
-            if (slotDisplayText != null)
-                slotDisplayText.text = slotNames[currentDisplayIndex];
-
-            yield return new WaitForSeconds(currentInterval);
-        }
-
-        // Forcer le resultat final
-        currentDisplayIndex = resultIndex;
-        if (slotDisplayText != null)
-            slotDisplayText.text = slotNames[currentDisplayIndex];
-
+        resultIndex = currentDisplayIndex; // prend la case affichée au moment du clic
         currentCyclesPerSecond = 0f;
         ShowResult();
     }
@@ -158,7 +113,6 @@ public class WheelUI : MonoBehaviour
         // Stocker le modifier
         if (LevelProgressionManager.Instance != null)
             LevelProgressionManager.Instance.SetActiveModifier((ModifierType)resultIndex);
-
         Debug.Log($"[WheelUI] Resultat : {slotNames[resultIndex]} (index {resultIndex})");
     }
 
