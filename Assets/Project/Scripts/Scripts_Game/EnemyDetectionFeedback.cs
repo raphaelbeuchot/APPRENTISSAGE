@@ -16,6 +16,8 @@ public class EnemyDetectionFeedback : MonoBehaviour
     private SkinnedMeshRenderer[] meshRenderers;
     private Material[][] originalMaterials;
     private AudioSource audioSource;
+    [HideInInspector]
+    public bool isCurrentlyDetected = false;
 
     void Start()
     {
@@ -33,7 +35,10 @@ public class EnemyDetectionFeedback : MonoBehaviour
 
     public void OnDetected()
     {
+        
         if (GetComponent<EnemyHealth>()?.IsDead() == true) return; // AJOUT
+        isCurrentlyDetected = true;
+
         StopAllCoroutines();
         StartCoroutine(FlashCoroutine(whiteMaterial, detectionFlashDuration));
         if (detectionSound != null)
@@ -71,5 +76,7 @@ public class EnemyDetectionFeedback : MonoBehaviour
         if (meshRenderers == null || originalMaterials == null) return;
         for (int i = 0; i < meshRenderers.Length; i++)
             meshRenderers[i].materials = originalMaterials[i];
+        isCurrentlyDetected = false;
+
     }
 }

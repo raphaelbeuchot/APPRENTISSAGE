@@ -16,6 +16,9 @@ public class GameManager : MonoBehaviour
     public SentinelSettings sentinel;
     public PlayerHealth playerHealth;
     public PlayerDetectionFeedback playerDetectionFeedback;
+    
+    [Header("Laser Manager")]
+    [SerializeField] private SentinelLaserManager laserManager;
 
 
     public Renderer sentinelLightRenderer;
@@ -236,7 +239,7 @@ public class GameManager : MonoBehaviour
             Vector3 finalTargetPos = targetPos;
 
             if (Physics.Raycast(sentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers)
-                && hit.collider.gameObject != col.gameObject)
+    && hit.collider.gameObject != col.gameObject)
             {
                 Vector3 headPos = GetHeadPosition(col);
                 Vector3 directionToHead = (headPos - sentinelPos).normalized;
@@ -247,20 +250,13 @@ public class GameManager : MonoBehaviour
                     && headHit.collider.gameObject != col.gameObject)
                 {
                     hasLOS = false;
-                    Debug.DrawLine(sentinelPos, hit.point, Color.red, 0.2f);
-                    Debug.DrawLine(sentinelPos, headHit.point, Color.red, 0.1f);
                 }
                 else
                 {
                     hasLOS = true;
                     isHeadshot = true;
                     finalTargetPos = headPos;
-                    Debug.DrawLine(sentinelPos, headPos, Color.yellow, 0.2f);
                 }
-            }
-            else
-            {
-                Debug.DrawLine(sentinelPos, targetPos, Color.green, 0.2f);
             }
 
             trackData.canShoot = hasLOS;
@@ -344,7 +340,7 @@ public class GameManager : MonoBehaviour
                         Destroy(vfx, sentinelSettings.ricochetVFXDuration);
                     }
 
-                    StartCoroutine(ShowShootLaser(sentinelPos, obstacleHit.point, sentinelSettings.shootLaserFadeDuration));
+                    //StartCoroutine(ShowShootLaser(sentinelPos, obstacleHit.point, sentinelSettings.shootLaserFadeDuration));
                 }
 
                 trackData.crouchStateChangeInProgress = false;
@@ -422,7 +418,7 @@ public class GameManager : MonoBehaviour
                         Destroy(vfx, sentinelSettings.ricochetVFXDuration);
                     }
 
-                    StartCoroutine(ShowShootLaser(sentinelPos, obstacleHit.point, sentinelSettings.shootLaserFadeDuration));
+                    //StartCoroutine(ShowShootLaser(sentinelPos, obstacleHit.point, sentinelSettings.shootLaserFadeDuration));
                 }
 
                 trackData.isBeingShot = false;
@@ -681,35 +677,10 @@ public class GameManager : MonoBehaviour
 
     IEnumerator ShowShootLaser(Vector3 from, Vector3 to, float duration)
     {
-        if (!sentinelSettings.showLasers) yield break;
-
-        GameObject laserObj = new GameObject("ShootLaser_Temp");
-        laserObj.transform.SetParent(transform);
-
-        LineRenderer lr = laserObj.AddComponent<LineRenderer>();
-        lr.startWidth = sentinelSettings.laserWidth;
-        lr.endWidth = sentinelSettings.laserWidth;
-        lr.material = new Material(Shader.Find("Sprites/Default"));
-        lr.startColor = sentinelSettings.laserColor;
-        lr.endColor = sentinelSettings.laserColor;
-        lr.positionCount = 2;
-        lr.SetPosition(0, from);
-        lr.SetPosition(1, to);
-
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float alpha = 1f - (elapsed / duration);
-            Color col = sentinelSettings.laserColor;
-            col.a = alpha;
-            lr.startColor = col;
-            lr.endColor = col;
-            yield return null;
-        }
-
-        Destroy(laserObj);
+        // Remplace par SentinelLaserManager.TriggerShotAnimation()
+        yield break;
     }
+
 
     // ============================================
     // METHODES DE TIR
@@ -735,7 +706,9 @@ public class GameManager : MonoBehaviour
         SentinelTarget sentinelTarget = enemy.GetComponent<SentinelTarget>();
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
-        StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
+        // StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
+        if (laserManager != null)
+            laserManager.TriggerShotAnimation(sentinelPos, currentTargetPos);
 
         enemyHealth.TakeSentinelShot(isHeadshot);
         EnemyDetectionFeedback enemyFeedback = enemy.GetComponent<EnemyDetectionFeedback>();
@@ -806,7 +779,9 @@ public class GameManager : MonoBehaviour
         SentinelTarget sentinelTarget = human.GetComponent<SentinelTarget>();
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
-        StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
+        // StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
+        if (laserManager != null)
+            laserManager.TriggerShotAnimation(sentinelPos, currentTargetPos);
 
         if (playerDetectionFeedback != null)
             playerDetectionFeedback.OnShotBySentinel();
@@ -843,16 +818,16 @@ public class GameManager : MonoBehaviour
         if (humanHealth != null && !humanHealth.IsDead())
         {
             Vector3 currentPos = GetTargetCenter(playerObject);
-            StartCoroutine(ShowShootLaser(sentinelPos, currentPos, sentinelSettings.shootLaserFadeDuration));
 
+            // StartCoroutine(ShowShootLaser(sentinelPos, currentPos, sentinelSettings.shootLaserFadeDuration));
+            if (laserManager != null)
+                laserManager.TriggerShotAnimation(sentinelPos, currentPos);
 
             if (audioSource != null && sentinelSettings.shootSound != null)
                 audioSource.PlayOneShot(sentinelSettings.shootSound);
 
             SentinelTarget sentinelTarget = playerObject.GetComponent<SentinelTarget>();
             if (sentinelTarget != null) sentinelTarget.FlashWhite();
-
-            StartCoroutine(ShowShootLaser(sentinelPos, targetPos, sentinelSettings.shootLaserFadeDuration));
 
             StartCoroutine(PlayerStunBySentinel());
             humanHealth.TakeSentinelShot(sentinelPos);
