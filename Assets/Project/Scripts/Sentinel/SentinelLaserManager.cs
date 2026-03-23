@@ -24,8 +24,7 @@ public class SentinelLaserManager : MonoBehaviour
 
     [Header("Animation Tir")]
     [SerializeField] private GameObject shotProjectilePrefab;
-    [SerializeField] private float shotProjectileSpeed = 40f;
-    [SerializeField] private float shotProjectileSize = 0.08f;
+    [SerializeField] private float shotProjectileSpeed = 120f;
 
     private bool isRedLight = false;
 
@@ -180,8 +179,8 @@ public class SentinelLaserManager : MonoBehaviour
             yield break;
         }
 
-        GameObject proj = Instantiate(shotProjectilePrefab, from, Quaternion.identity);
-        proj.transform.localScale = Vector3.one * shotProjectileSize;
+        Quaternion rotation = Quaternion.LookRotation((to - from).normalized);
+        GameObject proj = Instantiate(shotProjectilePrefab, from, rotation);
 
         float totalDistance = Vector3.Distance(from, to);
         float elapsed = 0f;

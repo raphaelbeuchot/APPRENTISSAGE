@@ -7770,11 +7770,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
---- !u!1 &391631545 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 828745556533612378, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-  m_PrefabInstance: {fileID: 9019177782128006907}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &393769856 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -36495,39 +36490,23 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
   m_PrefabInstance: {fileID: 9019177782128006907}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 391631545}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f10f21fbc34920f4fadcc816ee0b03f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SentinelCycleManager
---- !u!114 &2103414917
+--- !u!114 &2103414919 stripped
 MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+  m_PrefabInstance: {fileID: 9019177782128006907}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 391631545}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6afb0367d98285046b149b0acb56de7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SentinelLaserManager
-  gameManager: {fileID: 1801742136}
-  sentinelEye: {fileID: 1430260110}
-  sentinelSettings: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
-  player: {fileID: 1871075791}
-  laserPlayerMaterialNormal: {fileID: 2100000, guid: e3d9487d8fa48ff448a173f9c79cbc81, type: 2}
-  laserPlayerMaterialDetected: {fileID: 2100000, guid: fec7793cdba3027448af2a0ed2a36992, type: 2}
-  laserPlayerWidthNormal: 0.05
-  laserPlayerWidthDetected: 0.08
-  laserEnemyMaterialNormal: {fileID: 2100000, guid: 7f8b5163730b7c34eac08ca95b0bf024, type: 2}
-  laserEnemyMaterialDetected: {fileID: 2100000, guid: fec7793cdba3027448af2a0ed2a36992, type: 2}
-  laserEnemyWidthNormal: 0.05
-  laserEnemyWidthDetected: 0.08
-  shotProjectilePrefab: {fileID: 0}
-  shotProjectileSpeed: 40
-  shotProjectileSize: 0.08
 --- !u!4 &2105783466 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -37295,6 +37274,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 887716756}
     - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
+      propertyPath: laserManager
+      value: 
+      objectReference: {fileID: 2103414919}
+    - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
       propertyPath: playerHealth
       value: 
       objectReference: {fileID: 1871075794}
@@ -37534,6 +37517,34 @@ PrefabInstance:
       propertyPath: m_Name
       value: SentinelCycleManager
       objectReference: {fileID: 0}
+    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 1871075791}
+    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: gameManager
+      value: 
+      objectReference: {fileID: 1801742136}
+    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: sentinelEye
+      value: 
+      objectReference: {fileID: 1430260110}
+    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: sentinelSettings
+      value: 
+      objectReference: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
+    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: shotProjectileSize
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: shotProjectileSpeed
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: shotProjectilePrefab
+      value: 
+      objectReference: {fileID: 532795292520040346, guid: 1cb12573de17c434fbd72c5e25970536, type: 3}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: aerialLight
       value: 
@@ -37665,10 +37676,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 828745556533612378, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2103414917}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

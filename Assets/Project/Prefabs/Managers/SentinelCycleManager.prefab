@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8299592843763085607}
   - component: {fileID: 7569270378770535786}
+  - component: {fileID: 3815415669408243102}
   m_Layer: 0
   m_Name: SentinelCycleManager
   m_TagString: Untagged
@@ -50,12 +51,10 @@ MonoBehaviour:
   sentinelTransform: {fileID: 0}
   startZoneTransform: {fileID: 0}
   gameManager: {fileID: 0}
-  marqueeLightController: {fileID: 0}
   lightsToDisableInRedLight: []
   sentinelCentralLight: {fileID: 0}
   redLightVolumeController: {fileID: 0}
   playerSpotLight: {fileID: 0}
-  spotColorCompensated: {r: 0.5, g: 0.8, b: 1, a: 1}
   epervierManager: {fileID: 0}
   epervierManagerLoop: {fileID: 0}
   canyonTileManager: {fileID: 0}
@@ -63,9 +62,37 @@ MonoBehaviour:
   maxMusicPitch: 1.5
   musicVolume: 0.75
   vinylSlowDownDuration: 3
+  vinylHighPassMaxFrequency: 8000
+  vinylMinPitch: 0.2
   currentState: 0
   isTutorialMode: 0
   tutorialPromptUI: {fileID: 0}
   redLightTutorialSprite: {fileID: 0}
   aerialLight: {fileID: 0}
   alertDuration: 0
+--- !u!114 &3815415669408243102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828745556533612378}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6afb0367d98285046b149b0acb56de7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelLaserManager
+  gameManager: {fileID: 0}
+  sentinelEye: {fileID: 0}
+  sentinelSettings: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
+  player: {fileID: 0}
+  laserPlayerMaterialNormal: {fileID: 2100000, guid: e3d9487d8fa48ff448a173f9c79cbc81, type: 2}
+  laserPlayerMaterialDetected: {fileID: 2100000, guid: fec7793cdba3027448af2a0ed2a36992, type: 2}
+  laserPlayerWidthNormal: 0.02
+  laserPlayerWidthDetected: 0.05
+  laserEnemyMaterialNormal: {fileID: 2100000, guid: 7f8b5163730b7c34eac08ca95b0bf024, type: 2}
+  laserEnemyMaterialDetected: {fileID: 2100000, guid: fec7793cdba3027448af2a0ed2a36992, type: 2}
+  laserEnemyWidthNormal: 0.02
+  laserEnemyWidthDetected: 0.04
+  shotProjectilePrefab: {fileID: 532795292520040346, guid: 1cb12573de17c434fbd72c5e25970536, type: 3}
+  shotProjectileSpeed: 140
