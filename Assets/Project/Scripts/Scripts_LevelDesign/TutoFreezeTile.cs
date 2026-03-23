@@ -17,6 +17,11 @@ public class TutoFreezeTile : MonoBehaviour
     [SerializeField] private Material matWaiting;
     [SerializeField] private Material matActive;
 
+    [Header("Chaine")]
+    [SerializeField] private ChainRenderer chainRenderer;
+    [SerializeField] private Transform ceilingAnchor;
+    [SerializeField] private Transform corpseChainPoint;
+
     [Header("Spawn Cadavre")]
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private GameObject corpseObject;
@@ -97,47 +102,109 @@ public class TutoFreezeTile : MonoBehaviour
             yield break;
         }
 
-        // Countdown 3 marquees
-        SetAllMarquees(matWaiting);
-
-        yield return new WaitForSeconds(1f);
-        SetMarquee(marquee3, matInactive);
-        PlaySound(soundCountdown);
-
-        yield return new WaitForSeconds(1f);
-        SetMarquee(marquee2, matInactive);
-        PlaySound(soundCountdown);
-
-        yield return new WaitForSeconds(1f);
-        SetMarquee(marquee1, matInactive);
-        PlaySound(soundCountdown);
-
-        yield return new WaitForSeconds(0.5f);
-
-        // Spawn et projection cadavre
-        spawnCount++;
-        StartCoroutine(SpawnCorpseCoroutine());
-    }
-
-    private IEnumerator SpawnCorpseCoroutine()
-    {
-        if (corpseObject == null || spawnPoint == null) yield break;
-
-        GameObject newCorpse = Instantiate(corpseObject, spawnPoint.position, spawnPoint.rotation);
+        // Preparer le corps au plafond
+        GameObject newCorpse = Instantiate(corpseObject, ceilingAnchor.position, corpseObject.transform.rotation);
         newCorpse.SetActive(true);
 
-        yield return new WaitForFixedUpdate();
+        Rigidbody corpseRb = newCorpse.GetComponent<Rigidbody>();
+        if (corpseRb != null)
+        {
+            corpseRb.isKinematic = true;
+            corpseRb.linearVelocity = Vector3.zero;
+            corpseRb.angularVelocity = Vector3.zero;
+        }
 
-        Rigidbody rb = newCorpse.GetComponent<Rigidbody>();
+        // Brancher la chaine sur ce nouveau corps
+        if (chainRenderer != null)
+        {
+            corpseChainPoint = newCorpse.transform;
+            chainRenderer.zombieNeck = corpseChainPoint;
+            chainRenderer.GetComponent<LineRenderer>().enabled = true;
+        }
+
+        SetAllMarquees(matWaiting);
+
+        // Descente reguliere sur 3s avec extinction marquees
+        float totalDuration = 3f;
+        float elapsed = 0f;
+        int marqueeStep = 0;
+
+        while (elapsed < totalDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / totalDuration;
+
+            // Lerp position corps du plafond vers spawn point
+            newCorpse.transform.position = Vector3.Lerp(ceilingAnchor.position, spawnPoint.position, t);
+
+            // Extinction marquees au 1/3 et 2/3
+            if (marqueeStep == 0 && elapsed >= 1f)
+            {
+                SetMarquee(marquee3, matInactive);
+                PlaySound(soundCountdown);
+                marqueeStep = 1;
+            }
+            else if (marqueeStep == 1 && elapsed >= 2f)
+            {
+                SetMarquee(marquee2, matInactive);
+                PlaySound(soundCountdown);
+                marqueeStep = 2;
+            }
+            else if (marqueeStep == 2 && elapsed >= 3f)
+            {
+                SetMarquee(marquee1, matInactive);
+                PlaySound(soundCountdown);
+                marqueeStep = 3;
+            }
+
+            yield return null;
+        }
+
+        // Position finale exacte
+        newCorpse.transform.position = spawnPoint.position;
+
+        // Chaine remonte sans le corps
+        if (chainRenderer != null)
+            StartCoroutine(RetractChain());
+
+        // Courte pause puis lancement
+        yield return new WaitForSeconds(0.3f);
+
+        spawnCount++;
+        LaunchCorpse(newCorpse, corpseRb);
+    }
+
+    private IEnumerator RetractChain()
+    {
+        LineRenderer lr = chainRenderer.GetComponent<LineRenderer>();
+        float elapsed = 0f;
+        float duration = 0.4f;
+        Vector3 startPos = chainRenderer.zombieNeck.position;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            // Deplace le point zombieNeck vers l'anchor pour simuler remontee
+            chainRenderer.zombieNeck.position = Vector3.Lerp(startPos, ceilingAnchor.position, t);
+            yield return null;
+        }
+
+        lr.enabled = false;
+    }
+
+    private void LaunchCorpse(GameObject corpse, Rigidbody rb)
+    {
         if (rb != null)
         {
+            rb.isKinematic = false;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
 
-        TutoCorpseProjectile proj = newCorpse.GetComponent<TutoCorpseProjectile>();
+        TutoCorpseProjectile proj = corpse.GetComponent<TutoCorpseProjectile>();
         if (proj == null)
-            proj = newCorpse.AddComponent<TutoCorpseProjectile>();
+            proj = corpse.AddComponent<TutoCorpseProjectile>();
 
         Vector3 direction = (player != null)
             ? (player.position - spawnPoint.position).normalized
