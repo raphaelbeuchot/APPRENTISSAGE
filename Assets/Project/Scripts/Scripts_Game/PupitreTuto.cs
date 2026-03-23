@@ -12,6 +12,8 @@ public class PupitreTuto : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private TutorialPromptUI promptUI;
+    [Header("Freeze Tile")]
+    [SerializeField] private TutoFreezeTile tutoFreezeTile;
 
     private Transform player;
     private bool hasTriggered = false;
@@ -51,8 +53,8 @@ public class PupitreTuto : MonoBehaviour
             return;
         }
         GetComponent<InteractBubble>()?.Hide();
-        promptUI.Show(tutorialImages, null);
-        hasTriggered = true;
+        System.Action callback = (tutoFreezeTile != null) ? (System.Action)tutoFreezeTile.ActivateTile : null;
+        promptUI.Show(tutorialImages, callback); hasTriggered = true;
         if (showOnce)
         {
             PlayerPrefs.SetInt(tipID, 1);
