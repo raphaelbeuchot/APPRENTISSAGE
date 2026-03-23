@@ -20,12 +20,16 @@ public class TutoFreezeTile : MonoBehaviour
     [Header("Chaine")]
     [SerializeField] private ChainRenderer chainRenderer;
     [SerializeField] private Transform ceilingAnchor;
-    [SerializeField] private Transform corpseChainPoint;
 
     [Header("Spawn Cadavre")]
     [SerializeField] private Transform spawnPoint;
-    [SerializeField] private GameObject corpseObject;
+    [SerializeField] private GameObject corpsePrefab;
     [SerializeField] private float corpseForce = 20f;
+
+    [Header("Pousse Cadavre")]
+
+    [SerializeField] private Transform slidingCube;
+    [SerializeField] private AudioClip soundCubeSlide;
 
     [Header("Audio")]
     [SerializeField] private AudioSource audioSource;
@@ -39,15 +43,23 @@ public class TutoFreezeTile : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float contactWindowDuration = 0.5f;
     [SerializeField] private float movementThreshold = 0.1f;
+    [SerializeField] private float countdownDuration = 3f;
+    [SerializeField] private float chainRetractDuration = 0.4f;
 
     private bool tileActive = false;
     private bool playerOnTile = false;
     private bool testRunning = false;
+    private bool waitingForExit = false;
     private int spawnCount = 0;
     private const int maxSpawns = 5;
 
+    private bool isPaused = false;
+
     private Rigidbody playerRb;
     private Transform player;
+
+    private Transform chainDummy;
+    private Coroutine countdownCoroutine;
 
     void Start()
     {
@@ -58,14 +70,19 @@ public class TutoFreezeTile : MonoBehaviour
             playerRb = p.GetComponent<Rigidbody>();
         }
 
+        // Dummy pour la chaine, independant du corpse
+        chainDummy = new GameObject("ChainDummy").transform;
+
         SetDalleMaterial(matInactive);
         SetAllMarquees(matInactive);
+
+        if (chainRenderer != null)
+            chainRenderer.GetComponent<LineRenderer>().enabled = false;
 
         if (messageText != null)
             messageText.gameObject.SetActive(false);
     }
 
-    // Appele par PupitreTuto en callback quand toutes les pages sont lues
     public void ActivateTile()
     {
         tileActive = true;
@@ -74,38 +91,57 @@ public class TutoFreezeTile : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (!tileActive || testRunning) return;
+        if (!tileActive) return;
         if (!other.CompareTag("Player")) return;
+        if (waitingForExit) return;
 
         playerOnTile = true;
+
+        // Si un countdown est en cours et en pause, on reprend
+        if (testRunning && isPaused)
+        {
+            isPaused = false;
+            SetDalleMaterial(matActive);
+            return;
+        }
+
+        if (testRunning) return;
+
+        if (spawnCount >= maxSpawns)
+        {
+            ShowMessage("Nettoie ton bazar avant de reessayer !");
+            return;
+        }
+
         SetDalleMaterial(matActive);
-        SetAllMarquees(matWaiting);
-        StartCoroutine(CountdownAndSpawn());
+        SetAllMarquees(matActive);
+        countdownCoroutine = StartCoroutine(CountdownAndSpawn());
     }
 
     void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag("Player")) return;
+
         playerOnTile = false;
-        SetDalleMaterial(matWaiting);
+        waitingForExit = false;
+
+        if (testRunning)
+        {
+            isPaused = true;
+            SetDalleMaterial(matWaiting);
+        }
+        else
+        {
+            SetDalleMaterial(matWaiting);
+        }
     }
 
     private IEnumerator CountdownAndSpawn()
     {
         testRunning = true;
 
-        if (spawnCount >= maxSpawns)
-        {
-            ShowMessage("Nettoie ton bazar avant de reessayer !");
-            SetDalleMaterial(matWaiting);
-            testRunning = false;
-            yield break;
-        }
-
-        // Preparer le corps au plafond
-        GameObject newCorpse = Instantiate(corpseObject, ceilingAnchor.position, corpseObject.transform.rotation);
-        newCorpse.SetActive(true);
-
+        // Instancier le corps au plafond, kinematic
+        GameObject newCorpse = Instantiate(corpsePrefab, ceilingAnchor.position, corpsePrefab.transform.rotation);
         Rigidbody corpseRb = newCorpse.GetComponent<Rigidbody>();
         if (corpseRb != null)
         {
@@ -114,43 +150,46 @@ public class TutoFreezeTile : MonoBehaviour
             corpseRb.angularVelocity = Vector3.zero;
         }
 
-        // Brancher la chaine sur ce nouveau corps
+        // Brancher le dummy de chaine sur la position du corps
+        chainDummy.position = ceilingAnchor.position;
         if (chainRenderer != null)
         {
-            corpseChainPoint = newCorpse.transform;
-            chainRenderer.zombieNeck = corpseChainPoint;
+            chainRenderer.zombieNeck = chainDummy;
             chainRenderer.GetComponent<LineRenderer>().enabled = true;
         }
 
-        SetAllMarquees(matWaiting);
-
-        // Descente reguliere sur 3s avec extinction marquees
-        float totalDuration = 3f;
+        // Descente reguliere + extinction marquees
         float elapsed = 0f;
         int marqueeStep = 0;
 
-        while (elapsed < totalDuration)
+        while (elapsed < countdownDuration)
         {
+            // Pause si le player a quitte la dalle
+            while (isPaused)
+            {
+                yield return null;
+            }
+
             elapsed += Time.deltaTime;
-            float t = elapsed / totalDuration;
+            float t = elapsed / countdownDuration;
 
-            // Lerp position corps du plafond vers spawn point
-            newCorpse.transform.position = Vector3.Lerp(ceilingAnchor.position, spawnPoint.position, t);
+            Vector3 pos = Vector3.Lerp(ceilingAnchor.position, spawnPoint.position, t);
+            newCorpse.transform.position = pos;
+            chainDummy.position = pos;
 
-            // Extinction marquees au 1/3 et 2/3
-            if (marqueeStep == 0 && elapsed >= 1f)
+            if (marqueeStep == 0 && elapsed >= countdownDuration / 3f)
             {
                 SetMarquee(marquee3, matInactive);
                 PlaySound(soundCountdown);
                 marqueeStep = 1;
             }
-            else if (marqueeStep == 1 && elapsed >= 2f)
+            else if (marqueeStep == 1 && elapsed >= (countdownDuration / 3f) * 2f)
             {
                 SetMarquee(marquee2, matInactive);
                 PlaySound(soundCountdown);
                 marqueeStep = 2;
             }
-            else if (marqueeStep == 2 && elapsed >= 3f)
+            else if (marqueeStep == 2 && elapsed >= countdownDuration)
             {
                 SetMarquee(marquee1, matInactive);
                 PlaySound(soundCountdown);
@@ -162,34 +201,41 @@ public class TutoFreezeTile : MonoBehaviour
 
         // Position finale exacte
         newCorpse.transform.position = spawnPoint.position;
+        chainDummy.position = spawnPoint.position;
 
         // Chaine remonte sans le corps
-        if (chainRenderer != null)
-            StartCoroutine(RetractChain());
+        StartCoroutine(RetractChain());
 
         // Courte pause puis lancement
         yield return new WaitForSeconds(0.3f);
 
         spawnCount++;
+        testRunning = false;
+        waitingForExit = true;
+
+        SetDalleMaterial(matWaiting);
+        SetAllMarquees(matInactive);
+
         LaunchCorpse(newCorpse, corpseRb);
     }
 
     private IEnumerator RetractChain()
     {
+        if (chainRenderer == null) yield break;
+
         LineRenderer lr = chainRenderer.GetComponent<LineRenderer>();
         float elapsed = 0f;
-        float duration = 0.4f;
-        Vector3 startPos = chainRenderer.zombieNeck.position;
+        Vector3 startPos = chainDummy.position;
 
-        while (elapsed < duration)
+        while (elapsed < chainRetractDuration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-            // Deplace le point zombieNeck vers l'anchor pour simuler remontee
-            chainRenderer.zombieNeck.position = Vector3.Lerp(startPos, ceilingAnchor.position, t);
+            float t = elapsed / chainRetractDuration;
+            chainDummy.position = Vector3.Lerp(startPos, ceilingAnchor.position, t);
             yield return null;
         }
 
+        chainDummy.position = ceilingAnchor.position;
         lr.enabled = false;
     }
 
@@ -211,12 +257,46 @@ public class TutoFreezeTile : MonoBehaviour
             : transform.forward;
 
         proj.Init(this, direction * corpseForce);
+
+        if (slidingCube != null)
+            StartCoroutine(SlideCube());
     }
 
-    // Appele par TutoCorpseProjectile au contact avec le player
     public void OnCorpseHitPlayer()
     {
         StartCoroutine(CheckMovementWindow());
+    }
+
+    private IEnumerator SlideCube()
+    {
+        PlaySound(soundCubeSlide);
+
+        Vector3 startPos = slidingCube.position;
+        Vector3 targetPos = startPos + Vector3.right;
+        float elapsed = 0f;
+
+        // Aller : 0.2s
+        while (elapsed < 0.2f)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / 0.2f);
+            slidingCube.position = Vector3.Lerp(startPos, targetPos, t);
+            yield return null;
+        }
+
+        slidingCube.position = targetPos;
+
+        // Retour : 1s
+        elapsed = 0f;
+        while (elapsed < 1f)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / 1f);
+            slidingCube.position = Vector3.Lerp(targetPos, startPos, t);
+            yield return null;
+        }
+
+        slidingCube.position = startPos;
     }
 
     private IEnumerator CheckMovementWindow()
@@ -247,7 +327,6 @@ public class TutoFreezeTile : MonoBehaviour
         ShowMessage("Bien joue !");
         yield return new WaitForSeconds(2f);
         HideMessage();
-        ResetTile();
     }
 
     private IEnumerator OnFail()
@@ -256,17 +335,6 @@ public class TutoFreezeTile : MonoBehaviour
         ShowMessage("Reste immobile !");
         yield return new WaitForSeconds(2f);
         HideMessage();
-        ResetTile();
-    }
-
-    private void ResetTile()
-    {
-        testRunning = false;
-        SetDalleMaterial(playerOnTile ? matActive : matWaiting);
-        SetAllMarquees(matInactive);
-
-        if (playerOnTile)
-            StartCoroutine(CountdownAndSpawn());
     }
 
     // --- Helpers ---
