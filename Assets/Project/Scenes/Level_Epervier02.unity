@@ -65984,6 +65984,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
   m_PrefabInstance: {fileID: 1381572039}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &1381572041 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3119987102257093222, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+  m_PrefabInstance: {fileID: 1381572039}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1381724424 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
@@ -78624,6 +78629,10 @@ PrefabInstance:
     - target: {fileID: 1832123752479731275, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
       propertyPath: m_Name
       value: ZombieBloatMaggot01 (5)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1832123752479731275, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4295875408224688438, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -104135,6 +104144,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 887716756}
     - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
+      propertyPath: laserManager
+      value: 
+      objectReference: {fileID: 9019177782128006908}
+    - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
       propertyPath: playerHealth
       value: 
       objectReference: {fileID: 6305765746340978705}
@@ -104438,6 +104451,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: SentinelCycleManager
       objectReference: {fileID: 0}
+    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 6140236864197050197}
+    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: gameManager
+      value: 
+      objectReference: {fileID: 1801742136}
+    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: sentinelEye
+      value: 
+      objectReference: {fileID: 1381572041}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: aerialLight
       value: 
@@ -104563,6 +104588,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+--- !u!114 &9019177782128006908 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+  m_PrefabInstance: {fileID: 9019177782128006907}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6afb0367d98285046b149b0acb56de7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelLaserManager
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
