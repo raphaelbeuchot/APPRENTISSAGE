@@ -3,10 +3,12 @@ using UnityEngine;
 public class PupitreTuto : MonoBehaviour
 {
     [Header("Tutorial Settings")]
-    [SerializeField] private Sprite tutorialImage;
+    [SerializeField] private Sprite[] tutorialImages;
     [SerializeField] private string tipID = "Tuto_Default";
     [SerializeField] private bool showOnce = true;
     [SerializeField] private float interactRange = 2f;
+    [SerializeField] private System.Action onComplete;
+
 
     [Header("References")]
     [SerializeField] private TutorialPromptUI promptUI;
@@ -43,17 +45,14 @@ public class PupitreTuto : MonoBehaviour
             Debug.LogError("[PupitreTuto] PromptUI non assigne sur " + gameObject.name);
             return;
         }
-        if (tutorialImage == null)
+        if (tutorialImages == null || tutorialImages.Length == 0)
         {
-            Debug.LogError("[PupitreTuto] TutorialImage non assignee sur " + gameObject.name);
+            Debug.LogError("[PupitreTuto] TutorialImages non assignees sur " + gameObject.name);
             return;
         }
         GetComponent<InteractBubble>()?.Hide();
-
-
-        promptUI.Show(tutorialImage);
+        promptUI.Show(tutorialImages, null);
         hasTriggered = true;
-
         if (showOnce)
         {
             PlayerPrefs.SetInt(tipID, 1);

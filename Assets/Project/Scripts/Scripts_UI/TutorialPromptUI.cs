@@ -29,13 +29,15 @@ public class TutorialPromptUI : MonoBehaviour
     public bool IsVisible => isVisible;
     private Coroutine waitCoroutine;
 
+    // Multi-pages
+    private Sprite[] currentPages;
+    private int currentPageIndex;
+    private System.Action onAllPagesClosed;
+
     void Start()
     {
-        // Reset des tips si demande
         if (resetTipsOnStart)
-        {
             ResetAllTips();
-        }
 
         if (canvasGroup != null)
         {
@@ -45,45 +47,47 @@ public class TutorialPromptUI : MonoBehaviour
 
         isVisible = false;
     }
+
     void OnDestroy()
     {
-        // S'assurer que le timeScale est restaure
         Time.timeScale = 1f;
     }
 
     void OnApplicationQuit()
     {
-        // Pareil si on quitte en playmode
         Time.timeScale = 1f;
     }
+
     private void ResetAllTips()
     {
         Debug.Log("[TutorialPromptUI] Reset de tous les tips tutorial");
-
         foreach (string tipID in tipIDsToReset)
         {
             if (PlayerPrefs.HasKey(tipID))
-            {
                 PlayerPrefs.DeleteKey(tipID);
-            }
         }
-
         PlayerPrefs.Save();
     }
 
+    // --- API existante, inchangee ---
     public void Show(Sprite tutorialSprite)
     {
+        Show(new Sprite[] { tutorialSprite }, null);
+    }
+
+    // --- Nouvelle API multi-pages ---
+    public void Show(Sprite[] pages, System.Action onComplete = null)
+    {
         if (isVisible) return;
+        if (pages == null || pages.Length == 0) return;
 
-        Debug.Log("[TutorialPromptUI] Affichage tutorial");
+        currentPages = pages;
+        currentPageIndex = 0;
+        onAllPagesClosed = onComplete;
 
-        if (tutorialImage != null && tutorialSprite != null)
-        {
-            tutorialImage.sprite = tutorialSprite;
-        }
+        ApplyCurrentPage();
 
         isVisible = true;
-
         Time.timeScale = 0f;
 
         StartCoroutine(FadeCoroutine(1f, () =>
@@ -94,11 +98,15 @@ public class TutorialPromptUI : MonoBehaviour
         }));
     }
 
+    private void ApplyCurrentPage()
+    {
+        if (tutorialImage != null && currentPages[currentPageIndex] != null)
+            tutorialImage.sprite = currentPages[currentPageIndex];
+    }
+
     public void Hide()
     {
         if (!isVisible) return;
-
-        Debug.Log("[TutorialPromptUI] Masquage tutorial");
 
         if (waitCoroutine != null)
         {
@@ -110,25 +118,24 @@ public class TutorialPromptUI : MonoBehaviour
         {
             Time.timeScale = 1f;
             isVisible = false;
+            onAllPagesClosed?.Invoke();
+            onAllPagesClosed = null;
+            currentPages = null;
         }));
     }
 
     private IEnumerator WaitForAnyInput()
     {
-        Debug.Log("[TutorialPromptUI] Attente input joueur...");
-
         yield return null;
 
         while (true)
         {
-            if (Input.anyKeyDown || Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
-            {
-                Debug.Log("[TutorialPromptUI] Input detecte (clavier/souris)");
-                Hide();
-                yield break;
-            }
+            bool inputDetected = false;
 
-            if (PlayerInputManager.Instance != null)
+            if (Input.anyKeyDown || Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+                inputDetected = true;
+
+            if (!inputDetected && PlayerInputManager.Instance != null)
             {
                 if (PlayerInputManager.Instance.SprintPressed ||
                     PlayerInputManager.Instance.SprayAttackPressed ||
@@ -140,7 +147,22 @@ public class TutorialPromptUI : MonoBehaviour
                     PlayerInputManager.Instance.CancelPressed ||
                     PlayerInputManager.Instance.PausePressed)
                 {
-                    Debug.Log("[TutorialPromptUI] Input detecte (manette)");
+                    inputDetected = true;
+                }
+            }
+
+            if (inputDetected)
+            {
+                // Page suivante ou fermeture
+                if (currentPages != null && currentPageIndex < currentPages.Length - 1)
+                {
+                    currentPageIndex++;
+                    ApplyCurrentPage();
+                    // Petit delai pour eviter de skipper deux pages d'un coup
+                    yield return new WaitForSecondsRealtime(0.2f);
+                }
+                else
+                {
                     Hide();
                     yield break;
                 }
@@ -170,6 +192,4 @@ public class TutorialPromptUI : MonoBehaviour
 
         onComplete?.Invoke();
     }
-
-
 }
