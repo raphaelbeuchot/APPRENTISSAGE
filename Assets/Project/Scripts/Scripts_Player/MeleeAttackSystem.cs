@@ -560,6 +560,7 @@ public class MeleeAttackSystem : MonoBehaviour
     {
         if (thrownBottleInstance == null) return;
 
+        GetComponent<InteractBubble>()?.Hide();
         // Restore ammo
         currentSprayAmmo = savedSprayAmmo;
         bottleThrown = false;

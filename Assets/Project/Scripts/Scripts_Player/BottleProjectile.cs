@@ -20,7 +20,6 @@ public class BottleProjectile : MonoBehaviour
     }
     void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("Bottle collision with: " + collision.gameObject.name + ", layer: " + LayerMask.LayerToName(collision.gameObject.layer));
         // Impact sur ennemi
         if (!hasHitEnemy && collision.gameObject.layer == LayerMask.NameToLayer("Zombie"))
         {
@@ -64,12 +63,10 @@ public class BottleProjectile : MonoBehaviour
             aiPath.canMove = false;
         }
 
-        Debug.Log("Zombie stunned by bottle (A*)");
 
         // Stun duration
         yield return new WaitForSeconds(stats.bottleStunDuration);
 
-        Debug.Log("Zombie waking up from stun (A*)");
 
         // Forcer la cible player
         PlayerPhysicsMovement player = FindObjectOfType<PlayerPhysicsMovement>();
@@ -78,7 +75,6 @@ public class BottleProjectile : MonoBehaviour
             enemyAI.targetHuman = player.transform;
             enemyAI.currentState = EnemyAI_AStar.State.Chasing;
             enemyAI.isForcedChase = true;
-            Debug.Log("Target set to player, state = Chasing (A*)");
         }
 
         // Reactiver mouvement
@@ -89,11 +85,9 @@ public class BottleProjectile : MonoBehaviour
             if (player != null)
             {
                 aiPath.destination = player.transform.position;
-                Debug.Log("AIPath destination set to player position");
             }
         }
 
-        Debug.Log(enemyAI.gameObject.name + " should be chasing now! (A*)");
     }
 
     

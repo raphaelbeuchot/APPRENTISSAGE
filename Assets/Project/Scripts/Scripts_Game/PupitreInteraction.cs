@@ -103,6 +103,7 @@ public class PupitreInteraction : MonoBehaviour
 
         if (playerInRange && PlayerInputManager.Instance.InteractPressed)
         {
+            GetComponent<InteractBubble>()?.Hide();
             ActivatePupitre();
         }
     }

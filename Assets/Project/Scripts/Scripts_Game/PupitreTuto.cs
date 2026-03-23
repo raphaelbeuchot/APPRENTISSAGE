@@ -48,6 +48,8 @@ public class PupitreTuto : MonoBehaviour
             Debug.LogError("[PupitreTuto] TutorialImage non assignee sur " + gameObject.name);
             return;
         }
+        GetComponent<InteractBubble>()?.Hide();
+
 
         promptUI.Show(tutorialImage);
         hasTriggered = true;
