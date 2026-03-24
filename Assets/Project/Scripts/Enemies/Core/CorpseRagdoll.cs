@@ -23,6 +23,10 @@ public class CorpseRagdoll : MonoBehaviour
 
     public void Launch(Vector3 force)
     {
+        CorpseBroomLowPhysics broomLow = GetComponent<CorpseBroomLowPhysics>();
+        if (broomLow != null)
+            broomLow.NotifyLaunched();
+
         foreach (Rigidbody bone in allBoneRbs)
             bone.isKinematic = false;
 

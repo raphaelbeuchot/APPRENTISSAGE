@@ -24696,6 +24696,8 @@ GameObject:
   - component: {fileID: 503121592}
   - component: {fileID: 503121591}
   - component: {fileID: 503121590}
+  - component: {fileID: 503121596}
+  - component: {fileID: 503121595}
   m_Layer: 0
   m_Name: Pupitre
   m_TagString: Untagged
@@ -24822,6 +24824,40 @@ Transform:
   - {fileID: 1453919633}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &503121595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 503121589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20dd30667bc7d2c4db293403d7e24604, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractBubble
+  buttonSprite: {fileID: 21300000, guid: 6b06e2dfd47e53d41a72dc49c955a5d2, type: 3}
+  oneTimeOnly: 1
+  detectionRange: 2
+  verticalOffset: 1
+  imageSize: 60
+  hideOnRestart: 1
+  popDuration: 0.2
+  popScale: 1.75
+--- !u!114 &503121596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 503121589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd42e8c6e027d4345b520935e6c3cdde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BubbleManager
+  canvas: {fileID: 1262410465}
+  bubblesContainer: {fileID: 1559118913}
 --- !u!1001 &503189941
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -40285,6 +40321,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
+--- !u!1001 &834208653
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3393009058963813200, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 6.21049
+      objectReference: {fileID: 0}
+    - target: {fileID: 3393009058963813200, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 6.62655
+      objectReference: {fileID: 0}
+    - target: {fileID: 3393009058963813200, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.31
+      objectReference: {fileID: 0}
+    - target: {fileID: 3393009058963813200, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3393009058963813200, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3393009058963813200, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3393009058963813200, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3393009058963813200, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3393009058963813200, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3393009058963813200, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6167989697688392752, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
+      propertyPath: m_Name
+      value: Pupitre (1)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6fa0ea477a29b7948bcca67704f4cbc5, type: 3}
 --- !u!1001 &834261454
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -56957,7 +57050,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineSplineDolly
   m_SplineSettings:
-    Spline: {fileID: 1453919632}
+    Spline: {fileID: 0}
     Position: 0
     Units: 1
   SplineOffset: {x: 0, y: 1.5, z: 0}
@@ -56992,7 +57085,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StartZoneCameraController
   vcam: {fileID: 1189802041}
   player: {fileID: 4617868051715933207}
-  splineContainer: {fileID: 1453919632}
+  splineContainer: {fileID: 0}
   searchStepSize: 0.01
   smoothSpeed: 1
   activationDistance: 1
@@ -104045,6 +104138,7 @@ SceneRoots:
   - {fileID: 862222674}
   - {fileID: 143328782}
   - {fileID: 503121594}
+  - {fileID: 834208653}
   - {fileID: 1137305995}
   - {fileID: 821184335}
   - {fileID: 790698024}

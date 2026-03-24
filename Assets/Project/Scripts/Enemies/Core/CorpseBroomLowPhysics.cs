@@ -3,15 +3,20 @@ using UnityEngine;
 public class CorpseBroomLowPhysics : MonoBehaviour
 {
     [Header("Physique BroomLow")]
-    [SerializeField] private float broomLowMass = 1f;
-    [SerializeField] private float broomLowDrag = 0.5f;
+    [SerializeField] private float broomLowMass = 0.01f;
+    [SerializeField] private float broomLowDrag = 0f;
 
     [Header("Physique Normal")]
     [SerializeField] private float normalMass = 5f;
-    [SerializeField] private float normalDrag = 3f;
+    [SerializeField] private float normalDrag = 0f;
+
+    [Header("Delai repos apres lancement")]
+    [SerializeField] private float restDelay = 1.5f;
 
     private Rigidbody[] boneRbs;
-    private bool wasBroomLowActive = false;
+    private bool hasBeenLaunched = false;
+    private bool isAtRest = false;
+    private float launchTime = 0f;
 
     private void Start()
     {
@@ -19,18 +24,35 @@ public class CorpseBroomLowPhysics : MonoBehaviour
         ApplyProperties(normalMass, normalDrag);
     }
 
+    public void NotifyLaunched()
+    {
+        hasBeenLaunched = true;
+        isAtRest = false;
+        launchTime = Time.time;
+        ApplyProperties(normalMass, normalDrag);
+    }
+
     private void Update()
     {
-        bool broomLowActive = PlayerInputManager.Instance.BroomLowActive;
+        if (!hasBeenLaunched) return;
 
-        if (broomLowActive == wasBroomLowActive) return;
+        if (!isAtRest)
+        {
+            if (Time.time - launchTime >= restDelay)
+                isAtRest = true;
+            else
+                return;
+        }
 
-        wasBroomLowActive = broomLowActive;
-
-        if (broomLowActive)
+        if (PlayerInputManager.Instance.BroomLowActive)
             ApplyProperties(broomLowMass, broomLowDrag);
         else
             ApplyProperties(normalMass, normalDrag);
+    }
+
+    public void ForceNormal()
+    {
+        ApplyProperties(normalMass, normalDrag);
     }
 
     private void ApplyProperties(float mass, float drag)

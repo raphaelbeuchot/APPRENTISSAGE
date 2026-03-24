@@ -6,11 +6,14 @@ public class InteractBubble : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private Sprite buttonSprite;
     [SerializeField] private bool oneTimeOnly = false;
-    [SerializeField] private float detectionRange = 3f;
-    public float verticalOffset = 0.25f;
+    [SerializeField] private float detectionRange = 2f;
+    public float verticalOffset = 1f;
 
     [Header("Visual")]
     [SerializeField] private float imageSize = 60f;
+
+    [SerializeField] private bool hideOnRestart = false;
+
 
     [Header("Pop Animation")]
     [SerializeField] private float popDuration = 0.2f;
@@ -22,6 +25,12 @@ public class InteractBubble : MonoBehaviour
     private bool isHiddenPermanently = false;
     private bool isVisible = false;
     private RectTransform bubbleRT;
+
+    private void Awake()
+    {
+        if (hideOnRestart && PlayerPrefs.GetInt("AutoStartCountdown", 0) == 1)
+            isHiddenPermanently = true;
+    }
 
     private void Start()
     {

@@ -11,6 +11,7 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
     private Vector3 currentVelocity;
 
     private HashSet<EnemyAI_AStar> enemiesOnPlatform = new HashSet<EnemyAI_AStar>();
+    private HashSet<RagdollDeathEffect> corpsesOnPlatform = new HashSet<RagdollDeathEffect>();
 
     void Start()
     {
@@ -67,6 +68,14 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
                 enemyRb.linearVelocity = new Vector3(0, enemyRb.linearVelocity.y, 0);
             }
         }
+        foreach (RagdollDeathEffect corpse in corpsesOnPlatform)
+        {
+            if (corpse == null) continue;
+            Vector3 directionFromPivot = corpse.transform.position - pivotPoint;
+            directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
+            corpse.transform.position = pivotPoint + directionFromPivot;
+            corpse.transform.Rotate(Vector3.up, angleThisFrame);
+        }
     }
 
     private void CalculateVelocity()
@@ -91,38 +100,31 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
 
     void OnCollisionStay(Collision collision)
     {
+        // Check ennemi
         EnemyAI_AStar enemyAI = collision.gameObject.GetComponent<EnemyAI_AStar>();
-        if (enemyAI == null) return;
-
-        // Deja sur la plateforme, skip
-        if (enemyAI.isOnRotatingPlatform) return;
-
-        // NOUVELLE APPROCHE : Distance XZ au centre
-        Collider platformCollider = GetComponent<Collider>();
-        if (platformCollider == null) return;
-
-        Bounds bounds = platformCollider.bounds;
-
-        // Distance 2D (XZ seulement) entre zombie et centre plateforme
-        Vector2 enemyPosXZ = new Vector2(enemyAI.transform.position.x, enemyAI.transform.position.z);
-        Vector2 centerXZ = new Vector2(bounds.center.x, bounds.center.z);
-        float distanceToCenter = Vector2.Distance(enemyPosXZ, centerXZ);
-
-        // Rayon de la plateforme (on prend le plus petit pour être sûr)
-        float platformRadius = Mathf.Min(bounds.extents.x, bounds.extents.z) - 0.05f; // Marge de 0.05m
-
-
-        if (distanceToCenter > platformRadius)
+        if (enemyAI != null && !enemyAI.isOnRotatingPlatform)
         {
-            return;
+            Collider platformCollider = GetComponent<Collider>();
+            if (platformCollider != null)
+            {
+                Bounds bounds = platformCollider.bounds;
+                Vector2 enemyPosXZ = new Vector2(enemyAI.transform.position.x, enemyAI.transform.position.z);
+                Vector2 centerXZ = new Vector2(bounds.center.x, bounds.center.z);
+                float distanceToCenter = Vector2.Distance(enemyPosXZ, centerXZ);
+                float platformRadius = Mathf.Min(bounds.extents.x, bounds.extents.z) - 0.05f;
+
+                if (distanceToCenter <= platformRadius && !enemiesOnPlatform.Contains(enemyAI))
+                {
+                    enemiesOnPlatform.Add(enemyAI);
+                    enemyAI.EnableRotatingPlatformMode(this);
+                }
+            }
         }
 
-        // Activer le mode
-        if (!enemiesOnPlatform.Contains(enemyAI))
-        {
-            enemiesOnPlatform.Add(enemyAI);
-            enemyAI.EnableRotatingPlatformMode(this);
-        }
+        // Check corpse
+        RagdollDeathEffect corpse = collision.gameObject.GetComponentInParent<RagdollDeathEffect>();
+        if (corpse != null && !corpsesOnPlatform.Contains(corpse))
+            corpsesOnPlatform.Add(corpse);
     }
 
     void OnCollisionExit(Collision collision)
@@ -134,6 +136,9 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
             enemiesOnPlatform.Remove(enemyAI);
             enemyAI.DisableRotatingPlatformMode();
         }
+        RagdollDeathEffect corpse = collision.gameObject.GetComponentInParent<RagdollDeathEffect>();
+        if (corpse != null)
+            corpsesOnPlatform.Remove(corpse);
     }
 
     void OnDestroy()
