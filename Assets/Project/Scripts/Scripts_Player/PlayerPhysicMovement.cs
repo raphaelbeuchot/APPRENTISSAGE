@@ -899,7 +899,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         if (!PlayerInputManager.Instance.BroomLowActive) return;
         EnemyHealth eh = collision.gameObject.GetComponent<EnemyHealth>();
-        if (eh == null) return;
+        CorpseProjectile corpse = collision.gameObject.GetComponent<CorpseProjectile>();
+        if (eh == null && corpse == null) return;
         enemyContactCount++;
         isInContactWithEnemy = true;
         Rigidbody hitRb = collision.rigidbody;
@@ -910,7 +911,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
     void OnCollisionExit(Collision collision)
     {
         EnemyHealth eh = collision.gameObject.GetComponent<EnemyHealth>();
-        if (eh == null) return;
+        CorpseProjectile corpse = collision.gameObject.GetComponent<CorpseProjectile>();
+        if (eh == null && corpse == null) return;
         enemyContactCount--;
         if (enemyContactCount <= 0)
         {

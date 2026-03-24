@@ -248,9 +248,7 @@ public class TutoFreezeTile : MonoBehaviour
             rb.angularVelocity = Vector3.zero;
         }
 
-        TutoCorpseProjectile proj = corpse.GetComponent<TutoCorpseProjectile>();
-        if (proj == null)
-            proj = corpse.AddComponent<TutoCorpseProjectile>();
+        CorpseProjectile proj = corpse.GetComponent<CorpseProjectile>();
 
         Vector3 direction = (player != null)
             ? (player.position - spawnPoint.position).normalized
@@ -275,11 +273,11 @@ public class TutoFreezeTile : MonoBehaviour
         Vector3 targetPos = startPos + Vector3.right;
         float elapsed = 0f;
 
-        // Aller : 0.2s
-        while (elapsed < 0.2f)
+        // Aller : 0.1s
+        while (elapsed < 0.1f)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / 0.2f);
+            float t = Mathf.Clamp01(elapsed / 0.1f);
             slidingCube.position = Vector3.Lerp(startPos, targetPos, t);
             yield return null;
         }
