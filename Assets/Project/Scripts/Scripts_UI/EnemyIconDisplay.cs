@@ -5,9 +5,15 @@ public class EnemyIconDisplay : MonoBehaviour
 {
     [SerializeField] private Image aliveIcon;
     [SerializeField] private Image deadIcon;
+    [SerializeField] private Image cleanedIcon;
+
 
     private EnemyHealth trackedEnemy;
     private EnemyIconsUI manager;
+    public EnemyHealth GetTrackedEnemy()
+    {
+        return trackedEnemy;
+    }
 
     public void Initialize(EnemyHealth enemy, EnemyIconsUI uiManager)
     {
@@ -24,6 +30,8 @@ public class EnemyIconDisplay : MonoBehaviour
         // État initial : vivant visible, mort caché
         aliveIcon.gameObject.SetActive(true);
         deadIcon.gameObject.SetActive(false);
+        if (cleanedIcon != null)
+            cleanedIcon.gameObject.SetActive(false);
     }
 
     private void HandleDamage()
@@ -44,6 +52,13 @@ public class EnemyIconDisplay : MonoBehaviour
     public Image GetAliveImage()
     {
         return aliveIcon;
+    }
+    public void SetCleaned()
+    {
+        aliveIcon.gameObject.SetActive(false);
+        deadIcon.gameObject.SetActive(false);
+        if (cleanedIcon != null)
+            cleanedIcon.gameObject.SetActive(true);
     }
 
     private void OnDestroy()

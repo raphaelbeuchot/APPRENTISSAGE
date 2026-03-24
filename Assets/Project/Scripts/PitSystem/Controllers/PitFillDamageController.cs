@@ -104,6 +104,15 @@ public class PitFillDamageController : MonoBehaviour
         if (interactable == null)
         {
             Debug.Log(string.Format("[PitFill DEBUG] No IPitInteractable found on {0}!", other.gameObject.name));
+
+            if (other.gameObject.name.Contains("Hips"))
+            {
+                CorpsePitHandler corpse = other.GetComponentInParent<CorpsePitHandler>();
+                if (corpse != null && pitFill.fillType != null)
+                {
+                    corpse.OnEnterPit(pitFill.fillType.category);
+                }
+            }
             return;
         }
 

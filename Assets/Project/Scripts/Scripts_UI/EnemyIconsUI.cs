@@ -112,6 +112,19 @@ public class EnemyIconsUI : MonoBehaviour
         iconImage.color = originalColor;
     }
 
+    public void SetIconCleaned(EnemyHealth enemy)
+    {
+        if (enemy == null) return;
+
+        foreach (EnemyIconDisplay icon in enemyIcons)
+        {
+            if (icon != null && icon.GetTrackedEnemy() == enemy)
+            {
+                icon.SetCleaned();
+                return;
+            }
+        }
+    }
     public void HideAllIcons()
     {
         gameObject.SetActive(false);

@@ -96,7 +96,10 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
             hipsRb.AddForce(direction * force, ForceMode.VelocityChange);
             hipsRb.AddTorque(Random.insideUnitSphere * ragdollTorque, ForceMode.VelocityChange);
         }
-
+        CorpsePitHandler handler = GetComponent<CorpsePitHandler>();
+        if (handler == null)
+            handler = gameObject.AddComponent<CorpsePitHandler>();
+        handler.enemyRef = GetComponent<EnemyHealth>();
         StartCoroutine(WaitForRestCoroutine());
     }
 

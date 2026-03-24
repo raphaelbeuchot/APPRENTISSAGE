@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 5988544503418940588}
   - component: {fileID: 2417757188231758302}
   - component: {fileID: 6288701469769416328}
+  - component: {fileID: 212622490735398162}
   m_Layer: 6
   m_Name: ZombieCorpse
   m_TagString: Untagged
@@ -367,6 +368,19 @@ MonoBehaviour:
   broomLowDrag: 0
   normalMass: 5
   normalDrag: 0
+  restDelay: 1.5
+--- !u!114 &212622490735398162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5248851035368284380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5a1fd2fe579b7e489b2032678159ec5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CorpsePitHandler
 --- !u!1001 &8929444110905421127
 PrefabInstance:
   m_ObjectHideFlags: 0
