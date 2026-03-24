@@ -119,13 +119,14 @@ public class EnemyHealth : MonoBehaviour
         switch (stats.deathEffectType)
         {
             case EnemyStats.DeathEffectType.Ragdoll:
-                var ragdoll = gameObject.AddComponent<RagdollDeathEffect>();
-                ragdoll.baseRagdollForce = stats.ragdollForce;
-                ragdoll.ragdollTorque = stats.ragdollTorque;
-                ragdoll.meleeMultiplier = stats.meleeForceMultiplier;
-                ragdoll.sentinelMultiplier = stats.sentinelForceMultiplier;
-                Debug.Log($"Added RagdollDeathEffect to {gameObject.name}");
-                break;
+        var ragdoll = gameObject.AddComponent<RagdollDeathEffect>();
+        ragdoll.baseRagdollForce = stats.ragdollForce;
+        ragdoll.ragdollTorque = stats.ragdollTorque;
+        ragdoll.meleeMultiplier = stats.meleeForceMultiplier;
+        ragdoll.sentinelMultiplier = stats.sentinelForceMultiplier;
+        ragdoll.corpseData = stats.corpseData;
+        ragdoll.InitializeRagdoll();
+        break;
 
             case EnemyStats.DeathEffectType.Explosion:
                 var explosion = gameObject.AddComponent<ExplosionDeathEffect>();
@@ -641,20 +642,7 @@ public class EnemyHealth : MonoBehaviour
         // SINON: Mort normale avec ragdoll
         Debug.Log($"========== {gameObject.name} DIE() - MORT NORMALE ==========");
 
-        Rigidbody rbNormal = GetComponent<Rigidbody>();
-        if (rbNormal != null)
-        {
-            Debug.Log($"[Before] isKinematic={rbNormal.isKinematic}, constraints={rbNormal.constraints}");
-
-            rbNormal.isKinematic = false;
-            rbNormal.constraints = RigidbodyConstraints.None;
-            rbNormal.linearDamping = originalLinearDamping;
-            rbNormal.angularDamping = originalAngularDamping;
-            rbNormal.mass = originalMass;
-            rbNormal.detectCollisions = true;
-
-            Debug.Log($"[After] isKinematic={rbNormal.isKinematic}, constraints={rbNormal.constraints}");
-        }
+        
 
         Collider colNormal = GetComponent<Collider>();
         if (colNormal != null)
@@ -723,9 +711,7 @@ public class EnemyHealth : MonoBehaviour
                 }
             }
         }
-        DeadBodyPhysics deadBody = GetComponent<DeadBodyPhysics>();
-        if (deadBody != null)
-            deadBody.Activate();
+       
     }
 
     void UpdateSpeed()

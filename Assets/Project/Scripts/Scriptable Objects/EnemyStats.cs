@@ -313,6 +313,24 @@ public class EnemyStats : ScriptableObject
     public float meleeForceMultiplier = 1f;
     public float sentinelForceMultiplier = 1.5f;
 
+    [System.Serializable]
+    public class CorpseData
+    {
+        [Tooltip("Masse des os pendant la projection")]
+        public float projectionMass = 5f;
+        [Tooltip("Drag pendant la projection")]
+        public float projectionDrag = 0.5f;
+        [Tooltip("Masse des os une fois le corps pose")]
+        public float restingMass = 1f;
+        [Tooltip("Drag une fois le corps pose")]
+        public float restingDrag = 3f;
+        [Tooltip("Seuil de velocite pour considerer le corps pose")]
+        public float velocityThreshold = 0.5f;
+    }
+
+    [Header("CORPSE (si Ragdoll)")]
+    public CorpseData corpseData;
+
     [Header("Explosion Settings (si Explosion)")]
     public GameObject explosionVFX;
     public AudioClip explosionSound;

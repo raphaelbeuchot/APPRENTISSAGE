@@ -2,21 +2,16 @@ using UnityEngine;
 
 public class DeadBodyPhysics : MonoBehaviour
 {
-    [Header("Valeurs mort normal")]
-    [SerializeField] private float deadMass = 50f;
-    [SerializeField] private float deadDrag = 3f;
-
-    [Header("Valeurs broom basse")]
-    [SerializeField] private float broomLowMass = 5f;
-    [SerializeField] private float broomLowDrag = 0.5f;
-
-    private Rigidbody rb;
+    private Rigidbody rootRb;
+    private Rigidbody[] boneRigidbodies;
     private bool isActive = false;
     private bool isBroomLowState = false;
+    private EnemyStats.CorpseData corpseData;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        rootRb = GetComponent<Rigidbody>();
+        boneRigidbodies = GetComponentsInChildren<Rigidbody>();
     }
 
     void Update()
@@ -27,23 +22,31 @@ public class DeadBodyPhysics : MonoBehaviour
 
         if (broomLow && !isBroomLowState)
         {
-            rb.mass = broomLowMass;
-            rb.linearDamping = broomLowDrag;
+            SetBoneProperties(corpseData.restingMass * 0.2f, corpseData.restingDrag * 0.3f);
             isBroomLowState = true;
         }
         else if (!broomLow && isBroomLowState)
         {
-            rb.mass = deadMass;
-            rb.linearDamping = deadDrag;
+            SetBoneProperties(corpseData.restingMass, corpseData.restingDrag);
             isBroomLowState = false;
         }
     }
 
-    public void Activate()
+    public void Activate(EnemyStats.CorpseData data)
     {
+        corpseData = data;
         isActive = true;
         isBroomLowState = false;
-        rb.mass = deadMass;
-        rb.linearDamping = deadDrag;
+        SetBoneProperties(corpseData.restingMass, corpseData.restingDrag);
+    }
+
+    private void SetBoneProperties(float mass, float drag)
+    {
+        foreach (Rigidbody bone in boneRigidbodies)
+        {
+            if (bone == rootRb) continue;
+            bone.mass = mass / Mathf.Max(1, boneRigidbodies.Length - 1);
+            bone.linearDamping = drag;
+        }
     }
 }

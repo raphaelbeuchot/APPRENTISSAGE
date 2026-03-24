@@ -9035,10 +9035,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractBubble
   buttonSprite: {fileID: 21300000, guid: 6b06e2dfd47e53d41a72dc49c955a5d2, type: 3}
   oneTimeOnly: 1
-  detectionRange: 3
+  detectionRange: 1.5
+  verticalOffset: 1
   imageSize: 60
-  pulseSpeed: 2
-  pulseAmount: 0.15
+  popDuration: 0.2
+  popScale: 1.75
 --- !u!1 &503718296
 GameObject:
   m_ObjectHideFlags: 0
@@ -9768,7 +9769,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BubbleManager
   canvas: {fileID: 1262410465}
   bubblesContainer: {fileID: 1267853522}
-  verticalOffset: 1
 --- !u!4 &530384268
 Transform:
   m_ObjectHideFlags: 0
@@ -11141,6 +11141,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8763219841184811985, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: targetHuman
+      value: 
+      objectReference: {fileID: 1871075799}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -12922,7 +12926,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4295875408224688438, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.24
+      value: -1.33
       objectReference: {fileID: 0}
     - target: {fileID: 4295875408224688438, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -12930,7 +12934,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4295875408224688438, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 18.16
+      value: 7.48
       objectReference: {fileID: 0}
     - target: {fileID: 4295875408224688438, guid: 23358d1ffbb54684b8a0e43e4d4cc13d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -13366,6 +13370,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8763219841184811985, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: targetHuman
+      value: 
+      objectReference: {fileID: 1871075799}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -19813,6 +19821,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8763219841184811985, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: targetHuman
+      value: 
+      objectReference: {fileID: 1871075799}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -23056,6 +23068,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8763219841184811985, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: targetHuman
+      value: 
+      objectReference: {fileID: 1871075799}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -28636,6 +28652,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8763219841184811985, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: targetHuman
+      value: 
+      objectReference: {fileID: 1871075799}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
