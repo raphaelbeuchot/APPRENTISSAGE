@@ -60,6 +60,7 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
             bone.isKinematic = false;
             bone.mass = corpseData.projectionMass / Mathf.Max(1, boneRigidbodies.Length - 1);
             bone.linearDamping = corpseData.projectionDrag;
+            bone.collisionDetectionMode = CollisionDetectionMode.Continuous;
         }
 
         foreach (Collider col in boneColliders)
