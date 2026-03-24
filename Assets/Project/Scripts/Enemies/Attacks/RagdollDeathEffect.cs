@@ -47,6 +47,9 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
         {
             rootRb.isKinematic = true;
             rootRb.linearVelocity = Vector3.zero;
+            Collider rootCollider = GetComponent<Collider>();
+            if (rootCollider != null)
+                rootCollider.enabled = false;
         }
 
         Debug.Log($"[Ragdoll] boneRigidbodies count = {boneRigidbodies.Length}");
