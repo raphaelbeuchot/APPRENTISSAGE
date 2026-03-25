@@ -18,7 +18,7 @@ public class PlayerHealthUI : MonoBehaviour
 
     [Header("Damage Preview")]
     [SerializeField] private float damagePreviewDelay = 0.3f;
-    [SerializeField] private float damagePreviewSpeed = 2f;
+    [SerializeField] private float damagePreviewSpeed = 0.8f;
 
     [Header("References")]
     [SerializeField] private PlayerHealth playerHealth;
@@ -30,6 +30,7 @@ public class PlayerHealthUI : MonoBehaviour
     private float baseMaxHealth;
     private float realMaxHealth;
     private bool initialized = false;
+    private bool bonusDraining = false;
 
     void Start()
     {
@@ -68,24 +69,30 @@ public class PlayerHealthUI : MonoBehaviour
 
         bool hasBonus = realMaxHealth > baseMaxHealth;
         float bonusHealth = realMaxHealth - baseMaxHealth;
+        bool isCrossing = hasBonus && currentHealth <= baseMaxHealth;
 
         if (bonusBarFill != null && hasBonus)
         {
             float newBonusFill = Mathf.Clamp01((currentHealth - baseMaxHealth) / bonusHealth);
-            targetBonusFill = newBonusFill;
+            targetBonusFill = isCrossing ? 0f : newBonusFill;
             bonusBarFill.fillAmount = newBonusFill;
 
             if (bonusBarDamage != null)
             {
-                if (currentHealth <= baseMaxHealth)
+                if (isCrossing)
                 {
-                    // Le degat traverse la frontiere : on snap la barre bonus a 0 immediatement
+                    bonusDraining = true;
                     if (bonusDamagePreviewCoroutine != null)
                         StopCoroutine(bonusDamagePreviewCoroutine);
-                    bonusBarDamage.fillAmount = 0f;
+                    bonusDamagePreviewCoroutine = StartCoroutine(BonusDamagePreviewCoroutine());
+                    // La coroutine bonus va enchainer la normale directement
+                    if (damagePreviewCoroutine != null)
+                        StopCoroutine(damagePreviewCoroutine);
+                    damagePreviewCoroutine = null;
                 }
                 else
                 {
+                    bonusDraining = false;
                     bonusBarDamage.fillAmount = Mathf.Max(bonusBarDamage.fillAmount, newBonusFill);
                     if (bonusDamagePreviewCoroutine != null)
                         StopCoroutine(bonusDamagePreviewCoroutine);
@@ -98,59 +105,60 @@ public class PlayerHealthUI : MonoBehaviour
         targetGreenFill = newGreenFill;
         healthBarFill.fillAmount = newGreenFill;
 
-        if (healthBarDamage != null)
+        if (healthBarDamage != null && !isCrossing)
         {
             if (!initialized)
                 healthBarDamage.fillAmount = newGreenFill;
             if (damagePreviewCoroutine != null)
                 StopCoroutine(damagePreviewCoroutine);
-            damagePreviewCoroutine = StartCoroutine(DamagePreviewCoroutine());
+            damagePreviewCoroutine = StartCoroutine(DamagePreviewCoroutine(false));
         }
 
         initialized = true;
     }
 
-    private System.Collections.IEnumerator DamagePreviewCoroutine()
+    private System.Collections.IEnumerator DamagePreviewCoroutine(bool skipDelay = false)
     {
-        yield return new WaitForSeconds(damagePreviewDelay);
+        if (!skipDelay)
+            yield return new WaitForSeconds(damagePreviewDelay);
+
         if (healthBarDamage != null)
         {
             while (healthBarDamage.fillAmount > targetGreenFill)
             {
-                healthBarDamage.fillAmount = Mathf.Lerp(
+                healthBarDamage.fillAmount = Mathf.MoveTowards(
                     healthBarDamage.fillAmount,
                     targetGreenFill,
                     Time.deltaTime * damagePreviewSpeed
                 );
-                if (Mathf.Abs(healthBarDamage.fillAmount - targetGreenFill) < 0.01f)
-                {
-                    healthBarDamage.fillAmount = targetGreenFill;
-                    break;
-                }
                 yield return null;
             }
+            healthBarDamage.fillAmount = targetGreenFill;
         }
     }
 
     private System.Collections.IEnumerator BonusDamagePreviewCoroutine()
     {
         yield return new WaitForSeconds(damagePreviewDelay);
+
         if (bonusBarDamage != null)
         {
             while (bonusBarDamage.fillAmount > targetBonusFill)
             {
-                bonusBarDamage.fillAmount = Mathf.Lerp(
+                bonusBarDamage.fillAmount = Mathf.MoveTowards(
                     bonusBarDamage.fillAmount,
                     targetBonusFill,
                     Time.deltaTime * damagePreviewSpeed
                 );
-                if (Mathf.Abs(bonusBarDamage.fillAmount - targetBonusFill) < 0.01f)
-                {
-                    bonusBarDamage.fillAmount = targetBonusFill;
-                    break;
-                }
                 yield return null;
             }
+            bonusBarDamage.fillAmount = targetBonusFill;
+        }
+
+        if (bonusDraining)
+        {
+            bonusDraining = false;
+            damagePreviewCoroutine = StartCoroutine(DamagePreviewCoroutine(true));
         }
     }
 
