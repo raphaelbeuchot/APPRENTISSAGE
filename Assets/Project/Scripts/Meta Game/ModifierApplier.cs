@@ -1,10 +1,12 @@
 using UnityEngine;
-
 public class ModifierApplier : MonoBehaviour
 {
     public static ModifierApplier Instance { get; private set; }
 
-    // Multiplicateurs exposés aux scripts du niveau
+    [Header("Debug")]
+    [SerializeField] private bool debugOverride = false;
+    [SerializeField] private ModifierType debugModifier = ModifierType.None;
+
     public float playerMaxHealthMultiplier { get; private set; } = 1f;
     public float sprayAmmoMultiplier { get; private set; } = 1f;
     public float broomKnockbackMultiplier { get; private set; } = 1f;
@@ -21,19 +23,28 @@ public class ModifierApplier : MonoBehaviour
             return;
         }
         Instance = this;
-    }
-
-    void Start()
-    {
         ApplyModifier();
     }
 
     void ApplyModifier()
     {
-        if (LevelProgressionManager.Instance == null) return;
+        ModifierType modifier;
 
-        ModifierType modifier = LevelProgressionManager.Instance.GetActiveModifier();
-        Debug.Log($"[ModifierApplier] Application modifier : {modifier}");
+        if (debugOverride)
+        {
+            modifier = debugModifier;
+            Debug.Log($"[ModifierApplier] Mode debug : forçage modifier {modifier}");
+        }
+        else
+        {
+            if (LevelProgressionManager.Instance == null)
+            {
+                Debug.LogWarning("[ModifierApplier] LevelProgressionManager introuvable, aucun modifier applique.");
+                return;
+            }
+            modifier = LevelProgressionManager.Instance.GetActiveModifier();
+            Debug.Log($"[ModifierApplier] Application modifier : {modifier}");
+        }
 
         switch (modifier)
         {
@@ -67,7 +78,6 @@ public class ModifierApplier : MonoBehaviour
             case ModifierType.Neutre:
             case ModifierType.None:
             default:
-                // Tout reste a 1f
                 break;
         }
     }

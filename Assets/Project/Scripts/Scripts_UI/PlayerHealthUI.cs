@@ -5,43 +5,60 @@ public class PlayerHealthUI : MonoBehaviour
 {
     [Header("Health Bar")]
     [SerializeField] private Image healthBarFill;
-    [SerializeField] private Image damagePreviewFill; // Pour l'effet rouge (optionnel)
+    [SerializeField] private Image healthBarDamage;
 
-    [Header("Colors")]
-    [SerializeField] private Color healthyColor = Color.green;
-    [SerializeField] private Color lowHealthColor = Color.yellow;
-    [SerializeField] private Color criticalHealthColor = Color.red;
+    [Header("Bonus Bar")]
+    [SerializeField] private Image bonusBarFill;
+    [SerializeField] private Image bonusBarDamage;
+    [SerializeField] private RectTransform bonusBarContainer;
 
-    [Header("Damage Preview (optionnel)")]
+    [Header("Config")]
+    [SerializeField] private float baseContainerWidth = 300f;
+    [SerializeField] private float baseContainerHeight = 15f;
+
+    [Header("Damage Preview")]
     [SerializeField] private float damagePreviewDelay = 0.3f;
     [SerializeField] private float damagePreviewSpeed = 2f;
 
     [Header("References")]
     [SerializeField] private PlayerHealth playerHealth;
 
-    private float targetFillAmount;
+    private float targetGreenFill;
+    private float targetBonusFill;
     private Coroutine damagePreviewCoroutine;
+    private Coroutine bonusDamagePreviewCoroutine;
+    private float baseMaxHealth;
+    private float realMaxHealth;
+    private bool initialized = false;
 
     void Start()
     {
         if (playerHealth == null)
-        {
             playerHealth = FindObjectOfType<PlayerHealth>();
-        }
 
         if (playerHealth != null)
         {
-            // S'abonner à l'event
+            baseMaxHealth = playerHealth.GetBaseMaxHealth();
+            realMaxHealth = playerHealth.GetMaxHealth();
+            SetupBonusContainer();
             playerHealth.OnHealthChanged += UpdateHealthBar;
-
-            // Initialiser l'affichage
-            float initialHealth = playerHealth.GetCurrentHealth();
-            float maxHealth = playerHealth.GetMaxHealth();
-            UpdateHealthBar(initialHealth, maxHealth);
+            UpdateHealthBar(playerHealth.GetCurrentHealth(), realMaxHealth);
         }
         else
         {
-            Debug.LogError("PlayerHealthUI: PlayerHealth non trouvé!");
+            Debug.LogError("PlayerHealthUI: PlayerHealth non trouve!");
+        }
+    }
+
+    void SetupBonusContainer()
+    {
+        if (bonusBarContainer == null) return;
+        bool hasBonus = realMaxHealth > baseMaxHealth;
+        bonusBarContainer.gameObject.SetActive(hasBonus);
+        if (hasBonus)
+        {
+            float bonusWidth = baseContainerWidth * ((realMaxHealth / baseMaxHealth) - 1f);
+            bonusBarContainer.sizeDelta = new Vector2(bonusWidth, baseContainerHeight);
         }
     }
 
@@ -49,55 +66,89 @@ public class PlayerHealthUI : MonoBehaviour
     {
         if (healthBarFill == null) return;
 
-        float healthPercent = currentHealth / maxHealth;
-        targetFillAmount = healthPercent;
+        bool hasBonus = realMaxHealth > baseMaxHealth;
+        float bonusHealth = realMaxHealth - baseMaxHealth;
 
-        // La barre principale descend instantanément
-        healthBarFill.fillAmount = healthPercent;
+        if (bonusBarFill != null && hasBonus)
+        {
+            float newBonusFill = Mathf.Clamp01((currentHealth - baseMaxHealth) / bonusHealth);
+            targetBonusFill = newBonusFill;
+            bonusBarFill.fillAmount = newBonusFill;
 
-        // Changer la couleur selon le pourcentage
-        if (healthPercent > 0.5f)
-        {
-            healthBarFill.color = healthyColor;
-        }
-        else if (healthPercent > 0.25f)
-        {
-            healthBarFill.color = lowHealthColor;
-        }
-        else
-        {
-            healthBarFill.color = criticalHealthColor;
+            if (bonusBarDamage != null)
+            {
+                if (currentHealth <= baseMaxHealth)
+                {
+                    // Le degat traverse la frontiere : on snap la barre bonus a 0 immediatement
+                    if (bonusDamagePreviewCoroutine != null)
+                        StopCoroutine(bonusDamagePreviewCoroutine);
+                    bonusBarDamage.fillAmount = 0f;
+                }
+                else
+                {
+                    bonusBarDamage.fillAmount = Mathf.Max(bonusBarDamage.fillAmount, newBonusFill);
+                    if (bonusDamagePreviewCoroutine != null)
+                        StopCoroutine(bonusDamagePreviewCoroutine);
+                    bonusDamagePreviewCoroutine = StartCoroutine(BonusDamagePreviewCoroutine());
+                }
+            }
         }
 
-        // Effet damage preview (si activé)
-        if (damagePreviewFill != null)
+        float newGreenFill = Mathf.Clamp01(Mathf.Min(currentHealth, baseMaxHealth) / baseMaxHealth);
+        targetGreenFill = newGreenFill;
+        healthBarFill.fillAmount = newGreenFill;
+
+        if (healthBarDamage != null)
         {
+            if (!initialized)
+                healthBarDamage.fillAmount = newGreenFill;
             if (damagePreviewCoroutine != null)
                 StopCoroutine(damagePreviewCoroutine);
             damagePreviewCoroutine = StartCoroutine(DamagePreviewCoroutine());
         }
+
+        initialized = true;
     }
 
     private System.Collections.IEnumerator DamagePreviewCoroutine()
     {
         yield return new WaitForSeconds(damagePreviewDelay);
-
-        if (damagePreviewFill != null)
+        if (healthBarDamage != null)
         {
-            while (damagePreviewFill.fillAmount > targetFillAmount)
+            while (healthBarDamage.fillAmount > targetGreenFill)
             {
-                damagePreviewFill.fillAmount = Mathf.Lerp(
-                    damagePreviewFill.fillAmount,
-                    targetFillAmount,
+                healthBarDamage.fillAmount = Mathf.Lerp(
+                    healthBarDamage.fillAmount,
+                    targetGreenFill,
                     Time.deltaTime * damagePreviewSpeed
                 );
-
-                if (Mathf.Abs(damagePreviewFill.fillAmount - targetFillAmount) < 0.01f)
+                if (Mathf.Abs(healthBarDamage.fillAmount - targetGreenFill) < 0.01f)
                 {
-                    damagePreviewFill.fillAmount = targetFillAmount;
+                    healthBarDamage.fillAmount = targetGreenFill;
                     break;
                 }
+                yield return null;
+            }
+        }
+    }
 
+    private System.Collections.IEnumerator BonusDamagePreviewCoroutine()
+    {
+        yield return new WaitForSeconds(damagePreviewDelay);
+        if (bonusBarDamage != null)
+        {
+            while (bonusBarDamage.fillAmount > targetBonusFill)
+            {
+                bonusBarDamage.fillAmount = Mathf.Lerp(
+                    bonusBarDamage.fillAmount,
+                    targetBonusFill,
+                    Time.deltaTime * damagePreviewSpeed
+                );
+                if (Mathf.Abs(bonusBarDamage.fillAmount - targetBonusFill) < 0.01f)
+                {
+                    bonusBarDamage.fillAmount = targetBonusFill;
+                    break;
+                }
                 yield return null;
             }
         }
@@ -106,8 +157,6 @@ public class PlayerHealthUI : MonoBehaviour
     void OnDestroy()
     {
         if (playerHealth != null)
-        {
             playerHealth.OnHealthChanged -= UpdateHealthBar;
-        }
     }
 }
