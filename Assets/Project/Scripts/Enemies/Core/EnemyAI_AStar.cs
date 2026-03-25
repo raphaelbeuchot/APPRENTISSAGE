@@ -50,7 +50,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
     [Header("Rotating Platform Mode")]
     [HideInInspector] public bool isOnRotatingPlatform = false;
-    private RotatingPlatform currentRotatingPlatform;
     private float centrifugalDrift = 0f;
     private float recoveryEndTime = 0f;
     private bool isRecoveringFromPlatform = false;
@@ -88,6 +87,8 @@ public class EnemyAI_AStar : MonoBehaviour
     private bool isRotatingToImpact = false;
 
     private bool isBlinder = false;
+    public RotatingPlatform currentRotatingPlatform;
+
 
     public enum State { Idle, Wandering, Chasing, Attacking, StunBySpray, OnRotatingPlatform, RotatingToImpact, OnIslandPlatform, Dead }
     public State currentState = State.Idle;

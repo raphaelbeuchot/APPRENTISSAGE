@@ -37,7 +37,9 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
 
     public void OnDeath(Vector3 deathPosition, DeathContext context)
     {
-
+        EnemyAI_AStar enemyAI = GetComponent<EnemyAI_AStar>();
+        if (enemyAI != null && enemyAI.isOnRotatingPlatform && enemyAI.currentRotatingPlatform != null)
+            enemyAI.currentRotatingPlatform.RemoveCorpse(GetComponent<RagdollDeathEffect>());
         Debug.Log($"[Ragdoll] OnDeath called. animator={animator}, rootRb={rootRb}");
 
         if (animator != null)

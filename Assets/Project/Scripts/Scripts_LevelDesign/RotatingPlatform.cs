@@ -13,6 +13,8 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
     private HashSet<EnemyAI_AStar> enemiesOnPlatform = new HashSet<EnemyAI_AStar>();
     private HashSet<RagdollDeathEffect> corpsesOnPlatform = new HashSet<RagdollDeathEffect>();
 
+    private Dictionary<RagdollDeathEffect, float> corpseCooldowns = new Dictionary<RagdollDeathEffect, float>();
+
 
     void Start()
     {
@@ -48,61 +50,46 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
         CalculateVelocity();
 
         // NOUVEAU : Faire tourner tous les ennemis sur la plateforme
+        List<EnemyAI_AStar> enemiesToRemove = new List<EnemyAI_AStar>();
         foreach (EnemyAI_AStar enemy in enemiesOnPlatform)
         {
-            if (enemy == null) continue;
+            if (enemy == null || enemy.isDead) { enemiesToRemove.Add(enemy); continue; }
 
             Rigidbody enemyRb = enemy.GetComponent<Rigidbody>();
             EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
             if (enemyRb == null) continue;
 
-            // Teleportation rotation
             Vector3 directionFromPivot = enemy.transform.position - pivotPoint;
             directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
             enemy.transform.position = pivotPoint + directionFromPivot;
 
-            // AJOUTER CETTE LIGNE : Rotation de l'orientation
             enemy.transform.Rotate(Vector3.up, angleThisFrame);
 
-            // Bloquer velocity seulement si pas en knockback
             if (enemyHealth != null && !enemyHealth.isInKnockback)
             {
                 enemyRb.linearVelocity = new Vector3(0, enemyRb.linearVelocity.y, 0);
             }
         }
-        List<RagdollDeathEffect> corpsesToRemove = new List<RagdollDeathEffect>();
+        foreach (EnemyAI_AStar enemy in enemiesToRemove)
+        {
+            enemiesOnPlatform.Remove(enemy);
+            if (!enemy.isDead)
+                enemy.DisableRotatingPlatformMode();
+        }
         foreach (RagdollDeathEffect corpse in corpsesOnPlatform)
         {
-            if (corpse == null) { corpsesToRemove.Add(corpse); continue; }
-
-            Transform hips = null;
-            foreach (Transform t in corpse.GetComponentsInChildren<Transform>())
-            {
-                if (t.name == "mixamorig:Hips") { hips = t; break; }
-            }
-
-            Transform rayOrigin = hips != null ? hips : corpse.transform;
-            bool isOnPlatform = false;
-            RaycastHit[] hits = Physics.RaycastAll(rayOrigin.position, Vector3.down, 1f);
-            foreach (RaycastHit hit in hits)
-            {
-                if (hit.collider.GetComponent<RotatingPlatform>() != null)
-                {
-                    isOnPlatform = true;
-                    break;
-                }
-            }
-
-            if (!isOnPlatform) { corpsesToRemove.Add(corpse); continue; }
-
+            if (corpse == null) continue;
             Vector3 directionFromPivot = corpse.transform.position - pivotPoint;
             directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
             corpse.transform.position = pivotPoint + directionFromPivot;
             corpse.transform.Rotate(Vector3.up, angleThisFrame);
         }
-        foreach (RagdollDeathEffect corpse in corpsesToRemove)
-            corpsesOnPlatform.Remove(corpse);
-        
+
+    }
+    public void RemoveCorpse(RagdollDeathEffect corpse)
+    {
+        corpsesOnPlatform.Remove(corpse);
+        corpseCooldowns[corpse] = Time.time + 1f;
     }
 
     private void CalculateVelocity()
@@ -151,7 +138,10 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
         // Check corpse
         RagdollDeathEffect corpse = collision.gameObject.GetComponentInParent<RagdollDeathEffect>();
         if (corpse != null && !corpsesOnPlatform.Contains(corpse))
-            corpsesOnPlatform.Add(corpse);
+        {
+            if (!corpseCooldowns.ContainsKey(corpse) || Time.time > corpseCooldowns[corpse])
+                corpsesOnPlatform.Add(corpse);
+        }
     }
 
     void OnCollisionExit(Collision collision)

@@ -68499,7 +68499,7 @@ Transform:
   m_GameObject: {fileID: 996079058}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.4500003, y: 0.3, z: 3.45}
+  m_LocalPosition: {x: 4.44, y: 0.3, z: 3.45}
   m_LocalScale: {x: 1, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -73259,6 +73259,7 @@ MonoBehaviour:
   isForcedChase: 0
   isDead: 0
   isDetectedBySentinel: 0
+  currentRotatingPlatform: {fileID: 0}
   currentState: 0
 --- !u!114 &1118344335
 MonoBehaviour:
@@ -86108,7 +86109,7 @@ MonoBehaviour:
   - m_EditModeType: 1
     m_Knots:
     - Position:
-        x: -5.2
+        x: -5.05
         y: 0
         z: 0.03999996
       TangentIn:
@@ -95576,7 +95577,7 @@ Transform:
   m_GameObject: {fileID: 1573844234}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.4500003, y: 0.25, z: 0.95000005}
+  m_LocalPosition: {x: 4.44, y: 0.25, z: 0.95000005}
   m_LocalScale: {x: 1, y: 0.05, z: 6}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -104719,6 +104720,7 @@ MonoBehaviour:
   isForcedChase: 0
   isDead: 0
   isDetectedBySentinel: 0
+  currentRotatingPlatform: {fileID: 0}
   currentState: 0
 --- !u!114 &1785196388
 MonoBehaviour:
@@ -112321,6 +112323,11 @@ MonoBehaviour:
   trainSpeed: 1
   stopInertia: 3
   startInertia: 25
+  holdMessage: Hold X to stop
+  showMessageOnce: 1
+  brakeSound: {fileID: 8300000, guid: 2d08e399dc96fbc4eaaf724aec3fb5dc, type: 3}
+  releaseSound: {fileID: 8300000, guid: b9ef0d084c2cb014d8fe452e71cab848, type: 3}
+  startSound: {fileID: 8300000, guid: 1d77b499a2ce6a0438497f9312a98597, type: 3}
   lavaTrainBasic: {fileID: 2100000, guid: 929a012dd902395439afad2329f92c60, type: 2}
   lavaTrainOn: {fileID: 2100000, guid: 57972a36ba692ab44abffee5db2aa4dc, type: 2}
   lavaTrainOff: {fileID: 2100000, guid: 820e00f84e8137a4098a0467738b9d44, type: 2}
