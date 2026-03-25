@@ -15,6 +15,22 @@ public class PlatformTrainManager : MonoBehaviour
     [SerializeField] private float stopInertia = 3f;
     [SerializeField] private float startInertia = 25f;
 
+    [Header("Comment")]
+    [SerializeField] private string holdMessage = "Hold X to stop";
+    [SerializeField] private bool showMessageOnce = true;
+    private bool messageShown = false;
+    private bool playerWasOnTrain = false;
+
+
+    [Header("Audio Train")]
+    [SerializeField] private AudioClip brakeSound;
+    [SerializeField] private AudioClip releaseSound;
+    private AudioSource trainAudioSource;
+    private bool wasHoldingX = false;
+    private float holdXTimer = 0f;
+    private bool brakeSoundPlayed = false;
+    [SerializeField] private AudioClip startSound;
+
     [Header("Materials")]
     [SerializeField] private Material lavaTrainBasic;
     [SerializeField] private Material lavaTrainOn;
@@ -69,6 +85,10 @@ public class PlatformTrainManager : MonoBehaviour
 
         currentSpeed = 0f;
         player = FindFirstObjectByType<PlayerPhysicsMovement>();
+
+        trainAudioSource = gameObject.AddComponent<AudioSource>();
+        trainAudioSource.spatialBlend = 0f;
+        trainAudioSource.playOnAwake = false;
     }
 
     void FixedUpdate()
@@ -81,6 +101,45 @@ public class PlatformTrainManager : MonoBehaviour
         bool playerOnTrain = IsPlayerOnTrain();
         bool holdingX = PlayerInputManager.Instance.InteractHeld && playerOnTrain;
 
+        // Message
+        bool justBoarded = playerOnTrain && !playerWasOnTrain;
+
+        if (justBoarded)
+        {
+            if (!showMessageOnce || !messageShown)
+            {
+                CommentPanel.Show(holdMessage);
+                messageShown = true;
+            }
+
+            if (startSound != null)
+                trainAudioSource.PlayOneShot(startSound);
+        }
+
+        playerWasOnTrain = playerOnTrain;
+        // Son brake : apres 0.2s de maintien
+        if (holdingX)
+        {
+            holdXTimer += Time.fixedDeltaTime;
+            if (!brakeSoundPlayed && holdXTimer >= 0.1f)
+            {
+                if (brakeSound != null)
+                    trainAudioSource.PlayOneShot(brakeSound);
+                brakeSoundPlayed = true;
+            }
+        }
+        else
+        {
+            if (wasHoldingX && playerOnTrain)
+            {
+                if (releaseSound != null)
+                    trainAudioSource.PlayOneShot(releaseSound);
+            }
+            holdXTimer = 0f;
+            brakeSoundPlayed = false;
+        }
+
+        wasHoldingX = holdingX;
         float targetSpeed = holdingX ? 0f : trainSpeed;
         float inertia = holdingX ? stopInertia : startInertia;
         currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, inertia * Time.fixedDeltaTime);
