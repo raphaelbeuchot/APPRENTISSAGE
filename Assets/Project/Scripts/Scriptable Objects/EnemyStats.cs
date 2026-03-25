@@ -326,10 +326,16 @@ public class EnemyStats : ScriptableObject
         public float restingDrag = 3f;
         [Tooltip("Seuil de velocite pour considerer le corps pose")]
         public float velocityThreshold = 0.5f;
+        [Tooltip("Multiplicateur de masse en BroomLow")]
+        public float broomLowMassMultiplier = 0.2f;
+        [Tooltip("Multiplicateur de drag en BroomLow")]
+        public float broomLowDragMultiplier = 0.3f;
     }
 
     [Header("CORPSE (si Ragdoll)")]
     public CorpseData corpseData;
+
+    
 
     [Header("Explosion Settings (si Explosion)")]
     public GameObject explosionVFX;
