@@ -13,6 +13,7 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
     private HashSet<EnemyAI_AStar> enemiesOnPlatform = new HashSet<EnemyAI_AStar>();
     private HashSet<RagdollDeathEffect> corpsesOnPlatform = new HashSet<RagdollDeathEffect>();
 
+
     void Start()
     {
         if (settings == null)
@@ -21,6 +22,7 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
             return;
         }
         pivotPoint = transform.position + new Vector3(settings.pivotOffset.x, 0f, settings.pivotOffset.y);
+        
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.loop = true;
         audioSource.playOnAwake = false;
@@ -68,14 +70,39 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
                 enemyRb.linearVelocity = new Vector3(0, enemyRb.linearVelocity.y, 0);
             }
         }
+        List<RagdollDeathEffect> corpsesToRemove = new List<RagdollDeathEffect>();
         foreach (RagdollDeathEffect corpse in corpsesOnPlatform)
         {
-            if (corpse == null) continue;
+            if (corpse == null) { corpsesToRemove.Add(corpse); continue; }
+
+            Transform hips = null;
+            foreach (Transform t in corpse.GetComponentsInChildren<Transform>())
+            {
+                if (t.name == "mixamorig:Hips") { hips = t; break; }
+            }
+
+            Transform rayOrigin = hips != null ? hips : corpse.transform;
+            bool isOnPlatform = false;
+            RaycastHit[] hits = Physics.RaycastAll(rayOrigin.position, Vector3.down, 1f);
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider.GetComponent<RotatingPlatform>() != null)
+                {
+                    isOnPlatform = true;
+                    break;
+                }
+            }
+
+            if (!isOnPlatform) { corpsesToRemove.Add(corpse); continue; }
+
             Vector3 directionFromPivot = corpse.transform.position - pivotPoint;
             directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
             corpse.transform.position = pivotPoint + directionFromPivot;
             corpse.transform.Rotate(Vector3.up, angleThisFrame);
         }
+        foreach (RagdollDeathEffect corpse in corpsesToRemove)
+            corpsesOnPlatform.Remove(corpse);
+        
     }
 
     private void CalculateVelocity()
