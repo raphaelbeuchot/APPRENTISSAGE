@@ -56703,6 +56703,7 @@ MonoBehaviour:
   isForcedChase: 0
   isDead: 0
   isDetectedBySentinel: 0
+  currentRotatingPlatform: {fileID: 0}
   currentState: 0
 --- !u!114 &1118344335
 MonoBehaviour:
@@ -95982,6 +95983,7 @@ MonoBehaviour:
   isForcedChase: 0
   isDead: 0
   isDetectedBySentinel: 0
+  currentRotatingPlatform: {fileID: 0}
   currentState: 0
 --- !u!114 &1785196388
 MonoBehaviour:
@@ -114853,6 +114855,22 @@ PrefabInstance:
       propertyPath: rotateClockwise
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: bonusBarFill
+      value: 
+      objectReference: {fileID: 115993669638194594}
+    - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: bonusBarDamage
+      value: 
+      objectReference: {fileID: 115993669638194595}
+    - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: healthBarDamage
+      value: 
+      objectReference: {fileID: 115993669638194596}
+    - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: bonusBarContainer
+      value: 
+      objectReference: {fileID: 115993669638194593}
     - target: {fileID: 8068068744078149362, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_Name
       value: TutorialPanel
@@ -114872,6 +114890,44 @@ PrefabInstance:
       addedObject: {fileID: 987690051}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+--- !u!224 &115993669638194593 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8461077461872918516, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+  m_PrefabInstance: {fileID: 115993669638194592}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &115993669638194594 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6065079022662249810, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+  m_PrefabInstance: {fileID: 115993669638194592}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+--- !u!114 &115993669638194595 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4037002866502712284, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+  m_PrefabInstance: {fileID: 115993669638194592}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+--- !u!114 &115993669638194596 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5125773258975109877, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+  m_PrefabInstance: {fileID: 115993669638194592}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!1001 &421105967913221214
 PrefabInstance:
   m_ObjectHideFlags: 0
