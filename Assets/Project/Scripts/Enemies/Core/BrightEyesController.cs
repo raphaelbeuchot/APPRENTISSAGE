@@ -73,8 +73,7 @@ public class BrightEyesController : MonoBehaviour
                 if (healthBarUI != null)
                 {
                     manager.RegisterEnemy(transform, healthBarUI);
-                    healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
-                    healthBarUI.gameObject.SetActive(false);
+                    healthBarUI.UpdateHealth(currentHealth, stats.maxHealth, stats.maxHealth); healthBarUI.gameObject.SetActive(false);
                 }
             }
         }
@@ -344,7 +343,7 @@ public class BrightEyesController : MonoBehaviour
 
         if (healthBarUI != null)
         {
-            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
+            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth, stats.maxHealth);
         }
 
         Debug.Log($"{gameObject.name} flame REIGNITED!");
@@ -359,7 +358,7 @@ public class BrightEyesController : MonoBehaviour
 
         if (healthBarUI != null)
         {
-            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
+            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth, stats.maxHealth);
         }
         if (currentHealth <= 0f)
         {

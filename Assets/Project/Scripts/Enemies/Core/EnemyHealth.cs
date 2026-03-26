@@ -20,10 +20,8 @@ public class EnemyHealth : MonoBehaviour
 
     [Header("Healthbar Display")]
     public bool recentlyHitBySentinel = false;
-    private float sentinelHitDisplayDuration = 3f; // Durée d'affichage après hit sentinelle
+    private float sentinelHitDisplayDuration = 3f;
     private Coroutine sentinelHitDisplayCoroutine;
-
-
 
     [Header("Knockback State")]
     public bool isInKnockback = false;
@@ -54,19 +52,15 @@ public class EnemyHealth : MonoBehaviour
 
     public bool destroyOnDeath = true;
 
-
-
-
     public event Action OnDeath;
     public event Action<float, float> OnHealthChanged;
     public event System.Action OnTakeDamage;
-
 
     // Health bar
     public EnemyHealthBarUI healthBarUI;
     private EnemyHealthBarManager healthBarManager;
 
-    // SIMPLIFIÉ : Spray stun simple
+    // SIMPLIFIE : Spray stun simple
     private float sprayStunTimer = 0f;
 
     void Awake()
@@ -88,8 +82,7 @@ public class EnemyHealth : MonoBehaviour
             return;
         }
 
-        float enemyHealthMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.enemyMaxHealthMultiplier : 1f;
-        currentHealth = stats.maxHealth * enemyHealthMult;
+        currentHealth = GetMaxHealth();
         maxTheoreticalStun = stats.sprayStunDuration;
         SetupDeathEffect();
         SetupHealthBar();
@@ -103,7 +96,8 @@ public class EnemyHealth : MonoBehaviour
             GameObject barGO = Instantiate(healthBarManager.healthBarPrefab, healthBarManager.canvas.transform);
             healthBarUI = barGO.GetComponent<EnemyHealthBarUI>();
             healthBarManager.RegisterEnemy(transform, healthBarUI);
-            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
+            healthBarUI.Initialize(GetBaseMaxHealth(), GetMaxHealth());
+            healthBarUI.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
             healthBarUI.Hide();
         }
         else
@@ -119,14 +113,14 @@ public class EnemyHealth : MonoBehaviour
         switch (stats.deathEffectType)
         {
             case EnemyStats.DeathEffectType.Ragdoll:
-        var ragdoll = gameObject.AddComponent<RagdollDeathEffect>();
-        ragdoll.baseRagdollForce = stats.ragdollForce;
-        ragdoll.ragdollTorque = stats.ragdollTorque;
-        ragdoll.meleeMultiplier = stats.meleeForceMultiplier;
-        ragdoll.sentinelMultiplier = stats.sentinelForceMultiplier;
-        ragdoll.corpseData = stats.corpseData;
-        ragdoll.InitializeRagdoll();
-        break;
+                var ragdoll = gameObject.AddComponent<RagdollDeathEffect>();
+                ragdoll.baseRagdollForce = stats.ragdollForce;
+                ragdoll.ragdollTorque = stats.ragdollTorque;
+                ragdoll.meleeMultiplier = stats.meleeForceMultiplier;
+                ragdoll.sentinelMultiplier = stats.sentinelForceMultiplier;
+                ragdoll.corpseData = stats.corpseData;
+                ragdoll.InitializeRagdoll();
+                break;
 
             case EnemyStats.DeathEffectType.Explosion:
                 var explosion = gameObject.AddComponent<ExplosionDeathEffect>();
@@ -134,8 +128,8 @@ public class EnemyHealth : MonoBehaviour
                 explosion.explosionSound = stats.explosionSound;
                 explosion.soundVolume = stats.explosionSoundVolume;
                 explosion.vfxScale = stats.explosionVFXScale;
-                explosion.swellDuration = stats.swellDuration;  // NOUVEAU
-                explosion.swellScale = stats.swellScale;        // NOUVEAU
+                explosion.swellDuration = stats.swellDuration;
+                explosion.swellScale = stats.swellScale;
                 Debug.Log($"Added ExplosionDeathEffect to {gameObject.name}");
                 break;
 
@@ -149,7 +143,6 @@ public class EnemyHealth : MonoBehaviour
     {
         if (isDead) return;
 
-        // SIMPLIFIÉ : Timer de stun spray
         if (sprayStunTimer > 0f)
         {
             sprayStunTimer -= Time.deltaTime;
@@ -161,15 +154,11 @@ public class EnemyHealth : MonoBehaviour
             }
         }
 
-        
-
-        // Desactiver knockback state quand timer expire
         if (isInKnockback && Time.time >= knockbackEndTime)
         {
             isInKnockback = false;
         }
 
-        // Update UI timer
         if (stunTimerUI != null)
         {
             if (sprayStunTimer > 0f)
@@ -194,7 +183,7 @@ public class EnemyHealth : MonoBehaviour
 
     public void ShowSpiral()
     {
-        if (isDead) return; // AJOUT
+        if (isDead) return;
         if (stunSpiralPrefab == null) return;
         if (activeSpiral != null) return;
         activeSpiral = Instantiate(stunSpiralPrefab, transform.position + Vector3.up * 1.8f, Quaternion.identity, transform);
@@ -208,7 +197,6 @@ public class EnemyHealth : MonoBehaviour
             activeSpiral = null;
         }
 
-        // Nettoyage de securite : detruire tous les enfants avec "Spiral" dans le nom
         for (int i = transform.childCount - 1; i >= 0; i--)
         {
             Transform child = transform.GetChild(i);
@@ -222,29 +210,24 @@ public class EnemyHealth : MonoBehaviour
         isInKnockback = true;
         knockbackEndTime = Time.time + duration;
     }
+
     private void OnCollisionEnter(Collision collision)
     {
-
         if (isDead) return;
 
-        // Check layer obstacle
         if (collision.gameObject.layer != LayerMask.NameToLayer("Obstacle"))
         {
             return;
         }
 
-
-        // CHECK : Seulement si en état forcé
         bool shouldBounce = false;
 
-        // 1. Check knockback
         if (isInKnockback)
         {
             Debug.Log("[ENEMYHEALTH] isInKnockback = TRUE");
             shouldBounce = true;
         }
 
-        // 2. Check bourrade
         GrabAttack grabAttack = GetComponent<GrabAttack>();
         if (grabAttack != null && grabAttack.isInBourradeDuration)
         {
@@ -273,6 +256,7 @@ public class EnemyHealth : MonoBehaviour
             rb.AddForce(pushDirection * 100f, ForceMode.Impulse);
         }
     }
+
     private Coroutine pulseCoroutine;
     public float pulseScaleMultiplier = 1.2f;
     public float pulseDuration = 0.3f;
@@ -301,15 +285,8 @@ public class EnemyHealth : MonoBehaviour
         transform.localScale = originalScale;
     }
 
-
-   
-
-   
-    // Version pour dégâts directs (pits, environnement, etc.)
-    // VERSION 1 : Pour attaques joueur (spray/broom/bottle)
     public void TakeMeleeDamage(AttackType attackType)
     {
-        // Check si Bright Eyes et pas awake
         BrightEyesController brightEyes = GetComponent<BrightEyesController>();
         if (brightEyes != null && !brightEyes.IsAwake())
         {
@@ -326,7 +303,6 @@ public class EnemyHealth : MonoBehaviour
             lastImpactDirection = (transform.position - player.transform.position).normalized;
         }
 
-        // Déterminer les dégâts selon le type d'attaque
         float damage = 0f;
         switch (attackType)
         {
@@ -347,25 +323,20 @@ public class EnemyHealth : MonoBehaviour
         OnTakeDamage?.Invoke();
         currentHealth = Mathf.Max(0f, currentHealth);
 
-        Debug.Log($"{gameObject.name} took {damage} {attackType} damage! Health: {currentHealth}/{stats.maxHealth}");
+        Debug.Log($"{gameObject.name} took {damage} {attackType} damage! Health: {currentHealth}/{GetMaxHealth()}");
 
-        OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
+        OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
         if (healthBarUI != null)
-        {
-            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
-        }
+            healthBarUI.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
+
         UpdateSpeed();
 
         if (currentHealth <= 0f)
-        {
             Die();
-        }
     }
 
-    // VERSION 2 : Pour dégâts directs (pits, environnement)
     public void TakeMeleeDamage(float damage)
     {
-        // Check si Bright Eyes et pas awake
         BrightEyesController brightEyes = GetComponent<BrightEyesController>();
         if (brightEyes != null && !brightEyes.IsAwake())
         {
@@ -383,19 +354,16 @@ public class EnemyHealth : MonoBehaviour
         OnTakeDamage?.Invoke();
         currentHealth = Mathf.Max(0f, currentHealth);
 
-        Debug.Log($"{gameObject.name} took {damage} damage! Health: {currentHealth}/{stats.maxHealth}");
+        Debug.Log($"{gameObject.name} took {damage} damage! Health: {currentHealth}/{GetMaxHealth()}");
 
-        OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
+        OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
         if (healthBarUI != null)
-        {
-            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
-        }
+            healthBarUI.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
+
         UpdateSpeed();
 
         if (currentHealth <= 0f)
-        {
             Die();
-        }
     }
 
     public void TakeSentinelShot(bool isHeadshot = false)
@@ -407,19 +375,17 @@ public class EnemyHealth : MonoBehaviour
         EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
         if (ai != null && ai.isKnockedDownByEpervier)
             ai.wasAlreadyShotDuringEpervier = true;
-        // Direction d'impact pour effets physiques
+
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null && gm.sentinelEye != null)
             lastImpactDirection = (transform.position - gm.sentinelEye.position).normalized;
 
         lastImpactForce = stats.sentinelDamageTaken;
 
-        // Pulse visuel
         if (pulseCoroutine != null)
             StopCoroutine(pulseCoroutine);
         pulseCoroutine = StartCoroutine(PulseCoroutine());
 
-        // Headshot instant kill
         if (isHeadshot)
         {
             Debug.Log($"{gameObject.name} HEADSHOT! Instant death!");
@@ -428,17 +394,15 @@ public class EnemyHealth : MonoBehaviour
             return;
         }
 
-        // Appliquer les dégâts
         currentHealth -= stats.sentinelDamageTaken;
         currentHealth = Mathf.Max(0f, currentHealth);
         OnTakeDamage?.Invoke();
 
-        Debug.Log($"{gameObject.name} shot by sentinel! Health: {currentHealth}/{stats.maxHealth}");
-        OnHealthChanged?.Invoke(currentHealth, stats.maxHealth);
+        Debug.Log($"{gameObject.name} shot by sentinel! Health: {currentHealth}/{GetMaxHealth()}");
+        OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
         if (healthBarUI != null)
-            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
+            healthBarUI.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
 
-        // NOUVEAU : Déclencher l'affichage temporaire de la barre de vie
         if (sentinelHitDisplayCoroutine != null)
             StopCoroutine(sentinelHitDisplayCoroutine);
         sentinelHitDisplayCoroutine = StartCoroutine(SentinelHitDisplayCoroutine());
@@ -449,14 +413,12 @@ public class EnemyHealth : MonoBehaviour
             return;
         }
 
-        // ANNULER WINDUP GRAB SI EN COURS
         GrabAttack grabCheck = GetComponent<GrabAttack>();
         if (grabCheck != null && grabCheck.isInWindup)
         {
             grabCheck.CancelWindup();
             Debug.Log($"[SENTINEL] Cancelled {gameObject.name} grab windup");
         }
-        // ANNULER WINDUP HITTER SI EN COURS
 
         HitAttack hitAttackCheck = GetComponent<HitAttack>();
         if (hitAttackCheck != null && (hitAttackCheck.isInWindup || hitAttackCheck.IsAttacking()))
@@ -465,14 +427,13 @@ public class EnemyHealth : MonoBehaviour
             Debug.Log($"[SENTINEL] Cancelled {gameObject.name} hit attack");
         }
 
-        
         Animator enemyAnimator = GetComponentInChildren<Animator>();
         if (enemyAnimator != null)
             enemyAnimator.SetTrigger("HitReaction");
         StartCoroutine(StunCoroutine());
 
         UpdateSpeed();
-        // Knockback non-létal
+
         if (rb != null)
         {
             Vector3 knockbackDir = lastImpactDirection;
@@ -483,7 +444,6 @@ public class EnemyHealth : MonoBehaviour
         }
     }
 
-    // Coroutine pour reset le flag (déjà présente en haut du script)
     private IEnumerator SentinelHitDisplayCoroutine()
     {
         recentlyHitBySentinel = true;
@@ -498,6 +458,7 @@ public class EnemyHealth : MonoBehaviour
         if (!isDead && rb != null)
             rb.AddForce(force, ForceMode.Impulse);
     }
+
     private IEnumerator StunCoroutine()
     {
         if (isDead) yield break;
@@ -513,35 +474,26 @@ public class EnemyHealth : MonoBehaviour
         isRecovering = false;
     }
 
-
-
-   
-
     void Die()
     {
-
         if (isDead) return;
 
         isDead = true;
         HideSpiral();
 
-
         Debug.Log(string.Format("{0} is dead!", gameObject.name));
         OnDeath?.Invoke();
-        
+
         ChainConstraint cc = GetComponent<ChainConstraint>();
         if (cc != null)
             cc.enabled = false;
 
-
-        // AJOUTER ICI : Désinscrire le timer UI
         if (stunTimerUI != null && StunTimerManager.Instance != null)
         {
             StunTimerManager.Instance.UnregisterEnemy(transform);
             stunTimerUI = null;
         }
 
-        // Notifier GameManager du kill (sauf si BrightEyes)
         BrightEyesController brightEyes = GetComponent<BrightEyesController>();
         if (brightEyes == null)
         {
@@ -552,7 +504,6 @@ public class EnemyHealth : MonoBehaviour
             }
         }
 
-        // NOUVEAU : Forcer la barre visible meme apres mort si en pit
         EnemyPitInteractable pitInt = GetComponent<EnemyPitInteractable>();
         if (pitInt != null && pitInt.isFallingInPit && healthBarUI != null)
         {
@@ -560,7 +511,6 @@ public class EnemyHealth : MonoBehaviour
             Debug.Log(string.Format("[EnemyHealth] Forced healthbar show for {0} after pit death", gameObject.name));
         }
 
-        /// Desinscrire la barre de vie (SAUF si dans deep empty pit)
         bool isInDeepPit = pitInt != null && pitInt.shouldIgnoreHealthbarDistance;
 
         if (healthBarManager != null && !isInDeepPit)
@@ -572,11 +522,10 @@ public class EnemyHealth : MonoBehaviour
             Debug.Log(string.Format("[EnemyHealth] {0} died in deep pit, keeping healthbar for 2s", gameObject.name));
         }
 
-        // Desactiver l'IA et les scripts de controle
         EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
         if (ai != null)
         {
-            ai.SetDead(true); // Set isDead = true ET currentState = Dead
+            ai.SetDead(true);
             ai.enabled = false;
         }
 
@@ -588,7 +537,6 @@ public class EnemyHealth : MonoBehaviour
             grabAttack.enabled = false;
         }
 
-        // NOUVEAU : Desactiver AIPath au lieu de NavMeshAgent
         Pathfinding.AIPath aiPath = GetComponent<Pathfinding.AIPath>();
         if (aiPath != null)
         {
@@ -596,30 +544,22 @@ public class EnemyHealth : MonoBehaviour
             aiPath.enabled = false;
         }
 
-        // SI MORT PAR PIT: Pas de ragdoll, comportement selon type de pit
         if (deathByPit)
         {
-
-
-            // Check si mort par noyade pour jouer crowd laughter
             if (pitInt != null && pitInt.GetCurrentPitZone() != null)
             {
-                // CORRIGÉ : Chercher PitFill dans les enfants
                 PitFill pitFill = pitInt.GetCurrentPitZone().GetComponentInChildren<PitFill>();
 
                 if (pitFill != null && pitFill.fillType != null)
                 {
                     if (pitFill.fillType.category == PitContentType.ContentCategory.Water)
                     {
-                        // Mort par noyade : crowd laughter non spatialise
                         if (crowdLaughterSound != null)
                         {
                             AudioSource.PlayClipAtPoint(crowdLaughterSound, Camera.main.transform.position);
                         }
-
                     }
                 }
-
             }
 
             Rigidbody rb = GetComponent<Rigidbody>();
@@ -629,20 +569,10 @@ public class EnemyHealth : MonoBehaviour
                 rb.useGravity = true;
             }
 
-            // NE PAS mettre isTrigger = true pour Empty pits
-            // Le collider doit rester solide pour s'arreter sur le floor
-            // Pour Water/Lava, PitFillDamageController gerera la destruction
-
-            // Detruire apres un delai (gere par PitFillDamageController)
             return;
         }
 
-
-
-        // SINON: Mort normale avec ragdoll
         Debug.Log($"========== {gameObject.name} DIE() - MORT NORMALE ==========");
-
-        
 
         Collider colNormal = GetComponent<Collider>();
         if (colNormal != null)
@@ -652,7 +582,6 @@ public class EnemyHealth : MonoBehaviour
 
         Debug.Log($"About to call IDeathEffect on {gameObject.name}");
 
-        // Appliquer les effets de mort (ragdoll, explosion, etc.)
         IDeathEffect[] deathEffects = GetComponents<IDeathEffect>();
         Debug.Log($"Found {deathEffects.Length} death effects");
 
@@ -689,17 +618,13 @@ public class EnemyHealth : MonoBehaviour
             {
                 effect.OnDeath(transform.position, context);
 
-                // Verifier si c'est une explosion (Bloated)
                 if (effect is ExplosionDeathEffect)
                 {
                     hasExplosionEffect = true;
                 }
             }
-
         }
 
-        // Event pour autres comportements a la mort
-        // SAUF si explosion (qui gerera elle-meme le spawn apres delai)
         if (!hasExplosionEffect)
         {
             IOnDeathBehavior[] deathBehaviors = GetComponents<IOnDeathBehavior>();
@@ -711,7 +636,6 @@ public class EnemyHealth : MonoBehaviour
                 }
             }
         }
-       
     }
 
     void UpdateSpeed()
@@ -730,7 +654,6 @@ public class EnemyHealth : MonoBehaviour
         return currentHealth > 0f;
     }
 
-    // SIMPLIFIÉ : Démarrer un stun spray simple
     public void ApplySprayStun(float duration)
     {
         sprayStunTimer = duration;
@@ -738,11 +661,15 @@ public class EnemyHealth : MonoBehaviour
     }
 
     public bool IsRecovering() => isRecovering;
+    public float GetBaseMaxHealth() => stats.maxHealth;
+    public float GetMaxHealth()
+    {
+        float multiplier = ModifierApplier.Instance != null ? ModifierApplier.Instance.enemyMaxHealthMultiplier : 1f;
+        return stats.maxHealth * multiplier;
+    }
     public float GetCurrentHealth() => currentHealth;
-    public float GetMaxHealth() => stats.maxHealth;
-    public float GetHealthPercentage() => currentHealth / stats.maxHealth;
+    public float GetHealthPercentage() => currentHealth / GetMaxHealth();
 
-    // SIMPLIFIÉ : Retourner le timer de stun actuel
     public float GetSprayStunTimeRemaining()
     {
         return sprayStunTimer;

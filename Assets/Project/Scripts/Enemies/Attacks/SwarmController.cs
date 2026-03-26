@@ -123,7 +123,7 @@ public class SwarmController : MonoBehaviour
             GameObject barGO = Instantiate(manager.healthBarPrefab, manager.transform);
             healthBarUI = barGO.GetComponent<EnemyHealthBarUI>();
             manager.RegisterEnemy(transform, healthBarUI);
-            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth);
+            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth, stats.maxHealth);
             healthBarUI.gameObject.SetActive(false);
         }
     }
@@ -315,7 +315,7 @@ public class SwarmController : MonoBehaviour
 
         currentHealth -= damage;
 
-        healthBarUI?.UpdateHealth(currentHealth, stats.maxHealth);
+        healthBarUI.UpdateHealth(currentHealth, stats.maxHealth, stats.maxHealth);
 
         Debug.Log($"Swarm took {damage} damage. Health: {currentHealth}/{stats.maxHealth}");
 
