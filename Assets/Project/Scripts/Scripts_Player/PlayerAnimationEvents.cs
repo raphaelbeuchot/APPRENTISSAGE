@@ -32,4 +32,12 @@ public class PlayerAnimationEvents : MonoBehaviour
         if (playerMovement != null)
             playerMovement.OnGroggyStart();
     }
+    public void OnDashSound()
+    {
+        PlayerPhysicsMovement movement = GetComponentInParent<PlayerPhysicsMovement>();
+        if (movement == null) return;
+        AudioSource audio = GetComponentInChildren<AudioSource>();
+        if (audio != null && movement.stats.dashSound != null)
+            audio.PlayOneShot(movement.stats.dashSound);
+    }
 }

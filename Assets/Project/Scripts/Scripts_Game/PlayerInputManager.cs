@@ -226,6 +226,7 @@ public class PlayerInputManager : MonoBehaviour
         ToggleCameraViewPressed = false;
         CancelPressed = false;
         PausePressed = false;
+        SprintPressed = false;
 
 
     }

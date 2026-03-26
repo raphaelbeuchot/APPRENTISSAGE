@@ -651,9 +651,15 @@ public class PlayerPhysicsMovement : MonoBehaviour
         return currentStamina;
     }
 
-    public float GetMaxStamina()
+    public float GetBaseMaxStamina()
     {
         return stats.maxStamina;
+    }
+
+    public float GetRealMaxStamina()
+    {
+        float enduranceMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.enduranceMultiplier : 1f;
+        return stats.maxStamina * enduranceMult;
     }
 
     public void ApplySwarmSlowdown(float multiplier)
@@ -834,10 +840,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         // Setup dash
         isDashing = true;
+        isDashing = true;
+        lastDashTime = Time.time; // ICI au lieu de la fin
+        if (animator != null)
+            animator.SetTrigger("DoDash");
 
-        AudioSource audio = GetComponentInChildren<AudioSource>();
-        if (audio != null && stats.dashSound != null)
-            audio.PlayOneShot(stats.dashSound);
         // AJOUTER CES 2 LIGNES :
         if (animator != null)
             animator.SetTrigger("DoDash");
@@ -864,7 +871,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
         // Fin dash
         isDashing = false;
         canMove = true;
-        lastDashTime = Time.time;
     }
 
     public void TriggerSweep()
