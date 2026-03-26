@@ -123,9 +123,13 @@ public class TutoFreezeTile : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         playerOnTile = false;
-        waitingForExit = false;
 
-        if (testRunning)
+        if (waitingForExit)
+        {
+            waitingForExit = false;
+            StartCoroutine(ReactivateAfterDelay());
+        }
+        else if (testRunning)
         {
             isPaused = true;
             SetDalleMaterial(matWaiting);
@@ -134,6 +138,13 @@ public class TutoFreezeTile : MonoBehaviour
         {
             SetDalleMaterial(matWaiting);
         }
+    }
+
+    private IEnumerator ReactivateAfterDelay()
+    {
+        yield return new WaitForSeconds(0.5f);
+        tileActive = true;
+        SetDalleMaterial(matWaiting);
     }
 
     private IEnumerator CountdownAndSpawn()
@@ -212,8 +223,9 @@ public class TutoFreezeTile : MonoBehaviour
         spawnCount++;
         testRunning = false;
         waitingForExit = true;
+        tileActive = false; // AJOUT
 
-        SetDalleMaterial(matWaiting);
+        SetDalleMaterial(matInactive); // matWaiting -> matInactive
         SetAllMarquees(matInactive);
 
         LaunchCorpse(newCorpse, corpseRb);
