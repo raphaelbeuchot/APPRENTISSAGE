@@ -419,6 +419,11 @@ public class MeleeAttackSystem : MonoBehaviour
     }
     public int GetCurrentSprayAmmo() => currentSprayAmmo;
     public int GetMaxSprayAmmo() => stats.maxSprayAmmo;
+    public int GetMaxSprayAmmoWithBonus()
+    {
+        float multiplier = ModifierApplier.Instance != null ? ModifierApplier.Instance.sprayAmmoMultiplier : 1f;
+        return Mathf.RoundToInt(stats.maxSprayAmmo * multiplier);
+    }
     public bool IsReloading() => isReloading;
     public float GetReloadProgress() => isReloading ? (Time.time - reloadStartTime) / stats.sprayReloadTime : 0f;
 

@@ -17,35 +17,37 @@ public class SprayAmmoUI : MonoBehaviour
     [SerializeField] private Color emptyColor = Color.gray;
     [SerializeField] private Color reloadingColor = Color.yellow;
 
+    [Header("Bonus Colors")]
+    [SerializeField] private Color bonusFullColor = Color.cyan;
+    [SerializeField] private Color bonusEmptyColor = Color.gray;
+    [SerializeField] private Color bonusReloadingColor = Color.yellow;
+
     [Header("Audio")]
     [SerializeField] private AudioClip reloadSound;
-    private AudioSource audioSource;
 
+    private AudioSource audioSource;
     private Image[] sprayIcons;
     private int maxAmmo;
+    private int maxAmmoWithBonus;
     private int maxTotalAmmo;
 
     void Start()
     {
         if (meleeSystem == null)
-        {
             meleeSystem = FindObjectOfType<MeleeAttackSystem>();
-        }
 
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
-        {
             audioSource = gameObject.AddComponent<AudioSource>();
-        }
 
-        // Recuperer maxTotalAmmo depuis PlayerStats
         if (meleeSystem != null && meleeSystem.stats != null)
         {
-            maxTotalAmmo = meleeSystem.stats.totalSprayAmmoStart;
+            float multiplier = ModifierApplier.Instance != null ? ModifierApplier.Instance.sprayAmmoMultiplier : 1f;
+            maxTotalAmmo = Mathf.RoundToInt(meleeSystem.stats.totalSprayAmmoStart * multiplier);
         }
         else
         {
-            maxTotalAmmo = 50; // Fallback si pas de stats
+            maxTotalAmmo = 50;
         }
 
         InitializeIcons();
@@ -56,9 +58,10 @@ public class SprayAmmoUI : MonoBehaviour
         if (meleeSystem == null || iconContainer == null || sprayIconPrefab == null) return;
 
         maxAmmo = meleeSystem.GetMaxSprayAmmo();
-        sprayIcons = new Image[maxAmmo];
+        maxAmmoWithBonus = meleeSystem.GetMaxSprayAmmoWithBonus();
 
-        for (int i = 0; i < maxAmmo; i++)
+        sprayIcons = new Image[maxAmmoWithBonus];
+        for (int i = 0; i < maxAmmoWithBonus; i++)
         {
             GameObject iconGO = Instantiate(sprayIconPrefab, iconContainer);
             sprayIcons[i] = iconGO.GetComponent<Image>();
@@ -71,11 +74,9 @@ public class SprayAmmoUI : MonoBehaviour
 
         bool bottleThrown = meleeSystem.IsBottleThrown();
 
-        // Griser l'UI si bouteille jetée
         CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
-
         canvasGroup.alpha = bottleThrown ? 0.3f : 1f;
 
         UpdateIcons();
@@ -91,40 +92,29 @@ public class SprayAmmoUI : MonoBehaviour
         {
             if (sprayIcons[i] == null) continue;
 
+            bool isBonus = i >= maxAmmo;
+
             if (isReloading)
-            {
-                sprayIcons[i].color = reloadingColor;
-            }
+                sprayIcons[i].color = isBonus ? bonusReloadingColor : reloadingColor;
             else if (i < currentAmmo)
-            {
-                sprayIcons[i].color = fullColor;
-            }
+                sprayIcons[i].color = isBonus ? bonusFullColor : fullColor;
             else
-            {
-                sprayIcons[i].color = emptyColor;
-            }
+                sprayIcons[i].color = isBonus ? bonusEmptyColor : emptyColor;
         }
     }
 
     void UpdateAmmoCount()
     {
         if (ammoCountText == null) return;
-
         int currentInMag = meleeSystem.GetCurrentSprayAmmo();
         int totalReserve = meleeSystem.GetTotalSprayAmmo();
-
-        // Total disponible = réserve + ce qu'il y a dans le chargeur
         int totalAvailable = totalReserve + currentInMag;
-
-        // Utiliser maxTotalAmmo au lieu de "50" hardcodé
         ammoCountText.text = totalAvailable + "/" + maxTotalAmmo;
     }
 
     public void PlayReloadSound()
     {
         if (audioSource != null && reloadSound != null)
-        {
             audioSource.PlayOneShot(reloadSound);
-        }
     }
 }
