@@ -34,6 +34,8 @@ public class PlayerStats : ScriptableObject
     public float dashDuration = 0.35f;
     public float dashStaminaCost = 25f;
     public float dashCooldown = 2.5f;
+    public AudioClip dashSound;
+
 
     [Header("Crouch")]
     public float crouchSpeedMultiplier = 0.8f; // 80 prcents vitesse en crouch

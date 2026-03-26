@@ -834,6 +834,10 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         // Setup dash
         isDashing = true;
+
+        AudioSource audio = GetComponentInChildren<AudioSource>();
+        if (audio != null && stats.dashSound != null)
+            audio.PlayOneShot(stats.dashSound);
         // AJOUTER CES 2 LIGNES :
         if (animator != null)
             animator.SetTrigger("DoDash");
