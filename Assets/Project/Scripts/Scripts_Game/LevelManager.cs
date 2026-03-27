@@ -140,6 +140,7 @@ public class LevelManager : MonoBehaviour
 
     void OnPlayerReachedGoal(GameObject playerObject)
     {
+        GetComponent<GoalDoorDebug>()?.TriggerDebug();
         if (levelCompleted || gameOver) return;
 
         if (SceneManager.GetActiveScene().buildIndex == 3)
@@ -281,6 +282,7 @@ public class LevelManager : MonoBehaviour
     // ============================================
     // CLEANUP
     // ============================================
+
 
     void OnDestroy()
     {
