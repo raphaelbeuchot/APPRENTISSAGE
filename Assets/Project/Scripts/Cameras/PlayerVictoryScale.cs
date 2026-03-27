@@ -21,7 +21,6 @@ public class PlayerVictoryScale : MonoBehaviour
         bakedMesh = new Mesh();
         playerMeshRenderer.BakeMesh(bakedMesh);
         playerMeshRenderer.enabled = false;
-
         StartCoroutine(WaveCoroutine());
     }
 
@@ -39,7 +38,8 @@ public class PlayerVictoryScale : MonoBehaviour
         GameObject ghost = new GameObject("VictoryGhost_" + index);
         Vector3 spawnPos = playerMeshRenderer.transform.position;
         spawnPos.y += 0.6f;
-        ghost.transform.position = spawnPos; ghost.transform.rotation = playerMeshRenderer.transform.rotation;
+        ghost.transform.position = spawnPos;
+        ghost.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
         ghost.transform.localScale = Vector3.one;
 
         MeshFilter mf = ghost.AddComponent<MeshFilter>();
@@ -52,9 +52,8 @@ public class PlayerVictoryScale : MonoBehaviour
         Color color = (colors != null && index < colors.Length) ? colors[index] : Color.white;
         mpb.SetColor("_Color", color);
         mr.SetPropertyBlock(mpb);
-        ghost.AddComponent<BillboardRenderer>();
 
-
+        ghost.AddComponent<VictoryGhostBillboard>();
         ghosts.Add(ghost);
         StartCoroutine(ScaleCoroutine(ghost));
     }
@@ -72,7 +71,7 @@ public class PlayerVictoryScale : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
             float t = elapsed / duration;
             float scale = 1f + (targetScale - 1f) * t;
-            ghost.transform.localScale = Vector3.one * scale;
+            ghost.transform.localScale = new Vector3(scale, scale, 0f);
             ghost.transform.position = Vector3.MoveTowards(
                 ghost.transform.position,
                 screenCenter,
