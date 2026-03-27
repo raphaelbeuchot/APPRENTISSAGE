@@ -5,7 +5,7 @@ public class PlayerVictoryScale : MonoBehaviour
 {
     [SerializeField] private SkinnedMeshRenderer playerMeshRenderer;
     [SerializeField] private Material victoryMaterial;
-    [SerializeField] private float duration = 3f;
+    [SerializeField] private float scaleSpeed = 10f;
     [SerializeField] private float targetScale = 100f;
     [SerializeField] private float moveSpeed = 0f;
     [SerializeField] private int waveCount = 10;
@@ -34,12 +34,24 @@ public class PlayerVictoryScale : MonoBehaviour
     }
     private void SpawnGhost(int index)
     {
+        // Centre du mesh bake
+        Vector3 meshCenter = bakedMesh.bounds.center;
+
+        // Parent GO au centre du mesh
         GameObject ghost = new GameObject("VictoryGhost_" + index);
-        ghost.transform.position = cachedSpawnPos;
+        ghost.transform.position = cachedSpawnPos + meshCenter;
         ghost.transform.localScale = Vector3.one;
-        MeshFilter mf = ghost.AddComponent<MeshFilter>();
+
+        // Child GO avec le mesh, offset inverse du centre
+        GameObject meshGO = new GameObject("Mesh");
+        meshGO.transform.SetParent(ghost.transform);
+        meshGO.transform.localPosition = -meshCenter;
+        meshGO.transform.localRotation = Quaternion.identity;
+        meshGO.transform.localScale = Vector3.one;
+
+        MeshFilter mf = meshGO.AddComponent<MeshFilter>();
         mf.mesh = bakedMesh;
-        MeshRenderer mr = ghost.AddComponent<MeshRenderer>();
+        MeshRenderer mr = meshGO.AddComponent<MeshRenderer>();
         Material instanceMat = new Material(victoryMaterial);
         instanceMat.renderQueue = victoryMaterial.renderQueue + index;
         mr.material = instanceMat;
@@ -47,6 +59,7 @@ public class PlayerVictoryScale : MonoBehaviour
         Color color = (colors != null && index < colors.Length) ? colors[index] : Color.white;
         mpb.SetColor("_Color", color);
         mr.SetPropertyBlock(mpb);
+
         ghost.AddComponent<VictoryGhostBillboard>();
         ghosts.Add(ghost);
         StartCoroutine(ScaleCoroutine(ghost));
@@ -58,11 +71,10 @@ public class PlayerVictoryScale : MonoBehaviour
         Vector3 screenCenter = Camera.main.ViewportToWorldPoint(
             new Vector3(0.5f, 0.5f, Camera.main.WorldToViewportPoint(startPos).z)
         );
-        while (elapsed < duration)
+        while (ghost.transform.localScale.x < targetScale)
         {
-            elapsed += Time.unscaledDeltaTime;
-            float t = elapsed / duration;
-            float scale = 1f + (targetScale - 1f) * t;
+            float scale = ghost.transform.localScale.x + scaleSpeed * Time.unscaledDeltaTime;
+            scale = Mathf.Min(scale, targetScale);
             ghost.transform.localScale = new Vector3(scale, scale, scale);
             ghost.transform.position = Vector3.MoveTowards(
                 ghost.transform.position,
@@ -73,5 +85,6 @@ public class PlayerVictoryScale : MonoBehaviour
         }
         Destroy(ghost);
         ghosts.Remove(ghost);
+       
     }
 }
