@@ -41,7 +41,67 @@ public class CommentPanel : MonoBehaviour
 
         Instance.DisplayMessage(message);
     }
+    public static void ShowPersistent(string message)
+    {
+        if (Instance == null) return;
+        Instance.DisplayPersistentMessage(message);
+    }
 
+    public static void Hide()
+    {
+        if (Instance == null) return;
+        Instance.HideMessage();
+    }
+
+    private void DisplayPersistentMessage(string message)
+    {
+        if (currentCoroutine != null)
+            StopCoroutine(currentCoroutine);
+        commentText.text = message;
+        gameObject.SetActive(true);
+        currentCoroutine = StartCoroutine(PopOnlyCoroutine());
+    }
+
+    private void HideMessage()
+    {
+        if (currentCoroutine != null)
+            StopCoroutine(currentCoroutine);
+        currentCoroutine = StartCoroutine(ShrinkCoroutine());
+    }
+
+    private IEnumerator PopOnlyCoroutine()
+    {
+        float elapsed = 0f;
+        transform.localScale = Vector3.zero;
+        while (elapsed < popDuration)
+        {
+            elapsed += Time.deltaTime;
+            transform.localScale = Vector3.one * Mathf.Lerp(0f, popScale, elapsed / popDuration);
+            yield return null;
+        }
+        elapsed = 0f;
+        while (elapsed < popDuration)
+        {
+            elapsed += Time.deltaTime;
+            transform.localScale = Vector3.one * Mathf.Lerp(popScale, 1f, elapsed / popDuration);
+            yield return null;
+        }
+        transform.localScale = Vector3.one;
+        currentCoroutine = null;
+    }
+
+    private IEnumerator ShrinkCoroutine()
+    {
+        float elapsed = 0f;
+        while (elapsed < shrinkDuration)
+        {
+            elapsed += Time.deltaTime;
+            transform.localScale = Vector3.one * Mathf.Lerp(1f, shrinkScale, elapsed / shrinkDuration);
+            yield return null;
+        }
+        gameObject.SetActive(false);
+        currentCoroutine = null;
+    }
     private void DisplayMessage(string message)
     {
         if (currentCoroutine != null)

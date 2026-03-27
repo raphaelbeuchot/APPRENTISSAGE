@@ -71,6 +71,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private Coroutine standUpCoroutine = null;
     private bool isPushing = false;
     private bool isSweeping = false;
+    [HideInInspector] public bool isSweepImmune = false;
+
     private bool isGroggyReached = false;
 
     // Stamina runtime
@@ -364,7 +366,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
    IEnumerator SweepCoroutine()
 {
-    isSweeping = true;
+        isSweepImmune = true;
+
+        isSweeping = true;
     canMove = false;
     isGroggyReached = false;
     rb.linearVelocity = Vector3.zero;
@@ -385,6 +389,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     IEnumerator SweepFromObstacleCoroutine()
     {
+        isSweepImmune = true;
         isSweeping = true;
         canMove = false;
         isGroggyReached = false;
@@ -438,8 +443,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
         isGroggyReached = true;
         EnterGroggyState();
     }
+    
     IEnumerator StandUpCoroutine()
     {
+        CommentPanel.Hide();
+
         animator.SetTrigger("StandUp");
 
         yield return null;
@@ -456,6 +464,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         isGroggy = false;
         canMove = true;
         isGroggyReached = false;
+        isSweepImmune = false;
         standUpCoroutine = null;
     }
 

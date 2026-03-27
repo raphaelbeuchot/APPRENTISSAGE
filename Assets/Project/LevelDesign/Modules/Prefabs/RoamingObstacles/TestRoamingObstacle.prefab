@@ -108,18 +108,27 @@ MonoBehaviour:
   reverseDirection: 0
   usePingPong: 1
   settings: {fileID: 11400000, guid: 189652719e6b12740935ba798e494490, type: 2}
-  detectionRadius: 5
-  proximitySounds: []
+  detectionRadius: 2
+  proximitySounds:
+  - {fileID: 8300000, guid: 1dd47a209e40be343bd1be802cd0226b, type: 3}
+  - {fileID: 8300000, guid: 6d2a9b922b4d2be44a3cb2df9c3271b3, type: 3}
+  - {fileID: 8300000, guid: 4c3ca398bf1e942449531b65ebe863d8, type: 3}
+  - {fileID: 8300000, guid: 13dbbd23a738880418222b5fdd3ade9b, type: 3}
+  - {fileID: 8300000, guid: 022f8301e50c160439e48bafbed60fa9, type: 3}
+  - {fileID: 8300000, guid: e324acbfb7e3e1341a5959a2bb0a59e7, type: 3}
+  - {fileID: 8300000, guid: f8cf3635bfd5feb489de6b266dbaf711, type: 3}
+  - {fileID: 8300000, guid: fcdce1cf5803655428340373180c5f6c, type: 3}
   proximityVolume: 0.7
   pitchVariation: 0.1
   speedThreshold: 1
   knockdownThreshold: 3
-  softPushSound: {fileID: 0}
-  pushSound: {fileID: 0}
-  sweepSound: {fileID: 0}
+  sweepImpulseForce: 5
+  softPushSound: {fileID: 8300000, guid: f64a14922ab0d304c81245d3d70604a6, type: 3}
+  pushSound: {fileID: 8300000, guid: f64a14922ab0d304c81245d3d70604a6, type: 3}
+  sweepSound: {fileID: 8300000, guid: 0c81ae4d2eecd484d80b9eaa1342f147, type: 3}
   impactVolume: 1
   splineContainer: {fileID: 0}
-  startingProgress: 0
+  startingProgress: 0.6
 --- !u!64 &4042912375218604344
 MeshCollider:
   m_ObjectHideFlags: 0

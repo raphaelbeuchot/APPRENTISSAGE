@@ -32,6 +32,11 @@ public class PlayerAnimationEvents : MonoBehaviour
         if (playerMovement != null)
             playerMovement.OnGroggyStart();
     }
+
+    public void OnReadyToStandUp()
+    {
+        CommentPanel.ShowPersistent("Press A to stand up");
+    }
     public void OnDashSound()
     {
         PlayerPhysicsMovement movement = GetComponentInParent<PlayerPhysicsMovement>();

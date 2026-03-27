@@ -20,6 +20,7 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     [Header("Push Settings")]
     [SerializeField] private float speedThreshold = 1f;
     [SerializeField] private float knockdownThreshold = 3f;
+    [SerializeField] private float sweepImpulseForce = 5f;
     [SerializeField] private AudioClip softPushSound;
     [SerializeField] private AudioClip pushSound;
     [SerializeField] private AudioClip sweepSound;
@@ -197,6 +198,10 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
         position.y += yOffset;
         transform.position = position;
+        Vector3 tangent = (Vector3)splineContainer.EvaluateTangent(currentProgress);
+        tangent.y = 0f;
+        if (tangent != Vector3.zero)
+            transform.rotation = Quaternion.LookRotation(tangent.normalized);
     }
 
     private void CalculateVelocity()
@@ -264,11 +269,18 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
                 if (speed >= knockdownThreshold)
                 {
-                    if (sweepSound != null)
-                        proximityAudioSource.PlayOneShot(sweepSound, impactVolume);
-                    playerMovement.ApplyProgressivePush(pushDirection, calculatedForce, PUSH_DURATION);
-                    playerMovement.TriggerSweepFromObstacle();
-                    Debug.Log($"[RoamingObstacle] Knockdown declenche (vitesse: {speed})");
+                    if (!playerMovement.isSweepImmune)
+                    {
+                        if (sweepSound != null)
+                            proximityAudioSource.PlayOneShot(sweepSound, impactVolume);
+
+                        Vector3 impulse = pushDirection * sweepImpulseForce;
+                        impulse.y = 0f;
+                        collision.rigidbody.AddForce(impulse, ForceMode.Impulse);
+
+                        playerMovement.ApplyProgressivePush(pushDirection, calculatedForce, PUSH_DURATION);
+                        playerMovement.TriggerSweepFromObstacle();
+                    }
                 }
                 else
                 {
