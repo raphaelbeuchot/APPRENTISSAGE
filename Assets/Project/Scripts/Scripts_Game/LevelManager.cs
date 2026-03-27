@@ -13,9 +13,10 @@ public class LevelManager : MonoBehaviour
     [Header("UI")]
     public VictoryUI victoryUI;
     public GameOverUI gameOverUI;
+    [SerializeField] private PlayerVictoryScale playerVictoryScale;
 
-    [Header("Victory Outline")]
-    [SerializeField] private VictoryOutlineController victoryOutlineController;
+
+
 
     [Header("Configuration")]
     public float delayBeforeNextLevel = 3f;
@@ -168,8 +169,10 @@ public class LevelManager : MonoBehaviour
 
         if (player != null)
             player.enabled = false;
-        if (victoryOutlineController != null)
-            victoryOutlineController.TriggerOutline();
+        if (playerVictoryScale != null)
+            playerVictoryScale.TriggerScale();
+       
+        
         if (skipVictoryUI)
         {
             LoadWheelOfFortune();
