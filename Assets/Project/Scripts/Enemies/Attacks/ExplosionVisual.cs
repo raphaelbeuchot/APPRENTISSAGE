@@ -3,9 +3,28 @@ using System.Collections;
 
 public class ExplosionVisual : MonoBehaviour
 {
-    public void Play(float startDiameter, float targetRadius, float duration, Material mat)
+    private Vector3 spawnPosition;
+
+    public void Play(float startDiameter, float targetRadius, float duration, Material mat, float ringStartDiameter, float ringEndDiameter, float ringShrinkDuration, float ringSpawnHeight, Vector3 position, GameObject ringPrefab)
     {
+        spawnPosition = position;
         StartCoroutine(ExpandCoroutine(startDiameter, targetRadius, duration, mat));
+        StartCoroutine(ShrinkRingCoroutine(ringStartDiameter, ringEndDiameter, ringShrinkDuration, ringSpawnHeight, ringPrefab));
+    }
+
+    IEnumerator ShrinkRingCoroutine(float startDiameter, float endDiameter, float duration, float spawnHeight, GameObject ringPrefab)
+    {
+        if (ringPrefab == null) yield break;
+
+        Vector3 pos = new Vector3(spawnPosition.x, spawnHeight, spawnPosition.z);
+        GameObject ring = Instantiate(ringPrefab, pos, Quaternion.Euler(90f, 0f, 0f));
+        ring.transform.localScale = Vector3.one * startDiameter;
+
+        RingShrink shrink = ring.GetComponent<RingShrink>();
+        if (shrink != null)
+            shrink.Play(startDiameter, endDiameter, duration);
+
+        yield break;
     }
 
     IEnumerator ExpandCoroutine(float startDiameter, float targetRadius, float duration, Material mat)

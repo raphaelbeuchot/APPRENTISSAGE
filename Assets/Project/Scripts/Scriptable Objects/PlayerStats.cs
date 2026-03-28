@@ -106,7 +106,11 @@ public class PlayerStats : ScriptableObject
     
     [Tooltip("Duree totale de l'attaque balai")]
     public float broomAttackDuration = 1.5f;
-  
+
+    [Header("Broom - Bomb Interaction")]
+    public float broomBombRange = 4f;
+    public float broomBombConeAngle = 180f;
+
     [Tooltip("Son du balai")]
     public AudioClip broomSound;
     public AudioClip broomHitSound;

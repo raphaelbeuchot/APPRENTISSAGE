@@ -302,7 +302,8 @@ public class BroomAttackSystem : MonoBehaviour
         // BOMBES
         Collider[] bombHits = Physics.OverlapSphere(
             transform.position + Vector3.up * 1f,
-            stats.broomRange
+            stats.broomBombRange,
+            LayerMask.GetMask("Bomb")
         );
 
         foreach (Collider hit in bombHits)
@@ -310,12 +311,17 @@ public class BroomAttackSystem : MonoBehaviour
             BombProjectile bomb = hit.GetComponent<BombProjectile>();
             if (bomb == null) continue;
 
+            Vector3 directionToBomb = (hit.transform.position - transform.position).normalized;
+            directionToBomb.y = 0f;
+            float angleToBomb = Vector3.Angle(transform.forward, directionToBomb);
+            if (angleToBomb > stats.broomBombConeAngle / 2f) continue;
+
             Vector3 kickDir = (hit.transform.position - transform.position).normalized;
-            kickDir.y = 0.2f;
-            kickDir.Normalize();
             bomb.KickBack(kickDir, stats.broomKnockbackForce);
             hitSomething = true;
         }
+
+        //AUDIO
         if (!hitSomething)
         {
             if (audioSource != null && stats.broomSound != null)

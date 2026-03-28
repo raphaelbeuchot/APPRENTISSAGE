@@ -15,71 +15,85 @@ public class BombProjectile : MonoBehaviour
     [SerializeField] private float knockbackForce = 10f;
     [SerializeField] private LayerMask explosionLayers;
 
-    [Header("Collision")]
-    [SerializeField] private LayerMask earlyDetonationLayers;
-
     [Header("Explosion Visuel")]
     [SerializeField] private float explosionStartDiameter = 0.5f;
     [SerializeField] private float explosionExpandDuration = 0.4f;
     [SerializeField] private Material explosionMaterial;
+    [SerializeField] private Material explosionRingMaterial;
+    [SerializeField] private float ringStartDiameter = 5f;
+    [SerializeField] private float ringEndDiameter = 0.5f;
+    [SerializeField] private float ringShrinkDuration = 0.5f;
+    [SerializeField] private float ringSpawnHeight = 0.2f;
+    [SerializeField] private GameObject ringPrefab;
+
+
+
+
+    [Header("Sons")]
+    [SerializeField] private AudioClip launchSound;
+    [SerializeField] private AudioClip explosionSound;
+    private AudioSource audioSource;
+
 
     private Rigidbody rb;
     private bool hasLaunched = false;
     private bool hasExploded = false;
     private Action onExplodedCallback;
+    private Transform target;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.isKinematic = true;
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
     }
 
-    public void Launch(Vector3 targetPos, Action callback)
+    public void Launch(Transform target, Action callback)
     {
+        this.target = target;
         onExplodedCallback = callback;
         hasLaunched = true;
 
         rb.isKinematic = false;
 
-        // Calcul velocity en arc vers targetPos
+        Vector3 targetPos = target.position;
         Vector3 direction = targetPos - transform.position;
         float horizontal = new Vector3(direction.x, 0f, direction.z).magnitude;
         float vertical = direction.y;
         float angle = launchAngle * Mathf.Deg2Rad;
 
-        // Formule arc de cercle
         float v0 = Mathf.Sqrt((Physics.gravity.magnitude * horizontal * horizontal) /
                    (2f * Mathf.Cos(angle) * Mathf.Cos(angle) *
                    (horizontal * Mathf.Tan(angle) - vertical)));
 
         if (float.IsNaN(v0) || float.IsInfinity(v0))
-        {
-            // Fallback si calcul impossible
             v0 = 10f;
-        }
 
         Vector3 horizontalDir = new Vector3(direction.x, 0f, direction.z).normalized;
         Vector3 launchVelocity = horizontalDir * v0 * Mathf.Cos(angle) + Vector3.up * v0 * Mathf.Sin(angle);
         rb.linearVelocity = launchVelocity;
+        if (audioSource != null && launchSound != null)
+            audioSource.PlayOneShot(launchSound);
 
         StartCoroutine(FuseCoroutine());
     }
 
-    /*void OnCollisionEnter(Collision collision)
-    {
-        if (!hasLaunched || hasExploded) return;
-
-        // Collision avec player ou ennemi -> detonation immediate
-        int layer = collision.gameObject.layer;
-        if (((1 << layer) & earlyDetonationLayers) != 0)
-        {
-            Explode();
-        }
-    }*/
+    // void OnCollisionEnter(Collision collision)
+    // {
+    //     if (!hasLaunched || hasExploded) return;
+    //     int layer = collision.gameObject.layer;
+    //     if (((1 << layer) & earlyDetonationLayers) != 0)
+    //     {
+    //         Explode();
+    //     }
+    // }
 
     public void KickBack(Vector3 direction, float force)
     {
         if (!hasLaunched || hasExploded) return;
+        rb.linearVelocity = Vector3.zero;
         rb.AddForce(direction * force, ForceMode.VelocityChange);
     }
 
@@ -102,7 +116,6 @@ public class BombProjectile : MonoBehaviour
             dir.y = 0.3f;
             dir.Normalize();
 
-            // Player
             PlayerPhysicsMovement playerMovement = hit.GetComponent<PlayerPhysicsMovement>();
             if (playerMovement != null)
             {
@@ -110,21 +123,25 @@ public class BombProjectile : MonoBehaviour
                 continue;
             }
 
-            // Ennemis
             Rigidbody hitRb = hit.GetComponent<Rigidbody>();
             if (hitRb != null)
             {
                 hitRb.AddForce(dir * knockbackForce, ForceMode.VelocityChange);
             }
         }
+        // Raycast vers le sol pour trouver la hauteur exacte
+        Vector3 groundPos = transform.position;
+        RaycastHit groundHit;
+        if (Physics.Raycast(transform.position, Vector3.down, out groundHit, 10f, LayerMask.GetMask("Ground")))
+            groundPos = groundHit.point;
 
-        // Visual explosion
         GameObject visualGO = new GameObject("ExplosionVisual");
-        visualGO.transform.position = transform.position;
+        visualGO.transform.position = groundPos;
         ExplosionVisual visual = visualGO.AddComponent<ExplosionVisual>();
-        visual.Play(explosionStartDiameter, explosionRadius, explosionExpandDuration, explosionMaterial);
-
+        visual.Play(explosionStartDiameter, explosionRadius, explosionExpandDuration, explosionMaterial, ringStartDiameter, ringEndDiameter, ringShrinkDuration, ringSpawnHeight, transform.position, ringPrefab);
         onExplodedCallback?.Invoke();
+        if (explosionSound != null)
+            AudioSource.PlayClipAtPoint(explosionSound, transform.position);
         Destroy(gameObject);
     }
 

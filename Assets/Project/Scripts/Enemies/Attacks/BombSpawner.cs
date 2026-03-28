@@ -24,17 +24,15 @@ public class BombSpawner : MonoBehaviour
         if (currentBomb == null || isWaitingForRespawn) return;
 
         Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius, detectionLayer);
-        Debug.Log($"[BombSpawner] Hits detectes : {hits.Length}");
 
         if (hits.Length == 0) return;
 
-        // Prend la premiere cible detctee
-        Vector3 targetPos = hits[0].transform.position;
+        Transform targetTransform = hits[0].transform;
 
         BombProjectile bomb = currentBomb.GetComponent<BombProjectile>();
         if (bomb != null)
         {
-            bomb.Launch(targetPos, OnBombExploded);
+            bomb.Launch(targetTransform, OnBombExploded);
             currentBomb = null;
         }
     }
