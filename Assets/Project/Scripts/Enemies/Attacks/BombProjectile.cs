@@ -65,7 +65,7 @@ public class BombProjectile : MonoBehaviour
         StartCoroutine(FuseCoroutine());
     }
 
-    void OnCollisionEnter(Collision collision)
+    /*void OnCollisionEnter(Collision collision)
     {
         if (!hasLaunched || hasExploded) return;
 
@@ -75,6 +75,12 @@ public class BombProjectile : MonoBehaviour
         {
             Explode();
         }
+    }*/
+
+    public void KickBack(Vector3 direction, float force)
+    {
+        if (!hasLaunched || hasExploded) return;
+        rb.AddForce(direction * force, ForceMode.VelocityChange);
     }
 
     IEnumerator FuseCoroutine()
