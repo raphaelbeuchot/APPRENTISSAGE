@@ -11,6 +11,8 @@ public class BombSpawner : MonoBehaviour
     [SerializeField] private GameObject bombPrefab;
     [SerializeField] private float spawnCooldown = 3f;
 
+    [SerializeField] private float spawnHeightOffset = 1.5f;
+
     private GameObject currentBomb;
     private bool isWaitingForRespawn = false;
 
@@ -39,21 +41,13 @@ public class BombSpawner : MonoBehaviour
 
     void OnBombExploded()
     {
-        StartCoroutine(RespawnAfterCooldown());
-    }
-
-    IEnumerator RespawnAfterCooldown()
-    {
-        isWaitingForRespawn = true;
-        yield return new WaitForSeconds(spawnCooldown);
         SpawnBomb();
-        isWaitingForRespawn = false;
     }
 
     void SpawnBomb()
     {
         if (bombPrefab == null) return;
-        Vector3 spawnPos = transform.position + Vector3.up * 1.5f;
+        Vector3 spawnPos = transform.position + Vector3.up * spawnHeightOffset;
         currentBomb = Instantiate(bombPrefab, spawnPos, Quaternion.identity);
     }
 

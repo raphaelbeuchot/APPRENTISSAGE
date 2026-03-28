@@ -16,24 +16,16 @@ public class BombProjectile : MonoBehaviour
     [SerializeField] private LayerMask explosionLayers;
 
     [Header("Explosion Visuel")]
-    [SerializeField] private float explosionStartDiameter = 0.5f;
+    [SerializeField] private float explosionStartRadius = 0.25f;
     [SerializeField] private float explosionExpandDuration = 0.4f;
     [SerializeField] private Material explosionMaterial;
-    [SerializeField] private Material explosionRingMaterial;
-    [SerializeField] private float ringStartDiameter = 5f;
-    [SerializeField] private float ringEndDiameter = 0.5f;
-    [SerializeField] private float ringShrinkDuration = 0.5f;
     [SerializeField] private float ringSpawnHeight = 0.2f;
     [SerializeField] private GameObject ringPrefab;
-
-
-
 
     [Header("Sons")]
     [SerializeField] private AudioClip launchSound;
     [SerializeField] private AudioClip explosionSound;
     private AudioSource audioSource;
-
 
     private Rigidbody rb;
     private bool hasLaunched = false;
@@ -74,6 +66,7 @@ public class BombProjectile : MonoBehaviour
         Vector3 horizontalDir = new Vector3(direction.x, 0f, direction.z).normalized;
         Vector3 launchVelocity = horizontalDir * v0 * Mathf.Cos(angle) + Vector3.up * v0 * Mathf.Sin(angle);
         rb.linearVelocity = launchVelocity;
+
         if (audioSource != null && launchSound != null)
             audioSource.PlayOneShot(launchSound);
 
@@ -129,7 +122,7 @@ public class BombProjectile : MonoBehaviour
                 hitRb.AddForce(dir * knockbackForce, ForceMode.VelocityChange);
             }
         }
-        // Raycast vers le sol pour trouver la hauteur exacte
+
         Vector3 groundPos = transform.position;
         RaycastHit groundHit;
         if (Physics.Raycast(transform.position, Vector3.down, out groundHit, 10f, LayerMask.GetMask("Ground")))
@@ -138,10 +131,12 @@ public class BombProjectile : MonoBehaviour
         GameObject visualGO = new GameObject("ExplosionVisual");
         visualGO.transform.position = groundPos;
         ExplosionVisual visual = visualGO.AddComponent<ExplosionVisual>();
-        visual.Play(explosionStartDiameter, explosionRadius, explosionExpandDuration, explosionMaterial, ringStartDiameter, ringEndDiameter, ringShrinkDuration, ringSpawnHeight, transform.position, ringPrefab);
+        visual.Play(explosionStartRadius, explosionRadius, explosionExpandDuration, explosionMaterial, ringSpawnHeight, transform.position, ringPrefab);
         onExplodedCallback?.Invoke();
+
         if (explosionSound != null)
             AudioSource.PlayClipAtPoint(explosionSound, transform.position);
+
         Destroy(gameObject);
     }
 
