@@ -16,7 +16,6 @@ public class BillboardRenderer : MonoBehaviour
             mainCamera = Camera.main;
             return;
         }
-
         transform.rotation = mainCamera.transform.rotation;
     }
 }

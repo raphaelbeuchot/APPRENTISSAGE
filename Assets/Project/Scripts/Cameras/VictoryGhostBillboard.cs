@@ -20,5 +20,4 @@ public class VictoryGhostBillboard : MonoBehaviour
         dirToCamera.y = 0f;
         transform.rotation = Quaternion.LookRotation(dirToCamera.normalized, Vector3.up) * Quaternion.Euler(180f, 0f, 0f) * Quaternion.Euler(90f, 0f, 0f);
     }
-
 }

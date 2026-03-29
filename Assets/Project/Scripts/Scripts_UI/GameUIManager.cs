@@ -24,6 +24,17 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private GrabAttack[] zombies;
 
+    [SerializeField] private GameObject healthBar;
+    [SerializeField] private GameObject staminaBar;
+    [SerializeField] private GameObject sprayBar;
+
+    public void HideGameplayBars()
+    {
+        if (healthBar != null) healthBar.SetActive(false);
+        if (staminaBar != null) staminaBar.SetActive(false);
+        if (sprayBar != null) sprayBar.SetActive(false);
+    }
+
     private bool isGrabbed = false;
 
     void Start()

@@ -9,12 +9,9 @@ public class BombSpawner : MonoBehaviour
 
     [Header("Bomb")]
     [SerializeField] private GameObject bombPrefab;
-    [SerializeField] private float spawnCooldown = 3f;
-
     [SerializeField] private float spawnHeightOffset = 1.5f;
 
     private GameObject currentBomb;
-    private bool isWaitingForRespawn = false;
 
     void Start()
     {
@@ -23,14 +20,12 @@ public class BombSpawner : MonoBehaviour
 
     void Update()
     {
-        if (currentBomb == null || isWaitingForRespawn) return;
+        if (currentBomb == null) return;
 
         Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius, detectionLayer);
-
         if (hits.Length == 0) return;
 
         Transform targetTransform = hits[0].transform;
-
         BombProjectile bomb = currentBomb.GetComponent<BombProjectile>();
         if (bomb != null)
         {
