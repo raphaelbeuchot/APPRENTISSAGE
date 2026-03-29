@@ -154,12 +154,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BombProjectile
   launchAngle: 60
   fuseTimer: 3
-  explosionRadius: 3
+  explosionRadius: 4
   knockbackForce: 10
   explosionLayers:
     serializedVersion: 2
     m_Bits: 192
-  explosionVisualPrefab: {fileID: 6042148247579414900, guid: 6e9e735c497419249b697390917a1146, type: 3}
+  explosionStartRadius: 0.25
+  explosionExpandDuration: 0.3
+  explosionMaterial: {fileID: 2100000, guid: 5a9fa7d3692ede947bdbebf3d7f98d7e, type: 2}
+  ringStartRadius: 4.5
+  ringEndRadius: 4.5
+  ringShrinkDuration: 0.3
   ringSpawnHeight: 0.2
+  ringPrefab: {fileID: 434875444419304877, guid: a3b34fd81dc76484ba47fdc3dc3d229a, type: 3}
   launchSound: {fileID: 0}
   explosionSound: {fileID: 0}

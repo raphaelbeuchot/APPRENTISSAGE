@@ -1120,10 +1120,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerVictoryScale
   playerMeshRenderer: {fileID: 6381749589780021724}
   victoryMaterial: {fileID: 2100000, guid: b14bf26a08503cd4782622d56faa3de9, type: 2}
-  waveCount: 10
-  delayBetweenWaves: 0.25
+  duration: 3
+  targetScale: 10
+  moveSpeed: 0
+  waveCount: 3
+  delayBetweenWaves: 0.5
   colors:
-  - {r: 0.8584906, g: 0.41492265, b: 0, a: 1}
+  - {r: 0, g: 0.09032578, b: 0.5568628, a: 1}
   - {r: 0.754717, g: 0.3048465, b: 0, a: 1}
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 0.92156863, g: 0.83749473, b: 0.5803922, a: 1}
@@ -1133,7 +1136,6 @@ MonoBehaviour:
   - {r: 1, g: 0.91750526, b: 0.509434, a: 1}
   - {r: 1, g: 0.4039216, b: 0, a: 1}
   - {r: 0.3679245, g: 0, b: 0, a: 1}
-  gameUIManager: {fileID: 0}
 --- !u!114 &2340128607843063041
 MonoBehaviour:
   m_ObjectHideFlags: 0

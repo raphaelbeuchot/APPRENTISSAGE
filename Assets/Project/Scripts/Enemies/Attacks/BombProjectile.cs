@@ -16,15 +16,11 @@ public class BombProjectile : MonoBehaviour
     [SerializeField] private LayerMask explosionLayers;
 
     [Header("Explosion Visuel")]
-    [SerializeField] private GameObject explosionVisualPrefab;
-    // [SerializeField] private float explosionStartRadius = 0.25f;
-    // [SerializeField] private float explosionExpandDuration = 0.4f;
-    // [SerializeField] private Material explosionMaterial;
-    // [SerializeField] private float ringStartRadius = 5f;
-    // [SerializeField] private float ringEndRadius = 0.25f;
-    // [SerializeField] private float ringShrinkDuration = 0.5f;
+    [SerializeField] private float explosionStartRadius = 0.25f;
+    [SerializeField] private float explosionExpandDuration = 0.4f;
+    [SerializeField] private Material explosionMaterial;
     [SerializeField] private float ringSpawnHeight = 0.2f;
-    // [SerializeField] private GameObject ringPrefab;
+    [SerializeField] private GameObject ringPrefab;
 
     [Header("Sons")]
     [SerializeField] private AudioClip launchSound;
@@ -127,24 +123,15 @@ public class BombProjectile : MonoBehaviour
             }
         }
 
-        if (explosionVisualPrefab != null)
-        {
-            Vector3 groundPos = transform.position;
-            RaycastHit groundHit;
-            if (Physics.Raycast(transform.position, Vector3.down, out groundHit, 10f, LayerMask.GetMask("Ground")))
-                groundPos = groundHit.point;
+        Vector3 groundPos = transform.position;
+        RaycastHit groundHit;
+        if (Physics.Raycast(transform.position, Vector3.down, out groundHit, 10f, LayerMask.GetMask("Ground")))
+            groundPos = groundHit.point;
 
-            GameObject visualGO = Instantiate(explosionVisualPrefab, groundPos, Quaternion.identity);
-            ExplosionVisual visual = visualGO.GetComponent<ExplosionVisual>();
-            if (visual != null)
-                visual.Play(transform.position);
-        }
-
-        // GameObject visualGO = new GameObject("ExplosionVisual");
-        // visualGO.transform.position = groundPos;
-        // ExplosionVisual visual = visualGO.AddComponent<ExplosionVisual>();
-        // visual.Play(explosionStartRadius, explosionRadius, explosionExpandDuration, explosionMaterial, ringStartRadius, ringEndRadius, ringShrinkDuration, ringSpawnHeight, transform.position, ringPrefab);
-
+        GameObject visualGO = new GameObject("ExplosionVisual");
+        visualGO.transform.position = groundPos;
+        ExplosionVisual visual = visualGO.AddComponent<ExplosionVisual>();
+        visual.Play(explosionStartRadius, explosionRadius, explosionExpandDuration, explosionMaterial, ringSpawnHeight, transform.position, ringPrefab);
         onExplodedCallback?.Invoke();
 
         if (explosionSound != null)
