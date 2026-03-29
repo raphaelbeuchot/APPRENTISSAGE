@@ -13,8 +13,7 @@ public class LevelManager : MonoBehaviour
     [Header("UI")]
     public VictoryUI victoryUI;
     public GameOverUI gameOverUI;
-    [SerializeField] private PlayerVictoryScale playerVictoryScale;
-
+    private PlayerVictoryScale playerVictoryScale;
 
 
 
@@ -61,6 +60,8 @@ public class LevelManager : MonoBehaviour
 
         if (player == null)
             player = FindObjectOfType<PlayerPhysicsMovement>();
+        if (playerVictoryScale == null)
+            playerVictoryScale = FindObjectOfType<PlayerVictoryScale>();
 
         if (playerHealth == null && player != null)
             playerHealth = player.GetComponent<PlayerHealth>();

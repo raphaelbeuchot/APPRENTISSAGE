@@ -24,9 +24,9 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private GrabAttack[] zombies;
 
-    [SerializeField] private GameObject healthBar;
-    [SerializeField] private GameObject staminaBar;
-    [SerializeField] private GameObject sprayBar;
+    private GameObject healthBar;
+    private GameObject staminaBar;
+    private GameObject sprayBar;
 
     public void HideGameplayBars()
     {
@@ -40,6 +40,14 @@ public class GameUIManager : MonoBehaviour
     void Start()
     {
         zombies = FindObjectsOfType<GrabAttack>();
+        SprayAmmoUI sprayAmmoUI = FindObjectOfType<SprayAmmoUI>();
+        if (sprayAmmoUI != null) sprayBar = sprayAmmoUI.gameObject;
+
+        StaminaBarFollower staminaBarFollower = FindObjectOfType<StaminaBarFollower>();
+        if (staminaBarFollower != null) staminaBar = staminaBarFollower.gameObject;
+
+        PlayerHealthUI playerHealthUI = FindObjectOfType<PlayerHealthUI>();
+        if (playerHealthUI != null) healthBar = playerHealthUI.gameObject;
 
         // === FIX : Trouver PlayerHealth automatiquement si non assigné ===
         if (playerHealth == null)

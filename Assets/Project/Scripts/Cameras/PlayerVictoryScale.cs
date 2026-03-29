@@ -4,17 +4,23 @@ using System.Collections.Generic;
 
 public class PlayerVictoryScale : MonoBehaviour
 {
-    [SerializeField] private SkinnedMeshRenderer playerMeshRenderer;
+    private SkinnedMeshRenderer playerMeshRenderer;
     [SerializeField] private Material victoryMaterial;
     [SerializeField] private int waveCount = 10;
     [SerializeField] private float delayBetweenWaves = 0.8f;
     [SerializeField] private Color[] colors = new Color[10];
-    [SerializeField] private GameUIManager gameUIManager;
+    private GameUIManager gameUIManager;
 
     private Mesh bakedMesh;
     private List<GameObject> ghosts = new List<GameObject>();
     private Vector3 cachedSpawnPos;
 
+    private void Start()
+    {
+        gameUIManager = FindObjectOfType<GameUIManager>();
+        playerMeshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
+
+    }
     public void TriggerScale()
     {
         if (gameUIManager != null) gameUIManager.HideGameplayBars();
