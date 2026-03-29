@@ -23,6 +23,9 @@ public class GameUIManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private GrabAttack[] zombies;
+    [SerializeField] private GameObject healthBar;
+    [SerializeField] private GameObject staminaBar;
+    [SerializeField] private GameObject sprayBar;
 
     private bool isGrabbed = false;
 
@@ -279,6 +282,12 @@ public class GameUIManager : MonoBehaviour
             newList.Add(grab);
             zombies = newList.ToArray();
         }
+    }
+    public void HideGameplayBars()
+    {
+        if (healthBar != null) healthBar.SetActive(false);
+        if (staminaBar != null) staminaBar.SetActive(false);
+        if (sprayBar != null) sprayBar.SetActive(false);
     }
 
     void OnDestroy()
