@@ -89,9 +89,6 @@ public class PlayerDetectionFeedback : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / scaleHalfDuration);
             scaleTarget.localScale = Vector3.Lerp(normalScale, bigScale, t);
             scaleTarget.localPosition = originalLocalPos + pivotOffset * (1f - scaleTarget.localScale.x);
-            foreach (var r in scaleTarget.GetComponentsInChildren<SkinnedMeshRenderer>())
-                foreach (var mat in r.materials)
-                    mat.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.Always);
             yield return null;
         }
 
@@ -102,17 +99,11 @@ public class PlayerDetectionFeedback : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / scaleHalfDuration);
             scaleTarget.localScale = Vector3.Lerp(bigScale, normalScale, t);
             scaleTarget.localPosition = originalLocalPos + pivotOffset * (1f - scaleTarget.localScale.x);
-            foreach (var r in scaleTarget.GetComponentsInChildren<SkinnedMeshRenderer>())
-                foreach (var mat in r.materials)
-                    mat.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.Always);
             yield return null;
         }
 
         scaleTarget.localScale = normalScale;
         scaleTarget.localPosition = originalLocalPos;
-        foreach (var r in scaleTarget.GetComponentsInChildren<SkinnedMeshRenderer>())
-            foreach (var mat in r.materials)
-                mat.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.LessEqual);
     }
 
     void SetColorSilhouette(Material colorMaterial)
