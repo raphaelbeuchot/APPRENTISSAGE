@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     
     [Header("Laser Manager")]
     [SerializeField] private SentinelLaserManager laserManager;
+    [SerializeField] private SentinelHitEffect sentinelHitEffect;
 
 
     public Renderer sentinelLightRenderer;
@@ -790,6 +791,10 @@ public class GameManager : MonoBehaviour
         if (playerDetectionFeedback != null)
             playerDetectionFeedback.OnNoLongerDetected();
 
+        if (sentinelHitEffect != null)
+            sentinelHitEffect.TriggerEffect();
+        else
+            Debug.Log("[TEST] sentinelHitEffect EST NULL");
         StartCoroutine(PlayerStunBySentinel());
 
         if (isHeadshot)
@@ -802,6 +807,9 @@ public class GameManager : MonoBehaviour
     IEnumerator PlayerStunBySentinel()
     {
         stunBySentinel = true;
+        Debug.Log("[TEST] sentinelHitEffect = " + sentinelHitEffect);
+
+        
         yield return new WaitForSeconds(sentinel.stunDuration);
         stunBySentinel = false;
 
