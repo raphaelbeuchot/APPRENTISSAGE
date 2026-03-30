@@ -595,4 +595,6 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     public bool IsInPit() { return isInPit; }
     public bool IsInWater() { return isInWater; }
     public PitZone GetCurrentPitZone() { return currentPitZone; }
+
+    public bool IsInAnyWater() { return isInWater || isInShallowWater; }
 }

@@ -173,11 +173,14 @@ public class LevelManager : MonoBehaviour
             player.enabled = false;
         if (playerVictoryScale != null)
             playerVictoryScale.TriggerScale();
-       
-        
+
+
         if (skipVictoryUI)
         {
-            LoadWheelOfFortune();
+            if (isTutorialLevel)
+                LoadLevelSelect();
+            else
+                LoadWheelOfFortune();
         }
         else
         {
@@ -186,7 +189,7 @@ public class LevelManager : MonoBehaviour
             else
             {
                 Debug.LogWarning("VictoryUI non trouve! Chargement WheelOfFortune automatique.");
-                Invoke(nameof(LoadWheelOfFortune), delayBeforeNextLevel);
+                Invoke(isTutorialLevel ? nameof(LoadLevelSelect) : nameof(LoadWheelOfFortune), delayBeforeNextLevel);
             }
         }
     }
@@ -244,8 +247,7 @@ public class LevelManager : MonoBehaviour
         CountdownManager countdown = FindObjectOfType<CountdownManager>();
         if (countdown != null) countdown.StopAmbient();
 
-        if (!isTutorialLevel)
-            PlayerPrefs.SetInt("AutoStartCountdown", 1);
+        PlayerPrefs.SetInt("AutoStartCountdown", 1); // Toujours set, tuto ou non
 
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);

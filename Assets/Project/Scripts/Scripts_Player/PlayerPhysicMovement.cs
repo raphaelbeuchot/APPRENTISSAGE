@@ -73,6 +73,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private bool isSweeping = false;
     [HideInInspector] public bool isSweepImmune = false;
 
+    private PlayerPitInteractable pitInteractable;
+
+
     private bool isGroggyReached = false;
 
     // Stamina runtime
@@ -110,6 +113,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        pitInteractable = GetComponent<PlayerPitInteractable>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
         // Camera
@@ -837,6 +841,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (moveInput.magnitude < 0.1f) return false; // Pas de dash sur place
         if (currentStamina < stats.dashStaminaCost) return false;
         if (Time.time < lastDashTime + stats.dashCooldown) return false;
+        if (pitInteractable != null && pitInteractable.IsInAnyWater()) return false;
 
         return true;
     }
