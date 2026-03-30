@@ -44,6 +44,32 @@ public class BombProjectile : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 0f;
+    }
+
+    void Start()
+    {
+        StartCoroutine(SpawnPopCoroutine());
+    }
+
+    IEnumerator SpawnPopCoroutine()
+    {
+        Vector3 originalScale = transform.localScale;
+        float duration = 0.2f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            float factor = t < 0.6f
+                ? Mathf.Lerp(0f, 1.2f, t / 0.6f)
+                : Mathf.Lerp(1.2f, 1f, (t - 0.6f) / 0.4f);
+            transform.localScale = originalScale * factor;
+            yield return null;
+        }
+
+        transform.localScale = originalScale;
     }
 
     public void Launch(Transform target, Action callback)
@@ -148,7 +174,13 @@ public class BombProjectile : MonoBehaviour
         onExplodedCallback?.Invoke();
 
         if (explosionSound != null)
-            AudioSource.PlayClipAtPoint(explosionSound, transform.position);
+        {
+            GameObject tempAudio = new GameObject("ExplosionAudio");
+            AudioSource tempSource = tempAudio.AddComponent<AudioSource>();
+            tempSource.spatialBlend = 0f;
+            tempSource.PlayOneShot(explosionSound);
+            Destroy(tempAudio, explosionSound.length + 0.1f);
+        }
 
         Destroy(gameObject);
     }
