@@ -14,34 +14,36 @@ public class WheelUI : MonoBehaviour
     [SerializeField] private Color highlightColor = Color.yellow;
     [SerializeField] private Color resultColor = Color.green;
     [SerializeField] private Color eliminatedColor = Color.gray;
+    [SerializeField] private float buttonSelectedScale = 1.2f;
+    [SerializeField] private float buttonScaleSpeed = 10f;
+    [SerializeField] private Color buttonNormalColor = Color.white;
+    [SerializeField] private Color buttonSelectedColor = Color.yellow;
 
     [Header("Spin Config")]
-    [SerializeField] private float fastPhaseDuration = 3f;
-    [SerializeField] private float fastPhaseInterval = 0.25f;
-  
-
-    [Header("Blink Config")]
+    [SerializeField] private float fastPhaseInterval = 0.15f;
 
     [Header("Try Again Cost")]
     [SerializeField] private int tryAgainCost = 3;
 
     [Header("Audio")]
     [SerializeField] private AudioClip jingleClip;
+    [SerializeField] private AudioClip tickSound;
+    [SerializeField] private AudioClip resultSound;
     private AudioSource audioSource;
 
     private WheelCell[] cells;
 
-    private enum WheelState { Idle, FastPhase, Decelerating, Result }
+    private enum WheelState { Idle, FastPhase, Result }
     private WheelState state = WheelState.Idle;
 
     private int currentHighlightIndex = 0;
     private int resultIndex = -1;
 
-    private int selectedButton = 0; // 0 = continue, 1 = tryagain
+    private int selectedButton = 0;
     private float navigationCooldown = 0f;
     private float cooldownDuration = 0.3f;
 
-    private Coroutine blinkPromptCoroutine;
+    private Coroutine spinCoroutine;
     private Coroutine resultBlinkCoroutine;
 
     void Start()
@@ -58,12 +60,42 @@ public class WheelUI : MonoBehaviour
         if (navigationCooldown > 0f)
             navigationCooldown -= Time.deltaTime;
 
+        if (state == WheelState.Result)
+        {
+            Vector3 selectedScale = Vector3.one * buttonSelectedScale;
+            Vector3 normalScale = Vector3.one;
+
+            if (continueText != null)
+            {
+                Vector3 target = selectedButton == 0 ? selectedScale : normalScale;
+                continueText.transform.localScale = Vector3.Lerp(continueText.transform.localScale, target, Time.deltaTime * buttonScaleSpeed);
+            }
+            if (tryAgainText != null)
+            {
+                Vector3 target = selectedButton == 1 ? selectedScale : normalScale;
+                tryAgainText.transform.localScale = Vector3.Lerp(tryAgainText.transform.localScale, target, Time.deltaTime * buttonScaleSpeed);
+            }
+        }
+
+        bool confirmPressed = PlayerInputManager.Instance.InteractPressed
+            || Input.GetButtonDown("Submit");
+
         if (state == WheelState.Idle)
         {
-            bool confirmPressed = PlayerInputManager.Instance.InteractPressed
-                || Input.GetButtonDown("Submit");
             if (confirmPressed)
-                StartCoroutine(SpinCoroutine());
+                spinCoroutine = StartCoroutine(SpinCoroutine());
+        }
+        else if (state == WheelState.FastPhase)
+        {
+            if (confirmPressed)
+            {
+                if (spinCoroutine != null) StopCoroutine(spinCoroutine);
+                audioSource.Stop();
+                audioSource.loop = false;
+                resultIndex = currentHighlightIndex;
+                SetHighlight(resultIndex, true);
+                StartCoroutine(ShowResultCoroutine());
+            }
         }
         else if (state == WheelState.Result)
         {
@@ -77,13 +109,7 @@ public class WheelUI : MonoBehaviour
 
         Vector2 input = PlayerInputManager.Instance.MoveInput;
 
-        if (input.y < -0.5f)
-        {
-            selectedButton = (selectedButton + 1) % 2;
-            UpdateButtonVisuals();
-            navigationCooldown = cooldownDuration;
-        }
-        else if (input.y > 0.5f)
+        if (input.y < -0.5f || input.y > 0.5f)
         {
             selectedButton = (selectedButton + 1) % 2;
             UpdateButtonVisuals();
@@ -105,9 +131,9 @@ public class WheelUI : MonoBehaviour
     void UpdateButtonVisuals()
     {
         if (continueText != null)
-            continueText.color = selectedButton == 1 ? highlightColor : normalColor;
+            continueText.color = selectedButton == 0 ? buttonSelectedColor : buttonNormalColor;
         if (tryAgainText != null)
-            tryAgainText.color = selectedButton == 0 ? highlightColor : normalColor;
+            tryAgainText.color = selectedButton == 1 ? buttonSelectedColor : buttonNormalColor;
     }
 
     void SetState(WheelState newState)
@@ -122,12 +148,9 @@ public class WheelUI : MonoBehaviour
             if (spinPromptText != null) spinPromptText.gameObject.SetActive(true);
             if (continueText != null) continueText.gameObject.SetActive(false);
             if (tryAgainText != null) tryAgainText.gameObject.SetActive(false);
-
-            
         }
         else if (newState == WheelState.FastPhase)
         {
-            if (blinkPromptCoroutine != null) { StopCoroutine(blinkPromptCoroutine); blinkPromptCoroutine = null; }
             if (spinPromptText != null) { spinPromptText.gameObject.SetActive(true); spinPromptText.enabled = true; }
             if (continueText != null) continueText.gameObject.SetActive(false);
             if (tryAgainText != null) tryAgainText.gameObject.SetActive(false);
@@ -141,7 +164,6 @@ public class WheelUI : MonoBehaviour
                 {
                     cells[i].SetColor(resultColor);
                     cells[i].SetVisible(true);
-                    
                 }
                 else
                 {
@@ -160,34 +182,38 @@ public class WheelUI : MonoBehaviour
                 Debug.Log($"[WheelUI] Resultat : {cells[resultIndex].GetLabel()} ({cells[resultIndex].modifierType})");
             }
 
+            if (continueText != null) continueText.transform.localScale = Vector3.one;
+            if (tryAgainText != null) tryAgainText.transform.localScale = Vector3.one;
+
             selectedButton = 0;
-            if (continueText != null) { continueText.gameObject.SetActive(true); continueText.color = highlightColor; }
-            if (tryAgainText != null) { tryAgainText.gameObject.SetActive(true); tryAgainText.color = normalColor; tryAgainText.text = $"Try Again ({tryAgainCost} credits)"; }
+            if (continueText != null) { continueText.gameObject.SetActive(true); continueText.color = buttonSelectedColor; }
+            if (tryAgainText != null) { tryAgainText.gameObject.SetActive(true); tryAgainText.color = buttonNormalColor; tryAgainText.text = $"Try Again ({tryAgainCost} credits)"; }
         }
     }
 
     IEnumerator SpinCoroutine()
     {
-        resultIndex = Random.Range(0, cells.Length);
-
         SetState(WheelState.FastPhase);
-        float elapsed = 0f;
-        while (elapsed < fastPhaseDuration)
+        audioSource.clip = tickSound;
+        audioSource.loop = true;
+        audioSource.Play();
+        while (true)
         {
             int randomIndex;
             do { randomIndex = Random.Range(0, cells.Length); }
             while (randomIndex == currentHighlightIndex);
             SetHighlight(randomIndex);
             yield return new WaitForSeconds(fastPhaseInterval);
-            elapsed += fastPhaseInterval;
         }
+    }
 
-        SetHighlight(resultIndex);
-        yield return new WaitForSeconds(0.3f);
+    IEnumerator ShowResultCoroutine()
+    {
+        yield return new WaitForSeconds(fastPhaseInterval);
         SetState(WheelState.Result);
     }
 
-    void SetHighlight(int index)
+    void SetHighlight(int index, bool isResult = false)
     {
         if (currentHighlightIndex >= 0 && currentHighlightIndex < cells.Length && cells[currentHighlightIndex] != null)
             cells[currentHighlightIndex].SetColor(normalColor);
@@ -196,9 +222,13 @@ public class WheelUI : MonoBehaviour
 
         if (cells[currentHighlightIndex] != null)
             cells[currentHighlightIndex].SetColor(highlightColor);
-    }
 
-   
+        if (isResult && audioSource != null)
+        {
+            if (resultSound != null)
+                audioSource.PlayOneShot(resultSound);
+        }
+    }
 
     void OnContinuePressed()
     {
@@ -214,6 +244,6 @@ public class WheelUI : MonoBehaviour
         foreach (var cell in cells)
             if (cell != null) { cell.SetColor(normalColor); cell.SetVisible(true); }
 
-        StartCoroutine(SpinCoroutine());
+        spinCoroutine = StartCoroutine(SpinCoroutine());
     }
 }
