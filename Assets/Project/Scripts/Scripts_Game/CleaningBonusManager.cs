@@ -33,7 +33,7 @@ public class CleaningBonusManager : MonoBehaviour
         cleaningScore++;
         if (audioSource != null && cleanSound != null)
             audioSource.PlayOneShot(cleanSound);
-        CommentPanel.Show("Bonus Nettoyage !");
+        CommentPanel.Show("Cleaned Up !");
         Debug.Log("[CleaningBonus] Score nettoyage : " + cleaningScore);
 
         if (enemyIconsUI != null && enemy != null)

@@ -33,6 +33,7 @@ public class TutoFreezeTile : MonoBehaviour
 
     [Header("Audio")]
     [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip soundActivate;
     [SerializeField] private AudioClip soundCountdown;
     [SerializeField] private AudioClip soundSuccess;
     [SerializeField] private AudioClip soundFail;
@@ -81,12 +82,17 @@ public class TutoFreezeTile : MonoBehaviour
 
         if (messageText != null)
             messageText.gameObject.SetActive(false);
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
+        if (audioSource != null)
+            audioSource.spatialBlend = 0f;
     }
 
     public void ActivateTile()
     {
         tileActive = true;
         SetDalleMaterial(matWaiting);
+        PlaySound(soundActivate);
     }
 
     void OnTriggerEnter(Collider other)
@@ -109,7 +115,7 @@ public class TutoFreezeTile : MonoBehaviour
 
         if (spawnCount >= maxSpawns)
         {
-            ShowMessage("Nettoie ton bazar avant de reessayer !");
+            CommentPanel.Show("Sweep the corpses away");
             return;
         }
 
