@@ -13,7 +13,7 @@ public class CorpseRagdoll : MonoBehaviour
     private void Awake()
     {
         allBoneRbs = GetComponentsInChildren<Rigidbody>();
-        Transform hips = transform.Find("TPose/Armature/mixamorig:Hips");
+        Transform hips = transform.Find("Hunged/Armature/mixamorig:Hips");
         if (hips != null)
             hipsRb = hips.GetComponent<Rigidbody>();
 

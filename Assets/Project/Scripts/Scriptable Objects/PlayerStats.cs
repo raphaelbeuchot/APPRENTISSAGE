@@ -117,6 +117,8 @@ public class PlayerStats : ScriptableObject
 
     [Tooltip("Force du knockback balai")]
     public float broomKnockbackForce = 8f;
+    public float broomCorpseForce = 12f;
+
 
     [Header("BOURRADE")]
     [Tooltip("Force de la bourrade")]

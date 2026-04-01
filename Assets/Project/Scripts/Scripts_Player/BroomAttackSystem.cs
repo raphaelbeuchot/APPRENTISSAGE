@@ -158,9 +158,8 @@ public class BroomAttackSystem : MonoBehaviour
                 continue;
             }
 
-            // ========== LINE-OF-SIGHT CHECK ==========
-            Vector3 rayOrigin = transform.position + Vector3.up * 0.5f; // Depuis ton torse
-            Vector3 targetPoint = hit.bounds.center; // Vers le centre du collider
+            Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
+            Vector3 targetPoint = hit.bounds.center;
             Vector3 directionToTarget3D = (targetPoint - rayOrigin).normalized;
             float distance = Vector3.Distance(rayOrigin, targetPoint);
 
@@ -171,12 +170,10 @@ public class BroomAttackSystem : MonoBehaviour
                                 distance,
                                 LayerMask.GetMask("Obstacle")))
             {
-                Debug.Log($"[BROOM] {hit.name} est derrière un obstacle, ignoré");
+                Debug.Log($"[BROOM] {hit.name} est derriere un obstacle, ignore");
                 continue;
             }
-            // ========== FIN LINE-OF-SIGHT CHECK ==========
 
-            // ZOMBIES
             EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
             if (enemyHealth != null && !enemyHealth.IsDead())
             {
@@ -188,24 +185,19 @@ public class BroomAttackSystem : MonoBehaviour
                     Instantiate(broomImpactEffects[randomIndex], hit.bounds.center, Quaternion.identity);
                 }
 
-                // CALCULER DIRECTION KNOCKBACK D'ABORD
                 Vector3 knockbackDir = (hit.transform.position - transform.position).normalized;
                 knockbackDir.y = 0;
 
-                // Knockback (applique a TOUS les zombies, Blinder inclus)
                 Rigidbody targetRb = hit.GetComponent<Rigidbody>();
                 if (targetRb != null)
                 {
                     float knockbackMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.broomKnockbackMultiplier : 1f;
                     targetRb.AddForce(knockbackDir * stats.broomKnockbackForce * knockbackMult, ForceMode.VelocityChange);
-                    // ACTIVER LE FLAG KNOCKBACK
                     enemyHealth.SetKnockbackState(0.8f);
                 }
 
-                // Degats
                 enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Broom);
 
-                // ANNULER WINDUP GRAB SI EN COURS
                 GrabAttack grab = enemyHealth.GetComponent<GrabAttack>();
                 if (grab != null && grab.isInWindup)
                 {
@@ -213,7 +205,6 @@ public class BroomAttackSystem : MonoBehaviour
                     Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} grab windup");
                 }
 
-                // ANNULER WINDUP HIT SI EN COURS
                 HitAttack hitAttack = enemyHealth.GetComponent<HitAttack>();
                 if (hitAttack != null && (hitAttack.isInWindup || hitAttack.IsAttacking()))
                 {
@@ -221,7 +212,6 @@ public class BroomAttackSystem : MonoBehaviour
                     Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} hit attack");
                 }
 
-                // ANNULER ROTATION TO IMPACT SI EN COURS
                 EnemyAI_AStar zombieAI = hit.GetComponent<EnemyAI_AStar>();
                 if (zombieAI != null && zombieAI.currentState == EnemyAI_AStar.State.RotatingToImpact)
                 {
@@ -229,20 +219,17 @@ public class BroomAttackSystem : MonoBehaviour
                     Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} rotation to impact");
                 }
 
-                // Son d'impact individuel
                 if (audioSource != null && stats.broomHitSound != null)
                 {
                     audioSource.PlayOneShot(stats.broomHitSound);
                 }
 
-                // Knockdown (TOUS les zombies, Blinders inclus)
                 EnemyAI_AStar zombieAI_AStar_temp = hit.GetComponent<EnemyAI_AStar>();
                 if (zombieAI_AStar_temp != null)
                 {
                     zombieAI_AStar_temp.enabled = false;
                 }
 
-                // Désactiver aussi BlinderWanderBehavior si présent
                 BlinderWanderBehavior wanderBehavior = hit.GetComponent<BlinderWanderBehavior>();
                 if (wanderBehavior != null)
                 {
@@ -253,14 +240,10 @@ public class BroomAttackSystem : MonoBehaviour
                 StartCoroutine(KnockdownTarget(hit.gameObject, knockbackDir));
             }
 
-            // SWARMS
             SwarmController_AStar swarmAStar = hit.GetComponent<SwarmController_AStar>();
             if (swarmAStar != null)
             {
                 hitSomething = true;
-                
-                // AVANT : swarmAStar.TakeDamage(stats.broomDamage);
-                // APRÈS :
                 swarmAStar.TakeDamage(swarmAStar.stats.broomDamageTaken);
                 Debug.Log(gameObject.name + " BROOM hit swarm (A*) for " + swarmAStar.stats.broomDamageTaken + " damage!");
             }
@@ -275,7 +258,6 @@ public class BroomAttackSystem : MonoBehaviour
                 }
             }
 
-            // BRIGHT EYES
             BrightEyesController brightEyes = hit.GetComponent<BrightEyesController>();
             if (brightEyes != null && brightEyes.IsAlive() && !brightEyes.IsFlameExtinguished())
             {
@@ -284,21 +266,18 @@ public class BroomAttackSystem : MonoBehaviour
             }
         }
 
-        // NOTIFICATION GLOBALE : Tous les Blinders dans leur audioDetectionRange chargent
+        // BLINDERS
         ChargeAttack[] allBlinders = FindObjectsOfType<ChargeAttack>();
-
         foreach (ChargeAttack blinder in allBlinders)
         {
             if (blinder.stats != null)
             {
                 float distanceToPlayer = Vector3.Distance(blinder.transform.position, transform.position);
-
                 if (distanceToPlayer <= blinder.stats.audioDetectionRange)
-                {
                     blinder.OnDirectHit(transform.position);
-                }
             }
         }
+
         // BOMBES
         Collider[] bombHits = Physics.OverlapSphere(
             transform.position + Vector3.up * 1f,
@@ -321,13 +300,38 @@ public class BroomAttackSystem : MonoBehaviour
             hitSomething = true;
         }
 
-        //AUDIO
+        // CORPSES
+        Collider[] corpseHits = Physics.OverlapSphere(
+            transform.position + Vector3.up * 0.3f,
+            stats.broomRange + 0.5f,
+            LayerMask.GetMask("Corpse")
+        );
+
+        foreach (Collider hit in corpseHits)
+        {
+            CorpseRagdoll corpse = hit.GetComponentInParent<CorpseRagdoll>();
+            if (corpse == null) continue;
+
+            Vector3 dir = (hit.transform.position - transform.position).normalized;
+            dir.y = 0f;
+            float angle = Vector3.Angle(transform.forward, dir);
+            if (angle > stats.broomConeAngle / 2f) continue;
+
+            corpse.Launch(dir * stats.broomCorpseForce);
+            hitSomething = true;
+
+            if (audioSource != null && stats.broomHitSound != null)
+                audioSource.PlayOneShot(stats.broomHitSound);
+
+            Debug.Log($"[BROOM] Corpse {hit.name} launched");
+        }
+
+        // AUDIO MISS
         if (!hitSomething)
         {
             if (audioSource != null && stats.broomSound != null)
                 audioSource.PlayOneShot(stats.broomSound);
         }
-        
     }
     IEnumerator KnockdownTarget(GameObject target, Vector3 knockbackDirection)
     {
