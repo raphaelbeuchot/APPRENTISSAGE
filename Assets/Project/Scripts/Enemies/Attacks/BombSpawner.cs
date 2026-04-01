@@ -9,6 +9,8 @@ public class BombSpawner : MonoBehaviour
 
     [Header("Charge")]
     [SerializeField] private float chargeDuration = 1.5f;
+    [SerializeField] private AudioClip chargeLoopSound;
+    [SerializeField] private AudioClip retractSound;
 
     [Header("Bomb")]
     [SerializeField] private GameObject bombPrefab;
@@ -49,10 +51,14 @@ public class BombSpawner : MonoBehaviour
         isCharging = true;
         float elapsed = 0f;
 
+        if (chargeLoopSound != null)
+            currentBombProjectile.PlayChargeLoop(chargeLoopSound);
+
         while (elapsed < chargeDuration)
         {
             if (currentBomb == null)
             {
+                currentBombProjectile.StopChargeLoop();
                 isCharging = false;
                 yield break;
             }
@@ -70,6 +76,9 @@ public class BombSpawner : MonoBehaviour
 
             if (!playerStillInRange)
             {
+                currentBombProjectile.StopChargeLoop();
+                if (retractSound != null)
+                    currentBombProjectile.PlayOneShot(retractSound);
                 float currentT = elapsed / chargeDuration;
                 Vector3 currentEndPos = Vector3.Lerp(currentBombProjectile.transform.position, player.position + Vector3.up, currentT);
                 currentBombProjectile.StartRetractLine(currentEndPos, 0.75f);
@@ -86,6 +95,7 @@ public class BombSpawner : MonoBehaviour
 
         if (currentBomb != null)
         {
+            currentBombProjectile.StopChargeLoop();
             currentBombProjectile.HideChargeLine();
             currentBombProjectile.Launch(player, OnBombExploded);
             currentBomb = null;

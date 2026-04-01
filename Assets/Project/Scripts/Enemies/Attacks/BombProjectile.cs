@@ -87,6 +87,21 @@ public class BombProjectile : MonoBehaviour
         lineRenderer.SetPosition(0, transform.position);
         lineRenderer.SetPosition(1, target.position + Vector3.up);
     }
+
+    public void UpdateChargeLine(Vector3 playerPos, float t)
+    {
+        if (lineRenderer == null) return;
+        lineRenderer.enabled = true;
+        lineRenderer.SetPosition(0, transform.position);
+        lineRenderer.SetPosition(1, Vector3.Lerp(transform.position, playerPos, t));
+    }
+
+    public void HideChargeLine()
+    {
+        if (lineRenderer == null) return;
+        lineRenderer.enabled = false;
+    }
+
     public void StartRetractLine(Vector3 currentEndPos, float duration)
     {
         StartCoroutine(RetractCoroutine(currentEndPos, duration));
@@ -106,18 +121,26 @@ public class BombProjectile : MonoBehaviour
         }
         lineRenderer.enabled = false;
     }
-    public void UpdateChargeLine(Vector3 playerPos, float t)
+
+    public void PlayChargeLoop(AudioClip clip)
     {
-        if (lineRenderer == null) return;
-        lineRenderer.enabled = true;
-        lineRenderer.SetPosition(0, transform.position);
-        lineRenderer.SetPosition(1, Vector3.Lerp(transform.position, playerPos, t));
+        if (audioSource == null) return;
+        audioSource.clip = clip;
+        audioSource.loop = true;
+        audioSource.Play();
     }
 
-    public void HideChargeLine()
+    public void StopChargeLoop()
     {
-        if (lineRenderer == null) return;
-        lineRenderer.enabled = false;
+        if (audioSource == null) return;
+        audioSource.loop = false;
+        audioSource.Stop();
+    }
+
+    public void PlayOneShot(AudioClip clip)
+    {
+        if (audioSource == null) return;
+        audioSource.PlayOneShot(clip);
     }
 
     IEnumerator SpawnPopCoroutine()
@@ -286,8 +309,7 @@ public class BombProjectile : MonoBehaviour
             tempSource.PlayOneShot(explosionSound);
             Destroy(tempAudio, explosionSound.length + 0.1f);
         }
-        if (lineRenderer != null)
-            lineRenderer.enabled = false;
+
         Destroy(gameObject);
     }
 
