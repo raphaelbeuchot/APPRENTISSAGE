@@ -10,41 +10,35 @@ public class BombProjectile : MonoBehaviour
 
     [Header("Fuse")]
     [SerializeField] private float fuseTimer = 3f;
-    [SerializeField] private float minImpactForSquash = 2f;
 
     [Header("Explosion")]
     [SerializeField] private float explosionRadius = 4f;
     [SerializeField] private float knockbackForce = 10f;
     [SerializeField] private LayerMask explosionLayers;
 
-    private LineRenderer lineRenderer;
-
     [Header("Explosion Visuel")]
     [SerializeField] private GameObject explosionVisualPrefab;
-    // [SerializeField] private float explosionStartRadius = 0.25f;
-    // [SerializeField] private float explosionExpandDuration = 0.4f;
-    // [SerializeField] private Material explosionMaterial;
-    // [SerializeField] private float ringStartRadius = 5f;
-    // [SerializeField] private float ringEndRadius = 0.25f;
-    // [SerializeField] private float ringShrinkDuration = 0.5f;
     [SerializeField] private float ringSpawnHeight = 0.2f;
-    // [SerializeField] private GameObject ringPrefab;
 
     [Header("Sons")]
     [SerializeField] private AudioClip launchSound;
     [SerializeField] private AudioClip explosionSound;
     [SerializeField] private AudioClip kickSound;
-    private AudioSource audioSource;
-    [SerializeField] private Material dashedLineMaterial;
 
+    [Header("Squash")]
+    [SerializeField] private float minImpactForSquash = 2f;
+
+    private AudioSource audioSource;
     private Rigidbody rb;
+    private LineRenderer lineRenderer;
     private bool hasLaunched = false;
     private bool hasExploded = false;
+    private bool isSquashing = false;
     private Action onExplodedCallback;
     private Transform target;
-
     private Vector3 originalScale;
-    private bool isSquashing = false;
+    private Transform spawnerTransform;
+    private float spawnerDetectionRadius = 0f;
 
     void Awake()
     {
@@ -55,11 +49,16 @@ public class BombProjectile : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.spatialBlend = 0f;
         originalScale = transform.localScale;
-        lineRenderer = gameObject.AddComponent<LineRenderer>();
+        target = GameObject.FindGameObjectWithTag("Player")?.transform;
+
+        lineRenderer = GetComponent<LineRenderer>();
+        if (lineRenderer == null)
+            lineRenderer = gameObject.AddComponent<LineRenderer>();
         lineRenderer.positionCount = 2;
-        lineRenderer.startWidth = 0.05f;
-        lineRenderer.endWidth = 0.05f;
-        lineRenderer.enabled = true;
+        lineRenderer.useWorldSpace = true;
+        lineRenderer.startWidth = 0.15f;
+        lineRenderer.endWidth = 0.15f;
+        lineRenderer.enabled = false;
     }
 
     void Start()
@@ -67,9 +66,63 @@ public class BombProjectile : MonoBehaviour
         StartCoroutine(SpawnPopCoroutine());
     }
 
+    public void SetSpawner(Transform spawner, float radius)
+    {
+        spawnerTransform = spawner;
+        spawnerDetectionRadius = radius;
+    }
+
+    void Update()
+    {
+        if (!hasLaunched || hasExploded || target == null || lineRenderer == null) return;
+
+        float dist = Vector3.Distance(transform.position, target.position);
+        if (dist > explosionRadius)
+        {
+            lineRenderer.enabled = false;
+            return;
+        }
+
+        lineRenderer.enabled = true;
+        lineRenderer.SetPosition(0, transform.position);
+        lineRenderer.SetPosition(1, target.position + Vector3.up);
+    }
+    public void StartRetractLine(Vector3 currentEndPos, float duration)
+    {
+        StartCoroutine(RetractCoroutine(currentEndPos, duration));
+    }
+
+    IEnumerator RetractCoroutine(Vector3 endPos, float duration)
+    {
+        if (lineRenderer == null) yield break;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = 1f - (elapsed / duration);
+            lineRenderer.SetPosition(0, transform.position);
+            lineRenderer.SetPosition(1, Vector3.Lerp(transform.position, endPos, t));
+            yield return null;
+        }
+        lineRenderer.enabled = false;
+    }
+    public void UpdateChargeLine(Vector3 playerPos, float t)
+    {
+        if (lineRenderer == null) return;
+        lineRenderer.enabled = true;
+        lineRenderer.SetPosition(0, transform.position);
+        lineRenderer.SetPosition(1, Vector3.Lerp(transform.position, playerPos, t));
+    }
+
+    public void HideChargeLine()
+    {
+        if (lineRenderer == null) return;
+        lineRenderer.enabled = false;
+    }
+
     IEnumerator SpawnPopCoroutine()
     {
-        Vector3 originalScale = transform.localScale;
+        Vector3 originalScaleLocal = transform.localScale;
         float duration = 0.2f;
         float elapsed = 0f;
 
@@ -80,25 +133,16 @@ public class BombProjectile : MonoBehaviour
             float factor = t < 0.6f
                 ? Mathf.Lerp(0f, 1.2f, t / 0.6f)
                 : Mathf.Lerp(1.2f, 1f, (t - 0.6f) / 0.4f);
-            transform.localScale = originalScale * factor;
+            transform.localScale = originalScaleLocal * factor;
             yield return null;
         }
 
-        transform.localScale = originalScale;
-    }
-    void Update()
-    {
-        if (hasExploded || target == null) return;
-        lineRenderer.SetPosition(0, transform.position);
-        lineRenderer.SetPosition(1, target.position + Vector3.up);
+        transform.localScale = originalScaleLocal;
     }
 
     public void Launch(Transform target, Action callback)
     {
         this.target = target;
-        if (dashedLineMaterial != null)
-            lineRenderer.material = dashedLineMaterial;
-        lineRenderer.enabled = true;
         onExplodedCallback = callback;
         hasLaunched = true;
 
@@ -127,15 +171,16 @@ public class BombProjectile : MonoBehaviour
         StartCoroutine(FuseCoroutine());
     }
 
-    // void OnCollisionEnter(Collision collision)
-    // {
-    //     if (!hasLaunched || hasExploded) return;
-    //     int layer = collision.gameObject.layer;
-    //     if (((1 << layer) & earlyDetonationLayers) != 0)
-    //     {
-    //         Explode();
-    //     }
-    // }
+    public void KickBack(Vector3 direction, float force)
+    {
+        if (!hasLaunched || hasExploded) return;
+        if (audioSource != null && kickSound != null)
+            audioSource.PlayOneShot(kickSound);
+        if (broomImpactPrefab != null)
+            Instantiate(broomImpactPrefab, transform.position, Quaternion.identity);
+        rb.linearVelocity = Vector3.zero;
+        rb.AddForce(direction * force, ForceMode.VelocityChange);
+    }
 
     void OnCollisionEnter(Collision collision)
     {
@@ -184,16 +229,6 @@ public class BombProjectile : MonoBehaviour
         isSquashing = false;
     }
 
-    public void KickBack(Vector3 direction, float force)
-    {
-        if (!hasLaunched || hasExploded) return;
-        if (audioSource != null && kickSound != null)
-            audioSource.PlayOneShot(kickSound);
-        if (broomImpactPrefab != null)
-            Instantiate(broomImpactPrefab, transform.position, Quaternion.identity);
-        rb.linearVelocity = Vector3.zero;
-        rb.AddForce(direction * force, ForceMode.VelocityChange);
-    }
     IEnumerator FuseCoroutine()
     {
         yield return new WaitForSeconds(fuseTimer);
@@ -204,6 +239,9 @@ public class BombProjectile : MonoBehaviour
     {
         if (hasExploded) return;
         hasExploded = true;
+
+        if (lineRenderer != null)
+            lineRenderer.enabled = false;
 
         Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius, explosionLayers);
 
@@ -222,9 +260,7 @@ public class BombProjectile : MonoBehaviour
 
             Rigidbody hitRb = hit.GetComponent<Rigidbody>();
             if (hitRb != null)
-            {
                 hitRb.AddForce(dir * knockbackForce, ForceMode.VelocityChange);
-            }
         }
 
         if (explosionVisualPrefab != null)
@@ -240,11 +276,6 @@ public class BombProjectile : MonoBehaviour
                 visual.Play(transform.position);
         }
 
-        // GameObject visualGO = new GameObject("ExplosionVisual");
-        // visualGO.transform.position = groundPos;
-        // ExplosionVisual visual = visualGO.AddComponent<ExplosionVisual>();
-        // visual.Play(explosionStartRadius, explosionRadius, explosionExpandDuration, explosionMaterial, ringStartRadius, ringEndRadius, ringShrinkDuration, ringSpawnHeight, transform.position, ringPrefab);
-
         onExplodedCallback?.Invoke();
 
         if (explosionSound != null)
@@ -255,7 +286,8 @@ public class BombProjectile : MonoBehaviour
             tempSource.PlayOneShot(explosionSound);
             Destroy(tempAudio, explosionSound.length + 0.1f);
         }
-        lineRenderer.enabled = false;
+        if (lineRenderer != null)
+            lineRenderer.enabled = false;
         Destroy(gameObject);
     }
 
