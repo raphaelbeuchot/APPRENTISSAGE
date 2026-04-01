@@ -2,13 +2,17 @@ using UnityEngine;
 
 public class CorpseRagdoll : MonoBehaviour
 {
+    [Header("Scene Placement")]
+    [SerializeField] private bool startActive = false;
+    [SerializeField] private float settleDrag = 8f;
+    [SerializeField] private float settleMass = 2f;
+
     private Rigidbody hipsRb;
     private Rigidbody[] allBoneRbs;
 
     private void Awake()
     {
         allBoneRbs = GetComponentsInChildren<Rigidbody>();
-
         Transform hips = transform.Find("TPose/Armature/mixamorig:Hips");
         if (hips != null)
             hipsRb = hips.GetComponent<Rigidbody>();
@@ -17,8 +21,20 @@ public class CorpseRagdoll : MonoBehaviour
         if (anim != null)
             anim.enabled = false;
 
-        foreach (Rigidbody bone in allBoneRbs)
-            bone.isKinematic = true;
+        if (startActive)
+        {
+            foreach (Rigidbody bone in allBoneRbs)
+            {
+                bone.isKinematic = false;
+                bone.linearDamping = settleDrag;
+                bone.mass = settleMass / Mathf.Max(1, allBoneRbs.Length);
+            }
+        }
+        else
+        {
+            foreach (Rigidbody bone in allBoneRbs)
+                bone.isKinematic = true;
+        }
     }
 
     public void Launch(Vector3 force)
@@ -28,7 +44,10 @@ public class CorpseRagdoll : MonoBehaviour
             broomLow.NotifyLaunched();
 
         foreach (Rigidbody bone in allBoneRbs)
+        {
             bone.isKinematic = false;
+            bone.linearDamping = 0.5f;
+        }
 
         if (hipsRb != null)
             hipsRb.AddForce(force, ForceMode.Impulse);

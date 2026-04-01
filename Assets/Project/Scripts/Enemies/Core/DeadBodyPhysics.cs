@@ -22,7 +22,10 @@ public class DeadBodyPhysics : MonoBehaviour
 
         if (broomLow && !isBroomLowState)
         {
-            SetBoneProperties(corpseData.restingMass * corpseData.broomLowMassMultiplier, corpseData.restingDrag * corpseData.broomLowDragMultiplier);
+            SetBoneProperties(
+                corpseData.restingMass * corpseData.broomLowMassMultiplier,
+                corpseData.restingDrag * corpseData.broomLowDragMultiplier
+            );
             isBroomLowState = true;
         }
         else if (!broomLow && isBroomLowState)
