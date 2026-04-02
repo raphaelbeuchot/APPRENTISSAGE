@@ -36,7 +36,7 @@ public class CorpseProjectile : MonoBehaviour
 
         CorpseRagdoll ragdoll = GetComponent<CorpseRagdoll>();
         if (ragdoll != null)
-            ragdoll.Launch(force);
+            ragdoll.Launch(force, corpseData.projectionMass);
         else if (rb != null)
             rb.AddForce(force, ForceMode.Impulse);
     }

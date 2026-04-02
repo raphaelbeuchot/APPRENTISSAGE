@@ -231,15 +231,17 @@ public class PupitreInteraction : MonoBehaviour
         Debug.Log("[Pupitre] === LANCEMENT DU JEU ===");
 
         if (gameManager != null)
-        {
             gameManager.StartGameCycle();
-        }
+        if (CleaningBonusManager.Instance != null)
+            CleaningBonusManager.Instance.Initialize();
 
         EnemyIconsUI enemyIconsUI = FindObjectOfType<EnemyIconsUI>();
         if (enemyIconsUI != null)
-        {
             enemyIconsUI.SpawnIconsForEnemies();
-        }
+
+        CorpseIconsUI corpseIconsUI = FindObjectOfType<CorpseIconsUI>();
+        if (corpseIconsUI != null)
+            corpseIconsUI.SpawnIconsForCorpses();
     }
 
     private void OnDrawGizmosSelected()

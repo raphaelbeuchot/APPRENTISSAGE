@@ -635,7 +635,13 @@ public class EnemyHealth : MonoBehaviour
                     behavior.OnEnemyDeath(transform.position);
                 }
             }
+
+            int corpseLayer = LayerMask.NameToLayer("Corpse");
+            gameObject.layer = corpseLayer;
+            foreach (Transform child in GetComponentsInChildren<Transform>())
+                child.gameObject.layer = corpseLayer;
         }
+    
     }
 
     void UpdateSpeed()

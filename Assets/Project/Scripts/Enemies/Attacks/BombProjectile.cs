@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System;
+using Pathfinding;
 
 public class BombProjectile : MonoBehaviour
 {
@@ -266,6 +267,7 @@ public class BombProjectile : MonoBehaviour
         if (lineRenderer != null)
             lineRenderer.enabled = false;
 
+        // Passe 1 : player et decor (layers existants)
         Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius, explosionLayers);
 
         foreach (Collider hit in hits)
@@ -284,6 +286,54 @@ public class BombProjectile : MonoBehaviour
             Rigidbody hitRb = hit.GetComponent<Rigidbody>();
             if (hitRb != null)
                 hitRb.AddForce(dir * knockbackForce, ForceMode.VelocityChange);
+        }
+
+        // Passe 2 : ennemis et destabilisables (sans restriction de layer)
+        Collider[] blastHits = Physics.OverlapSphere(transform.position, explosionRadius);
+
+        foreach (Collider hit in blastHits)
+        {
+
+            if (hit.CompareTag("Player")) continue;
+
+            Vector3 dir = (hit.transform.position - transform.position).normalized;
+            dir.y = 0.3f;
+            dir.Normalize();
+
+            EnemyHealth enemyHealth = hit.GetComponentInParent<EnemyHealth>();
+            if (enemyHealth != null)
+            {
+                if (enemyHealth.IsDead()) continue;
+
+                EnemyAI_AStar ai = hit.GetComponentInParent<EnemyAI_AStar>();
+                AIPath enemyAiPath = hit.GetComponentInParent<AIPath>();
+
+                if (enemyAiPath != null)
+                    enemyAiPath.enabled = false;
+                if (ai != null)
+                    ai.enabled = false;
+
+                Rigidbody enemyRb = hit.GetComponentInParent<Rigidbody>();
+                if (enemyRb != null)
+                {
+                    enemyRb.linearVelocity = Vector3.zero;
+                    enemyRb.AddForce(dir * knockbackForce, ForceMode.VelocityChange);
+                }
+
+                enemyHealth.SetKnockbackState(0.8f);
+
+                if (ai != null)
+                    ai.StartBlastStun(0.8f);
+
+                continue;
+            }
+
+            DestabilizableObject destabilizable = hit.GetComponent<DestabilizableObject>();
+            if (destabilizable != null)
+            {
+                destabilizable.TipOver(transform.position);
+                continue;
+            }
         }
 
         if (explosionVisualPrefab != null)
@@ -311,6 +361,24 @@ public class BombProjectile : MonoBehaviour
         }
 
         Destroy(gameObject);
+    }
+    IEnumerator BlastStunCoroutine(EnemyAI_AStar ai)
+    {
+        AIPath aiPath = ai.GetAIPath();
+
+        if (aiPath != null)
+            aiPath.enabled = false;
+        ai.enabled = false;
+
+        yield return new WaitForSeconds(3f);
+
+        if (ai == null) yield break;
+
+        if (aiPath != null)
+            aiPath.enabled = true;
+        ai.enabled = true;
+        ai.currentState = EnemyAI_AStar.State.Idle;
+        ai.lastPathDestination = Vector3.positiveInfinity;
     }
 
     void OnDrawGizmosSelected()

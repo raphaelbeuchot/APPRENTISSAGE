@@ -1101,4 +1101,24 @@ public class EnemyAI_AStar : MonoBehaviour
             }
         }
     }
+    public void StartBlastStun(float duration)
+    {
+        StartCoroutine(BlastStunCoroutine(duration));
+    }
+
+    IEnumerator BlastStunCoroutine(float duration)
+    {
+        AIPath aiPath = GetAIPath();
+        if (aiPath != null)
+            aiPath.enabled = false;
+        enabled = false;
+
+        yield return new WaitForSeconds(duration);
+
+        if (aiPath != null)
+            aiPath.enabled = true;
+        enabled = true;
+        currentState = State.Idle;
+        lastPathDestination = Vector3.positiveInfinity;
+    }
 }

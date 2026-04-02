@@ -58,6 +58,9 @@ public class LevelManager : MonoBehaviour
         if (gameManager == null)
             gameManager = FindObjectOfType<GameManager>();
 
+        if (CleaningBonusManager.Instance != null)
+            CleaningBonusManager.Instance.OnAllCorpsesCleaned += OnAllCorpsesCleaned;
+
         if (player == null)
             player = FindObjectOfType<PlayerPhysicsMovement>();
         if (playerVictoryScale == null)
@@ -112,7 +115,7 @@ public class LevelManager : MonoBehaviour
         Time.timeScale = 1f;
     }
 
-    void Update()
+    /*void Update()
     {
         if (requireAllEnemiesKilled && !doorHasBeenActivated && gameManager != null && goalDoor != null)
         {
@@ -122,7 +125,7 @@ public class LevelManager : MonoBehaviour
                 StartCoroutine(ActivateDoorDelayed());
             }
         }
-    }
+    }*/
 
     IEnumerator ActivateDoorDelayed()
     {
@@ -138,7 +141,12 @@ public class LevelManager : MonoBehaviour
     // ============================================
     // VICTOIRE
     // ============================================
-
+    private void OnAllCorpsesCleaned()
+    {
+        if (doorHasBeenActivated) return;
+        doorHasBeenActivated = true;
+        StartCoroutine(ActivateDoorDelayed());
+    }
     void OnPlayerReachedGoal(GameObject playerObject)
     {
         GetComponent<GoalDoorDebug>()?.TriggerDebug();
@@ -294,5 +302,8 @@ public class LevelManager : MonoBehaviour
 
         if (playerHealth != null)
             playerHealth.OnDeath -= OnPlayerDeath;
+
+        if (CleaningBonusManager.Instance != null)
+            CleaningBonusManager.Instance.OnAllCorpsesCleaned -= OnAllCorpsesCleaned;
     }
 }
