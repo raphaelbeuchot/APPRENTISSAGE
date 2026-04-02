@@ -307,31 +307,48 @@ public class BroomAttackSystem : MonoBehaviour
             LayerMask.GetMask("Corpse")
         );
 
+        bool corpseHitSoundPlayed = false;
+
         foreach (Collider hit in corpseHits)
         {
-            CorpseRagdoll corpse = hit.GetComponentInParent<CorpseRagdoll>();
-            if (corpse == null) continue;
-
             Vector3 dir = (hit.transform.position - transform.position).normalized;
             dir.y = 0f;
             float angle = Vector3.Angle(transform.forward, dir);
             if (angle > stats.broomConeAngle / 2f) continue;
 
-            corpse.Launch(dir * stats.broomCorpseForce);
-            hitSomething = true;
+            // CAS 1 : corpse scene/tuto avec CorpseRagdoll
+            CorpseRagdoll corpseRagdoll = hit.GetComponentInParent<CorpseRagdoll>();
+            if (corpseRagdoll != null)
+            {
+                corpseRagdoll.Launch(dir * stats.broomCorpseForce);
+                hitSomething = true;
+                if (!corpseHitSoundPlayed && audioSource != null && stats.broomCorpseSound != null)
+                {
+                    audioSource.PlayOneShot(stats.broomCorpseSound);
+                    corpseHitSoundPlayed = true;
+                }
+                Debug.Log($"[BROOM] CorpseRagdoll {hit.name} launched");
+                continue;
+            }
 
-            if (audioSource != null && stats.broomHitSound != null)
-                audioSource.PlayOneShot(stats.broomHitSound);
-
-            Debug.Log($"[BROOM] Corpse {hit.name} launched");
+            // CAS 2 : ennemi mort avec DeadBodyPhysics
+            DeadBodyPhysics deadBody = hit.GetComponentInParent<DeadBodyPhysics>();
+            if (deadBody != null)
+            {
+                RagdollDeathEffect ragdoll = deadBody.GetComponent<RagdollDeathEffect>();
+                if (ragdoll != null && ragdoll.hipsRb != null)
+                    ragdoll.hipsRb.AddForce(dir * stats.broomCorpseForce, ForceMode.Impulse);
+                hitSomething = true;
+                if (!corpseHitSoundPlayed && audioSource != null && stats.broomCorpseSound != null)
+                {
+                    audioSource.PlayOneShot(stats.broomCorpseSound);
+                    corpseHitSoundPlayed = true;
+                }
+                Debug.Log($"[BROOM] DeadBody {hit.name} launched");
+                continue;
+            }
         }
 
-        // AUDIO MISS
-        if (!hitSomething)
-        {
-            if (audioSource != null && stats.broomSound != null)
-                audioSource.PlayOneShot(stats.broomSound);
-        }
     }
     IEnumerator KnockdownTarget(GameObject target, Vector3 knockbackDirection)
     {

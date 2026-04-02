@@ -13,7 +13,7 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
     private Animator animator;
     private Rigidbody[] boneRigidbodies;
     private Collider[] boneColliders;
-    private Rigidbody hipsRb;
+    public Rigidbody hipsRb;
 
     public void InitializeRagdoll()
     {

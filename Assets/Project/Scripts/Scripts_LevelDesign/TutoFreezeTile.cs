@@ -27,7 +27,6 @@ public class TutoFreezeTile : MonoBehaviour
     [SerializeField] private float corpseForce = 20f;
 
     [Header("Pousse Cadavre")]
-
     [SerializeField] private Transform slidingCube;
     [SerializeField] private AudioClip soundCubeSlide;
 
@@ -49,18 +48,15 @@ public class TutoFreezeTile : MonoBehaviour
 
     private bool tileActive = false;
     private bool playerOnTile = false;
-    private bool testRunning = false;
-    private bool waitingForExit = false;
+    private bool cycleRunning = false;
+    private bool isPaused = false;
+    private bool waitingForFinalExit = false;
     private int spawnCount = 0;
     private const int maxSpawns = 5;
 
-    private bool isPaused = false;
-
     private Rigidbody playerRb;
     private Transform player;
-
     private Transform chainDummy;
-    private Coroutine countdownCoroutine;
 
     void Start()
     {
@@ -71,7 +67,6 @@ public class TutoFreezeTile : MonoBehaviour
             playerRb = p.GetComponent<Rigidbody>();
         }
 
-        // Dummy pour la chaine, independant du corpse
         chainDummy = new GameObject("ChainDummy").transform;
 
         SetDalleMaterial(matInactive);
@@ -97,67 +92,91 @@ public class TutoFreezeTile : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (!tileActive) return;
         if (!other.CompareTag("Player")) return;
-        if (waitingForExit) return;
-
         playerOnTile = true;
 
-        // Si un countdown est en cours et en pause, on reprend
-        if (testRunning && isPaused)
+        if (waitingForFinalExit) return;
+
+        // Reprise apres pause mid-countdown
+        if (cycleRunning && isPaused)
         {
             isPaused = false;
             SetDalleMaterial(matActive);
             return;
         }
 
-        if (testRunning) return;
-
-        if (spawnCount >= maxSpawns)
-        {
-            CommentPanel.Show("Sweep the corpses away");
-            return;
-        }
+        if (!tileActive || cycleRunning) return;
 
         SetDalleMaterial(matActive);
         SetAllMarquees(matActive);
-        countdownCoroutine = StartCoroutine(CountdownAndSpawn());
+        StartCoroutine(RunCycles());
     }
 
     void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag("Player")) return;
-
         playerOnTile = false;
 
-        if (waitingForExit)
+        if (waitingForFinalExit)
         {
-            waitingForExit = false;
-            StartCoroutine(ReactivateAfterDelay());
+            ShutdownPermanently();
+            return;
         }
-        else if (testRunning)
+
+        if (cycleRunning)
         {
             isPaused = true;
             SetDalleMaterial(matWaiting);
         }
-        else
-        {
-            SetDalleMaterial(matWaiting);
-        }
     }
 
-    private IEnumerator ReactivateAfterDelay()
+    private IEnumerator RunCycles()
     {
-        yield return new WaitForSeconds(0.5f);
-        tileActive = true;
-        SetDalleMaterial(matWaiting);
+        cycleRunning = true;
+
+        while (spawnCount < maxSpawns)
+        {
+            yield return StartCoroutine(CountdownAndSpawn());
+
+            // Delai 1s post-projection
+            float elapsed = 0f;
+            bool playerLeft = false;
+            while (elapsed < 1f)
+            {
+                if (!playerOnTile) { playerLeft = true; break; }
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            if (playerLeft)
+            {
+                // Player parti pendant le delai : on sort proprement
+                // OnTriggerEnter restartera RunCycles au retour
+                cycleRunning = false;
+                isPaused = false;
+                yield break;
+            }
+
+            // Player encore la et spawns restants : on reboucle
+            if (spawnCount < maxSpawns)
+            {
+                SetDalleMaterial(matActive);
+                SetAllMarquees(matActive);
+            }
+        }
+
+        // 5 spawns effectues
+        cycleRunning = false;
+        CommentPanel.Show("Sweep the corpses away");
+
+        if (playerOnTile)
+            waitingForFinalExit = true;
+        else
+            ShutdownPermanently();
     }
 
     private IEnumerator CountdownAndSpawn()
     {
-        testRunning = true;
-
-        // Instancier le corps au plafond, kinematic
         GameObject newCorpse = Instantiate(corpsePrefab, ceilingAnchor.position, corpsePrefab.transform.rotation);
         Rigidbody corpseRb = newCorpse.GetComponent<Rigidbody>();
         if (corpseRb != null)
@@ -167,7 +186,6 @@ public class TutoFreezeTile : MonoBehaviour
             corpseRb.angularVelocity = Vector3.zero;
         }
 
-        // Brancher le dummy de chaine sur la position du corps
         chainDummy.position = ceilingAnchor.position;
         if (chainRenderer != null)
         {
@@ -175,17 +193,12 @@ public class TutoFreezeTile : MonoBehaviour
             chainRenderer.GetComponent<LineRenderer>().enabled = true;
         }
 
-        // Descente reguliere + extinction marquees
         float elapsed = 0f;
         int marqueeStep = 0;
 
         while (elapsed < countdownDuration)
         {
-            // Pause si le player a quitte la dalle
-            while (isPaused)
-            {
-                yield return null;
-            }
+            while (isPaused) yield return null;
 
             elapsed += Time.deltaTime;
             float t = elapsed / countdownDuration;
@@ -216,22 +229,15 @@ public class TutoFreezeTile : MonoBehaviour
             yield return null;
         }
 
-        // Position finale exacte
         newCorpse.transform.position = spawnPoint.position;
         chainDummy.position = spawnPoint.position;
 
-        // Chaine remonte sans le corps
         StartCoroutine(RetractChain());
 
-        // Courte pause puis lancement
         yield return new WaitForSeconds(0.3f);
 
         spawnCount++;
-        testRunning = false;
-        waitingForExit = true;
-        tileActive = false; // AJOUT
-
-        SetDalleMaterial(matInactive); // matWaiting -> matInactive
+        SetDalleMaterial(matInactive);
         SetAllMarquees(matInactive);
 
         LaunchCorpse(newCorpse, corpseRb);
@@ -278,6 +284,14 @@ public class TutoFreezeTile : MonoBehaviour
             StartCoroutine(SlideCube());
     }
 
+    private void ShutdownPermanently()
+    {
+        waitingForFinalExit = false;
+        tileActive = false;
+        SetDalleMaterial(matInactive);
+        SetAllMarquees(matInactive);
+    }
+
     public void OnCorpseHitPlayer()
     {
         StartCoroutine(CheckMovementWindow());
@@ -291,7 +305,6 @@ public class TutoFreezeTile : MonoBehaviour
         Vector3 targetPos = startPos + Vector3.right;
         float elapsed = 0f;
 
-        // Aller : 0.1s
         while (elapsed < 0.1f)
         {
             elapsed += Time.deltaTime;
@@ -302,7 +315,6 @@ public class TutoFreezeTile : MonoBehaviour
 
         slidingCube.position = targetPos;
 
-        // Retour : 1s
         elapsed = 0f;
         while (elapsed < 1f)
         {
@@ -352,8 +364,6 @@ public class TutoFreezeTile : MonoBehaviour
         yield return new WaitForSeconds(2f);
         HideMessage();
     }
-
-    // --- Helpers ---
 
     private void SetDalleMaterial(Material mat)
     {

@@ -114,6 +114,8 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Son du balai")]
     public AudioClip broomSound;
     public AudioClip broomHitSound;
+    public AudioClip broomCorpseSound;
+
 
     [Tooltip("Force du knockback balai")]
     public float broomKnockbackForce = 8f;
