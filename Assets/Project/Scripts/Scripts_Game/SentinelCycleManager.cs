@@ -23,7 +23,6 @@ public class SentinelCycleManager : MonoBehaviour
     public GameManager gameManager;
     [SerializeField] private Light[] lightsToDisableInRedLight;
     [SerializeField] private SentinelCentralLight sentinelCentralLight;
-    [SerializeField] private RedLightVolumeController redLightVolumeController;
     [SerializeField] private Light playerSpotLight;
     //[SerializeField] private Color spotColorCompensated = new Color(0.5f, 0.8f, 1f, 1f);
     [SerializeField] private EpervierManager epervierManager;
@@ -33,6 +32,8 @@ public class SentinelCycleManager : MonoBehaviour
     [Header("Audio")]
     private AudioSource audioSource;
     [SerializeField] private AudioClip greenLightMusicLoop;
+    [SerializeField] private AudioClip redLightMusicLoop;
+
     [SerializeField, Range(1f, 3f)] private float maxMusicPitch = 1.5f;
     private AudioSource musicAudioSource;
     private AudioHighPassFilter musicHighPassFilter;
@@ -380,6 +381,11 @@ public class SentinelCycleManager : MonoBehaviour
         }
         else if (newState == GameState.RedLight)
         {
+            if (vinylCoroutine != null)
+            {
+                StopCoroutine(vinylCoroutine);
+                vinylCoroutine = null;
+            }
             if (musicAudioSource != null)
                 musicAudioSource.Stop();
             if (gameManager != null)
@@ -406,11 +412,34 @@ public class SentinelCycleManager : MonoBehaviour
                 audioSource.loop = true;
                 audioSource.Play();
             }
+            if (musicAudioSource != null && redLightMusicLoop != null)
+            {
+                float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
+                float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+
+                float enemyFactor = 0f;
+                if (gameManager != null)
+                {
+                    int totalEnemies = gameManager.GetTotalEnemies();
+                    int enemiesKilled = gameManager.GetEnemiesKilled();
+                    if (totalEnemies > 0)
+                    {
+                        float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
+                        enemyFactor = 1f - enemyRatio;
+                    }
+                }
+
+                float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
+                musicAudioSource.volume = musicVolume;
+                musicAudioSource.pitch = Mathf.Lerp(1f, maxMusicPitch, combinedFactor);
+                musicAudioSource.clip = redLightMusicLoop;
+                musicAudioSource.Play();
+                Debug.Log(string.Format("[MUSIC] RedLight - pitch: {0:F2}", musicAudioSource.pitch));
+            }
 
             Debug.Log(string.Format("[CYCLE] RedLight - Duree: {0:F1}s", targetDuration));
 
-            if (redLightVolumeController != null)
-                redLightVolumeController.FadeIn();
+            
 
             if (playerSpotLight != null)
             {
@@ -435,6 +464,7 @@ public class SentinelCycleManager : MonoBehaviour
         {
             targetDuration = sentinelSettings.releaseDuration;
 
+
             if (gameManager != null)
                 gameManager.ResetAllTracking();
 
@@ -455,8 +485,7 @@ public class SentinelCycleManager : MonoBehaviour
 
             Debug.Log(string.Format("[CYCLE] Release - Duree: {0:F1}s", targetDuration));
 
-            if (redLightVolumeController != null)
-                redLightVolumeController.FadeOut();
+            
 
             if (playerSpotLight != null)
                 playerSpotLight.enabled = false;

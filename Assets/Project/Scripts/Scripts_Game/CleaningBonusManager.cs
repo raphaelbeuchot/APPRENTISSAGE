@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 public class CleaningBonusManager : MonoBehaviour
 {
     public static CleaningBonusManager Instance { get; private set; }
@@ -10,6 +11,7 @@ public class CleaningBonusManager : MonoBehaviour
     private AudioSource audioSource;
     private int cleaningScore = 0;
     private int totalCorpses = 0;
+    private List<CorpsePitHandler> registeredCorpses = new List<CorpsePitHandler>();
     public event System.Action OnAllCorpsesCleaned;
     private void Awake()
     {
@@ -31,15 +33,20 @@ public class CleaningBonusManager : MonoBehaviour
     {
         CorpsePitHandler[] allCorpses = FindObjectsByType<CorpsePitHandler>(FindObjectsSortMode.None);
         totalCorpses = allCorpses.Length;
+        foreach (CorpsePitHandler c in allCorpses)
+            registeredCorpses.Add(c);
         Debug.Log("[CleaningBonus] Total corpses initialise : " + totalCorpses);
     }
     public void RegisterCorpse(CorpsePitHandler corpse)
     {
+        if (registeredCorpses.Contains(corpse)) return;
+        registeredCorpses.Add(corpse);
         totalCorpses++;
         Debug.Log("[CleaningBonus] Corpse enregistre. Total : " + totalCorpses);
     }
     private void HandleCorpseCleaned(CorpsePitHandler corpse)
     {
+        if (!registeredCorpses.Contains(corpse)) return;
         cleaningScore++;
         if (audioSource != null && cleanSound != null)
             audioSource.PlayOneShot(cleanSound);
