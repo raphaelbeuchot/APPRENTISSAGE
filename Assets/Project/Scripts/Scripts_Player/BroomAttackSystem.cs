@@ -343,6 +343,24 @@ public class BroomAttackSystem : MonoBehaviour
                 continue;
             }
         }
+        // PROPS
+        Collider[] propHits = Physics.OverlapSphere(
+            transform.position + Vector3.up * 1f,
+            stats.broomRange,
+            LayerMask.GetMask("Prop")
+        );
+
+        foreach (Collider hit in propHits)
+        {
+            Vector3 dir = (hit.transform.position - transform.position).normalized;
+            dir.y = 0f;
+            float angle = Vector3.Angle(transform.forward, dir);
+            if (angle > stats.broomConeAngle / 2f) continue;
+
+            PhysicsProp prop = hit.GetComponent<PhysicsProp>();
+            if (prop != null)
+                prop.ReceiveImpact(transform.position, stats.broomKnockbackForce, ImpactSource.Broom);
+        }
 
     }
     IEnumerator KnockdownTarget(GameObject target, Vector3 knockbackDirection)

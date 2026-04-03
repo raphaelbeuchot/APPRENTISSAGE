@@ -100,7 +100,8 @@ public class GoalDoor : MonoBehaviour
         {
             Debug.LogWarning("[GoalDoor] SentinelCycleManager introuvable !");
         }
-
+        foreach (BombSpawner b in FindObjectsOfType<BombSpawner>())
+            b.StopChargeAudio();
         // Option: detruire le joueur
         if (destroyPlayerOnReach)
         {

@@ -119,9 +119,17 @@ public class BombSpawner : MonoBehaviour
             currentBombProjectile.SetSpawner(transform, detectionRadius);
     }
 
+    public void StopChargeAudio()
+    {
+        if (currentBombProjectile != null)
+            currentBombProjectile.StopChargeLoop();
+        isCharging = false;
+    }
+
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, detectionRadius);
     }
+
 }

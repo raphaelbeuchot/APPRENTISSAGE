@@ -187,6 +187,8 @@ public class GameOverUI : MonoBehaviour
 
         // NOUVEAU : Freeze le temps comme en pause
         Time.timeScale = 0f;
+        AudioListener.pause = true;
+
 
         SentinelCycleManager cycle = FindObjectOfType<SentinelCycleManager>();
         if (cycle != null) cycle.PauseMusic();
@@ -229,6 +231,8 @@ public class GameOverUI : MonoBehaviour
     {
         Debug.Log("Restart button clicked!");
         Time.timeScale = 1f;
+        AudioListener.pause = false;
+
 
         LevelManager levelManager = FindObjectOfType<LevelManager>();
         if (levelManager != null)
@@ -246,6 +250,7 @@ public class GameOverUI : MonoBehaviour
     void OnQuitClicked()
     {
         Debug.Log("Quit button clicked!");
+        AudioListener.pause = false;
 
         LevelManager levelManager = FindObjectOfType<LevelManager>();
         if (levelManager != null)

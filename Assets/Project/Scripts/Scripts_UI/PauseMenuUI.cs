@@ -168,6 +168,8 @@ public class PauseMenuUI : MonoBehaviour
     {
         isPaused = true;
         Time.timeScale = 0f;
+        AudioListener.pause = true;
+
 
         if (pauseCanvasGroup != null)
         {
@@ -190,6 +192,8 @@ public class PauseMenuUI : MonoBehaviour
     {
         isPaused = false;
         Time.timeScale = 1f;
+        AudioListener.pause = false;
+
         Hide();
 
         // Resume ambient track
@@ -212,6 +216,7 @@ public class PauseMenuUI : MonoBehaviour
     void RestartLevel()
     {
         Time.timeScale = 1f;
+        AudioListener.pause = false;
         isPaused = false;
 
         // Stop ambient track avant restart
@@ -240,6 +245,7 @@ public class PauseMenuUI : MonoBehaviour
     void QuitToMenu()
     {
         Time.timeScale = 1f;
+        AudioListener.pause = false;
         isPaused = false;
 
         UnityEngine.SceneManagement.SceneManager.LoadScene(0);

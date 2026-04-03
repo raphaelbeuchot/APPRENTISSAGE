@@ -14,6 +14,7 @@ public class PhysicsProp : MonoBehaviour
 
     [Header("Impact Multipliers")]
     [SerializeField] private float broomMultiplier = 1f;
+    [SerializeField] private float broomTorque = 3f;
     [SerializeField] private float collisionMultiplier = 0.6f;
 
     [Header("Impact")]
@@ -23,6 +24,8 @@ public class PhysicsProp : MonoBehaviour
     [Header("Physics")]
     [SerializeField] private float linearDamping = 2f;
     [SerializeField] private float angularDamping = 2f;
+    [SerializeField] private float gravityMultiplier = 3f;
+
 
     private Rigidbody rb;
 
@@ -36,6 +39,12 @@ public class PhysicsProp : MonoBehaviour
         rb.linearDamping = linearDamping;
         rb.angularDamping = angularDamping;
         rb.Sleep();
+    }
+
+    void Update()
+    {
+        if (!rb.IsSleeping())
+            rb.AddForce(Physics.gravity * (gravityMultiplier - 1f) * rb.mass);
     }
 
     public void ReceiveExplosion(Vector3 center, float force, float radius)
@@ -58,6 +67,11 @@ public class PhysicsProp : MonoBehaviour
         dir.y = upwardBias;
         dir.Normalize();
         rb.AddForce(dir * force * multiplier, ForceMode.Impulse);
+        if (source == ImpactSource.Broom)
+        {
+            Vector3 torqueAxis = Vector3.Cross(Vector3.up, dir);
+            rb.AddTorque(torqueAxis * broomTorque, ForceMode.Impulse);
+        }
     }
 
     void OnCollisionEnter(Collision collision)
