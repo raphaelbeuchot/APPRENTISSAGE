@@ -888,12 +888,7 @@ public class GameManager : MonoBehaviour
 
         foreach (EnemyHealth enemy in allEnemies)
         {
-            // Exclure BrightEyes
-            BrightEyesController brightEyes = enemy.GetComponent<BrightEyesController>();
-            if (brightEyes != null)
-            {
-                continue; // Skip BrightEyes
-            }
+            
 
             totalEnemies++;
         }

@@ -106,6 +106,8 @@ public class LevelProgressionManager : MonoBehaviour
         Debug.Log("[LevelProgression] Progression reinitalisee.");
         if (CollectibleManager.Instance != null)
             CollectibleManager.Instance.ResetAllCollectibles();
+        if (CleaningCreditManager.Instance != null)
+            CleaningCreditManager.Instance.ResetCredits();
     }
 
     public int GetCollectedCountForLevel(int sceneIndex)

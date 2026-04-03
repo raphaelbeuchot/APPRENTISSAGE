@@ -22,8 +22,7 @@ public class WheelUI : MonoBehaviour
     [Header("Spin Config")]
     [SerializeField] private float fastPhaseInterval = 0.15f;
 
-    [Header("Try Again Cost")]
-    [SerializeField] private int tryAgainCost = 3;
+  
 
     [Header("Audio")]
     [SerializeField] private AudioClip jingleClip;
@@ -109,10 +108,14 @@ public class WheelUI : MonoBehaviour
 
         Vector2 input = PlayerInputManager.Instance.MoveInput;
 
+        bool canTryAgain = CleaningCreditManager.Instance != null && CleaningCreditManager.Instance.HasCredits();
         if (input.y < -0.5f || input.y > 0.5f)
         {
-            selectedButton = (selectedButton + 1) % 2;
-            UpdateButtonVisuals();
+            if (canTryAgain)
+            {
+                selectedButton = (selectedButton + 1) % 2;
+                UpdateButtonVisuals();
+            }
             navigationCooldown = cooldownDuration;
         }
 
@@ -187,7 +190,16 @@ public class WheelUI : MonoBehaviour
 
             selectedButton = 0;
             if (continueText != null) { continueText.gameObject.SetActive(true); continueText.color = buttonSelectedColor; }
-            if (tryAgainText != null) { tryAgainText.gameObject.SetActive(true); tryAgainText.color = buttonNormalColor; tryAgainText.text = $"Try Again ({tryAgainCost} credits)"; }
+            bool canTryAgain = CleaningCreditManager.Instance != null && CleaningCreditManager.Instance.HasCredits();
+            if (tryAgainText != null)
+            {
+                tryAgainText.gameObject.SetActive(canTryAgain);
+                if (canTryAgain)
+                {
+                    tryAgainText.color = buttonNormalColor;
+                    tryAgainText.text = "Try Again (" + CleaningCreditManager.Instance.GetCredits() + " credit(s))";
+                }
+            }
         }
     }
 
@@ -239,6 +251,8 @@ public class WheelUI : MonoBehaviour
 
     void OnTryAgainPressed()
     {
+        if (CleaningCreditManager.Instance == null || !CleaningCreditManager.Instance.SpendCredit()) return;
+
         if (resultBlinkCoroutine != null) { StopCoroutine(resultBlinkCoroutine); resultBlinkCoroutine = null; }
 
         foreach (var cell in cells)

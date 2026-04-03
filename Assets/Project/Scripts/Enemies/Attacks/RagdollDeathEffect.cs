@@ -101,6 +101,7 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
         CorpsePitHandler handler = GetComponent<CorpsePitHandler>();
         if (handler == null)
             handler = gameObject.AddComponent<CorpsePitHandler>();
+        handler.sourceEnemy = GetComponent<EnemyHealth>();
         StartCoroutine(WaitForRestCoroutine());
     }
 

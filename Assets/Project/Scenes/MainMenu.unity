@@ -119,6 +119,50 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &33865150
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 33865152}
+  - component: {fileID: 33865151}
+  m_Layer: 0
+  m_Name: CleaningCreditManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &33865151
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 33865150}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b4f4027b69022847b11b1928886183d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CleaningCreditManager
+--- !u!4 &33865152
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 33865150}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.87295, y: 0, z: 18.30545}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &214495237
 GameObject:
   m_ObjectHideFlags: 0
@@ -250,7 +294,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fee43977cca0b148907d9af41e9b540, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DevManager
-  startFromZero: 0
+  startFromZero: 1
   devMode: 0
 --- !u!4 &894221298
 Transform:
@@ -832,23 +876,107 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
       propertyPath: levels.Array.data[1].levelName
+      value: Western Canyon
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[2].levelName
+      value: Flower Power I
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[3].levelName
       value: It's show time !
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[4].levelName
+      value: Over the Fences
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[5].levelName
+      value: Rush Hour I
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[6].levelName
+      value: Lava Train I
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[7].levelName
+      value: Bulldog I
       objectReference: {fileID: 0}
     - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
       propertyPath: levels.Array.data[16].levelName
       value: Pot Pourri I
       objectReference: {fileID: 0}
     - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[1].sceneIndex
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[2].sceneIndex
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[3].sceneIndex
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[4].sceneIndex
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[5].sceneIndex
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[6].sceneIndex
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[7].sceneIndex
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
       propertyPath: levels.Array.data[16].sceneIndex
       value: 18
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[3].collectibleIDs.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[4].collectibleIDs.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[5].collectibleIDs.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[6].collectibleIDs.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: levels.Array.data[7].collectibleIDs.Array.size
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
       propertyPath: levels.Array.data[16].collectibleIDs.Array.size
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
-      propertyPath: 'levels.Array.data[3].collectibleIDs.Array.data[0]'
+      propertyPath: 'levels.Array.data[1].collectibleIDs.Array.data[0]'
+      value: WesternCanyon_01
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: 'levels.Array.data[2].collectibleIDs.Array.data[0]'
       value: FlowerPower
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: 'levels.Array.data[3].collectibleIDs.Array.data[0]'
+      value: Greenlight01
+      objectReference: {fileID: 0}
+    - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
+      propertyPath: 'levels.Array.data[4].collectibleIDs.Array.data[0]'
+      value: Lvl004Empty
       objectReference: {fileID: 0}
     - target: {fileID: 1472013402509314578, guid: 80b4f2219b4d6e240b3c4a575d8f1b62, type: 3}
       propertyPath: 'levels.Array.data[6].collectibleIDs.Array.data[0]'
@@ -1341,3 +1469,4 @@ SceneRoots:
   - {fileID: 1272398100}
   - {fileID: 894221298}
   - {fileID: 214495239}
+  - {fileID: 33865152}

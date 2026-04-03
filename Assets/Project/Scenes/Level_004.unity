@@ -80932,9 +80932,13 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3128886738955206479, guid: 62e8cf5d8e610c14aa1def1f208af8c4, type: 3}
+      propertyPath: enemyIconsUI
+      value: 
+      objectReference: {fileID: 115993669638194593}
+    - target: {fileID: 3128886738955206479, guid: 62e8cf5d8e610c14aa1def1f208af8c4, type: 3}
       propertyPath: corpseIconsUI
       value: 
-      objectReference: {fileID: 1658969224}
+      objectReference: {fileID: 0}
     - target: {fileID: 4348486827236520684, guid: 62e8cf5d8e610c14aa1def1f208af8c4, type: 3}
       propertyPath: m_Name
       value: CleaningManager
@@ -94542,17 +94546,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
   m_PrefabInstance: {fileID: 1985882154}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1658969224 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 869905188020781301, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-  m_PrefabInstance: {fileID: 115993669638194592}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d8e0f456505edc42aefd265035da001, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CorpseIconsUI
 --- !u!1001 &1659982866
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -122467,10 +122460,21 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 8421147897506196045, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      insertIndex: 5
+      insertIndex: 6
       addedObject: {fileID: 1692102297}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+--- !u!114 &115993669638194593 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5871758403430879850, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+  m_PrefabInstance: {fileID: 115993669638194592}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d938481c7e262cc40a04543d2d349ed3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyIconsUI
 --- !u!114 &115993669638194594 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5125773258975109877, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}

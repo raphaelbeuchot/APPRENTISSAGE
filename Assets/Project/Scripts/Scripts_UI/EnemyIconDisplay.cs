@@ -67,7 +67,7 @@ public class EnemyIconDisplay : MonoBehaviour
         if (trackedEnemy != null)
         {
             trackedEnemy.OnTakeDamage -= HandleDamage;
-            trackedEnemy.OnDeath -= HandleDamage;
+            trackedEnemy.OnDeath -= HandleDeath;
         }
     }
 }

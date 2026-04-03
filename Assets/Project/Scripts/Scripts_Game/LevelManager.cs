@@ -58,8 +58,8 @@ public class LevelManager : MonoBehaviour
         if (gameManager == null)
             gameManager = FindObjectOfType<GameManager>();
 
-        if (CleaningBonusManager.Instance != null)
-            CleaningBonusManager.Instance.OnAllCorpsesCleaned += OnAllCorpsesCleaned;
+        //if (CleaningBonusManager.Instance != null)
+          //  CleaningBonusManager.Instance.OnAllCorpsesCleaned += OnAllCorpsesCleaned;
 
         if (player == null)
             player = FindObjectOfType<PlayerPhysicsMovement>();
@@ -68,6 +68,9 @@ public class LevelManager : MonoBehaviour
 
         if (playerHealth == null && player != null)
             playerHealth = player.GetComponent<PlayerHealth>();
+
+        if (CleaningCreditManager.Instance != null)
+            CleaningCreditManager.Instance.SnapshotLevelStart();
 
         if (victoryUI == null)
         {
@@ -115,7 +118,7 @@ public class LevelManager : MonoBehaviour
         Time.timeScale = 1f;
     }
 
-    /*void Update()
+    void Update()
     {
         if (requireAllEnemiesKilled && !doorHasBeenActivated && gameManager != null && goalDoor != null)
         {
@@ -125,7 +128,7 @@ public class LevelManager : MonoBehaviour
                 StartCoroutine(ActivateDoorDelayed());
             }
         }
-    }*/
+    }
 
     IEnumerator ActivateDoorDelayed()
     {
@@ -188,7 +191,7 @@ public class LevelManager : MonoBehaviour
             if (isTutorialLevel)
                 LoadLevelSelect();
             else
-                LoadWheelOfFortune();
+                LoadWheelOrLevelSelect();
         }
         else
         {
@@ -196,10 +199,17 @@ public class LevelManager : MonoBehaviour
                 victoryUI.Show(playerHealth);
             else
             {
-                Debug.LogWarning("VictoryUI non trouve! Chargement WheelOfFortune automatique.");
-                Invoke(isTutorialLevel ? nameof(LoadLevelSelect) : nameof(LoadWheelOfFortune), delayBeforeNextLevel);
+                Debug.LogWarning("VictoryUI non trouve! Chargement automatique.");
+                Invoke(isTutorialLevel ? nameof(LoadLevelSelect) : nameof(LoadWheelOrLevelSelect), delayBeforeNextLevel);
             }
         }
+    }
+    public void LoadWheelOrLevelSelect()
+    {
+        if (CleaningCreditManager.Instance != null && CleaningCreditManager.Instance.HasCredits())
+            LoadWheelOfFortune();
+        else
+            LoadLevelSelect();
     }
 
     // ============================================
@@ -218,6 +228,8 @@ public class LevelManager : MonoBehaviour
 
         if (gameOverUI != null)
             gameOverUI.Show();
+        if (CleaningCreditManager.Instance != null)
+            CleaningCreditManager.Instance.RollbackToSnapshot();
         else
         {
             Debug.LogWarning("GameOverUI non trouve! Redemarrage automatique.");
@@ -250,7 +262,8 @@ public class LevelManager : MonoBehaviour
 
     public void RestartLevel()
     {
-        Debug.Log("Redemarrage du niveau...");
+        if (CleaningCreditManager.Instance != null)
+            CleaningCreditManager.Instance.RollbackToSnapshot();
 
         CountdownManager countdown = FindObjectOfType<CountdownManager>();
         if (countdown != null) countdown.StopAmbient();
@@ -303,7 +316,7 @@ public class LevelManager : MonoBehaviour
         if (playerHealth != null)
             playerHealth.OnDeath -= OnPlayerDeath;
 
-        if (CleaningBonusManager.Instance != null)
-            CleaningBonusManager.Instance.OnAllCorpsesCleaned -= OnAllCorpsesCleaned;
+        //if (CleaningBonusManager.Instance != null)
+          //  CleaningBonusManager.Instance.OnAllCorpsesCleaned -= OnAllCorpsesCleaned;
     }
 }

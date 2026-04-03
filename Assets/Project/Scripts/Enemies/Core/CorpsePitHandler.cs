@@ -3,6 +3,7 @@ public class CorpsePitHandler : MonoBehaviour
 {
     private bool hasBeenCleaned = false;
     public static event System.Action<CorpsePitHandler> OnCorpseCleaned;
+    public EnemyHealth sourceEnemy;
     public void OnEnterPit(PitContentType.ContentCategory category)
     {
         if (hasBeenCleaned) return;

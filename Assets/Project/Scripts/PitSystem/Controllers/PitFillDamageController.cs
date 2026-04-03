@@ -457,19 +457,27 @@ public class PitFillDamageController : MonoBehaviour
 
         if (!data.interactable.CanTakePitDamage())
         {
-            if (fillType.category == PitContentType.ContentCategory.InstantKill ||
-                fillType.category == PitContentType.ContentCategory.Water ||
-                fillType.category == PitContentType.ContentCategory.Empty)
+            GameObject go = data.interactable.GetGameObject();
+            if (go != null)
             {
-                GameObject go = data.interactable.GetGameObject();
-                if (go != null)
+                // Si c'est un ennemi, on declenche le clean up
+                EnemyHealth eh = go.GetComponent<EnemyHealth>();
+                if (eh != null && fillType != null)
+                {
+                    CorpsePitHandler handler = go.GetComponent<CorpsePitHandler>();
+                    if (handler == null)
+                        handler = go.AddComponent<CorpsePitHandler>();
+                    handler.sourceEnemy = eh;
+                    handler.OnEnterPit(fillType.category);
+                }
+
+                if (fillType.category == PitContentType.ContentCategory.InstantKill ||
+                    fillType.category == PitContentType.ContentCategory.Water ||
+                    fillType.category == PitContentType.ContentCategory.Empty)
                 {
                     float delay = fillType.destroyDelay;
-
                     if (showDebugLogs)
-                        Debug.Log($"[PitFill] {go.name} will be destroyed in {delay}s");
-
-                    EnemyHealth eh = go.GetComponent<EnemyHealth>();
+                        Debug.Log(string.Format("[PitFill] {0} will be destroyed in {1}s", go.name, delay));
                     if (eh == null || eh.destroyOnDeath)
                         Destroy(go, delay);
                 }
