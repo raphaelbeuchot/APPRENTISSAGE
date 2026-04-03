@@ -15,18 +15,9 @@ public class BrightEyesController : MonoBehaviour
 
     private GameManager gameManager;
     private Transform player;
-    private NavMeshAgent agent;
 
-    private bool isAwake = false;
     private bool playerInRange = false;
-
-    private float lastDamageTime;
-    private float currentHealth;
     private bool isDead = false;
-
-    private bool isFlameExtinguished = false;
-    private bool wasExtinguishedThisCycle = false;
-    private SentinelCycleManager.GameState lastState;
 
     private Material materialInstance;
 
@@ -34,30 +25,8 @@ public class BrightEyesController : MonoBehaviour
     {
         gameManager = FindFirstObjectByType<GameManager>();
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
-        agent = GetComponent<NavMeshAgent>();
-
-        if (stats != null)
-        {
-            currentHealth = stats.maxHealth;
-            isFlameExtinguished = stats.startsExtinguished;
-        }
 
         SetupHealthBar();
-
-        if (agent != null)
-        {
-            agent.enabled = stats.canWander;
-            if (stats.canWander)
-            {
-                agent.speed = stats.wanderSpeed;
-                StartCoroutine(WanderRoutine());
-            }
-        }
-
-        if (gameManager != null && gameManager.sentinelCycleManager != null)
-        {
-            lastState = gameManager.sentinelCycleManager.currentState;
-        }
     }
 
     void SetupHealthBar()
@@ -73,7 +42,8 @@ public class BrightEyesController : MonoBehaviour
                 if (healthBarUI != null)
                 {
                     manager.RegisterEnemy(transform, healthBarUI);
-                    healthBarUI.UpdateHealth(currentHealth, stats.maxHealth, stats.maxHealth); healthBarUI.gameObject.SetActive(false);
+                    healthBarUI.UpdateHealth(stats.maxHealth, stats.maxHealth, stats.maxHealth);
+                    healthBarUI.gameObject.SetActive(false);
                 }
             }
         }
@@ -94,154 +64,7 @@ public class BrightEyesController : MonoBehaviour
                 healthBarUI.Hide();
         }
 
-        if (gameManager != null && gameManager.sentinelCycleManager != null && stats.canReignite && isFlameExtinguished && wasExtinguishedThisCycle)
-        {
-            SentinelCycleManager.GameState currentState = gameManager.sentinelCycleManager.currentState;
-
-            if (currentState == SentinelCycleManager.GameState.Alert && lastState != SentinelCycleManager.GameState.Alert)
-            {
-                ReigniteFlame();
-            }
-
-            lastState = currentState;
-        }
-
-        if (isFlameExtinguished)
-        {
-            if (isAwake)
-            {
-                ForceDeactivate();
-            }
-            return;
-        }
-
-        UpdateMaterial();
-
-        bool shouldBeAwake = ShouldBeAwake();
-
-        if (shouldBeAwake != isAwake)
-        {
-            if (shouldBeAwake)
-                WakeUp();
-            else
-                Sleep();
-        }
-
-        if (isAwake)
-        {
-            CheckPlayerDetection();
-            CheckPlayerContact();
-        }
-    }
-
-    bool ShouldBeAwake()
-    {
-        if (gameManager == null || gameManager.sentinelCycleManager == null) return false;
-        if (isFlameExtinguished) return false;
-
-        SentinelCycleManager.GameState state = gameManager.sentinelCycleManager.currentState;
-
-        // Release suit le même comportement que GreenLight
-        if ((state == SentinelCycleManager.GameState.GreenLight || state == SentinelCycleManager.GameState.Release) && stats.activeInGreenLight)
-            return true;
-        if (state == SentinelCycleManager.GameState.Alert && stats.activeInAlert)
-            return true;
-        if (state == SentinelCycleManager.GameState.RedLight && stats.activeInRedLight)
-            return true;
-
-        return false;
-    }
-
-    void WakeUp()
-    {
-        isAwake = true;
-        Debug.Log($"{gameObject.name} comportement ACTIF");
-    }
-
-    void Sleep()
-    {
-        isAwake = false;
-        playerInRange = false;
-
-        if (player != null)
-        {
-            PlayerPhysicsMovement movement = player.GetComponent<PlayerPhysicsMovement>();
-            if (movement != null)
-            {
-                movement.RemoveBrightEyesAttraction();
-
-                float distToPlayer = Vector3.Distance(transform.position, player.position);
-                if (distToPlayer <= stats.releaseRecoilRange)
-                {
-                    Vector3 recoilDirection = (player.position - transform.position).normalized;
-                    movement.ApplyKnockback(recoilDirection * stats.releaseRecoilForce, 0.3f);
-                    Debug.Log($"{gameObject.name} comportement INACTIF + recoil player");
-                }
-                else
-                {
-                    Debug.Log($"{gameObject.name} comportement INACTIF");
-                }
-            }
-        }
-    }
-
-    void ForceDeactivate()
-    {
-        isAwake = false;
-        playerInRange = false;
-
-        if (player != null)
-        {
-            PlayerPhysicsMovement movement = player.GetComponent<PlayerPhysicsMovement>();
-            if (movement != null)
-            {
-                movement.RemoveBrightEyesAttraction();
-            }
-        }
-    }
-
-    void UpdateMaterial()
-    {
-        if (flameRenderer == null || stats == null) return;
-
-        
-
-        if (isFlameExtinguished)
-        {
-            flameRenderer.enabled = false;
-            return;
-        }
-
-        if (isAwake)
-        {
-            // Appliquer materialAwake avec pulse
-            if (materialInstance == null || flameRenderer.sharedMaterial != stats.materialAwake)
-            {
-                if (materialInstance != null) Destroy(materialInstance);
-                materialInstance = new Material(stats.materialAwake);
-                flameRenderer.material = materialInstance;
-            }
-
-            // Pulse emission
-            float pulse = Mathf.PingPong(Time.time * stats.awakePulseSpeed, 1f);
-            float intensity = Mathf.Lerp(stats.awakePulseIntensityMin, stats.awakePulseIntensityMax, pulse);
-            Color baseColor = stats.materialAwake.GetColor("_EmissionColor");
-            materialInstance.SetColor("_EmissionColor", baseColor * intensity);
-
-            flameRenderer.enabled = true;
-        }
-        else
-        {
-            // Appliquer materialAsleep sans pulse
-            if (materialInstance == null || flameRenderer.sharedMaterial != stats.materialAsleep)
-            {
-                if (materialInstance != null) Destroy(materialInstance);
-                materialInstance = new Material(stats.materialAsleep);
-                flameRenderer.material = materialInstance;
-            }
-
-            flameRenderer.enabled = true;
-        }
+        CheckPlayerDetection();
     }
 
     void CheckPlayerDetection()
@@ -254,6 +77,7 @@ public class BrightEyesController : MonoBehaviour
             {
                 playerInRange = false;
                 RemoveAttractionFromPlayer();
+                NotifyBrightEyesNoLongerDetected();
             }
             return;
         }
@@ -273,6 +97,7 @@ public class BrightEyesController : MonoBehaviour
             {
                 playerInRange = true;
                 ApplyAttractionToPlayer();
+                NotifyBrightEyesDetected();
             }
         }
         else
@@ -281,89 +106,43 @@ public class BrightEyesController : MonoBehaviour
             {
                 playerInRange = false;
                 RemoveAttractionFromPlayer();
+                NotifyBrightEyesNoLongerDetected();
             }
         }
     }
 
-    void CheckPlayerContact()
+    void NotifyBrightEyesDetected()
     {
-        float distance = Vector3.Distance(transform.position, player.position);
+        PlayerDetectionFeedback feedback = player.GetComponent<PlayerDetectionFeedback>();
+        if (feedback != null)
+            feedback.OnBrightEyesDetected();
+    }
 
-        if (distance <= stats.contactDamageRange)
-        {
-            if (Time.time - lastDamageTime >= stats.contactDamageInterval)
-            {
-                PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
-                if (playerHealth != null && !playerHealth.IsDead())
-                {
-                    playerHealth.TakeDamage(stats.contactDamage);
-                    lastDamageTime = Time.time;
-                }
-            }
-        }
+    void NotifyBrightEyesNoLongerDetected()
+    {
+        PlayerDetectionFeedback feedback = player.GetComponent<PlayerDetectionFeedback>();
+        if (feedback != null)
+            feedback.OnBrightEyesNoLongerDetected();
     }
 
     void ApplyAttractionToPlayer()
     {
         PlayerPhysicsMovement movement = player.GetComponent<PlayerPhysicsMovement>();
         if (movement != null)
-        {
             movement.ApplyBrightEyesAttraction(transform, stats.attractionForce, stats.playerSlowdownMultiplier);
-        }
     }
 
     void RemoveAttractionFromPlayer()
     {
         PlayerPhysicsMovement movement = player.GetComponent<PlayerPhysicsMovement>();
         if (movement != null)
-        {
             movement.RemoveBrightEyesAttraction();
-        }
-    }
-
-    public void ExtinguishFlame()
-    {
-        if (isFlameExtinguished) return;
-
-        isFlameExtinguished = true;
-        wasExtinguishedThisCycle = true;
-
-        ForceDeactivate();
-
-        Debug.Log($"{gameObject.name} flame EXTINGUISHED!");
-    }
-
-    void ReigniteFlame()
-    {
-        if (!isFlameExtinguished) return;
-
-        isFlameExtinguished = false;
-        wasExtinguishedThisCycle = false;
-        currentHealth = stats.maxHealth;
-
-        if (healthBarUI != null)
-        {
-            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth, stats.maxHealth);
-        }
-
-        Debug.Log($"{gameObject.name} flame REIGNITED!");
     }
 
     public void TakeDamage(float damage)
     {
-        if (isDead || isFlameExtinguished) return;
-
-        currentHealth -= damage;
-        currentHealth = Mathf.Max(0f, currentHealth);
-
-        if (healthBarUI != null)
-        {
-            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth, stats.maxHealth);
-        }
-        if (currentHealth <= 0f)
-        {
-            Die();
-        }
+        if (isDead) return;
+        Die();
     }
 
     void Die()
@@ -372,10 +151,13 @@ public class BrightEyesController : MonoBehaviour
 
         isDead = true;
 
-        ForceDeactivate();
+        playerInRange = false;
+        RemoveAttractionFromPlayer();
+        NotifyBrightEyesNoLongerDetected();
 
-        // Appliquer materialDead directement ici car Update() ne tourne plus
-        if (flameRenderer != null && stats != null)
+        StartCoroutine(ShrinkAndDisableSpheres());
+
+        if (flameRenderer != null)
         {
             if (stats.materialDead != null)
             {
@@ -394,46 +176,54 @@ public class BrightEyesController : MonoBehaviour
         {
             EnemyHealthBarManager manager = FindFirstObjectByType<EnemyHealthBarManager>();
             if (manager != null)
-            {
                 manager.UnregisterEnemy(transform);
-            }
         }
 
-        Debug.Log($"{gameObject.name} DEAD - permanent!");
-        // Pas de Destroy : le bright eyes reste en scene mais inactif
+        Debug.Log($"{gameObject.name} DEAD!");
     }
 
-    public bool IsAlive() => !isDead && currentHealth > 0f;
-    public bool IsAwake() => isAwake;
-    public bool IsFlameExtinguished() => isFlameExtinguished;
-
-    IEnumerator WanderRoutine()
+    IEnumerator ShrinkAndDisableSpheres()
     {
-        while (stats.canWander && !isDead)
+        SphereAnim[] anims = transform.parent.GetComponentsInChildren<SphereAnim>(true);
+
+        foreach (SphereAnim anim in anims)
+            anim.enabled = false;
+
+        Vector3[] initialScales = new Vector3[anims.Length];
+        for (int i = 0; i < anims.Length; i++)
+            initialScales[i] = anims[i].transform.localScale;
+
+        float duration = 0.25f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
         {
-            yield return new WaitForSeconds(Random.Range(3f, 6f));
-
-            Vector3 randomDirection = Random.insideUnitSphere * stats.wanderRadius;
-            randomDirection += transform.position;
-
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(randomDirection, out hit, stats.wanderRadius, NavMesh.AllAreas))
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            for (int i = 0; i < anims.Length; i++)
             {
-                agent.SetDestination(hit.position);
+                if (anims[i] != null)
+                    anims[i].transform.localScale = Vector3.Lerp(initialScales[i], Vector3.zero, t);
             }
+            yield return null;
+        }
+
+        foreach (SphereAnim anim in anims)
+        {
+            if (anim != null)
+                anim.gameObject.SetActive(false);
         }
     }
+
+    public bool IsAlive() => !isDead;
+    public bool IsFlameExtinguished() => isDead;
 
     void OnDestroy()
     {
         if (playerInRange && player != null)
-        {
             RemoveAttractionFromPlayer();
-        }
 
         if (materialInstance != null)
-        {
             Destroy(materialInstance);
-        }
     }
 }

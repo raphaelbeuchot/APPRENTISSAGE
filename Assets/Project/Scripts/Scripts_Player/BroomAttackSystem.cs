@@ -258,12 +258,7 @@ public class BroomAttackSystem : MonoBehaviour
                 }
             }
 
-            BrightEyesController brightEyes = hit.GetComponent<BrightEyesController>();
-            if (brightEyes != null && brightEyes.IsAlive() && !brightEyes.IsFlameExtinguished())
-            {
-                brightEyes.ExtinguishFlame();
-                Debug.Log(gameObject.name + " BROOM extinguished " + hit.gameObject.name + "'s flame!");
-            }
+            
         }
 
         // BLINDERS

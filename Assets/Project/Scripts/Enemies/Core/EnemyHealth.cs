@@ -287,12 +287,7 @@ public class EnemyHealth : MonoBehaviour
 
     public void TakeMeleeDamage(AttackType attackType)
     {
-        BrightEyesController brightEyes = GetComponent<BrightEyesController>();
-        if (brightEyes != null && !brightEyes.IsAwake())
-        {
-            Debug.Log($"{gameObject.name} is sleeping, immune to damage");
-            return;
-        }
+        
 
         if (isDead) return;
 
@@ -338,11 +333,7 @@ public class EnemyHealth : MonoBehaviour
     public void TakeMeleeDamage(float damage)
     {
         BrightEyesController brightEyes = GetComponent<BrightEyesController>();
-        if (brightEyes != null && !brightEyes.IsAwake())
-        {
-            Debug.Log($"{gameObject.name} is sleeping, immune to damage");
-            return;
-        }
+       
 
         if (isDead) return;
 

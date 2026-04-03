@@ -232,7 +232,7 @@ public class MeleeAttackSystem : MonoBehaviour
         Collider[] hits = Physics.OverlapSphere(
             transform.position + Vector3.up * 1f,
             stats.attackRange,
-            LayerMask.GetMask("Zombie", "Swarm")
+            LayerMask.GetMask("Zombie", "Swarm", "BrightEye")
         );
 
         bool hitSomething = false;
@@ -347,7 +347,7 @@ public class MeleeAttackSystem : MonoBehaviour
             if (brightEyes != null && brightEyes.IsAlive() && !brightEyes.IsFlameExtinguished())
             {
                 hitSomething = true;
-                brightEyes.TakeDamage(brightEyes.stats.sprayDamageTaken);
+                brightEyes.TakeDamage(0f);
                 Debug.Log(gameObject.name + " sprayed " + hit.gameObject.name + "!");
             }
         }
