@@ -12,6 +12,8 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
 
     private HashSet<EnemyAI_AStar> enemiesOnPlatform = new HashSet<EnemyAI_AStar>();
     private HashSet<RagdollDeathEffect> corpsesOnPlatform = new HashSet<RagdollDeathEffect>();
+    private HashSet<PhysicsProp> propsOnPlatform = new HashSet<PhysicsProp>();
+
 
     private Dictionary<RagdollDeathEffect, float> corpseCooldowns = new Dictionary<RagdollDeathEffect, float>();
 
@@ -84,6 +86,14 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
             corpse.transform.position = pivotPoint + directionFromPivot;
             corpse.transform.Rotate(Vector3.up, angleThisFrame);
         }
+        foreach (PhysicsProp prop in propsOnPlatform)
+        {
+            if (prop == null) continue;
+            Vector3 directionFromPivot = prop.transform.position - pivotPoint;
+            directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
+            prop.transform.position = pivotPoint + directionFromPivot;
+            prop.transform.Rotate(Vector3.up, angleThisFrame);
+        }
 
     }
     public void RemoveCorpse(RagdollDeathEffect corpse)
@@ -142,6 +152,9 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
             if (!corpseCooldowns.ContainsKey(corpse) || Time.time > corpseCooldowns[corpse])
                 corpsesOnPlatform.Add(corpse);
         }
+        PhysicsProp prop = collision.gameObject.GetComponent<PhysicsProp>();
+        if (prop != null && !propsOnPlatform.Contains(prop))
+            propsOnPlatform.Add(prop);
     }
 
     void OnCollisionExit(Collision collision)
@@ -156,6 +169,9 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
         RagdollDeathEffect corpse = collision.gameObject.GetComponentInParent<RagdollDeathEffect>();
         if (corpse != null)
             corpsesOnPlatform.Remove(corpse);
+        PhysicsProp prop = collision.gameObject.GetComponent<PhysicsProp>();
+        if (prop != null)
+            propsOnPlatform.Remove(prop);
     }
 
     void OnDestroy()
