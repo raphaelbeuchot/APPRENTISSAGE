@@ -334,6 +334,13 @@ public class BombProjectile : MonoBehaviour
                 destabilizable.TipOver(transform.position);
                 continue;
             }
+
+            PhysicsProp prop = hit.GetComponent<PhysicsProp>();
+            if (prop != null)
+            {
+                prop.ReceiveExplosion(transform.position, knockbackForce, explosionRadius);
+                continue;
+            }
         }
 
         if (explosionVisualPrefab != null)
