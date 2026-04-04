@@ -682,4 +682,21 @@ public class SentinelCycleManager : MonoBehaviour
         if (musicAudioSource != null && !musicAudioSource.isPlaying && currentState == GameState.GreenLight)
             musicAudioSource.UnPause();
     }
+    public float GetCurrentPressureFactor()
+    {
+        if (gameManager == null || playerTransform == null || sentinelTransform == null)
+            return 0f;
+
+        float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
+        float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+
+        int totalEnemies = gameManager.GetTotalEnemies();
+        int enemiesKilled = gameManager.GetEnemiesKilled();
+        float enemyFactor = 0f;
+
+        if (totalEnemies > 0)
+            enemyFactor = (float)enemiesKilled / totalEnemies;
+
+        return Mathf.Max(distanceFactor, enemyFactor);
+    }
 }
