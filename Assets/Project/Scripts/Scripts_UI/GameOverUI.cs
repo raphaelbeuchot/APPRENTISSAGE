@@ -37,8 +37,7 @@ public class GameOverUI : MonoBehaviour
     [SerializeField] private AudioClip gameOverSound;
     private AudioSource audioSource;
 
-    [Header("References")]
-    [SerializeField] private PlayerHealth playerHealth;
+    
 
     private List<TextMeshProUGUI> menuTexts = new List<TextMeshProUGUI>();
     private int currentSelection = 0;
@@ -55,20 +54,8 @@ public class GameOverUI : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        if (playerHealth == null)
-        {
-            playerHealth = FindObjectOfType<PlayerHealth>();
-        }
 
-        if (playerHealth != null)
-        {
-            playerHealth.OnDeath += Show;
-            Debug.Log("GameOverUI subscribed to PlayerHealth.OnDeath");
-        }
-        else
-        {
-            Debug.LogError("GameOverUI: PlayerHealth not found!");
-        }
+        
 
         // Setup liste textes menu
         menuTexts.Add(restartText);
@@ -263,11 +250,5 @@ public class GameOverUI : MonoBehaviour
         }
     }
 
-    void OnDestroy()
-    {
-        if (playerHealth != null)
-        {
-            playerHealth.OnDeath -= Show;
-        }
-    }
+   
 }
