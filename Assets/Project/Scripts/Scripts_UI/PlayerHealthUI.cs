@@ -32,6 +32,21 @@ public class PlayerHealthUI : MonoBehaviour
     private bool initialized = false;
     private bool bonusDraining = false;
 
+#if UNITY_EDITOR
+    void Reset()
+    {
+        healthBarFill = transform.Find("HealthBarFill")?.GetComponent<Image>();
+        healthBarDamage = transform.Find("HealthBarDamage")?.GetComponent<Image>();
+
+        Transform bonus = transform.parent?.Find("BonusBarContainer");
+        if (bonus != null)
+        {
+            bonusBarContainer = bonus.GetComponent<RectTransform>();
+            bonusBarFill = bonus.Find("BonusFill")?.GetComponent<Image>();
+            bonusBarDamage = bonus.Find("BonusDamage")?.GetComponent<Image>();
+        }
+    }
+#endif
     void Start()
     {
         if (playerHealth == null)
