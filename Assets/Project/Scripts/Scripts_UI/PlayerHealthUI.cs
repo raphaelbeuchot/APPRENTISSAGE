@@ -13,8 +13,8 @@ public class PlayerHealthUI : MonoBehaviour
     [SerializeField] private RectTransform bonusBarContainer;
 
     [Header("Config")]
-    [SerializeField] private float baseContainerWidth = 300f;
-    [SerializeField] private float baseContainerHeight = 15f;
+    [SerializeField] private float baseContainerWidth = 150f;
+    [SerializeField] private float baseContainerHeight = 10f;
 
     [Header("Damage Preview")]
     [SerializeField] private float damagePreviewDelay = 0.3f;

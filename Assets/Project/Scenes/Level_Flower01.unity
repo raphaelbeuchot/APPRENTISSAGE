@@ -26046,7 +26046,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6744903367166326020, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: debugOverride
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalPosition.x
@@ -37006,25 +37006,9 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: bonusBarFill
-      value: 
-      objectReference: {fileID: 115993669638194595}
-    - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: playerHealth
       value: 
       objectReference: {fileID: 1871075794}
-    - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: bonusBarDamage
-      value: 
-      objectReference: {fileID: 115993669638194596}
-    - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: healthBarDamage
-      value: 
-      objectReference: {fileID: 115993669638194597}
-    - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: bonusBarContainer
-      value: 
-      objectReference: {fileID: 115993669638194594}
     - target: {fileID: 6269731636678902259, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: sprayBar
       value: 
@@ -37037,38 +37021,6 @@ PrefabInstance:
       propertyPath: staminaBar
       value: 
       objectReference: {fileID: 271795534}
-    - target: {fileID: 7393856716106443104, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: colorLow.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7393856716106443104, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: colorLow.g
-      value: 0.7877358
-      objectReference: {fileID: 0}
-    - target: {fileID: 7393856716106443104, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: colorLow.r
-      value: 0.5828738
-      objectReference: {fileID: 0}
-    - target: {fileID: 7393856716106443104, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: colorMid.b
-      value: 0.015686274
-      objectReference: {fileID: 0}
-    - target: {fileID: 7393856716106443104, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: colorMid.g
-      value: 0.5807828
-      objectReference: {fileID: 0}
-    - target: {fileID: 7393856716106443104, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: colorHigh.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7393856716106443104, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: colorHigh.g
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7393856716106443104, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: colorHigh.r
-      value: 0.745283
-      objectReference: {fileID: 0}
     - target: {fileID: 7393856716106443104, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: cycleManager
       value: 
@@ -37093,44 +37045,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d938481c7e262cc40a04543d2d349ed3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyIconsUI
---- !u!224 &115993669638194594 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 8461077461872918516, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-  m_PrefabInstance: {fileID: 115993669638194592}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &115993669638194595 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6065079022662249810, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-  m_PrefabInstance: {fileID: 115993669638194592}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
---- !u!114 &115993669638194596 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4037002866502712284, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-  m_PrefabInstance: {fileID: 115993669638194592}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
---- !u!114 &115993669638194597 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5125773258975109877, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-  m_PrefabInstance: {fileID: 115993669638194592}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!1001 &421105967913221214
 PrefabInstance:
   m_ObjectHideFlags: 0

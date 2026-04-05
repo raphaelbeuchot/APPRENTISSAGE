@@ -19,6 +19,8 @@ public class PlayerHealth : MonoBehaviour
 
     private bool isInKnockbackGrace = false;
     private float knockbackGraceEndTime = 0f;
+    private Vector3 lastDamageDirection = Vector3.back;
+
 
     public event Action<float, float> OnHealthChanged;
     public event Action OnDeath;
@@ -79,14 +81,16 @@ public class PlayerHealth : MonoBehaviour
         TestClimbDetection climbDetection = GetComponent<TestClimbDetection>();
         if (climbDetection != null)
             climbDetection.CancelClimb();
+
+        Vector3 knockbackDir = (transform.position - sentinelPosition);
+        knockbackDir.y = 0f;
+        knockbackDir.Normalize();
+        lastDamageDirection = knockbackDir;   // <-- nouveau
+
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
-        {
-            Vector3 knockbackDir = (transform.position - sentinelPosition);
-            knockbackDir.y = 0f;
-            knockbackDir.Normalize();
             rb.AddForce(knockbackDir * stats.sentinelKnockbackForce, ForceMode.Impulse);
-        }
+
         TakeDamage(settings.playerDamage);
     }
 
@@ -145,12 +149,27 @@ public class PlayerHealth : MonoBehaviour
         if (isDead) return;
         isDead = true;
         Debug.Log("PLAYER IS DEAD!");
+
+        DeathSequence deathSequence = GetComponent<DeathSequence>();
+        Debug.Log("DeathSequence found: " + (deathSequence != null ? "OUI" : "NON - FALLBACK"));
+
+        if (deathSequence != null)
+        {
+            Debug.Log("Appel DeathSequence.Play()");
+            deathSequence.Play(lastDamageDirection);
+        }
+        else
+        {
+            Debug.Log("FALLBACK : OnDeath invoque directement");
+            OnDeath?.Invoke();
+            if (movement != null) movement.enabled = false;
+            var meleeSystem = GetComponent<MeleeAttackSystem>();
+            if (meleeSystem != null) meleeSystem.enabled = false;
+        }
+    }
+    public void TriggerOnDeath()
+    {
         OnDeath?.Invoke();
-        if (movement != null)
-            movement.enabled = false;
-        var meleeSystem = GetComponent<MeleeAttackSystem>();
-        if (meleeSystem != null)
-            meleeSystem.enabled = false;
     }
 
     public float GetCurrentHealth() => currentHealth;
