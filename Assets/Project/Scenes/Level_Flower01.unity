@@ -26040,6 +26040,10 @@ PrefabInstance:
       propertyPath: gameManager
       value: 
       objectReference: {fileID: 1801742136}
+    - target: {fileID: 5742306782079411465, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
+      propertyPath: hipBone
+      value: 
+      objectReference: {fileID: 1454380198}
     - target: {fileID: 5794444067654349612, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_Name
       value: Player
@@ -26108,6 +26112,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b253f867cc165994a8cba80f88f78902, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDetectionFeedback
+--- !u!4 &1454380198 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4845343978083670837, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
+  m_PrefabInstance: {fileID: 1454380196}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1459149868 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -35313,7 +35322,6 @@ GameObject:
   - component: {fileID: 2038059295}
   - component: {fileID: 2038059294}
   - component: {fileID: 2038059293}
-  - component: {fileID: 2038059292}
   m_Layer: 0
   m_Name: StartZonePlatform (1)
   m_TagString: Untagged
@@ -35337,18 +35345,6 @@ Transform:
   - {fileID: 373248138}
   m_Father: {fileID: 1890326246}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!114 &2038059292
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2038059290}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StartZone
 --- !u!65 &2038059293
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -37720,7 +37716,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: requireAllEnemiesKilled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7881171583933020488, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: m_Name

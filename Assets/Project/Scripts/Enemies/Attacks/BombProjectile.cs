@@ -324,6 +324,11 @@ public class BombProjectile : MonoBehaviour
 
                 if (ai != null)
                     ai.StartBlastStun(0.8f);
+                if (ai != null)
+                    ai.StartBlastStun(0.8f);
+
+                if (ai != null)
+                    ai.TriggerSweepFromBlast();
 
                 continue;
             }

@@ -1121,4 +1121,9 @@ public class EnemyAI_AStar : MonoBehaviour
         currentState = State.Idle;
         lastPathDestination = Vector3.positiveInfinity;
     }
+    public void TriggerSweepFromBlast()
+    {
+        if (animator != null)
+            animator.SetTrigger("EpervierKnockdown");
+    }
 }

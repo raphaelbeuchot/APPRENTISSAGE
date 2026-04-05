@@ -23,6 +23,9 @@ public class GameUIManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private GrabAttack[] zombies;
+    [SerializeField] private GameObject pressureGauge;
+    [SerializeField] private GameObject creditBar;
+    [SerializeField] private GameObject enemyIconsContainer;
 
     private GameObject healthBar;
     private GameObject staminaBar;
@@ -33,6 +36,9 @@ public class GameUIManager : MonoBehaviour
         if (healthBar != null) healthBar.SetActive(false);
         if (staminaBar != null) staminaBar.SetActive(false);
         if (sprayBar != null) sprayBar.SetActive(false);
+        if (pressureGauge != null) pressureGauge.SetActive(false);
+        if (creditBar != null) creditBar.SetActive(false);
+        if (enemyIconsContainer != null) enemyIconsContainer.SetActive(false);
     }
 
     private bool isGrabbed = false;

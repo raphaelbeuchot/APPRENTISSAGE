@@ -479,7 +479,10 @@ public class PitFillDamageController : MonoBehaviour
                     if (showDebugLogs)
                         Debug.Log(string.Format("[PitFill] {0} will be destroyed in {1}s", go.name, delay));
                     if (eh == null || eh.destroyOnDeath)
-                        Destroy(go, delay);
+                    {
+                        if (go.layer != LayerMask.NameToLayer("Human"))
+                            Destroy(go, delay);
+                    }
                 }
             }
         }
@@ -646,9 +649,8 @@ public class PitFillDamageController : MonoBehaviour
 
         if (go != null)
         {
-            Debug.Log(string.Format("[PitFill] Destroying {0} after fall death delay", go.name));
             EnemyHealth eh = go.GetComponent<EnemyHealth>();
-            if (eh == null || eh.destroyOnDeath)
+            if ((eh == null || eh.destroyOnDeath) && go.layer != LayerMask.NameToLayer("Human"))
                 Destroy(go);
         }
 
