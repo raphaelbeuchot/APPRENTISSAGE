@@ -252,6 +252,11 @@ public class EnemyAI_AStar : MonoBehaviour
             isDead = true;
             return;
         }
+        if (isKnockedDownByEpervier || isInStandupPhase)
+        {
+            StopMovement();
+            return;
+        }
 
         if (gameManager != null && gameManager.zombieStunBySentinel)
         {
@@ -320,6 +325,8 @@ public class EnemyAI_AStar : MonoBehaviour
         {
             yield return new WaitForSeconds(stats.detectionCheckInterval);
             if (isDead) continue;
+            if (isKnockedDownByEpervier) continue;
+            if (isInStandupPhase) continue;
             if (gameManager != null && gameManager.zombieStunBySentinel) continue;
             if (isStunnedBySentinel) continue;
             GrabAttack grab = GetComponent<GrabAttack>();
