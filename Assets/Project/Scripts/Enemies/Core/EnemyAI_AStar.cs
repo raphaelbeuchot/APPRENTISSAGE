@@ -1021,42 +1021,66 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         CapsuleCollider cap = GetComponent<CapsuleCollider>();
         float halfHeight = cap != null ? cap.height / 2f : 1f;
-        Debug.Log($"[Island] cap={cap != null} halfHeight={halfHeight} state={currentState}");
-        Vector3 edgeCheckOrigin = transform.position + Vector3.up * halfHeight + transform.forward * 0.4f;
         int islandLayer = LayerMask.GetMask("IslandPlatform");
-        bool groundAhead = Physics.Raycast(edgeCheckOrigin, Vector3.down, 2f, islandLayer);
 
-        Debug.Log($"[Island] groundAhead={groundAhead}");
-
-        if (!groundAhead)
-        {
-            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
-
-            Vector3 dirToBord = (targetHuman.position - transform.position);
-            dirToBord.y = 0;
-            dirToBord.Normalize();
-
-            if (dirToBord.magnitude > 0.1f)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(dirToBord);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
-            }
-            return;
-        }
+        Vector3 forwardCheckOrigin = transform.position + Vector3.up * halfHeight + transform.forward * 0.4f;
+        bool groundAhead = Physics.Raycast(forwardCheckOrigin, Vector3.down, 2f, islandLayer);
 
         Vector3 directionToPlayer = (targetHuman.position - transform.position);
         directionToPlayer.y = 0;
         directionToPlayer.Normalize();
 
+        if (!groundAhead)
+        {
+            // Tester gauche et droite
+            Vector3 rightOrigin = transform.position + Vector3.up * halfHeight + transform.right * 0.4f;
+            Vector3 leftOrigin = transform.position + Vector3.up * halfHeight - transform.right * 0.4f;
+
+            bool groundRight = Physics.Raycast(rightOrigin, Vector3.down, 2f, islandLayer);
+            bool groundLeft = Physics.Raycast(leftOrigin, Vector3.down, 2f, islandLayer);
+
+            Vector3 strafeDir = Vector3.zero;
+
+            if (groundRight && groundLeft)
+            {
+                // Les deux sont praticables, choisir celui qui rapproche le plus du joueur
+                float dotRight = Vector3.Dot(transform.right, directionToPlayer);
+                strafeDir = dotRight >= 0f ? transform.right : -transform.right;
+            }
+            else if (groundRight)
+            {
+                strafeDir = transform.right;
+            }
+            else if (groundLeft)
+            {
+                strafeDir = -transform.right;
+            }
+            else
+            {
+                // Bord total, on freeze
+                rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+                return;
+            }
+
+            // Orienter progressivement vers le joueur meme en strafant
+            if (directionToPlayer.magnitude > 0.1f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
+            }
+
+            rb.linearVelocity = new Vector3(strafeDir.x * stats.walkSpeed, rb.linearVelocity.y, strafeDir.z * stats.walkSpeed);
+            return;
+        }
+
+        // Sol devant, avancer normalement
         if (directionToPlayer.magnitude > 0.1f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * stats.rotationSpeed);
         }
 
-        float speed = stats.walkSpeed;
-        Vector3 moveDirection = transform.forward * speed;
-        rb.linearVelocity = new Vector3(moveDirection.x, rb.linearVelocity.y, moveDirection.z);
+        rb.linearVelocity = new Vector3(transform.forward.x * stats.walkSpeed, rb.linearVelocity.y, transform.forward.z * stats.walkSpeed);
     }
 
     protected virtual void HandleStunBySprayState()
