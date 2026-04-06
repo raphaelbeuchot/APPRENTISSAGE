@@ -209,6 +209,10 @@ public class GameManager : MonoBehaviour
 
         foreach (Collider col in targets)
         {
+            // Exclure les ennemis en cours de sequence sweep/standup
+            EnemyAI_AStar sequenceGuard = col.GetComponent<EnemyAI_AStar>();
+            if (sequenceGuard != null && (sequenceGuard.isKnockedDownByEpervier || sequenceGuard.isInStandupPhase))
+                continue;
             if (!trackedTargets.ContainsKey(col.gameObject))
                 trackedTargets[col.gameObject] = new TargetTrackingData();
 
@@ -700,6 +704,8 @@ public class GameManager : MonoBehaviour
         EnemyAI_AStar ai = enemy.GetComponent<EnemyAI_AStar>();
         if (ai != null)
         {
+            if (ai.isKnockedDownByEpervier)
+                ai.wasAlreadyShotDuringSweep = true;
             StartCoroutine(StunSpecificZombie(ai));
         }
 
@@ -898,6 +904,67 @@ public class GameManager : MonoBehaviour
     public void OnEnemyKilled()
     {
         enemiesKilled++;
+    }
+
+    public void ForceScheduleShot(GameObject enemy)
+    {
+        EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
+        if (enemyHealth == null || enemyHealth.IsDead()) return;
+        if (!trackedTargets.ContainsKey(enemy))
+            trackedTargets[enemy] = new TargetTrackingData();
+        TargetTrackingData td = trackedTargets[enemy];
+        if (td.isBeingShot) return;
+        td.isBeingShot = true;
+        td.wasInLOS = true;
+        float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
+        td.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
+        td.lastShotTime = Time.time;
+
+    }
+    public void NotifyStandUpDetected(GameObject enemy)
+    {
+        EnemyDetectionFeedback enemyFeedback = enemy.GetComponent<EnemyDetectionFeedback>();
+        if (enemyFeedback != null) enemyFeedback.OnDetected();
+        alreadyShot.Add(enemy);
+    }
+
+    public void ExecuteSequenceShot(GameObject enemy)
+    {
+        EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
+        if (enemyHealth == null || enemyHealth.IsDead()) return;
+
+        Vector3 eyePosition = (sentinelEye != null) ? sentinelEye.position : transform.position;
+        Vector3 sentinelPos = eyePosition + sentinelSettings.raycastOffset;
+        Vector3 targetPos = GetTargetCenter(enemy);
+
+        if (audioSource != null && sentinelSettings.shootSound != null)
+            audioSource.PlayOneShot(sentinelSettings.shootSound);
+
+        if (laserManager != null)
+            laserManager.TriggerShotAnimation(sentinelPos, targetPos);
+
+        SentinelTarget sentinelTarget = enemy.GetComponent<SentinelTarget>();
+        if (sentinelTarget != null) sentinelTarget.FlashWhite();
+
+        EnemyDetectionFeedback feedback = enemy.GetComponent<EnemyDetectionFeedback>();
+        if (feedback != null) feedback.OnShotBySentinel();
+
+        enemyHealth.TakeSentinelShotDuringSequence();
+    }
+
+    public void ResetSequenceTarget(GameObject enemy)
+    {
+        alreadyShot.Remove(enemy);
+        if (!trackedTargets.ContainsKey(enemy)) return;
+
+        TargetTrackingData td = trackedTargets[enemy];
+        td.isBeingShot = false;
+        td.shootScheduledTime = -1f;
+        td.wasInLOS = false;
+        td.consecutiveLOSScans = 0;
+        td.lastShotTime = Time.time;
+        td.lastCheckPosition = enemy.transform.position;
+        td.lastCheckTime = Time.time;
     }
 
     // Getters pour VictoryUI

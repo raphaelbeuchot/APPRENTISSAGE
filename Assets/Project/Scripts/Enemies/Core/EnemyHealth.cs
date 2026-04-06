@@ -365,7 +365,7 @@ public class EnemyHealth : MonoBehaviour
 
         EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
         if (ai != null && ai.isKnockedDownByEpervier)
-            ai.wasAlreadyShotDuringEpervier = true;
+            ai.wasAlreadyShotDuringSweep = true;
 
         GameManager gm = FindObjectOfType<GameManager>();
         if (gm != null && gm.sentinelEye != null)
@@ -678,6 +678,40 @@ public class EnemyHealth : MonoBehaviour
     }
 
     public int GetArmCount() => 2;
+
+    public void TakeSentinelShotDuringSequence()
+    {
+        if (isDead) return;
+
+        lastDeathType = DeathContext.DeathType.Sentinel;
+
+        EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
+        if (ai != null) ai.wasAlreadyShotDuringSweep = true;
+
+        GameManager gm = FindObjectOfType<GameManager>();
+        if (gm != null && gm.sentinelEye != null)
+            lastImpactDirection = (transform.position - gm.sentinelEye.position).normalized;
+
+        lastImpactForce = stats.sentinelDamageTaken;
+
+        if (pulseCoroutine != null) StopCoroutine(pulseCoroutine);
+        pulseCoroutine = StartCoroutine(PulseCoroutine());
+
+        currentHealth -= stats.sentinelDamageTaken;
+        currentHealth = Mathf.Max(0f, currentHealth);
+        OnTakeDamage?.Invoke();
+
+        OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
+        if (healthBarUI != null)
+            healthBarUI.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
+
+        if (sentinelHitDisplayCoroutine != null) StopCoroutine(sentinelHitDisplayCoroutine);
+        sentinelHitDisplayCoroutine = StartCoroutine(SentinelHitDisplayCoroutine());
+
+        if (currentHealth <= 0f)
+            Die();
+        // Pas de HitReaction, pas de StunCoroutine, pas de knockback physique
+    }
 
     private void OnDestroy()
     {

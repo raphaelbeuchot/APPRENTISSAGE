@@ -84,9 +84,9 @@ public class BombProjectile : MonoBehaviour
             return;
         }
 
-        lineRenderer.enabled = true;
-        lineRenderer.SetPosition(0, transform.position);
-        lineRenderer.SetPosition(1, target.position + Vector3.up);
+        //lineRenderer.enabled = true;
+        //lineRenderer.SetPosition(0, transform.position);
+        //lineRenderer.SetPosition(1, target.position + Vector3.up);
     }
 
     public void UpdateChargeLine(Vector3 playerPos, float t)
@@ -306,12 +306,6 @@ public class BombProjectile : MonoBehaviour
                 if (enemyHealth.IsDead()) continue;
 
                 EnemyAI_AStar ai = hit.GetComponentInParent<EnemyAI_AStar>();
-                AIPath enemyAiPath = hit.GetComponentInParent<AIPath>();
-
-                if (enemyAiPath != null)
-                    enemyAiPath.enabled = false;
-                if (ai != null)
-                    ai.enabled = false;
 
                 Rigidbody enemyRb = hit.GetComponentInParent<Rigidbody>();
                 if (enemyRb != null)
@@ -323,12 +317,7 @@ public class BombProjectile : MonoBehaviour
                 enemyHealth.SetKnockbackState(0.8f);
 
                 if (ai != null)
-                    ai.StartBlastStun(0.8f);
-                if (ai != null)
-                    ai.StartBlastStun(0.8f);
-
-                if (ai != null)
-                    ai.TriggerSweepFromBlast();
+                    ai.StartSweepSequence();
 
                 continue;
             }

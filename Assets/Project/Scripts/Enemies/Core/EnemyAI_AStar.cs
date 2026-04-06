@@ -40,8 +40,9 @@ public class EnemyAI_AStar : MonoBehaviour
 
     [Header("Epervier Mode")]
     [HideInInspector] public bool isKnockedDownByEpervier = false;
-    [HideInInspector] public bool wasAlreadyShotDuringEpervier = false;
-
+    [HideInInspector] public bool wasAlreadyShotDuringSweep = false;
+    [HideInInspector] public bool pendingSweepShot = false;
+    [HideInInspector] public bool isInStandupPhase = false;
 
 
 
@@ -600,25 +601,38 @@ public class EnemyAI_AStar : MonoBehaviour
         if (aiPath != null) aiPath.enabled = false;
 
         if (animator != null)
+        {
+            animator.SetBool("CanStandUp", false);
             animator.SetTrigger("EpervierKnockdown");
+        }
 
         yield return new WaitUntil(() =>
             animator.GetCurrentAnimatorStateInfo(0).IsName("Sweep") &&
             !animator.IsInTransition(0)
         );
 
-        yield return new WaitUntil(() =>
-            !animator.GetCurrentAnimatorStateInfo(0).IsName("Sweep")
-        );
+        float sweepLength = animator.GetCurrentAnimatorStateInfo(0).length;
+        yield return new WaitForSeconds(sweepLength);
+
+        if (gameManager != null && gameManager.IsInRedLight() && !wasAlreadyShotDuringSweep)
+        {
+            gameManager.ExecuteSequenceShot(gameObject);
+            yield return new WaitForSeconds(gameManager.sentinelSettings.stunZombieDuration);
+        }
 
         isKnockedDownByEpervier = false;
+        isInStandupPhase = true;
+
+        if (animator != null)
+            animator.SetBool("CanStandUp", true);
 
         yield return new WaitUntil(() =>
             animator.GetCurrentAnimatorStateInfo(0).IsName("Sad Idle") &&
             !animator.IsInTransition(0)
         );
 
-        wasAlreadyShotDuringEpervier = false;
+        isInStandupPhase = false;
+        wasAlreadyShotDuringSweep = false;
         lastPathDestination = Vector3.positiveInfinity;
         if (aiPath != null)
         {
@@ -626,6 +640,8 @@ public class EnemyAI_AStar : MonoBehaviour
             aiPath.canMove = true;
         }
         canMove = true;
+        if (gameManager != null)
+            gameManager.ResetSequenceTarget(gameObject);
     }
 
 
@@ -1125,5 +1141,73 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         if (animator != null)
             animator.SetTrigger("EpervierKnockdown");
+    }
+    public void OnStandUpAnimationEvent()
+    {
+        if (wasAlreadyShotDuringSweep) return;
+        if (gameManager == null) return;
+        if (!gameManager.IsInRedLight()) return;
+
+        gameManager.ForceScheduleShot(gameObject);
+    }
+    // Event animation a poser sur l'anim Sweep (feedback detection cas sweep)
+    public void OnSweepDetected()
+    {
+        if (gameManager == null || !gameManager.IsInRedLight()) return;
+        if (wasAlreadyShotDuringSweep) return;
+        EnemyDetectionFeedback feedback = GetComponent<EnemyDetectionFeedback>();
+        if (feedback != null) feedback.OnDetected();
+    }
+
+    public void OnStandUpStart()
+    {
+        if (isKnockedDownByEpervier) return;
+
+        isInStandupPhase = true;
+
+        if (wasAlreadyShotDuringSweep) return;
+        if (gameManager == null) return;
+        if (!gameManager.IsInRedLight()) return;
+
+        pendingSweepShot = true;
+        gameManager.NotifyStandUpDetected(gameObject);
+    }
+
+    public void OnStandUpComplete()
+    {
+        if (isKnockedDownByEpervier) return;
+
+        if (!pendingSweepShot)
+        {
+            isInStandupPhase = false;
+            return;
+        }
+        pendingSweepShot = false;
+
+        if (gameManager == null || !gameManager.IsInRedLight())
+        {
+            isInStandupPhase = false;
+            return;
+        }
+
+        if (animator != null) animator.speed = 0f;
+        gameManager.ExecuteSequenceShot(gameObject);
+        StartCoroutine(StandupStunCoroutine());
+    }
+
+    IEnumerator StandupStunCoroutine()
+    {
+        yield return new WaitForSeconds(gameManager.sentinelSettings.stunZombieDuration);
+        if (animator != null) animator.speed = 1f;
+        isInStandupPhase = false;
+        if (gameManager != null)
+            gameManager.ResetSequenceTarget(gameObject);
+    }
+
+    public void StartSweepSequence()
+    {
+        if (isDead) return;
+        if (isKnockedDownByEpervier) return;
+        StartCoroutine(EpervierKnockdownCoroutine());
     }
 }
