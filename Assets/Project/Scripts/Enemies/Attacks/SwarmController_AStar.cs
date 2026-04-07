@@ -21,6 +21,7 @@ public class SwarmController_AStar : MonoBehaviour
     private bool isInitialized = false;
     private bool isInContact = false;
     private bool isInBourrade = false;
+    private bool isFalling = false;
 
     private float detectionCheckInterval = 0.3f;
     private float lastDetectionCheck = 0f;
@@ -58,9 +59,6 @@ public class SwarmController_AStar : MonoBehaviour
         enabled = true;
         rb.isKinematic = false;
 
-        if (aiPath != null)
-            aiPath.enabled = true;
-
         Collider col = GetComponent<Collider>();
         if (col != null)
             col.enabled = true;
@@ -69,38 +67,42 @@ public class SwarmController_AStar : MonoBehaviour
         currentHealth = stats.maxHealth;
 
         RaycastHit hit;
-        if (Physics.Raycast(transform.position + Vector3.up * 2f, Vector3.down, out hit, 10f, LayerMask.GetMask("Ground")))
-            groundY = hit.point.y;
-        else
-            groundY = transform.position.y;
-
-        StartCoroutine(FallToGroundCoroutine());
-
-        if (stats.useNavMesh && !stats.canCrossObstacles)
+        Collider ownCollider = GetComponent<Collider>();
+        if (Physics.Raycast(transform.position + Vector3.up * 2f, Vector3.down, out hit, 20f))
         {
-            rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
-            rb.useGravity = false;
+            if (hit.collider != ownCollider)
+            {
+                groundY = hit.point.y;
+                Debug.Log("Raycast hit: " + hit.collider.gameObject.name + " at Y=" + groundY);
+            }
+            else
+            {
+                groundY = 0f;
+                Debug.Log("Raycast hit self, using 0");
+            }
         }
-        else
-        {
-            rb.constraints = RigidbodyConstraints.FreezeRotation;
-            rb.useGravity = false;
-        }
+
+        // Pendant la chute : juste FreezeRotation
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+        rb.useGravity = false;
 
         if (stats.useNavMesh && aiPath != null)
         {
             aiPath.maxSpeed = stats.moveSpeed;
             aiPath.rotationSpeed = 200f;
             aiPath.endReachedDistance = 0.1f;
-            aiPath.canMove = false; // Active apres la chute
+            aiPath.canMove = false;
             aiPath.orientation = OrientationMode.ZAxisForward;
             aiPath.updatePosition = true;
             aiPath.updateRotation = false;
+            aiPath.enabled = false;
         }
         else if (aiPath != null)
         {
             aiPath.canMove = false;
         }
+
+        StartCoroutine(FallToGroundCoroutine());
 
         if (stats.particleSystemPrefab != null)
             particleSystemInstance = Instantiate(stats.particleSystemPrefab, transform.position, Quaternion.identity, transform);
@@ -145,6 +147,7 @@ public class SwarmController_AStar : MonoBehaviour
     {
         if (!isInitialized || stats == null) return;
         if (!stats.useNavMesh) return;
+        if (isFalling) return;
         EnforceGroundHeight();
     }
 
@@ -297,7 +300,9 @@ public class SwarmController_AStar : MonoBehaviour
 
         if (targetPlayer != null)
         {
-            Vector3 pushDirection = (transform.position - targetPlayer.position).normalized;
+            Vector3 pushDirection = (transform.position - targetPlayer.position);
+            pushDirection.y = 0f;
+            pushDirection.Normalize();
 
             if (aiPath != null)
                 aiPath.canMove = false;
@@ -315,6 +320,9 @@ public class SwarmController_AStar : MonoBehaviour
 
     IEnumerator FallToGroundCoroutine()
     {
+        isFalling = true;
+        Debug.Log("FallToGround START - startY: " + transform.position.y + " targetY: " + (groundY + stats.groundOffset));
+
         float duration = 0.3f;
         float elapsed = 0f;
         float startY = transform.position.y;
@@ -330,10 +338,19 @@ public class SwarmController_AStar : MonoBehaviour
             yield return null;
         }
 
+        Debug.Log("FallToGround END - finalY: " + transform.position.y);
+
         transform.position = new Vector3(startXZ.x, targetY, startXZ.z);
+        isFalling = false;
+
+        if (stats.useNavMesh && !stats.canCrossObstacles)
+            rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
 
         if (stats.useNavMesh && aiPath != null)
+        {
+            aiPath.enabled = true;
             aiPath.canMove = true;
+        }
     }
 
     void Die()

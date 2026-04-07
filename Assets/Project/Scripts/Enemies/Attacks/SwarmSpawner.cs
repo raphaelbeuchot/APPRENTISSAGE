@@ -9,9 +9,14 @@ public class SwarmSpawner : MonoBehaviour, IOnDeathBehavior
     [Header("Spawn Settings")]
     public Vector3 spawnOffset = Vector3.up * 0.5f;
 
-    [Header("Existing Swarm (optionnel - ex: tete du Bloat)")]
-    [Tooltip("Si renseigne, utilise ce SwarmController existant au lieu d'instancier un prefab")]
+    [HideInInspector]
     public SwarmController_AStar existingSwarm;
+
+    void Awake()
+    {
+        if (existingSwarm == null)
+            existingSwarm = GetComponentInChildren<SwarmController_AStar>();
+    }
 
     public void OnEnemyDeath(Vector3 deathPosition)
     {
