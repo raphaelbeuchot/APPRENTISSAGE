@@ -13,7 +13,6 @@ public class SwarmStats : ScriptableObject
     [Header("Movement")]
     public float moveSpeed = 2f;
     public float detectionRange = 6f;
-    public bool useNavMesh = true;
     public bool canCrossObstacles = false;
     public float hoverHeight = 1.5f;
     [Tooltip("Offset Y par rapport au sol (negatif = enfonce dans le sol)")]

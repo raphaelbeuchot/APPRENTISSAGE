@@ -47,9 +47,14 @@ public class SwarmController_AStar : MonoBehaviour
         if (col != null)
             col.enabled = false;
 
-        enabled = false;
+        if (stats == null)
+            enabled = false;
     }
-
+    void Start()
+    {
+        if (stats != null && !isInitialized)
+            Initialize(stats);
+    }
     public void SetHealthBarUI(EnemyHealthBarUI bar) { healthBarUI = bar; }
     public EnemyHealthBarUI GetHealthBarUI() { return healthBarUI; }
     public bool IsAlive() { return currentHealth > 0f; }
@@ -82,11 +87,10 @@ public class SwarmController_AStar : MonoBehaviour
             }
         }
 
-        // Pendant la chute : juste FreezeRotation
         rb.constraints = RigidbodyConstraints.FreezeRotation;
         rb.useGravity = false;
 
-        if (stats.useNavMesh && aiPath != null)
+        if (!stats.canCrossObstacles && aiPath != null)
         {
             aiPath.maxSpeed = stats.moveSpeed;
             aiPath.rotationSpeed = 200f;
@@ -146,7 +150,7 @@ public class SwarmController_AStar : MonoBehaviour
     void LateUpdate()
     {
         if (!isInitialized || stats == null) return;
-        if (!stats.useNavMesh) return;
+        if (stats.canCrossObstacles) return;
         if (isFalling) return;
         EnforceGroundHeight();
     }
@@ -180,10 +184,10 @@ public class SwarmController_AStar : MonoBehaviour
 
         Vector3 targetPosition = targetPlayer.position;
 
-        if (!stats.useNavMesh && stats.canCrossObstacles)
+        if (stats.canCrossObstacles)
             targetPosition.y = targetPlayer.position.y + stats.hoverHeight;
 
-        if (stats.useNavMesh && aiPath != null && aiPath.canMove)
+        if (!stats.canCrossObstacles && aiPath != null && aiPath.canMove)
         {
             aiPath.destination = targetPosition;
         }
@@ -196,7 +200,7 @@ public class SwarmController_AStar : MonoBehaviour
 
     void StopMovement()
     {
-        if (stats.useNavMesh && aiPath != null)
+        if (!stats.canCrossObstacles && aiPath != null)
             aiPath.canMove = false;
         else
             rb.linearVelocity = Vector3.zero;
@@ -311,7 +315,7 @@ public class SwarmController_AStar : MonoBehaviour
 
             yield return new WaitForSeconds(0.5f);
 
-            if (stats.useNavMesh && aiPath != null)
+            if (!stats.canCrossObstacles && aiPath != null)
                 aiPath.canMove = true;
         }
 
@@ -343,10 +347,10 @@ public class SwarmController_AStar : MonoBehaviour
         transform.position = new Vector3(startXZ.x, targetY, startXZ.z);
         isFalling = false;
 
-        if (stats.useNavMesh && !stats.canCrossObstacles)
+        if (!stats.canCrossObstacles)
             rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
 
-        if (stats.useNavMesh && aiPath != null)
+        if (!stats.canCrossObstacles && aiPath != null)
         {
             aiPath.enabled = true;
             aiPath.canMove = true;

@@ -116,7 +116,6 @@ public class TargetLockSystem : MonoBehaviour
 
     private void LockOntoTarget()
     {
-        // Force clear de toutes les outlines
         ClearAllOutlines();
 
         Transform bestTarget = FindBestTarget();
@@ -128,7 +127,7 @@ public class TargetLockSystem : MonoBehaviour
             EnemyHealthBarUI healthBar = currentTarget.GetComponent<EnemyHealth>()?.healthBarUI;
             if (healthBar == null)
             {
-                SwarmController swarm = currentTarget.GetComponent<SwarmController>();
+                SwarmController_AStar swarm = currentTarget.GetComponent<SwarmController_AStar>();
                 if (swarm != null)
                     healthBar = swarm.GetHealthBarUI();
             }
@@ -232,7 +231,7 @@ public class TargetLockSystem : MonoBehaviour
         if (enemyHealth != null)
             return enemyHealth.IsAlive();
 
-        SwarmController swarm = target.GetComponent<SwarmController>();
+        SwarmController_AStar swarm = target.GetComponent<SwarmController_AStar>();
         if (swarm != null)
             return swarm.IsAlive();
 

@@ -249,11 +249,11 @@ public class BroomAttackSystem : MonoBehaviour
             }
             else
             {
-                SwarmController swarm = hit.GetComponent<SwarmController>();
+                SwarmController_AStar swarm = hit.GetComponent<SwarmController_AStar>();
                 if (swarm != null)
                 {
                     hitSomething = true;
-                    swarm.TakeDamage(swarm.stats.broomDamageTaken);  // <-- et ici
+                    swarm.TakeDamage(swarm.stats.broomDamageTaken);
                     Debug.Log(gameObject.name + " BROOM hit swarm for " + swarm.stats.broomDamageTaken + " damage!");
                 }
             }

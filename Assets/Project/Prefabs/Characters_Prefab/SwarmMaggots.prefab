@@ -184,7 +184,7 @@ SphereCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
   m_Radius: 0.5
@@ -263,7 +263,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AstarPathfindingProject::Pathfinding.AIPath
   version: 1073741824
-  radius: 0.5
+  radius: 1.5
   height: 2
   simulateMovement: 1
   maxSpeed: 1
@@ -286,17 +286,17 @@ MonoBehaviour:
   autoRepath:
     mode: 2
     period: 0.5
-    sensitivity: 10
+    sensitivity: 8
     maximumPeriod: 2
     visualizeSensitivity: 0
   maxAcceleration: -2.5
   rotationSpeed: 360
-  slowdownDistance: 0.6
-  pickNextWaypointDist: 2
+  slowdownDistance: 0.25
+  pickNextWaypointDist: 5
   alwaysDrawGizmos: 0
   slowWhenNotFacingTarget: 0
   preventMovingBackwards: 0
-  constrainInsideGraph: 0
+  constrainInsideGraph: 1
 --- !u!114 &1157619717546829954
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -42,17 +42,10 @@ public class SwarmSpawner : MonoBehaviour, IOnDeathBehavior
         Vector3 spawnPosition = deathPosition + spawnOffset;
         GameObject swarmObject = Instantiate(swarmPrefab, spawnPosition, Quaternion.identity);
 
-        SwarmController_AStar swarmControllerAStar = swarmObject.GetComponent<SwarmController_AStar>();
-        if (swarmControllerAStar != null)
-        {
-            swarmControllerAStar.Initialize(swarmStats);
-            return;
-        }
-
-        SwarmController swarmController = swarmObject.GetComponent<SwarmController>();
+        SwarmController_AStar swarmController = swarmObject.GetComponent<SwarmController_AStar>();
         if (swarmController != null)
             swarmController.Initialize(swarmStats);
         else
-            Debug.LogError($"SwarmSpawner: swarmPrefab is missing SwarmController or SwarmController_AStar!");
+            Debug.LogError($"SwarmSpawner: swarmPrefab is missing SwarmController_AStar!");
     }
 }
