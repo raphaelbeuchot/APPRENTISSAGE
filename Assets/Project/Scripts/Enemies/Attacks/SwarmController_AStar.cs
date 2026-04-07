@@ -28,17 +28,25 @@ public class SwarmController_AStar : MonoBehaviour
     private Coroutine damageTickCoroutine;
     private GameObject particleSystemInstance;
 
-    // Y du sol determine a l'init
     private float groundY = 0f;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        rb.isKinematic = false;
+        rb.isKinematic = true;
         rb.mass = 0.1f;
         rb.linearDamping = 5f;
         rb.angularDamping = 10f;
         aiPath = GetComponent<AIPath>();
+
+        if (aiPath != null)
+            aiPath.enabled = false;
+
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+            col.enabled = false;
+
+        enabled = false;
     }
 
     public void SetHealthBarUI(EnemyHealthBarUI bar) { healthBarUI = bar; }
@@ -47,18 +55,26 @@ public class SwarmController_AStar : MonoBehaviour
 
     public void Initialize(SwarmStats swarmStats)
     {
+        enabled = true;
+        rb.isKinematic = false;
+
+        if (aiPath != null)
+            aiPath.enabled = true;
+
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+            col.enabled = true;
+
         stats = swarmStats;
         currentHealth = stats.maxHealth;
 
-        // Detecte le sol sous le swarm au spawn
         RaycastHit hit;
         if (Physics.Raycast(transform.position + Vector3.up * 2f, Vector3.down, out hit, 10f, LayerMask.GetMask("Ground")))
             groundY = hit.point.y;
         else
             groundY = transform.position.y;
 
-        // Pose le swarm a la bonne hauteur des le depart
-        transform.position = new Vector3(transform.position.x, groundY + stats.groundOffset, transform.position.z);
+        StartCoroutine(FallToGroundCoroutine());
 
         if (stats.useNavMesh && !stats.canCrossObstacles)
         {
@@ -76,7 +92,7 @@ public class SwarmController_AStar : MonoBehaviour
             aiPath.maxSpeed = stats.moveSpeed;
             aiPath.rotationSpeed = 200f;
             aiPath.endReachedDistance = 0.1f;
-            aiPath.canMove = true;
+            aiPath.canMove = false; // Active apres la chute
             aiPath.orientation = OrientationMode.ZAxisForward;
             aiPath.updatePosition = true;
             aiPath.updateRotation = false;
@@ -118,9 +134,6 @@ public class SwarmController_AStar : MonoBehaviour
         if (!isInitialized || stats == null) return;
         if (isInBourrade) return;
 
-        // Force la hauteur apres que l'AIPath a mis a jour la position
-        EnforceGroundHeight();
-
         if (Time.time - lastDetectionCheck > detectionCheckInterval)
         {
             lastDetectionCheck = Time.time;
@@ -128,9 +141,15 @@ public class SwarmController_AStar : MonoBehaviour
         }
     }
 
+    void LateUpdate()
+    {
+        if (!isInitialized || stats == null) return;
+        if (!stats.useNavMesh) return;
+        EnforceGroundHeight();
+    }
+
     void EnforceGroundHeight()
     {
-        if (!stats.useNavMesh) return;
         Vector3 pos = transform.position;
         pos.y = groundY + stats.groundOffset;
         transform.position = pos;
@@ -140,10 +159,8 @@ public class SwarmController_AStar : MonoBehaviour
     {
         if (targetPlayer == null) return;
 
-        // Toujours chasser, pas de detection range max
         MoveTowardsPlayer();
 
-        // Health bar visibility
         bool wasInRange = isPlayerInRange;
         float distanceToPlayer = Vector3.Distance(transform.position, targetPlayer.position);
         isPlayerInRange = distanceToPlayer <= 6f;
@@ -294,6 +311,29 @@ public class SwarmController_AStar : MonoBehaviour
         }
 
         isInBourrade = false;
+    }
+
+    IEnumerator FallToGroundCoroutine()
+    {
+        float duration = 0.3f;
+        float elapsed = 0f;
+        float startY = transform.position.y;
+        float targetY = groundY + stats.groundOffset;
+        Vector3 startXZ = new Vector3(transform.position.x, 0f, transform.position.z);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            float currentY = Mathf.Lerp(startY, targetY, t);
+            transform.position = new Vector3(startXZ.x, currentY, startXZ.z);
+            yield return null;
+        }
+
+        transform.position = new Vector3(startXZ.x, targetY, startXZ.z);
+
+        if (stats.useNavMesh && aiPath != null)
+            aiPath.canMove = true;
     }
 
     void Die()

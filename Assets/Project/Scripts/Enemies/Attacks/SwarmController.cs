@@ -310,6 +310,9 @@ public class SwarmController : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
+
+        if (damage <= 0f) return;
+
         // Reduce damage (pour 2-3 hits)
         damage *= 1f;
 

@@ -3,47 +3,51 @@ using UnityEngine;
 public class SwarmSpawner : MonoBehaviour, IOnDeathBehavior
 {
     [Header("Swarm Configuration")]
-    [Tooltip("Stats for the swarm to spawn")]
     public SwarmStats swarmStats;
-
-    [Tooltip("Swarm prefab to instantiate")]
     public GameObject swarmPrefab;
 
     [Header("Spawn Settings")]
-    [Tooltip("Offset from death position to spawn swarm")]
     public Vector3 spawnOffset = Vector3.up * 0.5f;
+
+    [Header("Existing Swarm (optionnel - ex: tete du Bloat)")]
+    [Tooltip("Si renseigne, utilise ce SwarmController existant au lieu d'instancier un prefab")]
+    public SwarmController_AStar existingSwarm;
 
     public void OnEnemyDeath(Vector3 deathPosition)
     {
-        if (swarmPrefab == null || swarmStats == null)
+        if (swarmStats == null)
         {
-            Debug.LogWarning($"SwarmSpawner on {gameObject.name}: Missing swarmPrefab or swarmStats!");
+            Debug.LogWarning($"SwarmSpawner on {gameObject.name}: Missing swarmStats!");
+            return;
+        }
+
+        if (existingSwarm != null)
+        {
+            existingSwarm.transform.SetParent(null);
+            existingSwarm.Initialize(swarmStats);
+            return;
+        }
+
+        if (swarmPrefab == null)
+        {
+            Debug.LogWarning($"SwarmSpawner on {gameObject.name}: Missing swarmPrefab!");
             return;
         }
 
         Vector3 spawnPosition = deathPosition + spawnOffset;
-
         GameObject swarmObject = Instantiate(swarmPrefab, spawnPosition, Quaternion.identity);
 
-        // Try A* version first
         SwarmController_AStar swarmControllerAStar = swarmObject.GetComponent<SwarmController_AStar>();
         if (swarmControllerAStar != null)
         {
             swarmControllerAStar.Initialize(swarmStats);
-            Debug.Log($"Swarm (A*) spawned at {spawnPosition} from Bloated death!");
             return;
         }
 
-        // Fallback to NavMesh version
         SwarmController swarmController = swarmObject.GetComponent<SwarmController>();
         if (swarmController != null)
-        {
             swarmController.Initialize(swarmStats);
-            Debug.Log($"Swarm (NavMesh) spawned at {spawnPosition} from Bloated death!");
-        }
         else
-        {
-            Debug.LogError($"SwarmSpawner: swarmPrefab is missing SwarmController or SwarmController_AStar component!");
-        }
+            Debug.LogError($"SwarmSpawner: swarmPrefab is missing SwarmController or SwarmController_AStar!");
     }
 }
