@@ -34210,10 +34210,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 431981172}
     m_Modifications:
-    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
-      propertyPath: splineContainer
-      value: 
-      objectReference: {fileID: 2099307422}
     - target: {fileID: 616195486825817048, guid: c68b68511658b8247ba63803a2827209, type: 3}
       propertyPath: m_LocalPosition.x
       value: -8.39
@@ -34263,6 +34259,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: a4067e8f112ca5a47adab30f72b36b9c, type: 2}
     - target: {fileID: 6432209808528863997, guid: c68b68511658b8247ba63803a2827209, type: 3}
+      propertyPath: splineContainer
+      value: 
+      objectReference: {fileID: 2099307422}
+    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
       propertyPath: splineContainer
       value: 
       objectReference: {fileID: 2099307422}
@@ -56608,7 +56608,9 @@ MonoBehaviour:
   arrivalThreshold: 0.5
   targetHuman: {fileID: 4617868051715933207}
   isKnockedDownByEpervier: 0
-  wasAlreadyShotDuringEpervier: 0
+  wasAlreadyShotDuringSweep: 0
+  pendingSweepShot: 0
+  isInStandupPhase: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -69395,10 +69397,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1382659260}
     m_Modifications:
-    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
-      propertyPath: splineContainer
-      value: 
-      objectReference: {fileID: 208362973}
     - target: {fileID: 616195486825817048, guid: c68b68511658b8247ba63803a2827209, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.41
@@ -69448,6 +69446,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 9d50788b4008bd545bc97cea0482f323, type: 2}
     - target: {fileID: 6432209808528863997, guid: c68b68511658b8247ba63803a2827209, type: 3}
+      propertyPath: splineContainer
+      value: 
+      objectReference: {fileID: 208362973}
+    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
       propertyPath: splineContainer
       value: 
       objectReference: {fileID: 208362973}
@@ -69876,10 +69878,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 125442985}
     m_Modifications:
-    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
-      propertyPath: splineContainer
-      value: 
-      objectReference: {fileID: 1314042708}
     - target: {fileID: 616195486825817048, guid: c68b68511658b8247ba63803a2827209, type: 3}
       propertyPath: m_LocalPosition.x
       value: -2.67
@@ -69929,6 +69927,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 9c4fd86b8e9d4984da706dd0285e089c, type: 2}
     - target: {fileID: 6432209808528863997, guid: c68b68511658b8247ba63803a2827209, type: 3}
+      propertyPath: splineContainer
+      value: 
+      objectReference: {fileID: 1314042708}
+    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
       propertyPath: splineContainer
       value: 
       objectReference: {fileID: 1314042708}
@@ -72211,6 +72213,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 29f83e84614f87e41b904ab673aaf275, type: 2}
+    - target: {fileID: 6432209808528863997, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
+      propertyPath: moveSpeed
+      value: 5.5
+      objectReference: {fileID: 0}
     - target: {fileID: 6432209808528863997, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
       propertyPath: splineContainer
       value: 
@@ -74861,10 +74867,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1982688200}
     m_Modifications:
-    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
-      propertyPath: splineContainer
-      value: 
-      objectReference: {fileID: 1580031110}
     - target: {fileID: 616195486825817048, guid: c68b68511658b8247ba63803a2827209, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.88
@@ -74918,6 +74920,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
     - target: {fileID: 6432209808528863997, guid: c68b68511658b8247ba63803a2827209, type: 3}
+      propertyPath: splineContainer
+      value: 
+      objectReference: {fileID: 1580031110}
+    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
       propertyPath: splineContainer
       value: 
       objectReference: {fileID: 1580031110}
@@ -76687,10 +76693,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1332277268}
     m_Modifications:
-    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
-      propertyPath: splineContainer
-      value: 
-      objectReference: {fileID: 760088982}
     - target: {fileID: 616195486825817048, guid: c68b68511658b8247ba63803a2827209, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.11
@@ -76740,6 +76742,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 29f83e84614f87e41b904ab673aaf275, type: 2}
     - target: {fileID: 6432209808528863997, guid: c68b68511658b8247ba63803a2827209, type: 3}
+      propertyPath: splineContainer
+      value: 
+      objectReference: {fileID: 760088982}
+    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
       propertyPath: splineContainer
       value: 
       objectReference: {fileID: 760088982}
@@ -83035,30 +83041,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 143328782}
     m_Modifications:
-    - target: {fileID: 1856036764109223138, guid: 265b95b0768b200439126120894c07a1, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
-    - target: {fileID: 7942143001262699162, guid: 265b95b0768b200439126120894c07a1, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
-    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-      propertyPath: moveSpeed
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-      propertyPath: speedMultiplier
-      value: 2.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-      propertyPath: splineContainer
-      value: 
-      objectReference: {fileID: 1349696763}
-    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-      propertyPath: startingProgress
-      value: 0.6
-      objectReference: {fileID: 0}
     - target: {fileID: 616195486825817048, guid: c68b68511658b8247ba63803a2827209, type: 3}
       propertyPath: m_LocalScale.x
       value: 2
@@ -83127,6 +83109,30 @@ PrefabInstance:
       propertyPath: splineContainer
       value: 
       objectReference: {fileID: 1349696763}
+    - target: {fileID: 1856036764109223138, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+    - target: {fileID: 7942143001262699162, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: moveSpeed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: speedMultiplier
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: splineContainer
+      value: 
+      objectReference: {fileID: 1349696763}
+    - target: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+      propertyPath: startingProgress
+      value: 0.6
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 8031456439814501052, guid: 265b95b0768b200439126120894c07a1, type: 3}
     m_RemovedGameObjects: []
@@ -91881,7 +91887,9 @@ MonoBehaviour:
   arrivalThreshold: 0.5
   targetHuman: {fileID: 4617868051715933207}
   isKnockedDownByEpervier: 0
-  wasAlreadyShotDuringEpervier: 0
+  wasAlreadyShotDuringSweep: 0
+  pendingSweepShot: 0
+  isInStandupPhase: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -91926,6 +91934,7 @@ MonoBehaviour:
   swarmStats: {fileID: 11400000, guid: 75a5671836c93dc428d16e4944ef58c4, type: 2}
   swarmPrefab: {fileID: 0}
   spawnOffset: {x: 0, y: 0.5, z: 0}
+  existingSwarm: {fileID: 0}
 --- !u!114 &1785196390
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101450,10 +101459,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 862222674}
     m_Modifications:
-    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
-      propertyPath: splineContainer
-      value: 
-      objectReference: {fileID: 611625468}
     - target: {fileID: 616195486825817048, guid: c68b68511658b8247ba63803a2827209, type: 3}
       propertyPath: m_LocalPosition.x
       value: -2.2
@@ -101507,6 +101512,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
     - target: {fileID: 6432209808528863997, guid: c68b68511658b8247ba63803a2827209, type: 3}
+      propertyPath: splineContainer
+      value: 
+      objectReference: {fileID: 611625468}
+    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
       propertyPath: splineContainer
       value: 
       objectReference: {fileID: 611625468}
@@ -111935,10 +111944,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 150896418}
     m_Modifications:
-    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
-      propertyPath: splineContainer
-      value: 
-      objectReference: {fileID: 1794010269}
     - target: {fileID: 616195486825817048, guid: c68b68511658b8247ba63803a2827209, type: 3}
       propertyPath: m_LocalPosition.x
       value: -8.23
@@ -111988,6 +111993,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 9c4fd86b8e9d4984da706dd0285e089c, type: 2}
     - target: {fileID: 6432209808528863997, guid: c68b68511658b8247ba63803a2827209, type: 3}
+      propertyPath: splineContainer
+      value: 
+      objectReference: {fileID: 1794010269}
+    - target: {fileID: 5657437110262692512, guid: 11196e3e0a5f9014d92b897df2daf635, type: 3}
       propertyPath: splineContainer
       value: 
       objectReference: {fileID: 1794010269}

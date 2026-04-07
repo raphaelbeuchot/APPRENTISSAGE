@@ -273,12 +273,12 @@ public class SwarmController_AStar : MonoBehaviour
         }
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, bool triggerBourrade = true)
     {
         currentHealth -= damage;
         healthBarUI.UpdateHealth(currentHealth, stats.maxHealth, stats.maxHealth);
 
-        if (!isInBourrade)
+        if (triggerBourrade && !isInBourrade)
             StartCoroutine(BourradeOnHit());
 
         if (currentHealth <= 0)

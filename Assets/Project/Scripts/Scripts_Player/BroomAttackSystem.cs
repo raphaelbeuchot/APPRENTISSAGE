@@ -141,7 +141,7 @@ public class BroomAttackSystem : MonoBehaviour
         Collider[] hits = Physics.OverlapSphere(
             transform.position + Vector3.up * 1f,
             stats.broomRange,
-            LayerMask.GetMask("Zombie", "Swarm")
+            LayerMask.GetMask("Zombie")
         );
 
         foreach (Collider hit in hits)
@@ -244,7 +244,7 @@ public class BroomAttackSystem : MonoBehaviour
             if (swarmAStar != null)
             {
                 hitSomething = true;
-                swarmAStar.TakeDamage(swarmAStar.stats.broomDamageTaken);
+                swarmAStar.TakeDamage(swarmAStar.stats.broomDamageTaken);  // <-- ici
                 Debug.Log(gameObject.name + " BROOM hit swarm (A*) for " + swarmAStar.stats.broomDamageTaken + " damage!");
             }
             else
@@ -253,12 +253,12 @@ public class BroomAttackSystem : MonoBehaviour
                 if (swarm != null)
                 {
                     hitSomething = true;
-                    swarm.TakeDamage(swarm.stats.broomDamageTaken);
+                    swarm.TakeDamage(swarm.stats.broomDamageTaken);  // <-- et ici
                     Debug.Log(gameObject.name + " BROOM hit swarm for " + swarm.stats.broomDamageTaken + " damage!");
                 }
             }
 
-            
+
         }
 
         // BLINDERS

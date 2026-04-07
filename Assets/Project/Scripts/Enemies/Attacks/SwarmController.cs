@@ -308,12 +308,10 @@ public class SwarmController : MonoBehaviour
     // DAMAGE & DEATH
     // ============================================
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, bool triggerBourrade = true)
     {
-
         if (damage <= 0f) return;
 
-        // Reduce damage (pour 2-3 hits)
         damage *= 1f;
 
         currentHealth -= damage;
@@ -322,8 +320,7 @@ public class SwarmController : MonoBehaviour
 
         Debug.Log($"Swarm took {damage} damage. Health: {currentHealth}/{stats.maxHealth}");
 
-        // Bourrade on hit
-        if (!isInBourrade)
+        if (triggerBourrade && !isInBourrade)
         {
             StartCoroutine(BourradeOnHit());
         }
