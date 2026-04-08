@@ -1,114 +1,176 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
 
 public class StaminaBarFollower : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private PlayerPhysicsMovement playerMovement;
-    [SerializeField] private Image staminaFillImage;
-    [SerializeField] private CanvasGroup canvasGroup;
-
-    [Header("Bonus Bar")]
-    [SerializeField] private Image bonusBarFill;
-    [SerializeField] private RectTransform bonusBarContainer;
-    [SerializeField] private RectTransform mainBarContainer;
 
     [Header("Config")]
-    [SerializeField] private float baseContainerWidth = 300f;
-    [SerializeField] private float baseContainerHeight = 15f;
+    [SerializeField] private float pipDiameter = 25f;
+    [SerializeField] private float outlineExtra = 4f;
+    [SerializeField] private float overlapRatio = 0.5f;
+    [SerializeField] private float staminaPerPip = 10f;
 
-    [Header("Display Settings")]
-    [SerializeField] private float fadeSpeed = 5f;
+    [Header("Sprite")]
+    [SerializeField] private Sprite pipSprite;
 
     [Header("Colors")]
-    [SerializeField] private Color fullColor = Color.cyan;
-    [SerializeField] private Color emptyColor = Color.red;
-    [SerializeField] private Color depletedColor = Color.gray;
+    [SerializeField] private Color pipColorActive = new Color(167f / 255f, 192f / 255f, 81f / 255f, 1f);
+    [SerializeField] private Color bonusColorActive = new Color(0.5f, 0f, 1f);
+    [SerializeField] private Color outlineColorDefault = Color.black;
+    [SerializeField] private Color damageFlashColor = Color.red;
+    [SerializeField] private float damageFlashDuration = 0.15f;
+    [SerializeField] private float damageFadeDuration = 0.4f;
 
-    private Camera mainCamera;
-    private bool bonusInitialized = false;
+    private List<Image> outlineImages = new List<Image>();
+    private List<Image> pipImages = new List<Image>();
+    private List<bool> isBonus = new List<bool>();
+    private List<bool> pipActive = new List<bool>();
+    private List<Coroutine> fadeCoroutines = new List<Coroutine>();
+    private int totalPips = 0;
+    private int normalPipCount = 0;
+    private float baseMaxStamina;
+    private float realMaxStamina;
+    private int lastActivePips = -1;
 
     void Start()
     {
-        mainCamera = Camera.main;
-
-        if (canvasGroup == null)
-        {
-            canvasGroup = GetComponent<CanvasGroup>();
-            if (canvasGroup == null)
-                canvasGroup = gameObject.AddComponent<CanvasGroup>();
-        }
+        if (playerMovement == null)
+            playerMovement = FindObjectOfType<PlayerPhysicsMovement>();
 
         if (playerMovement == null)
         {
-            playerMovement = GetComponentInParent<PlayerPhysicsMovement>();
-            if (playerMovement == null)
-                playerMovement = FindObjectOfType<PlayerPhysicsMovement>();
+            Debug.LogError("StaminaBarFollower: PlayerPhysicsMovement non trouve !");
+            return;
         }
 
-        canvasGroup.alpha = 0f;
+        baseMaxStamina = playerMovement.GetBaseMaxStamina();
+        realMaxStamina = playerMovement.GetRealMaxStamina();
+
+        BuildPips();
+    }
+
+    void BuildPips()
+    {
+        foreach (Transform child in transform)
+            Destroy(child.gameObject);
+
+        outlineImages.Clear();
+        pipImages.Clear();
+        isBonus.Clear();
+        pipActive.Clear();
+        fadeCoroutines.Clear();
+
+        GameObject outlinesGO = new GameObject("OutlinesContainer");
+        outlinesGO.transform.SetParent(transform, false);
+        outlinesGO.AddComponent<RectTransform>().anchoredPosition = Vector2.zero;
+
+        GameObject pipsGO = new GameObject("PipsContainer");
+        pipsGO.transform.SetParent(transform, false);
+        pipsGO.AddComponent<RectTransform>().anchoredPosition = Vector2.zero;
+
+        normalPipCount = Mathf.Max(1, Mathf.RoundToInt(baseMaxStamina / staminaPerPip));
+        int bonusPipCount = realMaxStamina > baseMaxStamina
+            ? Mathf.Max(1, Mathf.RoundToInt((realMaxStamina - baseMaxStamina) / staminaPerPip))
+            : 0;
+        totalPips = normalPipCount + bonusPipCount;
+
+        float step = pipDiameter * overlapRatio;
+        float outlineDiameter = pipDiameter + outlineExtra;
+
+        for (int i = 0; i < totalPips; i++)
+        {
+            float x = i * step;
+            bool bonus = i >= normalPipCount;
+
+            GameObject outlineGO = new GameObject("Outline_" + i);
+            outlineGO.transform.SetParent(outlinesGO.transform, false);
+            Image outlineImg = outlineGO.AddComponent<Image>();
+            outlineImg.sprite = pipSprite;
+            outlineImg.color = outlineColorDefault;
+            RectTransform outlineRT = outlineGO.GetComponent<RectTransform>();
+            outlineRT.sizeDelta = new Vector2(outlineDiameter, outlineDiameter);
+            outlineRT.anchoredPosition = new Vector2(x, 0f);
+            outlineImages.Add(outlineImg);
+
+            GameObject pipGO = new GameObject("Pip_" + i);
+            pipGO.transform.SetParent(pipsGO.transform, false);
+            Image pipImg = pipGO.AddComponent<Image>();
+            pipImg.sprite = pipSprite;
+            pipImg.color = bonus ? bonusColorActive : pipColorActive;
+            RectTransform pipRT = pipGO.GetComponent<RectTransform>();
+            pipRT.sizeDelta = new Vector2(pipDiameter, pipDiameter);
+            pipRT.anchoredPosition = new Vector2(x, 0f);
+            pipImages.Add(pipImg);
+
+            isBonus.Add(bonus);
+            pipActive.Add(true);
+            fadeCoroutines.Add(null);
+        }
+
+        for (int i = 0; i < totalPips; i++)
+        {
+            outlineImages[i].transform.SetSiblingIndex(totalPips - 1 - i);
+            pipImages[i].transform.SetSiblingIndex(totalPips - 1 - i);
+        }
+
+        lastActivePips = totalPips;
     }
 
     void Update()
     {
-        if (playerMovement == null) return;
+        if (playerMovement == null || pipImages.Count == 0) return;
 
-        float baseMax = playerMovement.GetBaseMaxStamina();
-        float realMax = playerMovement.GetRealMaxStamina();
+        float current = playerMovement.GetCurrentStamina();
+        int activePips = Mathf.CeilToInt(Mathf.Max(0f, current) / staminaPerPip);
+        activePips = Mathf.Clamp(activePips, 0, totalPips);
 
-        if (!bonusInitialized)
+        if (activePips == lastActivePips) return;
+        lastActivePips = activePips;
+
+        for (int i = 0; i < totalPips; i++)
         {
-            InitializeBonusBar(baseMax, realMax);
-            bonusInitialized = true;
-        }
+            bool shouldBeActive = i < activePips;
 
-        UpdateStaminaBar(baseMax, realMax);
-        UpdateVisibility();
-    }
-
-    void InitializeBonusBar(float baseMax, float realMax)
-    {
-        bool hasBonus = realMax > baseMax;
-
-        if (bonusBarContainer != null)
-        {
-            bonusBarContainer.gameObject.SetActive(hasBonus);
-
-            if (hasBonus)
+            if (!shouldBeActive && pipActive[i])
             {
-                float actualWidth = mainBarContainer != null ? mainBarContainer.rect.width : baseContainerWidth;
-                float bonusWidth = actualWidth * ((realMax / baseMax) - 1f);
-                bonusBarContainer.sizeDelta = new Vector2(bonusWidth, baseContainerHeight);
+                pipActive[i] = false;
+                if (fadeCoroutines[i] != null)
+                    StopCoroutine(fadeCoroutines[i]);
+                fadeCoroutines[i] = StartCoroutine(DamageFlashFade(i));
+            }
+            else if (shouldBeActive && !pipActive[i])
+            {
+                pipActive[i] = true;
+                if (fadeCoroutines[i] != null)
+                {
+                    StopCoroutine(fadeCoroutines[i]);
+                    fadeCoroutines[i] = null;
+                }
+                pipImages[i].color = isBonus[i] ? bonusColorActive : pipColorActive;
             }
         }
     }
 
-    void UpdateStaminaBar(float baseMax, float realMax)
+    private IEnumerator DamageFlashFade(int index)
     {
-        if (staminaFillImage == null) return;
+        Image pip = pipImages[index];
+        pip.color = damageFlashColor;
+        yield return new WaitForSeconds(damageFlashDuration);
 
-        float currentStamina = playerMovement.GetCurrentStamina();
-        bool hasBonus = realMax > baseMax;
-
-        if (bonusBarFill != null && hasBonus)
+        float elapsed = 0f;
+        Color start = pip.color;
+        Color end = new Color(start.r, start.g, start.b, 0f);
+        while (elapsed < damageFadeDuration)
         {
-            float bonusStamina = realMax - baseMax;
-            float bonusFill = Mathf.Clamp01((currentStamina - baseMax) / bonusStamina);
-            bonusBarFill.fillAmount = bonusFill;
+            elapsed += Time.deltaTime;
+            pip.color = Color.Lerp(start, end, elapsed / damageFadeDuration);
+            yield return null;
         }
-
-        float mainFill = Mathf.Clamp01(Mathf.Min(currentStamina, baseMax) / baseMax);
-        staminaFillImage.fillAmount = mainFill;
-
-        if (currentStamina <= 0f)
-            staminaFillImage.color = depletedColor;
-        else
-            staminaFillImage.color = Color.Lerp(emptyColor, fullColor, mainFill);
-    }
-
-    void UpdateVisibility()
-    {
-        if (canvasGroup == null) return;
-        canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, 1f, Time.deltaTime * fadeSpeed);
+        pip.color = end;
+        fadeCoroutines[index] = null;
     }
 }
