@@ -35,7 +35,7 @@ public class EnemyHealthBarUI : MonoBehaviour
     private bool initialized = false;
     private bool bonusDraining = false;
 
-    public void Initialize(float baseMax, float realMax)
+    public virtual void Initialize(float baseMax, float realMax)
     {
         baseMaxHealth = baseMax;
         realMaxHealth = realMax;
@@ -99,7 +99,7 @@ public class EnemyHealthBarUI : MonoBehaviour
         outlineRect.offsetMax = new Vector2(currentBonusWidth + 3.5f, 3.5f);
     }
 
-    public void UpdateHealth(float currentHealth, float baseMax, float realMax)
+    public virtual void UpdateHealth(float currentHealth, float baseMax, float realMax)
     {
         if (healthFill == null) return;
 
@@ -207,7 +207,7 @@ public class EnemyHealthBarUI : MonoBehaviour
 
     private Coroutine fadeCoroutine;
 
-    public void Show()
+    public virtual void Show()
     {
         if (this == null || gameObject == null) return;
         if (fadeCoroutine != null)
@@ -218,13 +218,13 @@ public class EnemyHealthBarUI : MonoBehaviour
             cg.alpha = 1f;
     }
 
-    public void Hide()
+    public virtual void Hide()
     {
         if (this == null || gameObject == null) return;
         gameObject.SetActive(false);
     }
 
-    public void SetLockedOutline(bool locked)
+    public virtual void SetLockedOutline(bool locked)
     {
         if (outline != null)
             outline.gameObject.SetActive(locked);
