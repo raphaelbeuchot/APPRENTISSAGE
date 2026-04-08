@@ -71802,7 +71802,9 @@ MonoBehaviour:
   arrivalThreshold: 0.5
   targetHuman: {fileID: 4617868051715933207}
   isKnockedDownByEpervier: 0
-  wasAlreadyShotDuringEpervier: 0
+  wasAlreadyShotDuringSweep: 0
+  pendingSweepShot: 0
+  isInStandupPhase: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -114615,7 +114617,9 @@ MonoBehaviour:
   arrivalThreshold: 0.5
   targetHuman: {fileID: 4617868051715933207}
   isKnockedDownByEpervier: 0
-  wasAlreadyShotDuringEpervier: 0
+  wasAlreadyShotDuringSweep: 0
+  pendingSweepShot: 0
+  isInStandupPhase: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -114660,6 +114664,7 @@ MonoBehaviour:
   swarmStats: {fileID: 11400000, guid: 75a5671836c93dc428d16e4944ef58c4, type: 2}
   swarmPrefab: {fileID: 0}
   spawnOffset: {x: 0, y: 0.5, z: 0}
+  existingSwarm: {fileID: 0}
 --- !u!114 &1785196390
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137808,10 +137813,6 @@ PrefabInstance:
     - target: {fileID: 6096351626072686139, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 6129390128834374995, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: -575
       objectReference: {fileID: 0}
     - target: {fileID: 7393856716106443104, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: colorLow.g

@@ -14,8 +14,7 @@ public class SwarmSpawner : MonoBehaviour, IOnDeathBehavior
 
     void Awake()
     {
-        if (existingSwarm == null)
-            existingSwarm = GetComponentInChildren<SwarmController_AStar>();
+        existingSwarm = GetComponentInChildren<SwarmController_AStar>();
     }
 
     public void OnEnemyDeath(Vector3 deathPosition)
