@@ -70,7 +70,7 @@ public class LevelManager : MonoBehaviour
             playerHealth = player.GetComponent<PlayerHealth>();
 
         if (CleaningCreditManager.Instance != null)
-            CleaningCreditManager.Instance.SnapshotLevelStart();
+            CleaningCreditManager.Instance.ResetCredits();
 
         if (victoryUI == null)
         {
@@ -228,8 +228,7 @@ public class LevelManager : MonoBehaviour
 
         if (gameOverUI != null)
             gameOverUI.Show();
-        if (CleaningCreditManager.Instance != null)
-            CleaningCreditManager.Instance.RollbackToSnapshot();
+        
         else
         {
             Debug.LogWarning("GameOverUI non trouve! Redemarrage automatique.");
@@ -262,8 +261,7 @@ public class LevelManager : MonoBehaviour
 
     public void RestartLevel()
     {
-        if (CleaningCreditManager.Instance != null)
-            CleaningCreditManager.Instance.RollbackToSnapshot();
+       
 
         CountdownManager countdown = FindObjectOfType<CountdownManager>();
         if (countdown != null) countdown.StopAmbient();

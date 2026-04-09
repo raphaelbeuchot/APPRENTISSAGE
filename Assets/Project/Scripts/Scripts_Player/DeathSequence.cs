@@ -15,6 +15,11 @@ public class DeathSequence : MonoBehaviour
     [SerializeField] private float coinUpwardBias = 0.6f;
     [SerializeField] private Vector3 coinSpawnOffset = new Vector3(0f, 1f, 0f);
 
+    
+    [Header("UI")]
+    [SerializeField] private CreditBarUI creditBarUI;
+    [SerializeField] private float coinCountdownDuration = 0.5f;
+
     [Header("Settings")]
     [SerializeField] private float ragdollTimeout = 5f;
     [SerializeField] private float velocityThreshold = 0.1f;
@@ -37,10 +42,8 @@ public class DeathSequence : MonoBehaviour
     private IEnumerator DeathRoutine(Vector3 deathDirection)
     {
         Debug.Log("DeathRoutine START");
-
         PlayerPhysicsMovement movement = GetComponent<PlayerPhysicsMovement>();
         if (movement != null) movement.enabled = false;
-
         MeleeAttackSystem melee = GetComponent<MeleeAttackSystem>();
         if (melee != null) melee.enabled = false;
 
@@ -61,6 +64,9 @@ public class DeathSequence : MonoBehaviour
         }
 
         SpawnCoins();
+
+        if (creditBarUI != null)
+            creditBarUI.CountdownToZero(coinCountdownDuration);
 
         Rigidbody hipRb = ragdoll != null ? ragdoll.GetHipRigidbody() : null;
         Rigidbody mainRb = GetComponent<Rigidbody>();
@@ -87,18 +93,14 @@ public class DeathSequence : MonoBehaviour
     {
         if (coinPrefab == null) return;
         if (CleaningCreditManager.Instance == null) return;
-
         int count = CleaningCreditManager.Instance.GetCredits();
         if (count <= 0) return;
-
         Vector3 spawnPos = transform.position + coinSpawnOffset;
-
         for (int i = 0; i < count; i++)
         {
             GameObject coin = Instantiate(coinPrefab, spawnPos, Quaternion.identity);
             CoinDeathFX fx = coin.GetComponent<CoinDeathFX>();
             if (fx == null) continue;
-
             Vector3 dir = Random.insideUnitSphere;
             dir.y = Mathf.Abs(dir.y) + coinUpwardBias;
             dir.Normalize();
