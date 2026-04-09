@@ -15,7 +15,7 @@ public class EnemyAI_AStar : MonoBehaviour
     public EnemyStats stats;
     public PlayerStats playerStats;
 
-   
+
 
     // Wall staring detection
     private float wallStaringTimer = 0f;
@@ -62,7 +62,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
     [Header("Pathfinding Optimization")]
     [HideInInspector] public Vector3 lastPathDestination = Vector3.positiveInfinity;
-    private float pathUpdateThreshold = 0.5f; // Distance min pour recalculer path
+    private float pathUpdateThreshold = 0.5f;
 
     private EnemyHealthBarUI healthBarUI;
     public bool canMove = true;
@@ -74,7 +74,6 @@ public class EnemyAI_AStar : MonoBehaviour
     [HideInInspector] public bool isForcedChase = false;
 
 
-    private bool isPlayerInRange = false;
     protected float lastWanderTime = 0f;
     protected float wanderTimer = 0f;
     protected float lastAttackTime = 0f;
@@ -117,8 +116,6 @@ public class EnemyAI_AStar : MonoBehaviour
         {
             aiPath.maxSpeed = stats.walkSpeed;
             aiPath.rotationSpeed = stats.rotationSpeed;
-
-
         }
 
         InitializeAttackBehavior();
@@ -137,7 +134,7 @@ public class EnemyAI_AStar : MonoBehaviour
                 break;
             case EnemyStats.AttackType.Spitter:
                 break;
-                           
+
             default:
                 break;
         }
@@ -178,8 +175,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
         if (rb != null && rb.angularVelocity.magnitude > 10f)
         {
-            
-
             rb.angularVelocity = Vector3.zero;
             rb.constraints = RigidbodyConstraints.FreezeRotation;
         }
@@ -200,7 +195,6 @@ public class EnemyAI_AStar : MonoBehaviour
             return;
         }
 
-        // Recuperation apres sortie rotating platform
         if (isRecoveringFromPlatform)
         {
             if (Time.time >= recoveryEndTime)
@@ -359,7 +353,6 @@ public class EnemyAI_AStar : MonoBehaviour
         isLookingAround = true;
         StopMovement();
 
-
         Vector3 lookDirection = lastChaseDirection;
         lookDirection.y = 0;
 
@@ -376,7 +369,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
         Quaternion startRotation = transform.rotation;
         Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
-
 
         float elapsed = 0f;
         float rotationDuration = 1f;
@@ -397,7 +389,6 @@ public class EnemyAI_AStar : MonoBehaviour
         isGoingToLastKnownPosition = false;
         isLookingAround = false;
         currentState = State.Idle;
-
     }
 
 
@@ -418,7 +409,6 @@ public class EnemyAI_AStar : MonoBehaviour
         if (player == null || player.IsDead())
             return;
 
-        bool wasInRange = isPlayerInRange;
         float distToPlayer = Vector3.Distance(transform.position, player.transform.position);
 
         if (isBlinder)
@@ -427,25 +417,12 @@ public class EnemyAI_AStar : MonoBehaviour
             if (currentState == State.Chasing || currentState == State.Attacking)
                 currentState = State.Idle;
 
-            if (distToPlayer <= stats.blinderHealthBarRange)
-                health?.healthBarUI?.Show();
-            else
-                health?.healthBarUI?.Hide();
-
             return;
         }
 
         if (isForcedChase && targetHuman != null)
         {
             currentState = State.Chasing;
-
-            isPlayerInRange = distToPlayer <= 5f;
-
-            if (isPlayerInRange && !wasInRange)
-                health?.healthBarUI?.Show();
-            else if (!isPlayerInRange && wasInRange)
-                health?.healthBarUI?.Hide();
-
             return;
         }
 
@@ -554,15 +531,6 @@ public class EnemyAI_AStar : MonoBehaviour
                     currentState = State.Idle;
             }
         }
-
-        isPlayerInRange = distToPlayer <= 5f;
-        EnemyPitInteractable pitInt = GetComponent<EnemyPitInteractable>();
-        bool ignoreDistance = pitInt != null && pitInt.shouldIgnoreHealthbarDistance;
-
-        if (isPlayerInRange && !wasInRange)
-            health?.healthBarUI?.Show();
-        else if (!isPlayerInRange && wasInRange && !ignoreDistance)
-            health?.healthBarUI?.Hide();
     }
 
     protected virtual void HandleIdleState()
@@ -781,21 +749,18 @@ public class EnemyAI_AStar : MonoBehaviour
 
         aiPath.maxSpeed = finalSpeed;
 
-        // OPTIMISATION : Recalculer path UNIQUEMENT si destination change significativement
         Vector3 newDestination;
         if (targetHuman != null)
             newDestination = targetHuman.position;
         else
             newDestination = transform.position + direction * 3f;
 
-        // Check si la destination a assez change
         if (Vector3.Distance(newDestination, lastPathDestination) > pathUpdateThreshold)
         {
             aiPath.destination = newDestination;
             lastPathDestination = newDestination;
         }
 
-        // APRES
         Vector3 moveDir = aiPath.desiredVelocity;
         moveDir.y = 0;
 
@@ -808,7 +773,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
     protected virtual void MoveInPitMode()
     {
-
         Vector3 targetPosition;
         if (targetHuman != null)
         {
@@ -841,7 +805,6 @@ public class EnemyAI_AStar : MonoBehaviour
         float pitMoveSpeed = (isChasing ? stats.chaseSpeed : stats.walkSpeed) * 2f;
         Vector3 moveDirection = transform.forward * pitMoveSpeed;
         rb.linearVelocity = new Vector3(moveDirection.x, rb.linearVelocity.y, moveDirection.z);
-
     }
 
 
@@ -982,7 +945,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
     protected virtual void HandleOnRotatingPlatformState()
     {
-        // La rotation est geree par RotatingPlatform.Update()
         StopMovement();
     }
 
@@ -1032,7 +994,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
         if (!groundAhead)
         {
-            // Tester gauche et droite
             Vector3 rightOrigin = transform.position + Vector3.up * halfHeight + transform.right * 0.4f;
             Vector3 leftOrigin = transform.position + Vector3.up * halfHeight - transform.right * 0.4f;
 
@@ -1043,7 +1004,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
             if (groundRight && groundLeft)
             {
-                // Les deux sont praticables, choisir celui qui rapproche le plus du joueur
                 float dotRight = Vector3.Dot(transform.right, directionToPlayer);
                 strafeDir = dotRight >= 0f ? transform.right : -transform.right;
             }
@@ -1057,12 +1017,10 @@ public class EnemyAI_AStar : MonoBehaviour
             }
             else
             {
-                // Bord total, on freeze
                 rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
                 return;
             }
 
-            // Orienter progressivement vers le joueur meme en strafant
             if (directionToPlayer.magnitude > 0.1f)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
@@ -1073,7 +1031,6 @@ public class EnemyAI_AStar : MonoBehaviour
             return;
         }
 
-        // Sol devant, avancer normalement
         if (directionToPlayer.magnitude > 0.1f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
@@ -1097,8 +1054,6 @@ public class EnemyAI_AStar : MonoBehaviour
         }
     }
 
-
-
     protected virtual void OnDrawGizmosSelected()
     {
         if (stats == null) return;
@@ -1109,6 +1064,7 @@ public class EnemyAI_AStar : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, stats.attackRange);
     }
+
     protected virtual void HandleRotatingToImpactState()
     {
         StopMovement();
@@ -1148,6 +1104,7 @@ public class EnemyAI_AStar : MonoBehaviour
             }
         }
     }
+
     public void StartBlastStun(float duration)
     {
         StartCoroutine(BlastStunCoroutine(duration));
@@ -1168,11 +1125,13 @@ public class EnemyAI_AStar : MonoBehaviour
         currentState = State.Idle;
         lastPathDestination = Vector3.positiveInfinity;
     }
+
     public void TriggerSweepFromBlast()
     {
         if (animator != null)
             animator.SetTrigger("EpervierKnockdown");
     }
+
     public void OnStandUpAnimationEvent()
     {
         if (wasAlreadyShotDuringSweep) return;
@@ -1181,7 +1140,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
         gameManager.ForceScheduleShot(gameObject);
     }
-    // Event animation a poser sur l'anim Sweep (feedback detection cas sweep)
+
     public void OnSweepDetected()
     {
         if (gameManager == null || !gameManager.IsInRedLight()) return;

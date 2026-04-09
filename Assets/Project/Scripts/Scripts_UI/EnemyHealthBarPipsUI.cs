@@ -26,6 +26,9 @@ public class EnemyHealthBarPipsUI : EnemyHealthBarUI
     [SerializeField] private float damageFlashDuration = 0.15f;
     [SerializeField] private float damageFadeDuration = 0.4f;
 
+    private CanvasGroup canvasGroup;
+    private Coroutine fadeCoroutineMain;
+
     private List<Image> lockOutlineImages = new List<Image>();
     private List<Image> outlineImages = new List<Image>();
     private List<Image> pipImages = new List<Image>();
@@ -39,6 +42,12 @@ public class EnemyHealthBarPipsUI : EnemyHealthBarUI
     {
         foreach (Transform child in transform)
             Destroy(child.gameObject);
+
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        canvasGroup.alpha = 0f;
+        gameObject.SetActive(false);
 
         lockOutlineImages.Clear();
         outlineImages.Clear();
@@ -175,11 +184,38 @@ public class EnemyHealthBarPipsUI : EnemyHealthBarUI
 
     public override void Show()
     {
-        if (gameObject != null) gameObject.SetActive(true);
+        if (gameObject == null) return;
+        if (!gameObject.activeSelf)
+        {
+            gameObject.SetActive(true);
+            if (canvasGroup != null) canvasGroup.alpha = 0f;
+        }
+        if (fadeCoroutineMain != null) StopCoroutine(fadeCoroutineMain);
+        fadeCoroutineMain = StartCoroutine(FadeCanvasGroup(1f, 0.25f, false));
     }
 
     public override void Hide()
     {
-        if (gameObject != null) gameObject.SetActive(false);
+        if (gameObject == null) return;
+        if (!gameObject.activeSelf) return;
+        if (fadeCoroutineMain != null) StopCoroutine(fadeCoroutineMain);
+        fadeCoroutineMain = StartCoroutine(FadeCanvasGroup(0f, 0.25f, true));
+    }
+
+    private IEnumerator FadeCanvasGroup(float targetAlpha, float duration, bool disableOnEnd)
+    {
+        if (canvasGroup == null) yield break;
+        float startAlpha = canvasGroup.alpha;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            canvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsed / duration);
+            yield return null;
+        }
+        canvasGroup.alpha = targetAlpha;
+        if (disableOnEnd)
+            gameObject.SetActive(false);
+        fadeCoroutineMain = null;
     }
 }

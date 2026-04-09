@@ -74416,7 +74416,9 @@ MonoBehaviour:
   arrivalThreshold: 0.5
   targetHuman: {fileID: 4617868051715933207}
   isKnockedDownByEpervier: 0
-  wasAlreadyShotDuringEpervier: 0
+  wasAlreadyShotDuringSweep: 0
+  pendingSweepShot: 0
+  isInStandupPhase: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -108714,7 +108716,9 @@ MonoBehaviour:
   arrivalThreshold: 0.5
   targetHuman: {fileID: 4617868051715933207}
   isKnockedDownByEpervier: 0
-  wasAlreadyShotDuringEpervier: 0
+  wasAlreadyShotDuringSweep: 0
+  pendingSweepShot: 0
+  isInStandupPhase: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -108759,6 +108763,7 @@ MonoBehaviour:
   swarmStats: {fileID: 11400000, guid: 75a5671836c93dc428d16e4944ef58c4, type: 2}
   swarmPrefab: {fileID: 0}
   spawnOffset: {x: 0, y: 0.5, z: 0}
+  existingSwarm: {fileID: 0}
 --- !u!114 &1785196390
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -125276,6 +125281,14 @@ PrefabInstance:
       propertyPath: 'messages.Array.data[2]'
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 6118849927264094129, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_fontSize
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 6118849927264094129, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 25
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -126410,6 +126423,10 @@ PrefabInstance:
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 4617868051715933207}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: goalDoorTransform
+      value: 
+      objectReference: {fileID: 871157101}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: redLightMusicLoop
       value: 
