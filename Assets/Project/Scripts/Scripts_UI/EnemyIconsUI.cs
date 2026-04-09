@@ -21,9 +21,7 @@ public class EnemyIconsUI : MonoBehaviour
     {
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
-        {
             audioSource = gameObject.AddComponent<AudioSource>();
-        }
     }
 
     public void SpawnIconsForEnemies()
@@ -40,19 +38,15 @@ public class EnemyIconsUI : MonoBehaviour
             yield break;
         }
 
-        // Récupérer tous les EnemyHealth (sauf BrightEyes)
         EnemyHealth[] allEnemies = FindObjectsOfType<EnemyHealth>();
         List<EnemyHealth> validEnemies = new List<EnemyHealth>();
 
         foreach (EnemyHealth enemy in allEnemies)
         {
             if (enemy.GetComponent<BrightEyesController>() == null)
-            {
                 validEnemies.Add(enemy);
-            }
         }
 
-        // Créer une icône pour chaque ennemi avec délai
         foreach (EnemyHealth enemy in validEnemies)
         {
             GameObject iconGO = Instantiate(iconPrefab, iconsContainer);
@@ -64,11 +58,8 @@ public class EnemyIconsUI : MonoBehaviour
                 enemyIcons.Add(iconDisplay);
             }
 
-            // Son de pop
             if (audioSource != null && iconPopSound != null)
-            {
                 audioSource.PlayOneShot(iconPopSound);
-            }
 
             yield return new WaitForSeconds(delayBetweenIcons);
         }
@@ -76,6 +67,7 @@ public class EnemyIconsUI : MonoBehaviour
 
     public void FlashIconRed(EnemyIconDisplay icon)
     {
+        if (icon == null) return;
         StartCoroutine(FlashRedCoroutine(icon));
     }
 
@@ -89,9 +81,9 @@ public class EnemyIconsUI : MonoBehaviour
         Color originalColor = iconImage.color;
         float elapsed = 0f;
 
-        // Fade vers rouge
         while (elapsed < flashDuration / 2f)
         {
+            if (icon == null) yield break;
             elapsed += Time.deltaTime;
             float t = elapsed / (flashDuration / 2f);
             iconImage.color = Color.Lerp(originalColor, Color.red, t);
@@ -100,16 +92,17 @@ public class EnemyIconsUI : MonoBehaviour
 
         elapsed = 0f;
 
-        // Fade retour couleur originale
         while (elapsed < flashDuration / 2f)
         {
+            if (icon == null) yield break;
             elapsed += Time.deltaTime;
             float t = elapsed / (flashDuration / 2f);
             iconImage.color = Color.Lerp(Color.red, originalColor, t);
             yield return null;
         }
 
-        iconImage.color = originalColor;
+        if (iconImage != null)
+            iconImage.color = originalColor;
     }
 
     public void SetIconCleaned(EnemyHealth enemy)
@@ -125,6 +118,7 @@ public class EnemyIconsUI : MonoBehaviour
             }
         }
     }
+
     public void HideAllIcons()
     {
         gameObject.SetActive(false);

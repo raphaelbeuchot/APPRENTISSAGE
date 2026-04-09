@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,11 +6,13 @@ public class EnemyIconDisplay : MonoBehaviour
 {
     [SerializeField] private Image aliveIcon;
     [SerializeField] private Image deadIcon;
-    [SerializeField] private Image cleanedIcon;
-
+    [SerializeField] private GameObject broomImpactUIPrefab;
+    [SerializeField] private Sprite[] broomFrames;
+    [SerializeField] private float frameDuration = 0.08f;
 
     private EnemyHealth trackedEnemy;
     private EnemyIconsUI manager;
+
     public EnemyHealth GetTrackedEnemy()
     {
         return trackedEnemy;
@@ -20,31 +23,24 @@ public class EnemyIconDisplay : MonoBehaviour
         trackedEnemy = enemy;
         manager = uiManager;
 
-        // S'abonner aux événements
         if (trackedEnemy != null)
         {
             trackedEnemy.OnTakeDamage += HandleDamage;
             trackedEnemy.OnDeath += HandleDeath;
         }
 
-        // État initial : vivant visible, mort caché
         aliveIcon.gameObject.SetActive(true);
         deadIcon.gameObject.SetActive(false);
-        if (cleanedIcon != null)
-            cleanedIcon.gameObject.SetActive(false);
     }
 
     private void HandleDamage()
     {
         if (manager != null)
-        {
             manager.FlashIconRed(this);
-        }
     }
 
     private void HandleDeath()
     {
-        // Remplacer le rond par le X
         aliveIcon.gameObject.SetActive(false);
         deadIcon.gameObject.SetActive(true);
     }
@@ -53,17 +49,36 @@ public class EnemyIconDisplay : MonoBehaviour
     {
         return aliveIcon;
     }
+
     public void SetCleaned()
     {
         aliveIcon.gameObject.SetActive(false);
         deadIcon.gameObject.SetActive(false);
-        if (cleanedIcon != null)
-            cleanedIcon.gameObject.SetActive(true);
+        StartCoroutine(PlayBroomThenDestroy());
+    }
+
+    private IEnumerator PlayBroomThenDestroy()
+    {
+        if (broomImpactUIPrefab != null && broomFrames != null && broomFrames.Length > 0)
+        {
+            GameObject broomGO = Instantiate(broomImpactUIPrefab, transform);
+            Image broomImage = broomGO.GetComponent<Image>();
+
+            if (broomImage != null)
+            {
+                foreach (Sprite frame in broomFrames)
+                {
+                    broomImage.sprite = frame;
+                    yield return new WaitForSeconds(frameDuration);
+                }
+            }
+        }
+
+        Destroy(gameObject);
     }
 
     private void OnDestroy()
     {
-        // Se désabonner
         if (trackedEnemy != null)
         {
             trackedEnemy.OnTakeDamage -= HandleDamage;
