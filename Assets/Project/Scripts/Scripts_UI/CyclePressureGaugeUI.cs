@@ -46,11 +46,10 @@ public class CyclePressureGaugeUI : MonoBehaviour
     {
         if (cycleManager == null || pips.Count == 0) return;
         float factor = cycleManager.GetCurrentPressureFactor();
-        int activePips = Mathf.Max(1, Mathf.RoundToInt(factor * pipCount));
-
         for (int i = 0; i < pips.Count; i++)
         {
-            if (i < activePips)
+            bool active = factor > (float)i / pipCount;
+            if (active)
                 pips[i].color = (pipColors != null && i < pipColors.Length) ? pipColors[i] : Color.white;
             else
                 pips[i].color = colorInactive;

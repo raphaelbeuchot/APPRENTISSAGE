@@ -2755,7 +2755,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -715, y: 200}
+  m_AnchoredPosition: {x: -715, y: 180}
   m_SizeDelta: {x: 150, y: 25}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &2880000189980898460
@@ -2772,8 +2772,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CyclePressureGaugeUI
   cycleManager: {fileID: 0}
   pipSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  pipCount: 11
-  pipDiameter: 25
+  pipCount: 25
+  pipDiameter: 10
   colorInactive: {r: 0.38431373, g: 0.24571732, b: 0.10588235, a: 1}
   pipColors:
   - {r: 0.8726415, g: 0.72866565, b: 0.06997598, a: 1}
@@ -2784,9 +2784,23 @@ MonoBehaviour:
   - {r: 0.8, g: 0.31145063, b: 0.054901935, a: 1}
   - {r: 0.7254902, g: 0.21334901, b: 0.035294123, a: 1}
   - {r: 0.6698113, g: 0.14533468, b: 0.01895693, a: 1}
-  - {r: 0.5754717, g: 0.11093432, b: 0, a: 1}
-  - {r: 0.4716981, g: 0.08984725, b: 0, a: 1}
-  - {r: 0.3915094, g: 0, b: 0.0056929966, a: 1}
+  - {r: 0.6320754, g: 0.1211478, b: 0, a: 1}
+  - {r: 0.7264151, g: 0.13986874, b: 0, a: 1}
+  - {r: 0.6415094, g: 0.12295598, b: 0, a: 1}
+  - {r: 0.5660378, g: 0, b: 0.0056605074, a: 1}
+  - {r: 0.6981132, g: 0, b: 0.004848156, a: 1}
+  - {r: 0.8207547, g: 0, b: 0.004611078, a: 1}
+  - {r: 0.8627451, g: 0, b: 0.003921569, a: 1}
+  - {r: 0.9019608, g: 0, b: 0.0056929966, a: 1}
+  - {r: 1, g: 0.1462264, b: 0.14978375, a: 1}
+  - {r: 1, g: 0.2688679, b: 0.2688679, a: 1}
+  - {r: 1, g: 0.6273585, b: 0.6317426, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1184310292319452159
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2805,7 +2819,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 1
-  m_Spacing: 12.5
+  m_Spacing: 15
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
@@ -3827,9 +3841,9 @@ MonoBehaviour:
   fullColor: {r: 1, g: 1, b: 1, a: 1}
   emptyColor: {r: 0.45098042, g: 0.078431375, b: 0.06666667, a: 1}
   reloadingColor: {r: 1, g: 0.63570464, b: 0.015686274, a: 1}
-  bonusFullColor: {r: 0, g: 1, b: 1, a: 1}
-  bonusEmptyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  bonusReloadingColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  bonusFullColor: {r: 1, g: 0.68788946, b: 0, a: 1}
+  bonusEmptyColor: {r: 0.5, g: 0.5, b: 0.5, a: 0}
+  bonusReloadingColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 0}
   reloadSound: {fileID: 0}
 --- !u!1 &7359883947822775500
 GameObject:

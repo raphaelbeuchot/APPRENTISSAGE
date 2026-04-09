@@ -28,6 +28,10 @@ public class SentinelCycleManager : MonoBehaviour
     [SerializeField] private EpervierManager epervierManager;
     [SerializeField] private EpervierManagerLoop epervierManagerLoop;
     [SerializeField] private CanyonTileManager canyonTileManager;
+    [Header("Pressure Gauge Target")]
+
+    [SerializeField] private Transform goalDoorTransform;
+
 
     [Header("Audio")]
     private AudioSource audioSource;
@@ -182,9 +186,10 @@ public class SentinelCycleManager : MonoBehaviour
                 initialPlayerSentinelDistance = customDistance;
                 Debug.Log($"[TUTORIAL] Distance custom utilisee: {initialPlayerSentinelDistance:F1}m");
             }
-            else if (playerTransform != null && sentinelTransform != null)
+            else if (playerTransform != null)
             {
-                initialPlayerSentinelDistance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
+                Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
+                initialPlayerSentinelDistance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z) - 3f;
                 Debug.Log($"[TUTORIAL] Distance calculee: {initialPlayerSentinelDistance:F1}m");
             }
         }
@@ -206,8 +211,9 @@ public class SentinelCycleManager : MonoBehaviour
             return sentinelSettings.GetRandomGreenlightDuration();
         }
 
-        float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
-        float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+        Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
+        float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
+        float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
 
         int totalEnemies = gameManager.GetTotalEnemies();
         int enemiesKilled = gameManager.GetEnemiesKilled();
@@ -219,13 +225,13 @@ public class SentinelCycleManager : MonoBehaviour
             enemyFactor = 1f - enemyRatio;
         }
 
-        float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
+        float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
         float durationMultiplier = 1f - (combinedFactor * (1f - minCycleDurationMultiplier));
 
         float baseDuration = sentinelSettings.GetRandomGreenlightDuration();
         float finalDuration = baseDuration * durationMultiplier;
 
-        Debug.Log($"[CYCLE] GreenLight dynamique - Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Max: {combinedFactor:F2} - Duree: {finalDuration:F1}s (base: {baseDuration:F1}s, x{durationMultiplier:F2})");
+        Debug.Log($"[CYCLE] GreenLight dynamique - Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Combined: {combinedFactor:F2} - Duree: {finalDuration:F1}s (base: {baseDuration:F1}s, x{durationMultiplier:F2})");
 
         return finalDuration;
     }
@@ -238,8 +244,9 @@ public class SentinelCycleManager : MonoBehaviour
             return sentinelSettings.GetRandomRedlightDuration();
         }
 
-        float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
-        float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+        Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
+        float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
+        float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
 
         int totalEnemies = gameManager.GetTotalEnemies();
         int enemiesKilled = gameManager.GetEnemiesKilled();
@@ -251,13 +258,13 @@ public class SentinelCycleManager : MonoBehaviour
             enemyFactor = 1f - enemyRatio;
         }
 
-        float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
+        float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
         float durationMultiplier = 1f - (combinedFactor * (1f - minCycleDurationMultiplier));
 
         float baseDuration = sentinelSettings.GetRandomRedlightDuration();
         float finalDuration = baseDuration * durationMultiplier;
 
-        Debug.Log($"[CYCLE] RedLight dynamique - Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Max: {combinedFactor:F2} - Duree: {finalDuration:F1}s (base: {baseDuration:F1}s, x{durationMultiplier:F2})");
+        Debug.Log($"[CYCLE] RedLight dynamique - Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Combined: {combinedFactor:F2} - Duree: {finalDuration:F1}s (base: {baseDuration:F1}s, x{durationMultiplier:F2})");
 
         return finalDuration;
     }
@@ -305,14 +312,17 @@ public class SentinelCycleManager : MonoBehaviour
 
             if (musicAudioSource != null && greenLightMusicLoop != null)
             {
-                float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
-                float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+                Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
+                float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
+                float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
 
+                int totalEnemies = 0;
+                int enemiesKilled = 0;
                 float enemyFactor = 0f;
                 if (gameManager != null)
                 {
-                    int totalEnemies = gameManager.GetTotalEnemies();
-                    int enemiesKilled = gameManager.GetEnemiesKilled();
+                    totalEnemies = gameManager.GetTotalEnemies();
+                    enemiesKilled = gameManager.GetEnemiesKilled();
                     if (totalEnemies > 0)
                     {
                         float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
@@ -320,15 +330,13 @@ public class SentinelCycleManager : MonoBehaviour
                     }
                 }
 
-                float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
+                float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
                 musicAudioSource.volume = musicVolume;
                 musicAudioSource.pitch = Mathf.Lerp(1f, maxMusicPitch, combinedFactor);
                 musicAudioSource.clip = greenLightMusicLoop;
                 musicAudioSource.Play();
                 Debug.Log($"[MUSIC] GreenLight - pitch: {musicAudioSource.pitch:F2}");
             }
-
-            
 
             if (sentinelCentralLight != null)
                 sentinelCentralLight.TurnOff();
@@ -357,14 +365,17 @@ public class SentinelCycleManager : MonoBehaviour
             if (alertCoroutine != null)
                 StopCoroutine(alertCoroutine);
 
-            float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
-            float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+            Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
+            float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
+            float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
 
+            int totalEnemies = 0;
+            int enemiesKilled = 0;
             float enemyFactor = 0f;
             if (gameManager != null)
             {
-                int totalEnemies = gameManager.GetTotalEnemies();
-                int enemiesKilled = gameManager.GetEnemiesKilled();
+                totalEnemies = gameManager.GetTotalEnemies();
+                enemiesKilled = gameManager.GetEnemiesKilled();
                 if (totalEnemies > 0)
                 {
                     float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
@@ -372,7 +383,7 @@ public class SentinelCycleManager : MonoBehaviour
                 }
             }
 
-            float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
+            float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
             float pitch = Mathf.Lerp(1.0f, sentinelSettings.maxPitch, combinedFactor);
             float alertDuration = sentinelSettings.alertSound.length / pitch;
 
@@ -414,14 +425,17 @@ public class SentinelCycleManager : MonoBehaviour
             }
             if (musicAudioSource != null && redLightMusicLoop != null)
             {
-                float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
-                float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+                Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
+                float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
+                float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
 
+                int totalEnemies = 0;
+                int enemiesKilled = 0;
                 float enemyFactor = 0f;
                 if (gameManager != null)
                 {
-                    int totalEnemies = gameManager.GetTotalEnemies();
-                    int enemiesKilled = gameManager.GetEnemiesKilled();
+                    totalEnemies = gameManager.GetTotalEnemies();
+                    enemiesKilled = gameManager.GetEnemiesKilled();
                     if (totalEnemies > 0)
                     {
                         float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
@@ -429,7 +443,7 @@ public class SentinelCycleManager : MonoBehaviour
                     }
                 }
 
-                float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
+                float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
                 musicAudioSource.volume = musicVolume;
                 musicAudioSource.pitch = Mathf.Lerp(1f, maxMusicPitch, combinedFactor);
                 musicAudioSource.clip = redLightMusicLoop;
@@ -439,12 +453,9 @@ public class SentinelCycleManager : MonoBehaviour
 
             Debug.Log(string.Format("[CYCLE] RedLight - Duree: {0:F1}s", targetDuration));
 
-            
-
             if (playerSpotLight != null)
             {
                 playerSpotLight.enabled = true;
-                //playerSpotLight.color = spotColorCompensated;
                 Debug.Log($"[SPOT] ALLUME en RedLight - intensity: {playerSpotLight.intensity}, enabled: {playerSpotLight.enabled}");
             }
 
@@ -463,7 +474,6 @@ public class SentinelCycleManager : MonoBehaviour
         else if (newState == GameState.Release)
         {
             targetDuration = sentinelSettings.releaseDuration;
-
 
             if (gameManager != null)
                 gameManager.ResetAllTracking();
@@ -485,12 +495,8 @@ public class SentinelCycleManager : MonoBehaviour
 
             Debug.Log(string.Format("[CYCLE] Release - Duree: {0:F1}s", targetDuration));
 
-            
-
             if (playerSpotLight != null)
                 playerSpotLight.enabled = false;
-
-          
 
             if (sentinelCentralLight != null)
                 sentinelCentralLight.TurnOff();
@@ -535,14 +541,17 @@ public class SentinelCycleManager : MonoBehaviour
             yield break;
         }
 
-        float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
-        float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+        Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
+        float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
+        float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
 
+        int totalEnemies = 0;
+        int enemiesKilled = 0;
         float enemyFactor = 0f;
         if (gameManager != null)
         {
-            int totalEnemies = gameManager.GetTotalEnemies();
-            int enemiesKilled = gameManager.GetEnemiesKilled();
+            totalEnemies = gameManager.GetTotalEnemies();
+            enemiesKilled = gameManager.GetEnemiesKilled();
             if (totalEnemies > 0)
             {
                 float enemyRatio = (float)(totalEnemies - enemiesKilled) / totalEnemies;
@@ -550,17 +559,15 @@ public class SentinelCycleManager : MonoBehaviour
             }
         }
 
-        float combinedFactor = Mathf.Max(distanceFactor, enemyFactor);
+        float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
         float pitch = Mathf.Lerp(1.0f, sentinelSettings.maxPitch, combinedFactor);
 
-        Debug.Log($"[ALERT] Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Max: {combinedFactor:F2}, Pitch: {pitch:F2}");
+        Debug.Log($"[ALERT] Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Combined: {combinedFactor:F2}, Pitch: {pitch:F2}");
 
         PlaySoundAtPitch(sentinelSettings.alertSound, pitch);
 
         float soundDuration = sentinelSettings.alertSound.length / pitch;
         alertDuration = soundDuration;
-
-       
 
         yield return new WaitForSeconds(soundDuration);
 
@@ -595,10 +602,11 @@ public class SentinelCycleManager : MonoBehaviour
         if (gameStarted) return;
         gameStarted = true;
 
-        if (playerTransform != null && sentinelTransform != null)
+        if (playerTransform != null)
         {
-            initialPlayerSentinelDistance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
-            Debug.Log($"[CYCLE] Distance initiale player-sentinelle: {initialPlayerSentinelDistance:F1}m");
+            Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
+            initialPlayerSentinelDistance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z) - 3f;
+            Debug.Log($"[CYCLE] Distance initiale player-goal: {initialPlayerSentinelDistance:F1}m");
         }
         else
         {
@@ -682,13 +690,15 @@ public class SentinelCycleManager : MonoBehaviour
         if (musicAudioSource != null && !musicAudioSource.isPlaying && currentState == GameState.GreenLight)
             musicAudioSource.UnPause();
     }
+
     public float GetCurrentPressureFactor()
     {
         if (gameManager == null || playerTransform == null || sentinelTransform == null)
             return 0f;
 
-        float distance = Vector3.Distance(playerTransform.position, sentinelTransform.position);
-        float distanceFactor = Mathf.Clamp01(1f - (distance / initialPlayerSentinelDistance));
+        Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
+        float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
+        float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
 
         int totalEnemies = gameManager.GetTotalEnemies();
         int enemiesKilled = gameManager.GetEnemiesKilled();
@@ -696,7 +706,8 @@ public class SentinelCycleManager : MonoBehaviour
 
         if (totalEnemies > 0)
             enemyFactor = (float)enemiesKilled / totalEnemies;
+        Debug.Log($"[PRESSURE] distance: {distance:F1}, initialDist: {initialPlayerSentinelDistance:F1}, distanceFactor: {distanceFactor:F2}");
 
-        return Mathf.Max(distanceFactor, enemyFactor);
+        return totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
     }
 }
