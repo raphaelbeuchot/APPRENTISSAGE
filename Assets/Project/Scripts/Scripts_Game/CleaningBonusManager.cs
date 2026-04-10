@@ -7,6 +7,9 @@ public class CleaningBonusManager : MonoBehaviour
     [SerializeField] private EnemyIconsUI enemyIconsUI;
     [Header("Audio")]
     [SerializeField] private AudioClip cleanSound;
+    [SerializeField] private AudioClip allClearSound;
+
+
     private AudioSource audioSource;
     private int cleaningScore = 0;
     private int totalCorpses = 0;
@@ -49,14 +52,24 @@ public class CleaningBonusManager : MonoBehaviour
             RegisterCorpse(corpse);
 
         cleaningScore++;
-        if (audioSource != null && cleanSound != null)
-            audioSource.PlayOneShot(cleanSound);
-        CommentPanel.Show("Cleaned Up !");
+
+        bool isLast = cleaningScore >= totalCorpses && totalCorpses > 0;
+
+        if (audioSource != null)
+        {
+            AudioClip clip = isLast ? allClearSound : cleanSound;
+            if (clip != null)
+                audioSource.PlayOneShot(clip);
+        }
+
+        CommentPanel.Show(isLast ? "Spick and span !" : "Cleaned Up !");
+
         if (enemyIconsUI != null && corpse.sourceEnemy != null)
             enemyIconsUI.SetIconCleaned(corpse.sourceEnemy);
-        
+
         Debug.Log("[CleaningBonus] Score nettoyage : " + cleaningScore + " / " + totalCorpses);
-        if (cleaningScore >= totalCorpses && totalCorpses > 0)
+
+        if (isLast)
             OnAllCorpsesCleaned?.Invoke();
     }
     public int GetCleaningScore() => cleaningScore;
