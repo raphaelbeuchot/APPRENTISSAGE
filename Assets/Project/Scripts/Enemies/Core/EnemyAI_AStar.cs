@@ -540,21 +540,7 @@ public class EnemyAI_AStar : MonoBehaviour
             currentState = State.OnIslandPlatform;
             return;
         }
-
         StopMovement();
-
-        if (wanderBehavior != null && !wanderBehavior.IsWandering())
-        {
-            if (Time.time - lastWanderTime >= stats.wanderInterval)
-            {
-                lastWanderTime = Time.time;
-                if (Random.value < stats.idleWanderChance)
-                {
-                    wanderBehavior.StartWandering();
-                    currentState = State.Wandering;
-                }
-            }
-        }
     }
 
     void OnCollisionEnter(Collision collision)

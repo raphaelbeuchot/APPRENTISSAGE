@@ -109,7 +109,6 @@ public class EnemyHealth : MonoBehaviour
     void SetupDeathEffect()
     {
         if (stats == null) return;
-
         switch (stats.deathEffectType)
         {
             case EnemyStats.DeathEffectType.Ragdoll:
@@ -121,20 +120,11 @@ public class EnemyHealth : MonoBehaviour
                 ragdoll.corpseData = stats.corpseData;
                 ragdoll.InitializeRagdoll();
                 break;
-
             case EnemyStats.DeathEffectType.Explosion:
-                var explosion = gameObject.AddComponent<ExplosionDeathEffect>();
-                explosion.explosionVFX = stats.explosionVFX;
-                explosion.explosionSound = stats.explosionSound;
-                explosion.soundVolume = stats.explosionSoundVolume;
-                explosion.vfxScale = stats.explosionVFXScale;
-                explosion.swellDuration = stats.swellDuration;
-                explosion.swellScale = stats.swellScale;
-                Debug.Log($"Added ExplosionDeathEffect to {gameObject.name}");
+                // TODO: implementer quand le Kamikaze sera code
+                Debug.Log("ExplosionDeathEffect pas encore implemente");
                 break;
-
             case EnemyStats.DeathEffectType.None:
-                Debug.Log($"No death effect for {gameObject.name}");
                 break;
         }
     }

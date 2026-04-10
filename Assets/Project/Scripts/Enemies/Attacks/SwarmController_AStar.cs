@@ -21,15 +21,12 @@ public class SwarmController_AStar : MonoBehaviour
     private bool isInitialized = false;
     private bool isInContact = false;
     private bool isInBourrade = false;
-    private bool isFalling = false;
 
     private float detectionCheckInterval = 0.3f;
     private float lastDetectionCheck = 0f;
 
     private Coroutine damageTickCoroutine;
     private GameObject particleSystemInstance;
-
-    private float groundY = 0f;
 
     void Awake()
     {
@@ -64,31 +61,15 @@ public class SwarmController_AStar : MonoBehaviour
         enabled = true;
         rb.isKinematic = false;
 
-        Collider col = GetComponent<Collider>();
-        if (col != null)
-            col.enabled = true;
-
         stats = swarmStats;
         currentHealth = stats.maxHealth;
 
-        RaycastHit hit;
-        Collider ownCollider = GetComponent<Collider>();
-        if (Physics.Raycast(transform.position + Vector3.up * 2f, Vector3.down, out hit, 20f))
-        {
-            if (hit.collider != ownCollider)
-            {
-                groundY = hit.point.y;
-                Debug.Log("Raycast hit: " + hit.collider.gameObject.name + " at Y=" + groundY);
-            }
-            else
-            {
-                groundY = 0f;
-                Debug.Log("Raycast hit self, using 0");
-            }
-        }
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.enabled = false;
 
         rb.constraints = RigidbodyConstraints.FreezeRotation;
-        rb.useGravity = false;
+        rb.useGravity = true;
+        rb.linearVelocity = Vector3.zero;
 
         if (!stats.canCrossObstacles && aiPath != null)
         {
@@ -106,7 +87,9 @@ public class SwarmController_AStar : MonoBehaviour
             aiPath.canMove = false;
         }
 
-        StartCoroutine(FallToGroundCoroutine());
+        if (col != null) col.enabled = true;
+
+        StartCoroutine(WaitUntilGrounded());
 
         if (stats.particleSystemPrefab != null)
             particleSystemInstance = Instantiate(stats.particleSystemPrefab, transform.position, Quaternion.identity, transform);
@@ -121,7 +104,22 @@ public class SwarmController_AStar : MonoBehaviour
         SetupHealthBar();
         isInitialized = true;
     }
+    IEnumerator WaitUntilGrounded()
+    {
+        yield return new WaitForSeconds(0.1f);
 
+        while (Mathf.Abs(rb.linearVelocity.y) > 0.05f)
+            yield return null;
+
+        rb.useGravity = false;
+        rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
+
+        if (!stats.canCrossObstacles && aiPath != null)
+        {
+            aiPath.enabled = true;
+            aiPath.canMove = true;
+        }
+    }
     void SetupHealthBar()
     {
         EnemyHealthBarManager manager = FindObjectOfType<EnemyHealthBarManager>();
@@ -147,22 +145,9 @@ public class SwarmController_AStar : MonoBehaviour
         }
     }
 
-    void LateUpdate()
-    {
-        if (!isInitialized || stats == null) return;
-        if (stats.canCrossObstacles) return;
-        if (isFalling) return;
-        EnforceGroundHeight();
-    }
+   
 
-    void EnforceGroundHeight()
-    {
-        Vector3 pos = transform.position;
-        pos.y = groundY + stats.groundOffset;
-        transform.position = pos;
-    }
-
-    void DetectAndChasePlayer()
+        void DetectAndChasePlayer()
     {
         if (targetPlayer == null) return;
 
@@ -322,40 +307,7 @@ public class SwarmController_AStar : MonoBehaviour
         isInBourrade = false;
     }
 
-    IEnumerator FallToGroundCoroutine()
-    {
-        isFalling = true;
-        Debug.Log("FallToGround START - startY: " + transform.position.y + " targetY: " + (groundY + stats.groundOffset));
-
-        float duration = 0.3f;
-        float elapsed = 0f;
-        float startY = transform.position.y;
-        float targetY = groundY + stats.groundOffset;
-        Vector3 startXZ = new Vector3(transform.position.x, 0f, transform.position.z);
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-            float currentY = Mathf.Lerp(startY, targetY, t);
-            transform.position = new Vector3(startXZ.x, currentY, startXZ.z);
-            yield return null;
-        }
-
-        Debug.Log("FallToGround END - finalY: " + transform.position.y);
-
-        transform.position = new Vector3(startXZ.x, targetY, startXZ.z);
-        isFalling = false;
-
-        if (!stats.canCrossObstacles)
-            rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
-
-        if (!stats.canCrossObstacles && aiPath != null)
-        {
-            aiPath.enabled = true;
-            aiPath.canMove = true;
-        }
-    }
+    
 
     void Die()
     {

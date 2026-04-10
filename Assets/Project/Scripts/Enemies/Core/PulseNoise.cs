@@ -13,7 +13,7 @@ public class PulseNoise : MonoBehaviour
     private Vector3 baseScale;
     private Rigidbody rb;
 
-    void Start()
+    void OnEnable()
     {
         baseScale = transform.localScale;
         rb = GetComponent<Rigidbody>();

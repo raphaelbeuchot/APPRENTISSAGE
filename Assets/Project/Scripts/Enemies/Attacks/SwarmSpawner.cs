@@ -1,14 +1,8 @@
 using UnityEngine;
-
 public class SwarmSpawner : MonoBehaviour, IOnDeathBehavior
 {
     [Header("Swarm Configuration")]
     public SwarmStats swarmStats;
-    public GameObject swarmPrefab;
-
-    [Header("Spawn Settings")]
-    public Vector3 spawnOffset = Vector3.up * 0.5f;
-
     [HideInInspector]
     public SwarmController_AStar existingSwarm;
 
@@ -19,32 +13,22 @@ public class SwarmSpawner : MonoBehaviour, IOnDeathBehavior
 
     public void OnEnemyDeath(Vector3 deathPosition)
     {
-        if (swarmStats == null)
+        if (existingSwarm == null)
         {
-            Debug.LogWarning($"SwarmSpawner on {gameObject.name}: Missing swarmStats!");
+            Debug.LogWarning($"SwarmSpawner on {gameObject.name}: no SwarmController_AStar found!");
             return;
         }
 
-        if (existingSwarm != null)
+        Rigidbody swarmRb = existingSwarm.GetComponent<Rigidbody>();
+
+        existingSwarm.transform.SetParent(null);
+
+        if (swarmRb != null)
         {
-            existingSwarm.transform.SetParent(null);
-            existingSwarm.Initialize(swarmStats);
-            return;
+            swarmRb.linearVelocity = Vector3.zero;
+            swarmRb.useGravity = true;
         }
 
-        if (swarmPrefab == null)
-        {
-            Debug.LogWarning($"SwarmSpawner on {gameObject.name}: Missing swarmPrefab!");
-            return;
-        }
-
-        Vector3 spawnPosition = deathPosition + spawnOffset;
-        GameObject swarmObject = Instantiate(swarmPrefab, spawnPosition, Quaternion.identity);
-
-        SwarmController_AStar swarmController = swarmObject.GetComponent<SwarmController_AStar>();
-        if (swarmController != null)
-            swarmController.Initialize(swarmStats);
-        else
-            Debug.LogError($"SwarmSpawner: swarmPrefab is missing SwarmController_AStar!");
+        existingSwarm.Initialize(swarmStats);
     }
 }
