@@ -706,7 +706,6 @@ public class SentinelCycleManager : MonoBehaviour
 
         if (totalEnemies > 0)
             enemyFactor = (float)enemiesKilled / totalEnemies;
-        Debug.Log($"[PRESSURE] distance: {distance:F1}, initialDist: {initialPlayerSentinelDistance:F1}, distanceFactor: {distanceFactor:F2}");
 
         return totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
     }

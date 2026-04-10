@@ -19,8 +19,10 @@ public class SwarmController_AStar : MonoBehaviour
     private PlayerPhysicsMovement playerMovement;
 
     private bool isInitialized = false;
+    private bool isGrounded = false;
     private bool isInContact = false;
     private bool isInBourrade = false;
+    private PulseNoise pulseNoise;
 
     private float detectionCheckInterval = 0.3f;
     private float lastDetectionCheck = 0f;
@@ -47,11 +49,13 @@ public class SwarmController_AStar : MonoBehaviour
         if (stats == null)
             enabled = false;
     }
+
     void Start()
     {
         if (stats != null && !isInitialized)
             Initialize(stats);
     }
+
     public void SetHealthBarUI(EnemyHealthBarUI bar) { healthBarUI = bar; }
     public EnemyHealthBarUI GetHealthBarUI() { return healthBarUI; }
     public bool IsAlive() { return currentHealth > 0f; }
@@ -60,6 +64,7 @@ public class SwarmController_AStar : MonoBehaviour
     {
         enabled = true;
         rb.isKinematic = false;
+        pulseNoise = GetComponent<PulseNoise>();
 
         stats = swarmStats;
         currentHealth = stats.maxHealth;
@@ -68,7 +73,7 @@ public class SwarmController_AStar : MonoBehaviour
         if (col != null) col.enabled = false;
 
         rb.constraints = RigidbodyConstraints.FreezeRotation;
-        rb.useGravity = true;
+        rb.useGravity = false;
         rb.linearVelocity = Vector3.zero;
 
         if (!stats.canCrossObstacles && aiPath != null)
@@ -89,6 +94,7 @@ public class SwarmController_AStar : MonoBehaviour
 
         if (col != null) col.enabled = true;
 
+        isGrounded = false;
         StartCoroutine(WaitUntilGrounded());
 
         if (stats.particleSystemPrefab != null)
@@ -104,14 +110,21 @@ public class SwarmController_AStar : MonoBehaviour
         SetupHealthBar();
         isInitialized = true;
     }
+
     IEnumerator WaitUntilGrounded()
     {
-        yield return new WaitForSeconds(0.1f);
+        float startY = transform.position.y;
+        float targetY = startY - 0.8f;
 
-        while (Mathf.Abs(rb.linearVelocity.y) > 0.05f)
+        while (transform.position.y > targetY)
+        {
+            float newY = transform.position.y - 5f * Time.deltaTime;
+            transform.position = new Vector3(transform.position.x, newY, transform.position.z);
             yield return null;
+        }
 
-        rb.useGravity = false;
+        transform.position = new Vector3(transform.position.x, targetY, transform.position.z);
+        rb.linearVelocity = Vector3.zero;
         rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
 
         if (!stats.canCrossObstacles && aiPath != null)
@@ -119,7 +132,12 @@ public class SwarmController_AStar : MonoBehaviour
             aiPath.enabled = true;
             aiPath.canMove = true;
         }
+
+        if (pulseNoise != null) pulseNoise.enabled = true;
+
+        isGrounded = true;
     }
+
     void SetupHealthBar()
     {
         EnemyHealthBarManager manager = FindObjectOfType<EnemyHealthBarManager>();
@@ -135,7 +153,7 @@ public class SwarmController_AStar : MonoBehaviour
 
     void Update()
     {
-        if (!isInitialized || stats == null) return;
+        if (!isInitialized || stats == null || !isGrounded) return;
         if (isInBourrade) return;
 
         if (Time.time - lastDetectionCheck > detectionCheckInterval)
@@ -145,9 +163,7 @@ public class SwarmController_AStar : MonoBehaviour
         }
     }
 
-   
-
-        void DetectAndChasePlayer()
+    void DetectAndChasePlayer()
     {
         if (targetPlayer == null) return;
 
@@ -306,8 +322,6 @@ public class SwarmController_AStar : MonoBehaviour
 
         isInBourrade = false;
     }
-
-    
 
     void Die()
     {

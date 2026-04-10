@@ -19,10 +19,15 @@ public class SwarmSpawner : MonoBehaviour, IOnDeathBehavior
             return;
         }
 
-        Rigidbody swarmRb = existingSwarm.GetComponent<Rigidbody>();
+        PulseNoise pulse = existingSwarm.GetComponent<PulseNoise>();
+        if (pulse != null) pulse.enabled = false;
 
         existingSwarm.transform.SetParent(null);
+        existingSwarm.transform.localScale = Vector3.one;
 
+        if (pulse != null) pulse.ResetBaseScale();
+
+        Rigidbody swarmRb = existingSwarm.GetComponent<Rigidbody>();
         if (swarmRb != null)
         {
             swarmRb.linearVelocity = Vector3.zero;

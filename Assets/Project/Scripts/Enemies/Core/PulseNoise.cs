@@ -44,4 +44,8 @@ public class PulseNoise : MonoBehaviour
 
         transform.localScale = baseScale + noise + movementDeform;
     }
+    public void ResetBaseScale()
+    {
+        baseScale = transform.localScale;
+    }
 }
