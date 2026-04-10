@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4810535072c26b49a2ac7d4c794a03c, type: 3}
+  m_Name: Zombie_Bloat_NonExplosif
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
+  enemyName: Bloat_NonExplosif
+  enemyModel: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
+  skinVariants: []
+  attackType: 1
+  maxHealth: 75
+  limbLossThreshold: 0.5
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 8
+  walkSpeed: 0.5
+  chaseSpeed: 0.95
+  rotationSpeed: 5
+  crawlSpeed: 0.2
+  speedReductionPerHealthPercent: 0
+  detectionRadius: 4
+  detectionAngle: 170
+  detectionCheckInterval: 0.5
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  stealthDetectionMultiplier: 1
+  blinderHealthBarRange: 5
+  idleWanderChance: 0.1
+  wanderInterval: 5
+  wanderDuration: 2
+  chasePersistenceDuration: 5
+  attackRange: 1.5
+  attackCooldown: 2
+  windupMaterial: {fileID: 2100000, guid: f0de86f2557323747b1bea6982df5e7c, type: 2}
+  grabDuration: 5
+  biteDamage: 5
+  oneArmMashReduction: 0.5
+  fakeGrabRange: 3
+  biteTickDamage: 5
+  grabWindupDuration: 1
+  meleeDamage: 20
+  meleeKnockbackForce: 6
+  meleeAttackDuration: 0.8
+  hitWindupSound: {fileID: 8300000, guid: aca18f2b7f7101e4588b63a4eb766645, type: 3}
+  hitLandSound: {fileID: 8300000, guid: 91e8960fd08d8be4f843b69e73a708b1, type: 3}
+  hitWindupFailSound: {fileID: 8300000, guid: 8ba920da84e23fb428dfc1b8cc242150, type: 3}
+  spitDamage: 15
+  spitSpeed: 10
+  spitRange: 15
+  spitProjectilePrefab: {fileID: 0}
+  blinderWanderSpeed: 2
+  blinderChargeSpeed: 3
+  blinderWalkDuration: 2.5
+  blinderStopDuration: 1.2
+  blinderWanderRadius: 4
+  audioDetectionRange: 6
+  blinderKnockbackForce: 10
+  blinderAttackRange: 2
+  lookAroundDuration: 2
+  knockdownDuration: 2
+  aoeKnockbackRadius: 3
+  recoilStunDuration: 3
+  rechargeDelayAfterHit: 1
+  bourradeDuration: 2
+  bourradeCooldown: 1
+  sprayStunDuration: 2.5
+  knockbackStunDuration: 0.5
+  rotationToImpactDuration: 1.5
+  startingArmCount: 2
+  startingLegCount: 2
+  swellDuration: 1.5
+  swellScale: 1.5
+  canBecomeCrawler: 1
+  meleeHitsForFinisher: 3
+  forceMultiplier: 1
+  hasWeapon: 0
+  weaponPrefab: {fileID: 0}
+  sentinelDamageTaken: 25
+  sentinelKnockbackForce: 350
+  waterSplashSound: {fileID: 8300000, guid: 38b5f6da335ccd44fa7acd2dd8005b43, type: 3}
+  lavaSplashSound: {fileID: 8300000, guid: 5647dca86543bf84e8dd6628935dbfed, type: 3}
+  fallSound: {fileID: 0}
+  sprayDamageTaken: 0
+  broomDamageTaken: 0
+  bottleDamageTaken: 0
+  idleSounds: []
+  chaseSounds: []
+  attackSound: {fileID: 8300000, guid: 33085ae8348cede47abf393e50f29caa, type: 3}
+  hurtSound: {fileID: 0}
+  deathSound: {fileID: 0}
+  deathEffectType: 1
+  ragdollForce: 4
+  ragdollTorque: 10
+  meleeForceMultiplier: 1
+  sentinelForceMultiplier: 5
+  corpseData:
+    projectionMass: 10
+    projectionDrag: 0.5
+    restingMass: 50
+    restingDrag: 1.7
+    velocityThreshold: 0.5
+    broomLowMassMultiplier: 0
+    broomLowDragMultiplier: 0
+  explosionVFX: {fileID: 0}
+  explosionSound: {fileID: 0}
+  explosionSoundVolume: 1
+  explosionVFXScale: 1
