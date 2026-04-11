@@ -40,7 +40,6 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
         EnemyAI_AStar enemyAI = GetComponent<EnemyAI_AStar>();
         if (enemyAI != null && enemyAI.isOnRotatingPlatform && enemyAI.currentRotatingPlatform != null)
             enemyAI.currentRotatingPlatform.RemoveCorpse(GetComponent<RagdollDeathEffect>());
-        Debug.Log($"[Ragdoll] OnDeath called. animator={animator}, rootRb={rootRb}");
 
         if (animator != null)
             animator.enabled = false;
@@ -54,7 +53,6 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
                 rootCollider.enabled = false;
         }
 
-        Debug.Log($"[Ragdoll] boneRigidbodies count = {boneRigidbodies.Length}");
 
         foreach (Rigidbody bone in boneRigidbodies)
         {
@@ -72,7 +70,6 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
         }
 
         Transform hipsTransform = transform.Find("TPose/Armature/mixamorig:Hips");
-        Debug.Log($"[Ragdoll] hipsTransform={hipsTransform}, hipsRb={hipsRb}");
         if (hipsTransform != null)
             hipsRb = hipsTransform.GetComponent<Rigidbody>();
 

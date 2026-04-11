@@ -52,7 +52,6 @@ public class EnemyHealthBarManager : MonoBehaviour
         {
             bar.transform.SetParent(healthBarsContainer, false);
             healthBars.Add(enemy, bar);
-            Debug.Log($"[HealthBarManager] Registered {enemy.name}");
         }
     }
 
@@ -65,7 +64,6 @@ public class EnemyHealthBarManager : MonoBehaviour
                 Destroy(healthBars[enemy].gameObject);
             }
             healthBars.Remove(enemy);
-            Debug.Log($"[HealthBarManager] Unregistered {enemy.name}");
         }
     }
 
