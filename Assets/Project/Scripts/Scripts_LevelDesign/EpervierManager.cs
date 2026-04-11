@@ -206,10 +206,10 @@ public class EpervierManager : MonoBehaviour
 
             for (int j = 0; j < obstacleCount; j++)
             {
-                GameObject obs = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                GameObject obs = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 obs.name = "Obs_" + i + "_" + j;
                 obs.transform.parent = root.transform;
-                obs.transform.localScale = new Vector3(slotWidth, obstacleHeight, obstacleDepth);
+                obs.transform.localScale = new Vector3(slotWidth, slotWidth, slotWidth);
 
                 Rigidbody rb = obs.AddComponent<Rigidbody>();
                 rb.isKinematic = true;
@@ -382,7 +382,7 @@ public class EpervierManager : MonoBehaviour
     {
         EpervierLine line = lines[idx];
         line.state = LineState.Dropping;
-        float targetY = groundY + obstacleHeight / 2f;
+        float targetY = groundY + slotWidth / 2f;
 
         while (Mathf.Abs(line.currentY - targetY) > 0.02f)
         {
@@ -443,7 +443,6 @@ public class EpervierManager : MonoBehaviour
     {
         EpervierLine line = lines[idx];
 
-        // Remontee Y tous ensemble
         float targetY = spawnPoint.position.y;
         while (Mathf.Abs(line.currentY - targetY) > 0.02f)
         {
@@ -453,7 +452,6 @@ public class EpervierManager : MonoBehaviour
         }
         line.currentY = targetY;
 
-        // Retour Z tous ensemble, attend que tous soient revenus avant de continuer
         float targetZ = spawnPoint.position.z;
         bool allDone = false;
         while (!allDone)
