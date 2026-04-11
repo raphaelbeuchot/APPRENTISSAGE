@@ -232,8 +232,7 @@ public class PupitreInteraction : MonoBehaviour
 
         if (gameManager != null)
             gameManager.StartGameCycle();
-        if (CleaningBonusManager.Instance != null)
-            CleaningBonusManager.Instance.Initialize();
+       
 
         EnemyIconsUI enemyIconsUI = FindObjectOfType<EnemyIconsUI>();
         if (enemyIconsUI != null)

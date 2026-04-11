@@ -206,6 +206,8 @@ public class LevelManager : MonoBehaviour
     }
     public void LoadWheelOrLevelSelect()
     {
+        int credits = CleaningCreditManager.Instance != null ? CleaningCreditManager.Instance.GetCredits() : -1;
+        Debug.Log("[LevelManager] LoadWheelOrLevelSelect - credits : " + credits);
         if (CleaningCreditManager.Instance != null && CleaningCreditManager.Instance.HasCredits())
             LoadWheelOfFortune();
         else

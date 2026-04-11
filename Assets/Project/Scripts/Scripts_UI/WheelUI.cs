@@ -245,6 +245,8 @@ public class WheelUI : MonoBehaviour
     void OnContinuePressed()
     {
         if (resultBlinkCoroutine != null) StopCoroutine(resultBlinkCoroutine);
+        if (CleaningCreditManager.Instance != null)
+            CleaningCreditManager.Instance.ResetCredits();
         if (SceneFader.Instance != null)
             SceneFader.Instance.FadeToScene(2);
     }

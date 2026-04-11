@@ -16,6 +16,8 @@ public class EnemyIconsUI : MonoBehaviour
 
     private List<EnemyIconDisplay> enemyIcons = new List<EnemyIconDisplay>();
     private AudioSource audioSource;
+    public event System.Action OnAllIconsCleaned;
+    private int cleanedCount = 0;
 
     private void Awake()
     {
@@ -28,30 +30,36 @@ public class EnemyIconsUI : MonoBehaviour
     {
         StartCoroutine(SpawnIconsCoroutine());
     }
-
+    public void OnIconCleaned(EnemyIconDisplay icon)
+    {
+        cleanedCount++;
+        if (cleanedCount >= enemyIcons.Count)
+            OnAllIconsCleaned?.Invoke();
+    }
     private IEnumerator SpawnIconsCoroutine()
     {
-        GameManager gameManager = FindObjectOfType<GameManager>();
-        if (gameManager == null)
+        List<EnemyHealth> validEnemies = null;
+
+        if (CleaningBonusManager.Instance != null)
+            validEnemies = CleaningBonusManager.Instance.GetRegisteredEnemies();
+
+        if (validEnemies == null || validEnemies.Count == 0)
         {
-            Debug.LogError("[EnemyIconsUI] GameManager introuvable !");
+            Debug.LogWarning("[EnemyIconsUI] Aucun ennemi enregistre dans CleaningBonusManager.");
             yield break;
-        }
-
-        EnemyHealth[] allEnemies = FindObjectsOfType<EnemyHealth>();
-        List<EnemyHealth> validEnemies = new List<EnemyHealth>();
-
-        foreach (EnemyHealth enemy in allEnemies)
-        {
-            if (enemy.GetComponent<BrightEyesController>() == null)
-                validEnemies.Add(enemy);
         }
 
         foreach (EnemyHealth enemy in validEnemies)
         {
+            if (enemy == null)
+            {
+                Debug.Log("[EnemyIconsUI] Ennemi deja detruit, icone skippee.");
+                yield return new WaitForSeconds(delayBetweenIcons);
+                continue;
+            }
+
             GameObject iconGO = Instantiate(iconPrefab, iconsContainer);
             EnemyIconDisplay iconDisplay = iconGO.GetComponent<EnemyIconDisplay>();
-
             if (iconDisplay != null)
             {
                 iconDisplay.Initialize(enemy, this);
@@ -117,6 +125,10 @@ public class EnemyIconsUI : MonoBehaviour
                 return;
             }
         }
+    }
+    public bool IsLastIcon()
+    {
+        return cleanedCount + 1 >= enemyIcons.Count;
     }
 
     public void HideAllIcons()

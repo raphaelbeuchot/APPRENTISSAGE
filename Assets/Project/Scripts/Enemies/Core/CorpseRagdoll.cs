@@ -7,7 +7,6 @@ public class CorpseRagdoll : MonoBehaviour
     [SerializeField] private float settleMass = 2f;
     private Rigidbody hipsRb;
     private Rigidbody[] allBoneRbs;
-    private bool isRegistered = false;
 
     private void Awake()
     {
@@ -26,7 +25,6 @@ public class CorpseRagdoll : MonoBehaviour
                 bone.linearDamping = settleDrag;
                 bone.mass = settleMass / Mathf.Max(1, allBoneRbs.Length);
             }
-            RegisterSelf();
         }
         else
         {
@@ -34,6 +32,7 @@ public class CorpseRagdoll : MonoBehaviour
                 bone.isKinematic = true;
         }
     }
+
     public void Launch(Vector3 force, float hipsMass = 5f)
     {
         CorpseBroomLowPhysics broomLow = GetComponent<CorpseBroomLowPhysics>();
@@ -48,17 +47,6 @@ public class CorpseRagdoll : MonoBehaviour
         {
             hipsRb.mass = hipsMass;
             hipsRb.AddForce(force, ForceMode.Impulse);
-        }
-        //RegisterSelf(); TO DO : activer quand gestion corpses dynamique
-    }
-    private void RegisterSelf()
-    {
-        if (isRegistered) return;
-        CorpsePitHandler handler = GetComponent<CorpsePitHandler>();
-        if (handler != null && CleaningBonusManager.Instance != null)
-        {
-            CleaningBonusManager.Instance.RegisterCorpse(handler);
-            isRegistered = true;
         }
     }
 }

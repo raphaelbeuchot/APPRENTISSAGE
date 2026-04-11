@@ -63,7 +63,6 @@ public class EnemyIconDisplay : MonoBehaviour
         {
             GameObject broomGO = Instantiate(broomImpactUIPrefab, transform);
             Image broomImage = broomGO.GetComponent<Image>();
-
             if (broomImage != null)
             {
                 foreach (Sprite frame in broomFrames)
@@ -73,7 +72,8 @@ public class EnemyIconDisplay : MonoBehaviour
                 }
             }
         }
-
+        if (manager != null)
+            manager.OnIconCleaned(this);
         Destroy(gameObject);
     }
 

@@ -1,20 +1,21 @@
 using UnityEngine;
 using System.Collections.Generic;
+
 public class CleaningBonusManager : MonoBehaviour
 {
     public static CleaningBonusManager Instance { get; private set; }
+
     [Header("References")]
     [SerializeField] private EnemyIconsUI enemyIconsUI;
+
     [Header("Audio")]
     [SerializeField] private AudioClip cleanSound;
     [SerializeField] private AudioClip allClearSound;
 
-
     private AudioSource audioSource;
-    private int cleaningScore = 0;
-    private int totalCorpses = 0;
-    private List<CorpsePitHandler> registeredCorpses = new List<CorpsePitHandler>();
-    public event System.Action OnAllCorpsesCleaned;
+    private List<EnemyHealth> registeredEnemies = new List<EnemyHealth>();
+    private int cleanedCount = 0;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -23,55 +24,64 @@ public class CleaningBonusManager : MonoBehaviour
         audioSource.spatialBlend = 0f;
         audioSource.playOnAwake = false;
     }
+
+    private void Start()
+    {
+        EnemyHealth[] allEnemies = FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None);
+        foreach (EnemyHealth enemy in allEnemies)
+        {
+            if (enemy.GetComponent<BrightEyesController>() == null)
+                registeredEnemies.Add(enemy);
+        }
+        Debug.Log("[CleaningBonus] Ennemis enregistres : " + registeredEnemies.Count);
+    }
+
     private void OnEnable()
     {
         CorpsePitHandler.OnCorpseCleaned += HandleCorpseCleaned;
+        if (enemyIconsUI != null)
+            enemyIconsUI.OnAllIconsCleaned += HandleAllIconsCleaned;
     }
+
     private void OnDisable()
     {
         CorpsePitHandler.OnCorpseCleaned -= HandleCorpseCleaned;
+        if (enemyIconsUI != null)
+            enemyIconsUI.OnAllIconsCleaned -= HandleAllIconsCleaned;
     }
-    public void Initialize()
-    {
-        CorpsePitHandler[] allCorpses = FindObjectsByType<CorpsePitHandler>(FindObjectsSortMode.None);
-        totalCorpses = allCorpses.Length;
-        foreach (CorpsePitHandler c in allCorpses)
-            registeredCorpses.Add(c);
-        Debug.Log("[CleaningBonus] Total corpses initialise : " + totalCorpses);
-    }
-    public void RegisterCorpse(CorpsePitHandler corpse)
-    {
-        if (registeredCorpses.Contains(corpse)) return;
-        registeredCorpses.Add(corpse);
-        totalCorpses++;
-        Debug.Log("[CleaningBonus] Corpse enregistre. Total : " + totalCorpses);
-    }
+
     private void HandleCorpseCleaned(CorpsePitHandler corpse)
     {
-        if (!registeredCorpses.Contains(corpse))
-            RegisterCorpse(corpse);
+        cleanedCount++;
 
-        cleaningScore++;
-
-        bool isLast = cleaningScore >= totalCorpses && totalCorpses > 0;
-
-        if (audioSource != null)
-        {
-            AudioClip clip = isLast ? allClearSound : cleanSound;
-            if (clip != null)
-                audioSource.PlayOneShot(clip);
-        }
-
-        CommentPanel.Show(isLast ? "Spick and span !" : "Cleaned Up !");
+        if (CleaningCreditManager.Instance != null)
+            CleaningCreditManager.Instance.AddCredit();
 
         if (enemyIconsUI != null && corpse.sourceEnemy != null)
             enemyIconsUI.SetIconCleaned(corpse.sourceEnemy);
 
-        Debug.Log("[CleaningBonus] Score nettoyage : " + cleaningScore + " / " + totalCorpses);
+        bool isLast = cleanedCount >= registeredEnemies.Count;
 
-        if (isLast)
-            OnAllCorpsesCleaned?.Invoke();
+        if (!isLast)
+        {
+            if (audioSource != null && cleanSound != null)
+                audioSource.PlayOneShot(cleanSound);
+            CommentPanel.Show("Cleaned Up !");
+        }
+
+        Debug.Log("[CleaningBonus] Nettoye : " + cleanedCount + " / " + registeredEnemies.Count + " | Dernier : " + isLast);
     }
-    public int GetCleaningScore() => cleaningScore;
-    public int GetTotalCorpses() => totalCorpses;
+
+    private void HandleAllIconsCleaned()
+    {
+        if (audioSource != null && allClearSound != null)
+            audioSource.PlayOneShot(allClearSound);
+        CommentPanel.Show("Spick and span !");
+        Debug.Log("[CleaningBonus] Tous les ennemis nettoyes.");
+    }
+
+    public List<EnemyHealth> GetRegisteredEnemies()
+    {
+        return registeredEnemies;
+    }
 }

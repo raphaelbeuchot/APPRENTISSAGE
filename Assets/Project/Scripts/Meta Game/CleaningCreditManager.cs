@@ -1,5 +1,4 @@
 using UnityEngine;
-
 public class CleaningCreditManager : MonoBehaviour
 {
     public static CleaningCreditManager Instance { get; private set; }
@@ -10,21 +9,7 @@ public class CleaningCreditManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-    }
-
-    void OnEnable()
-    {
-        CorpsePitHandler.OnCorpseCleaned += OnCorpseCleaned;
-    }
-
-    void OnDisable()
-    {
-        CorpsePitHandler.OnCorpseCleaned -= OnCorpseCleaned;
-    }
-
-    private void OnCorpseCleaned(CorpsePitHandler corpse)
-    {
-        AddCredit();
+        DontDestroyOnLoad(gameObject);
     }
 
     public void AddCredit()
