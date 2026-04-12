@@ -48,12 +48,21 @@ public class PlayerDetectionFeedback : MonoBehaviour
             animator.SetTrigger("Shot");
         StartCoroutine(ShotFlashCoroutine());
     }
-
+    public void OnShotBySentinelNoAnim()
+    {
+        isCurrentlyDetected = false;
+        StartCoroutine(ShotFlashCoroutine());
+    }
     private IEnumerator ShotFlashCoroutine()
     {
         SetAllRenderers(redMaterial);
         yield return new WaitForSeconds(shotFlashDuration);
         RefreshSilhouette();
+    }
+
+    public void OnShotBySentinelGroggy()
+    {
+        StartCoroutine(ShotFlashCoroutine());
     }
 
     public void OnDetected()

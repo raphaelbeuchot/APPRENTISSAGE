@@ -214,26 +214,21 @@ public class EnemyHealth : MonoBehaviour
 
         if (isInKnockback)
         {
-            Debug.Log("[ENEMYHEALTH] isInKnockback = TRUE");
             shouldBounce = true;
         }
 
         GrabAttack grabAttack = GetComponent<GrabAttack>();
         if (grabAttack != null && grabAttack.isInBourradeDuration)
         {
-            Debug.Log("[ENEMYHEALTH] isInBourradeDuration = TRUE");
             shouldBounce = true;
         }
 
-        Debug.Log($"[ENEMYHEALTH] shouldBounce = {shouldBounce}");
 
         if (!shouldBounce)
             return;
 
-        Debug.Log("[ENEMYHEALTH] APPLYING WALL BOUNCE!");
 
         float velocity = rb.linearVelocity.magnitude;
-        Debug.Log($"[ENEMYHEALTH] velocity = {velocity}");
 
         if (velocity > 0f && collision.contacts.Length > 0)
         {
@@ -241,7 +236,6 @@ public class EnemyHealth : MonoBehaviour
             pushDirection.y = 0;
             pushDirection.Normalize();
 
-            Debug.Log($"[ENEMYHEALTH] pushDirection = {pushDirection}");
 
             rb.AddForce(pushDirection * 100f, ForceMode.Impulse);
         }
@@ -308,7 +302,6 @@ public class EnemyHealth : MonoBehaviour
         OnTakeDamage?.Invoke();
         currentHealth = Mathf.Max(0f, currentHealth);
 
-        Debug.Log($"{gameObject.name} took {damage} {attackType} damage! Health: {currentHealth}/{GetMaxHealth()}");
 
         OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
         if (healthBarUI != null)
@@ -335,7 +328,6 @@ public class EnemyHealth : MonoBehaviour
         OnTakeDamage?.Invoke();
         currentHealth = Mathf.Max(0f, currentHealth);
 
-        Debug.Log($"{gameObject.name} took {damage} damage! Health: {currentHealth}/{GetMaxHealth()}");
 
         OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
         if (healthBarUI != null)
@@ -369,7 +361,6 @@ public class EnemyHealth : MonoBehaviour
 
         if (isHeadshot)
         {
-            Debug.Log($"{gameObject.name} HEADSHOT! Instant death!");
             currentHealth = 0f;
             Die();
             return;
@@ -379,7 +370,6 @@ public class EnemyHealth : MonoBehaviour
         currentHealth = Mathf.Max(0f, currentHealth);
         OnTakeDamage?.Invoke();
 
-        Debug.Log($"{gameObject.name} shot by sentinel! Health: {currentHealth}/{GetMaxHealth()}");
         OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
         if (healthBarUI != null)
             healthBarUI.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
@@ -398,14 +388,12 @@ public class EnemyHealth : MonoBehaviour
         if (grabCheck != null && grabCheck.isInWindup)
         {
             grabCheck.CancelWindup();
-            Debug.Log($"[SENTINEL] Cancelled {gameObject.name} grab windup");
         }
 
         HitAttack hitAttackCheck = GetComponent<HitAttack>();
         if (hitAttackCheck != null && (hitAttackCheck.isInWindup || hitAttackCheck.IsAttacking()))
         {
             hitAttackCheck.CancelAttack();
-            Debug.Log($"[SENTINEL] Cancelled {gameObject.name} hit attack");
         }
 
         Animator enemyAnimator = GetComponentInChildren<Animator>();
@@ -462,7 +450,6 @@ public class EnemyHealth : MonoBehaviour
         isDead = true;
         HideSpiral();
 
-        Debug.Log(string.Format("{0} is dead!", gameObject.name));
         OnDeath?.Invoke();
 
         ChainConstraint cc = GetComponent<ChainConstraint>();
@@ -489,7 +476,6 @@ public class EnemyHealth : MonoBehaviour
         if (pitInt != null && pitInt.isFallingInPit && healthBarUI != null)
         {
             healthBarUI.Show();
-            Debug.Log(string.Format("[EnemyHealth] Forced healthbar show for {0} after pit death", gameObject.name));
         }
 
         bool isInDeepPit = pitInt != null && pitInt.shouldIgnoreHealthbarDistance;
@@ -500,7 +486,6 @@ public class EnemyHealth : MonoBehaviour
         }
         else if (isInDeepPit)
         {
-            Debug.Log(string.Format("[EnemyHealth] {0} died in deep pit, keeping healthbar for 2s", gameObject.name));
         }
 
         EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();

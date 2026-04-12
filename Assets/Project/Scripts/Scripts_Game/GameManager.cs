@@ -226,6 +226,9 @@ public class GameManager : MonoBehaviour
             EnemyHealth enemyHealth = col.GetComponent<EnemyHealth>();
             if (enemyHealth != null && enemyHealth.IsRecovering()) continue;
 
+            if (col.gameObject == player.gameObject && (player.IsSweeping() || player.IsGroggy() || player.IsGroggyStunned()))
+                continue;
+
             EnemyAI_AStar stunnedCheck = col.GetComponent<EnemyAI_AStar>();
             if (stunnedCheck != null && stunnedCheck.isStunnedBySentinel) continue;
 
@@ -585,7 +588,8 @@ public class GameManager : MonoBehaviour
 
             if (shouldBeShot && hasLOS && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
             {
-                bool needsExposureDelay = !trackData.wasInLOS;
+                bool isOffensiveAction = isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber;
+                bool needsExposureDelay = !trackData.wasInLOS && !isOffensiveAction;
 
                 if (needsExposureDelay)
                 {
@@ -927,7 +931,25 @@ public class GameManager : MonoBehaviour
         if (enemyFeedback != null) enemyFeedback.OnDetected();
         alreadyShot.Add(enemy);
     }
+    public void ExecutePlayerShotOnGroggy()
+    {
+        if (player == null || playerHealth == null || playerHealth.IsDead()) return;
 
+        Vector3 eyePosition = (sentinelEye != null) ? sentinelEye.position : transform.position;
+        Vector3 sentinelPos = eyePosition + sentinelSettings.raycastOffset;
+        Vector3 targetPos = GetTargetCenter(player.gameObject);
+
+        if (audioSource != null && sentinelSettings.shootSound != null)
+            audioSource.PlayOneShot(sentinelSettings.shootSound);
+
+        if (laserManager != null)
+            laserManager.TriggerShotAnimation(sentinelPos, targetPos);
+
+        if (playerDetectionFeedback != null)
+            playerDetectionFeedback.OnShotBySentinelGroggy();
+
+        playerHealth.TakeDamage(sentinelSettings.playerDamage);
+    }
     public void ExecuteSequenceShot(GameObject enemy)
     {
         EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();

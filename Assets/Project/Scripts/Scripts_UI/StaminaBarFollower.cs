@@ -20,6 +20,7 @@ public class StaminaBarFollower : MonoBehaviour
     [Header("Colors")]
     [SerializeField] private Color pipColorActive = new Color(167f / 255f, 192f / 255f, 81f / 255f, 1f);
     [SerializeField] private Color bonusColorActive = new Color(0.5f, 0f, 1f);
+    [SerializeField] private Color pipColorEmpty = new Color(0.2f, 0.2f, 0.2f);
     [SerializeField] private Color outlineColorDefault = Color.black;
     [SerializeField] private Color damageFlashColor = Color.red;
     [SerializeField] private float damageFlashDuration = 0.15f;
@@ -151,6 +152,8 @@ public class StaminaBarFollower : MonoBehaviour
                     fadeCoroutines[i] = null;
                 }
                 pipImages[i].color = isBonus[i] ? bonusColorActive : pipColorActive;
+                if (isBonus[i])
+                    outlineImages[i].color = outlineColorDefault;
             }
         }
     }
@@ -158,19 +161,30 @@ public class StaminaBarFollower : MonoBehaviour
     private IEnumerator DamageFlashFade(int index)
     {
         Image pip = pipImages[index];
+        Image outline = outlineImages[index];
+
         pip.color = damageFlashColor;
         yield return new WaitForSeconds(damageFlashDuration);
 
         float elapsed = 0f;
-        Color start = pip.color;
-        Color end = new Color(start.r, start.g, start.b, 0f);
+        Color pipStart = pip.color;
+        Color pipEnd = isBonus[index] ? new Color(pipStart.r, pipStart.g, pipStart.b, 0f) : pipColorEmpty;
+        Color outlineStart = outline.color;
+        Color outlineEnd = new Color(outlineStart.r, outlineStart.g, outlineStart.b, 0f);
+
         while (elapsed < damageFadeDuration)
         {
             elapsed += Time.deltaTime;
-            pip.color = Color.Lerp(start, end, elapsed / damageFadeDuration);
+            float t = elapsed / damageFadeDuration;
+            pip.color = Color.Lerp(pipStart, pipEnd, t);
+            if (isBonus[index])
+                outline.color = Color.Lerp(outlineStart, outlineEnd, t);
             yield return null;
         }
-        pip.color = end;
+
+        pip.color = pipEnd;
+        if (isBonus[index])
+            outline.color = outlineEnd;
         fadeCoroutines[index] = null;
     }
 }

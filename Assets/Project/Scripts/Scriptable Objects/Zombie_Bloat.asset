@@ -16,8 +16,7 @@ MonoBehaviour:
   enemyModel: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
   skinVariants: []
   attackType: 1
-  maxHealth: 20
-  limbLossThreshold: 0.5
+  maxHealth: 50
   obstacleMask:
     serializedVersion: 2
     m_Bits: 8
@@ -25,7 +24,6 @@ MonoBehaviour:
   chaseSpeed: 0.8
   rotationSpeed: 3
   crawlSpeed: 0.2
-  speedReductionPerHealthPercent: 0.3
   detectionRadius: 4
   detectionAngle: 150
   detectionCheckInterval: 0.5
@@ -34,9 +32,6 @@ MonoBehaviour:
     m_Bits: 128
   stealthDetectionMultiplier: 1
   blinderHealthBarRange: 5
-  idleWanderChance: 0.1
-  wanderInterval: 5
-  wanderDuration: 2
   chasePersistenceDuration: 10
   attackRange: 1
   attackCooldown: 2
@@ -75,23 +70,17 @@ MonoBehaviour:
   sprayStunDuration: 2.5
   knockbackStunDuration: 0.5
   rotationToImpactDuration: 1.5
-  startingArmCount: 2
-  startingLegCount: 2
-  swellDuration: 1.5
-  swellScale: 1.5
-  canBecomeCrawler: 1
-  meleeHitsForFinisher: 3
   forceMultiplier: 1
   hasWeapon: 0
   weaponPrefab: {fileID: 0}
-  sentinelDamageTaken: 25
+  sentinelDamageTaken: 50
   sentinelKnockbackForce: 350
-  waterSplashSound: {fileID: 8300000, guid: 38b5f6da335ccd44fa7acd2dd8005b43, type: 3}
-  lavaSplashSound: {fileID: 8300000, guid: 5647dca86543bf84e8dd6628935dbfed, type: 3}
-  fallSound: {fileID: 0}
   sprayDamageTaken: 0
   broomDamageTaken: 0
   bottleDamageTaken: 0
+  waterSplashSound: {fileID: 8300000, guid: 38b5f6da335ccd44fa7acd2dd8005b43, type: 3}
+  lavaSplashSound: {fileID: 8300000, guid: 5647dca86543bf84e8dd6628935dbfed, type: 3}
+  fallSound: {fileID: 0}
   idleSounds: []
   chaseSounds: []
   attackSound: {fileID: 8300000, guid: 33085ae8348cede47abf393e50f29caa, type: 3}
@@ -110,7 +99,3 @@ MonoBehaviour:
     velocityThreshold: 0.5
     broomLowMassMultiplier: 0
     broomLowDragMultiplier: 0
-  explosionVFX: {fileID: 0}
-  explosionSound: {fileID: 0}
-  explosionSoundVolume: 1
-  explosionVFXScale: 1

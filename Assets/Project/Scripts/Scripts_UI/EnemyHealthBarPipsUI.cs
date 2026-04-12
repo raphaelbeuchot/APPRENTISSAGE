@@ -41,7 +41,7 @@ public class EnemyHealthBarPipsUI : EnemyHealthBarUI
     public override void Initialize(float baseMax, float realMax)
     {
         foreach (Transform child in transform)
-            Destroy(child.gameObject);
+            DestroyImmediate(child.gameObject);
 
         canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)

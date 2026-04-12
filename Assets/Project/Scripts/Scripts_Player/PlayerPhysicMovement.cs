@@ -72,11 +72,14 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private bool isPushing = false;
     private bool isSweeping = false;
     [HideInInspector] public bool isSweepImmune = false;
+    private bool wasBroomLowActive = false;
+
 
     private PlayerPitInteractable pitInteractable;
 
 
     private bool isGroggyReached = false;
+    private bool isGroggyStunned = false;
 
     // Stamina runtime
     private float currentStamina;
@@ -188,10 +191,10 @@ public class PlayerPhysicsMovement : MonoBehaviour
         HandleInput();
         HandleStamina();
 
-        if (!canMove && grabState == GrabState.None && !gameManager.stunBySentinel && !isGroggy && !isSweeping)
+        if (!canMove && grabState == GrabState.None && !gameManager.stunBySentinel && !isGroggy && !isSweeping && !isGroggyStunned)
             canMove = true;
 
-        if (isGroggy && isGroggyReached && !isSweeping && PlayerInputManager.Instance.SprintPressed && standUpCoroutine == null)
+        if (isGroggy && isGroggyReached && !isSweeping && !isGroggyStunned && PlayerInputManager.Instance.SprintPressed && standUpCoroutine == null)
         {
             standUpCoroutine = StartCoroutine(StandUpCoroutine());
         }
@@ -234,6 +237,19 @@ public class PlayerPhysicsMovement : MonoBehaviour
             float currentBroomLowWeight = animator.GetLayerWeight(broomLowLayerIndex);
             animator.SetLayerWeight(broomLowLayerIndex, Mathf.Lerp(currentBroomLowWeight, targetBroomLowWeight, 10f * Time.deltaTime));
         }
+
+        bool broomLowNow = PlayerInputManager.Instance.BroomLowActive;
+        if (broomLowNow && !wasBroomLowActive)
+        {
+            BroomLowFeedback feedback = GetComponent<BroomLowFeedback>();
+            if (feedback != null) feedback.OnBroomLowEnter();
+        }
+        else if (!broomLowNow && wasBroomLowActive)
+        {
+            BroomLowFeedback feedback = GetComponent<BroomLowFeedback>();
+            if (feedback != null) feedback.OnBroomLowExit();
+        }
+        wasBroomLowActive = broomLowNow;
 
         if (!isClimbing)
         {
@@ -444,9 +460,28 @@ public class PlayerPhysicsMovement : MonoBehaviour
     public void OnGroggyStart()
     {
         isSweeping = false;
+        canMove = false;
+        if (gameManager != null && gameManager.IsInRedLight())
+        {
+            isGroggyStunned = true;
+            gameManager.ExecutePlayerShotOnGroggy();
+            StartCoroutine(GroggyStunCoroutine());
+        }
+        else
+        {
+            isGroggyReached = true;
+            EnterGroggyState();
+        }
+    }
+
+    IEnumerator GroggyStunCoroutine()
+    {
+        yield return new WaitForSeconds(gameManager.sentinel.stunDuration);
+        isGroggyStunned = false;
         isGroggyReached = true;
         EnterGroggyState();
     }
+
     
     IEnumerator StandUpCoroutine()
     {
@@ -747,6 +782,24 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         return isCrouching;
     }
+
+    public bool IsSweeping()
+    {
+        return isSweeping;
+    }
+
+    public bool IsGroggy()
+    {
+        return isGroggy;
+    }
+    public bool IsGroggyStunned()
+    {
+        return isGroggyStunned;
+    }
+
+   
+
+    
     public Vector3 GetMoveInput()
     {
         Vector2 input = PlayerInputManager.Instance.MoveInput;
@@ -892,7 +945,18 @@ public class PlayerPhysicsMovement : MonoBehaviour
         isSweeping = true;
         isDashing = false;
         canMove = false;
+
+        if (gameManager != null && gameManager.IsInRedLight())
+            StartCoroutine(SweepFeedbackCoroutine());
+
         StartCoroutine(SweepCoroutine());
+    }
+
+    IEnumerator SweepFeedbackCoroutine()
+    {
+        gameManager.playerDetectionFeedback.OnDetected();
+        yield return new WaitForSeconds(0.5f);
+        gameManager.playerDetectionFeedback.OnNoLongerDetected();
     }
 
     public void TriggerSweepFromObstacle()

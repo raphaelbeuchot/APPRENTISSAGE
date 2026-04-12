@@ -20,6 +20,8 @@ public class PlayerHealthUI : MonoBehaviour
     [Header("Colors")]
     [SerializeField] private Color pipColorActive = Color.green;
     [SerializeField] private Color bonusColorActive = new Color(0.5f, 0f, 1f);
+    [SerializeField] private Color pipColorEmpty = new Color(0.2f, 0.2f, 0.2f);
+
     [SerializeField] private Color outlineColorDefault = Color.black;
     [SerializeField] private Color damageFlashColor = Color.red;
     [SerializeField] private float damageFlashDuration = 0.15f;
@@ -35,7 +37,7 @@ public class PlayerHealthUI : MonoBehaviour
     private float baseMaxHealth;
     private float realMaxHealth;
 
-    void Start()
+    IEnumerator Start()
     {
         if (playerHealth == null)
             playerHealth = FindObjectOfType<PlayerHealth>();
@@ -43,9 +45,15 @@ public class PlayerHealthUI : MonoBehaviour
         if (playerHealth == null)
         {
             Debug.LogError("PlayerHealthUI: PlayerHealth non trouve !");
-            return;
+            yield break;
         }
 
+        yield return null;
+
+        Debug.Log($"[PlayerHealthUI] base={playerHealth.GetBaseMaxHealth()} real={playerHealth.GetMaxHealth()} multiplier={ModifierApplier.Instance?.playerMaxHealthMultiplier}");
+
+        baseMaxHealth = playerHealth.GetBaseMaxHealth();
+        realMaxHealth = playerHealth.GetMaxHealth();
         baseMaxHealth = playerHealth.GetBaseMaxHealth();
         realMaxHealth = playerHealth.GetMaxHealth();
 
@@ -147,6 +155,8 @@ public class PlayerHealthUI : MonoBehaviour
                     fadeCoroutines[i] = null;
                 }
                 pipImages[i].color = isBonus[i] ? bonusColorActive : pipColorActive;
+                if (isBonus[i])
+                    outlineImages[i].color = outlineColorDefault;
             }
         }
     }
@@ -154,19 +164,30 @@ public class PlayerHealthUI : MonoBehaviour
     private IEnumerator DamageFlashFade(int index)
     {
         Image pip = pipImages[index];
+        Image outline = outlineImages[index];
+
         pip.color = damageFlashColor;
         yield return new WaitForSeconds(damageFlashDuration);
 
         float elapsed = 0f;
-        Color start = pip.color;
-        Color end = new Color(start.r, start.g, start.b, 0f);
+        Color pipStart = pip.color;
+        Color pipEnd = isBonus[index] ? new Color(pipStart.r, pipStart.g, pipStart.b, 0f) : pipColorEmpty;
+        Color outlineStart = outline.color;
+        Color outlineEnd = new Color(outlineStart.r, outlineStart.g, outlineStart.b, 0f);
+
         while (elapsed < damageFadeDuration)
         {
             elapsed += Time.deltaTime;
-            pip.color = Color.Lerp(start, end, elapsed / damageFadeDuration);
+            float t = elapsed / damageFadeDuration;
+            pip.color = Color.Lerp(pipStart, pipEnd, t);
+            if (isBonus[index])
+                outline.color = Color.Lerp(outlineStart, outlineEnd, t);
             yield return null;
         }
-        pip.color = end;
+
+        pip.color = pipEnd;
+        if (isBonus[index])
+            outline.color = outlineEnd;
         fadeCoroutines[index] = null;
     }
 

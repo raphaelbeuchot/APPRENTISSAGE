@@ -191,7 +191,8 @@ public class EnemyAI_AStar : MonoBehaviour
         if (health != null && health.IsStunnedBySpray())
         {
             currentState = State.StunBySpray;
-            StopMovement();
+            if (!health.isInKnockback)
+                StopMovement();
             return;
         }
 

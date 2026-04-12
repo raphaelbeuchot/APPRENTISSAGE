@@ -199,7 +199,6 @@ public class LevelManager : MonoBehaviour
                 victoryUI.Show(playerHealth);
             else
             {
-                Debug.LogWarning("VictoryUI non trouve! Chargement automatique.");
                 Invoke(isTutorialLevel ? nameof(LoadLevelSelect) : nameof(LoadWheelOrLevelSelect), delayBeforeNextLevel);
             }
         }
@@ -207,7 +206,6 @@ public class LevelManager : MonoBehaviour
     public void LoadWheelOrLevelSelect()
     {
         int credits = CleaningCreditManager.Instance != null ? CleaningCreditManager.Instance.GetCredits() : -1;
-        Debug.Log("[LevelManager] LoadWheelOrLevelSelect - credits : " + credits);
         if (CleaningCreditManager.Instance != null && CleaningCreditManager.Instance.HasCredits())
             LoadWheelOfFortune();
         else
@@ -223,7 +221,6 @@ public class LevelManager : MonoBehaviour
         if (gameOver || levelCompleted) return;
 
         gameOver = true;
-        Debug.Log("=== GAME OVER ===");
 
         if (player != null)
             player.enabled = false;
@@ -233,7 +230,6 @@ public class LevelManager : MonoBehaviour
         
         else
         {
-            Debug.LogWarning("GameOverUI non trouve! Redemarrage automatique.");
             Invoke(nameof(RestartLevel), delayBeforeRestart);
         }
     }
@@ -292,7 +288,6 @@ public class LevelManager : MonoBehaviour
         if (levelCompleted || gameOver) return;
 
         levelCompleted = true;
-        Debug.Log("=== NIVEAU COMPLETE (Level End Trigger) ===");
 
         CountdownManager countdown = FindObjectOfType<CountdownManager>();
         if (countdown != null) countdown.StopAmbient();
