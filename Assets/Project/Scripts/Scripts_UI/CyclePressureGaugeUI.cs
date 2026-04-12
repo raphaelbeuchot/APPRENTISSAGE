@@ -52,7 +52,7 @@ public class CyclePressureGaugeUI : MonoBehaviour
         if (OptionsManager.Instance != null && !OptionsManager.Instance.gaugeVisible)
         {
             for (int i = 0; i < pips.Count; i++)
-                pips[i].color = colorInactive;
+                pips[i].color = Color.clear;  // était colorInactive
             return;
         }
 
