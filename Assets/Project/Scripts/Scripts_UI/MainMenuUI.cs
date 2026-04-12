@@ -6,6 +6,8 @@ using System.Collections.Generic;
 public class MainMenuUI : MonoBehaviour
 {
     [Header("Menu Options")]
+    [SerializeField] private OptionsPanelUI optionsPanelUI;
+
     [SerializeField] private TextMeshProUGUI newGameText;
     [SerializeField] private TextMeshProUGUI continueText;
     [SerializeField] private TextMeshProUGUI optionsText;
@@ -59,6 +61,8 @@ public class MainMenuUI : MonoBehaviour
 
     void HandleNavigation()
     {
+        if (optionsPanelUI != null && optionsPanelUI.IsOpen()) return;
+
         if (navigationCooldown > 0f)
         {
             navigationCooldown -= Time.unscaledDeltaTime;
@@ -120,7 +124,8 @@ public class MainMenuUI : MonoBehaviour
 
     void OpenOptions()
     {
-        Debug.Log("Options - a implementer");
+        if (optionsPanelUI != null)
+            optionsPanelUI.Open();
     }
 
     void UpdateVisuals()

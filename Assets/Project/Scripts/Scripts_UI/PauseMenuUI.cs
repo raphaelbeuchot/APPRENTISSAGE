@@ -12,6 +12,7 @@ public class PauseMenuUI : MonoBehaviour
     [SerializeField] private Image backgroundOverlay;
 
     [Header("Menu Options")]
+    [SerializeField] private OptionsPanelUI optionsPanelUI;
     [SerializeField] private TextMeshProUGUI continueText;
     [SerializeField] private TextMeshProUGUI restartText;
     [SerializeField] private TextMeshProUGUI optionsText;
@@ -80,6 +81,8 @@ public class PauseMenuUI : MonoBehaviour
 
     void HandleNavigation()
     {
+        if (optionsPanelUI != null && optionsPanelUI.IsOpen()) return;
+
         // Cooldown entre navigations
         if (navigationCooldown > 0f)
         {
@@ -238,8 +241,8 @@ public class PauseMenuUI : MonoBehaviour
 
     void OpenOptions()
     {
-        Debug.Log("Options menu - A implementer");
-        // TODO : Ouvrir menu options
+        if (optionsPanelUI != null)
+            optionsPanelUI.Open();
     }
 
     void QuitToMenu()

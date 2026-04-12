@@ -91,7 +91,10 @@ public class PlayerHealth : MonoBehaviour
         if (rb != null)
             rb.AddForce(knockbackDir * stats.sentinelKnockbackForce, ForceMode.Impulse);
 
-        TakeDamage(settings.playerDamage);
+        float damage = OptionsManager.Instance != null
+            ? OptionsManager.Instance.GetSentinelDamage(settings.playerDamage, GetMaxHealth())
+            : settings.playerDamage;
+        TakeDamage(damage);
     }
 
     public void TakeZombieBite(float zombieDamage)

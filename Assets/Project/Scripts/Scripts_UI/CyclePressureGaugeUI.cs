@@ -49,6 +49,12 @@ public class CyclePressureGaugeUI : MonoBehaviour
     void Update()
     {
         if (cycleManager == null || pips.Count == 0) return;
+        if (OptionsManager.Instance != null && !OptionsManager.Instance.gaugeVisible)
+        {
+            for (int i = 0; i < pips.Count; i++)
+                pips[i].color = colorInactive;
+            return;
+        }
 
         if (!cycleManager.IsGameStarted())
         {
