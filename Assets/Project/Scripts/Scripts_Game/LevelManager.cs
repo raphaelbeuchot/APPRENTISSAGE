@@ -205,11 +205,14 @@ public class LevelManager : MonoBehaviour
     }
     public void LoadWheelOrLevelSelect()
     {
-        int credits = CleaningCreditManager.Instance != null ? CleaningCreditManager.Instance.GetCredits() : -1;
         if (CleaningCreditManager.Instance != null && CleaningCreditManager.Instance.HasCredits())
             LoadWheelOfFortune();
         else
+        {
+            if (LevelProgressionManager.Instance != null)
+                LevelProgressionManager.Instance.SetActiveModifier(ModifierType.None);
             LoadLevelSelect();
+        }
     }
 
     // ============================================

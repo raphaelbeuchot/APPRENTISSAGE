@@ -11,6 +11,7 @@ public class CyclePressureGaugeUI : MonoBehaviour
     [Header("Config")]
     [SerializeField] private int pipCount = 10;
     [SerializeField] private float pipDiameter = 25f;
+    [SerializeField] private float radius = 80f;          // NOUVEAU
     [SerializeField] private float releaseFillDuration = 0.5f;
 
     [Header("Colors")]
@@ -31,6 +32,7 @@ public class CyclePressureGaugeUI : MonoBehaviour
     {
         if (pipSprite == null) return;
         pips.Clear();
+
         for (int i = 0; i < pipCount; i++)
         {
             GameObject go = new GameObject("Pip_" + i);
@@ -38,12 +40,16 @@ public class CyclePressureGaugeUI : MonoBehaviour
             Image img = go.AddComponent<Image>();
             img.sprite = pipSprite;
             img.type = Image.Type.Simple;
+
             RectTransform rt = go.GetComponent<RectTransform>();
             rt.sizeDelta = new Vector2(pipDiameter, pipDiameter);
+
+            float t = (float)i / pipCount;  // division par pipCount et non pipCount-1
+            float angle = Mathf.PI * 0.5f - t * Mathf.PI * 2f;  // part de 12h, sens horaire
+            rt.anchoredPosition = new Vector2(radius * Mathf.Cos(angle), radius * Mathf.Sin(angle));
+
             pips.Add(img);
         }
-        for (int i = 0; i < pips.Count; i++)
-            pips[i].transform.SetSiblingIndex(pips.Count - 1 - i);
     }
 
     void Update()

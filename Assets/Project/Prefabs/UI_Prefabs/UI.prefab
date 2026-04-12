@@ -2697,7 +2697,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1248073022190436929}
   - component: {fileID: 2880000189980898460}
-  - component: {fileID: 1184310292319452159}
+  - component: {fileID: 2574539681664545819}
   m_Layer: 5
   m_Name: PressureGauge
   m_TagString: Untagged
@@ -2721,8 +2721,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -715, y: 200}
-  m_SizeDelta: {x: 150, y: 25}
+  m_AnchoredPosition: {x: -670, y: -300}
+  m_SizeDelta: {x: 150, y: 20}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &2880000189980898460
 MonoBehaviour:
@@ -2738,38 +2738,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CyclePressureGaugeUI
   cycleManager: {fileID: 0}
   pipSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  pipCount: 20
+  pipCount: 24
   pipDiameter: 10
+  radius: 50
   releaseFillDuration: 0.5
   colorInactive: {r: 0.38431373, g: 0.24571732, b: 0.10588235, a: 1}
   colorActiveCalm: {r: 1, g: 0.7058532, b: 0, a: 1}
   colorActiveTense: {r: 1, g: 0.26194972, b: 0, a: 1}
---- !u!114 &1184310292319452159
+--- !u!114 &2574539681664545819
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4954242887214174368}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.HorizontalLayoutGroup
   m_Padding:
     m_Left: 0
     m_Right: 0
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 1
-  m_Spacing: 12.5
+  m_ChildAlignment: 3
+  m_Spacing: -5
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 0
+  m_ChildControlWidth: 1
   m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_ChildScaleWidth: 1
+  m_ChildScaleHeight: 1
+  m_ReverseArrangement: 1
 --- !u!1 &5058802800006865425
 GameObject:
   m_ObjectHideFlags: 0
@@ -3755,7 +3756,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -505, y: 230}
+  m_AnchoredPosition: {x: -515, y: 225}
   m_SizeDelta: {x: 150, y: 40}
   m_Pivot: {x: 1, y: 0}
 --- !u!222 &6574851626403390713
@@ -3782,7 +3783,7 @@ MonoBehaviour:
   iconContainer: {fileID: 4661654383392378786}
   sprayIconPrefab: {fileID: 2248125366128818721, guid: e6f979f1fac53774b9a591e11b19fb52, type: 3}
   ammoCountText: {fileID: 3189642113745038668}
-  fullColor: {r: 1, g: 1, b: 1, a: 1}
+  fullColor: {r: 0.8962264, g: 0.84212774, b: 0.61721253, a: 1}
   emptyColor: {r: 0.45098042, g: 0.078431375, b: 0.06666667, a: 1}
   reloadingColor: {r: 1, g: 0.63570464, b: 0.015686274, a: 1}
   bonusFullColor: {r: 1, g: 0.68788946, b: 0, a: 1}
