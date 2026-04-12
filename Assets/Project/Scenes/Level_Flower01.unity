@@ -26326,11 +26326,8 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5794444067654349612, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
-      insertIndex: -1
+      insertIndex: 18
       addedObject: {fileID: 1871075812}
-    - targetCorrespondingSourceObject: {fileID: 5794444067654349612, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1871075827}
   m_SourcePrefab: {fileID: 100100000, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
 --- !u!114 &1454380197 stripped
 MonoBehaviour:
@@ -32685,24 +32682,6 @@ MonoBehaviour:
   - {r: 0.67071766, g: 0.6981132, b: 0.07573871, a: 1}
   - {r: 0.30867165, g: 0.21137415, b: 0.4716981, a: 1}
   - {r: 1, g: 0.96871734, b: 0.740566, a: 1}
---- !u!114 &1871075827
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1195708142}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 82f9dba8ca8d0224b8852d5dad8d840d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BroomLowFeedback
-  broomLowEnterSound: {fileID: 8300000, guid: b9916a601b61a3945bf3d6df2ff1c3c8, type: 3}
-  pulseMaterial: {fileID: 2100000, guid: 5c44e7c16c6f55f40ab37768e2f908d9, type: 2}
-  fadeDuration: 0.5
-  pulseInterval: 1.5
-  startAlpha: 1
-  curveExponent: 0.75
 --- !u!1001 &1873295191
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37344,14 +37323,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1184310292319452159, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_ReverseArrangement
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1807166732174698367, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: fadeDuration
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2880000189980898460, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: pipCount
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880000189980898460, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: cycleManager
       value: 
       objectReference: {fileID: 2103414916}
+    - target: {fileID: 2880000189980898460, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: colorActiveCalm.g
+      value: 0.7058532
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880000189980898460, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: colorActiveCalm.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880000189980898460, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: colorActiveTense.g
+      value: 0.26194972
+      objectReference: {fileID: 0}
     - target: {fileID: 3111822479116291425, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: victorySound
       value: 

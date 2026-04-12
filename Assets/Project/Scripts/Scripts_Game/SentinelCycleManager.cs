@@ -709,4 +709,11 @@ public class SentinelCycleManager : MonoBehaviour
 
         return totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
     }
+    public float GetCycleProgress()
+    {
+        if (!gameStarted) return 0f;
+        if (currentState == GameState.Alert)
+            return alertDuration > 0f ? Mathf.Clamp01(cycleTimer / alertDuration) : 1f;
+        return targetDuration > 0f ? Mathf.Clamp01(cycleTimer / targetDuration) : 0f;
+    }
 }

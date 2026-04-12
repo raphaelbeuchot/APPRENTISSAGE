@@ -9,12 +9,18 @@ public class CyclePressureGaugeUI : MonoBehaviour
     [SerializeField] private Sprite pipSprite;
 
     [Header("Config")]
-    [SerializeField] private int pipCount = 11;
+    [SerializeField] private int pipCount = 10;
     [SerializeField] private float pipDiameter = 25f;
+    [SerializeField] private float releaseFillDuration = 0.5f;
+
+    [Header("Colors")]
     [SerializeField] private Color colorInactive = Color.gray;
-    [SerializeField] private Color[] pipColors;
+    [SerializeField] private Color colorActiveCalm = Color.green;
+    [SerializeField] private Color colorActiveTense = Color.red;
 
     private List<Image> pips = new List<Image>();
+    private float releaseTimer = 0f;
+    private SentinelCycleManager.GameState lastState;
 
     void Start()
     {
@@ -25,7 +31,6 @@ public class CyclePressureGaugeUI : MonoBehaviour
     {
         if (pipSprite == null) return;
         pips.Clear();
-
         for (int i = 0; i < pipCount; i++)
         {
             GameObject go = new GameObject("Pip_" + i);
@@ -37,7 +42,6 @@ public class CyclePressureGaugeUI : MonoBehaviour
             rt.sizeDelta = new Vector2(pipDiameter, pipDiameter);
             pips.Add(img);
         }
-
         for (int i = 0; i < pips.Count; i++)
             pips[i].transform.SetSiblingIndex(pips.Count - 1 - i);
     }
@@ -45,14 +49,54 @@ public class CyclePressureGaugeUI : MonoBehaviour
     void Update()
     {
         if (cycleManager == null || pips.Count == 0) return;
-        float factor = cycleManager.GetCurrentPressureFactor();
+
+        if (!cycleManager.IsGameStarted())
+        {
+            for (int i = 0; i < pips.Count; i++)
+                pips[i].color = colorInactive;
+            return;
+        }
+
+        SentinelCycleManager.GameState state = cycleManager.GetCurrentState();
+        float progress = cycleManager.GetCycleProgress();
+
+        if (state == SentinelCycleManager.GameState.Release && lastState != SentinelCycleManager.GameState.Release)
+            releaseTimer = 0f;
+        if (state == SentinelCycleManager.GameState.Release)
+            releaseTimer += Time.deltaTime;
+        lastState = state;
+
+        float fillLevel;
+        Color activeColor;
+
+        switch (state)
+        {
+            case SentinelCycleManager.GameState.GreenLight:
+                fillLevel = 1f - progress;
+                activeColor = colorActiveCalm;
+                break;
+            case SentinelCycleManager.GameState.Alert:
+                fillLevel = progress;
+                activeColor = colorActiveTense;
+                break;
+            case SentinelCycleManager.GameState.RedLight:
+                fillLevel = 1f - progress;
+                activeColor = colorActiveTense;
+                break;
+            case SentinelCycleManager.GameState.Release:
+                fillLevel = Mathf.Clamp01(releaseTimer / releaseFillDuration);
+                activeColor = colorActiveCalm;
+                break;
+            default:
+                fillLevel = 0f;
+                activeColor = colorInactive;
+                break;
+        }
+
         for (int i = 0; i < pips.Count; i++)
         {
-            bool active = factor > (float)i / pipCount;
-            if (active)
-                pips[i].color = (pipColors != null && i < pipColors.Length) ? pipColors[i] : Color.white;
-            else
-                pips[i].color = colorInactive;
+            bool active = fillLevel > (float)i / pipCount;
+            pips[i].color = active ? activeColor : colorInactive;
         }
     }
 }

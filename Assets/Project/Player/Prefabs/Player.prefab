@@ -483,6 +483,7 @@ GameObject:
   - component: {fileID: 6716210810580982141}
   - component: {fileID: 5886150620188446577}
   - component: {fileID: 5742306782079411465}
+  - component: {fileID: 4829273372821787564}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -813,9 +814,29 @@ MonoBehaviour:
   coinForceMax: 0.15
   coinUpwardBias: 0.15
   coinSpawnOffset: {x: 0, y: 1, z: 0}
+  creditBarUI: {fileID: 0}
+  coinCountdownDuration: 0.5
   ragdollTimeout: 5
   velocityThreshold: 0.1
   hipBone: {fileID: 0}
+--- !u!114 &4829273372821787564
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5794444067654349612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82f9dba8ca8d0224b8852d5dad8d840d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BroomLowFeedback
+  broomLowEnterSound: {fileID: 8300000, guid: b9916a601b61a3945bf3d6df2ff1c3c8, type: 3}
+  pulseMaterial: {fileID: 2100000, guid: 5c44e7c16c6f55f40ab37768e2f908d9, type: 2}
+  fadeDuration: 0.5
+  pulseInterval: 1.5
+  startAlpha: 1
+  curveExponent: 0.75
 --- !u!1001 &640906551379516490
 PrefabInstance:
   m_ObjectHideFlags: 0
