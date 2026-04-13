@@ -26,6 +26,9 @@ public class EpervierManager : MonoBehaviour
     [SerializeField] private float rearrangeSpeed = 4f;
     [SerializeField] private float greenLightDelay = 1f;
     [SerializeField] private float maxTraverseDelay = 0.3f;
+    [SerializeField] private float rotationSpeedMin = 0.5f;
+    [SerializeField] private float rotationSpeedMax = 2f;
+    [SerializeField] private float enemyKnockbackForce = 30f;
 
     [Header("Player Escape")]
     [SerializeField] private Rigidbody playerRigidbody;
@@ -33,12 +36,22 @@ public class EpervierManager : MonoBehaviour
     [SerializeField] private float escapeForceDuration = 0.5f;
     [SerializeField] private float escapeForce = 10f;
     [SerializeField] private PlayerPhysicsMovement playerMovement;
-
     [SerializeField] private float sweepRaycastDistance = 1.5f;
-    private bool isSweeping = false;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip soundRearrange;
+    [SerializeField] private AudioClip soundReady;
+    [SerializeField] private AudioClip soundRolling;
+    [SerializeField] private AudioClip soundReturn;
+    [SerializeField] private AudioClip soundImpact;
+
+    private AudioSource audioSource;
+    private AudioSource audioSourceLoop;
+    private bool isSweeping = false;
     private bool isEscaping = false;
     private bool isFirstDrop = true;
+    private float lastImpactSoundTime = -999f;
+
 
     [SerializeField] private Material[] obstacleMaterials;
 
@@ -52,6 +65,8 @@ public class EpervierManager : MonoBehaviour
         public float currentY;
         public float[] currentZ;
         public float[] currentX;
+        public float[] rotationSpeeds;
+        public float[] rotationSpeedsY;
         public Coroutine activeCoroutine;
     }
 
@@ -66,6 +81,14 @@ public class EpervierManager : MonoBehaviour
 
     void Start()
     {
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
+
+        audioSourceLoop = gameObject.AddComponent<AudioSource>();
+        audioSourceLoop.playOnAwake = false;
+        audioSourceLoop.spatialBlend = 0f;
+
         BuildSlotPositions();
         CreateLines();
     }
@@ -116,6 +139,11 @@ public class EpervierManager : MonoBehaviour
                         if (obs == sweepHit.collider.gameObject)
                         {
                             isSweeping = true;
+                            if (soundImpact != null && Time.time - lastImpactSoundTime > 0.5f)
+                            {
+                                audioSource.PlayOneShot(soundImpact);
+                                lastImpactSoundTime = Time.time;
+                            }
                             StartCoroutine(SweepResetCoroutine());
                             playerMovement.TriggerSweep();
                             return;
@@ -133,6 +161,7 @@ public class EpervierManager : MonoBehaviour
             Rigidbody enemyRb = enemy.GetComponent<Rigidbody>();
             if (enemyRb == null) continue;
 
+            // Raycast haut (drop) - sans son
             Vector3 enemyRayOrigin = enemyRb.position + Vector3.up * 1.4f;
             RaycastHit enemyHit;
 
@@ -146,6 +175,36 @@ public class EpervierManager : MonoBehaviour
                         if (obs == enemyHit.collider.gameObject)
                         {
                             enemyRb.AddForce(enemy.transform.forward * escapeForce, ForceMode.VelocityChange);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Raycast avant (traversing) - avec son + recul
+            Vector3 enemySweepOrigin = enemyRb.position + Vector3.up * 0.6f;
+            RaycastHit enemySweepHit;
+
+            if (Physics.Raycast(enemySweepOrigin, Vector3.forward, out enemySweepHit, sweepRaycastDistance, obstacleLayer))
+            {
+                for (int i = 0; i < POOL_SIZE; i++)
+                {
+                    if (lines[i].state != LineState.Traversing) continue;
+                    foreach (GameObject obs in lines[i].obstacles)
+                    {
+                        if (obs == enemySweepHit.collider.gameObject)
+                        {
+                            if (soundImpact != null && Time.time - lastImpactSoundTime > 0.5f)
+                            {
+                                audioSource.PlayOneShot(soundImpact);
+                                lastImpactSoundTime = Time.time;
+                            }
+
+                            Vector3 ballPos = obs.transform.position;
+                            Vector3 enemyPos = enemyRb.position;
+                            Vector3 knockbackDir = new Vector3(enemyPos.x - ballPos.x, 0f, enemyPos.z - ballPos.z).normalized;
+                            enemy.pendingKnockbackDir = knockbackDir * enemyKnockbackForce;
+                            enemy.hasPendingKnockback = true;
                             break;
                         }
                     }
@@ -198,6 +257,12 @@ public class EpervierManager : MonoBehaviour
             line.isGap = new bool[numberOfSlots];
             line.currentX = new float[obstacleCount];
             line.currentZ = new float[obstacleCount];
+            line.rotationSpeeds = new float[obstacleCount];
+            for (int j = 0; j < obstacleCount; j++)
+                line.rotationSpeeds[j] = Random.Range(rotationSpeedMin, rotationSpeedMax);
+            line.rotationSpeedsY = new float[obstacleCount];
+            for (int j = 0; j < obstacleCount; j++)
+                line.rotationSpeedsY[j] = Random.Range(-1f, 1f);
             line.currentY = spawnPoint.position.y;
             line.state = LineState.Idle;
 
@@ -358,6 +423,9 @@ public class EpervierManager : MonoBehaviour
         EpervierLine line = lines[idx];
         float[] targetX = GetFilledPositions(line);
 
+        if (soundRearrange != null)
+            audioSource.PlayOneShot(soundRearrange);
+
         bool allDone = false;
         while (!allDone)
         {
@@ -396,6 +464,9 @@ public class EpervierManager : MonoBehaviour
         line.state = LineState.Ready;
         readyLineIndex = idx;
 
+        if (soundReady != null)
+            audioSource.PlayOneShot(soundReady);
+
         Debug.Log("[Epervier] Ligne " + idx + " prete.");
 
         if (isFirstDrop)
@@ -411,6 +482,13 @@ public class EpervierManager : MonoBehaviour
         float targetZ = arrivalPoint.position.z;
         int doneCount = 0;
 
+        if (soundRolling != null)
+        {
+            audioSourceLoop.clip = soundRolling;
+            audioSourceLoop.loop = true;
+            audioSourceLoop.Play();
+        }
+
         for (int i = 0; i < line.obstacles.Length; i++)
         {
             float delay = Random.Range(0f, maxTraverseDelay);
@@ -418,6 +496,9 @@ public class EpervierManager : MonoBehaviour
         }
 
         yield return new WaitUntil(() => doneCount >= line.obstacles.Length);
+
+        audioSourceLoop.loop = false;
+        audioSourceLoop.Stop();
 
         line.state = LineState.Returning;
         line.activeCoroutine = StartCoroutine(ReturnCoroutine(idx));
@@ -427,10 +508,19 @@ public class EpervierManager : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
 
+        float radius = slotWidth / 2f;
+
         while (Mathf.Abs(line.currentZ[i] - targetZ) > 0.02f)
         {
+            float previousZ = line.currentZ[i];
             line.currentZ[i] = Mathf.MoveTowards(line.currentZ[i], targetZ, traverseSpeed * Time.deltaTime);
             line.obstacles[i].transform.position = new Vector3(line.currentX[i], line.currentY, line.currentZ[i]);
+
+            float distanceMoved = line.currentZ[i] - previousZ;
+            float angle = (distanceMoved / radius) * Mathf.Rad2Deg * line.rotationSpeeds[i];
+            line.obstacles[i].transform.Rotate(angle, 0f, 0f, Space.World);
+            line.obstacles[i].transform.Rotate(0f, line.rotationSpeedsY[i] * Time.deltaTime * 300f, 0f, Space.Self);
+
             yield return null;
         }
 
@@ -442,6 +532,9 @@ public class EpervierManager : MonoBehaviour
     IEnumerator ReturnCoroutine(int idx)
     {
         EpervierLine line = lines[idx];
+
+        if (soundReturn != null)
+            audioSource.PlayOneShot(soundReturn);
 
         float targetY = spawnPoint.position.y;
         while (Mathf.Abs(line.currentY - targetY) > 0.02f)

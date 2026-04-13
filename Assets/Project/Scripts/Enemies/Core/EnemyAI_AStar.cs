@@ -9,7 +9,7 @@ public class EnemyAI_AStar : MonoBehaviour
     private bool hasCalculatedAnticipatedPosition = false;
     private Vector3 lastChaseDirection = Vector3.zero;
     private bool isLookingAround = false;
-
+    private bool isTemporarilyPushed = false;
 
     [Header("Enemy Stats")]
     public EnemyStats stats;
@@ -43,6 +43,8 @@ public class EnemyAI_AStar : MonoBehaviour
     [HideInInspector] public bool wasAlreadyShotDuringSweep = false;
     [HideInInspector] public bool pendingSweepShot = false;
     [HideInInspector] public bool isInStandupPhase = false;
+    [HideInInspector] public Vector3 pendingKnockbackDir = Vector3.zero;
+    [HideInInspector] public bool hasPendingKnockback = false;
 
 
 
@@ -249,7 +251,8 @@ public class EnemyAI_AStar : MonoBehaviour
         }
         if (isKnockedDownByEpervier || isInStandupPhase)
         {
-            StopMovement();
+            if (isInStandupPhase)
+                StopMovement();
             return;
         }
 
@@ -549,10 +552,20 @@ public class EnemyAI_AStar : MonoBehaviour
         Debug.Log($"[Epervier] OnCollisionEnter - tag={collision.gameObject.tag} isDead={isDead} isKnockedDown={isKnockedDownByEpervier}");
         if (isDead) return;
         if (isKnockedDownByEpervier) return;
-        if (!collision.gameObject.CompareTag("EpervierObstacle")) return;
+        if (collision.gameObject.CompareTag("EpervierObstacle"))
+        {
+            Debug.Log("[Epervier] Knockdown lance !");
+            StartCoroutine(EpervierKnockdownCoroutine());
+            return;
+        }
 
-        Debug.Log("[Epervier] Knockdown lance !");
-        StartCoroutine(EpervierKnockdownCoroutine());
+        EnemyAI_AStar otherEnemy = collision.gameObject.GetComponent<EnemyAI_AStar>();
+        if (otherEnemy != null && otherEnemy.isKnockedDownByEpervier)
+        {
+            Vector3 pushDir = (transform.position - otherEnemy.transform.position).normalized;
+            pushDir.y = 0;
+            StartCoroutine(TemporaryPushCoroutine(pushDir * collision.relativeVelocity.magnitude * 100f, 1f));
+        }
     }
 
     IEnumerator EpervierKnockdownCoroutine()
@@ -566,6 +579,13 @@ public class EnemyAI_AStar : MonoBehaviour
         {
             animator.SetBool("CanStandUp", false);
             animator.SetTrigger("EpervierKnockdown");
+        }
+
+        if (hasPendingKnockback)
+        {
+            rb.AddForce(pendingKnockbackDir, ForceMode.VelocityChange);
+            hasPendingKnockback = false;
+            pendingKnockbackDir = Vector3.zero;
         }
 
         yield return new WaitUntil(() =>
@@ -605,7 +625,6 @@ public class EnemyAI_AStar : MonoBehaviour
         if (gameManager != null)
             gameManager.ResetSequenceTarget(gameObject);
     }
-
 
     protected virtual void HandleWanderingState()
     {
@@ -797,6 +816,8 @@ public class EnemyAI_AStar : MonoBehaviour
 
     public void StopMovement()
     {
+        if (isTemporarilyPushed) return;
+
         if (aiPath != null)
         {
             aiPath.destination = transform.position;
@@ -1186,5 +1207,12 @@ public class EnemyAI_AStar : MonoBehaviour
         if (isDead) return;
         if (isKnockedDownByEpervier) return;
         StartCoroutine(EpervierKnockdownCoroutine());
+    }
+    IEnumerator TemporaryPushCoroutine(Vector3 pushVelocity, float duration)
+    {
+        isTemporarilyPushed = true;
+        rb.linearVelocity = pushVelocity;
+        yield return new WaitForSeconds(duration);
+        isTemporarilyPushed = false;
     }
 }
