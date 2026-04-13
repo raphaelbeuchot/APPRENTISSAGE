@@ -13,19 +13,20 @@ public class EnemyDetectionFeedback : MonoBehaviour
     [SerializeField] private AudioClip detectionSound;
     [SerializeField] private float detectionSoundVolume = 0.3f;
 
-    private SkinnedMeshRenderer[] meshRenderers;
+    private Renderer[] renderers;
     private Material[][] originalMaterials;
     private AudioSource audioSource;
+
     [HideInInspector]
     public bool isCurrentlyDetected = false;
 
     void Start()
     {
-        meshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
-        originalMaterials = new Material[meshRenderers.Length][];
-        for (int i = 0; i < meshRenderers.Length; i++)
+        renderers = GetComponentsInChildren<Renderer>();
+        originalMaterials = new Material[renderers.Length][];
+        for (int i = 0; i < renderers.Length; i++)
         {
-            originalMaterials[i] = meshRenderers[i].materials;
+            originalMaterials[i] = renderers[i].materials;
         }
 
         audioSource = GetComponent<AudioSource>();
@@ -35,10 +36,8 @@ public class EnemyDetectionFeedback : MonoBehaviour
 
     public void OnDetected()
     {
-        
-        if (GetComponent<EnemyHealth>()?.IsDead() == true) return; // AJOUT
+        if (GetComponent<EnemyHealth>()?.IsDead() == true) return;
         isCurrentlyDetected = true;
-
         StopAllCoroutines();
         StartCoroutine(FlashCoroutine(whiteMaterial, detectionFlashDuration));
         if (detectionSound != null)
@@ -47,7 +46,7 @@ public class EnemyDetectionFeedback : MonoBehaviour
 
     public void OnShotBySentinel()
     {
-        if (GetComponent<EnemyHealth>()?.IsDead() == true) return; // AJOUT
+        if (GetComponent<EnemyHealth>()?.IsDead() == true) return;
         StopAllCoroutines();
         StartCoroutine(FlashCoroutine(redMaterial, shotFlashDuration));
     }
@@ -61,22 +60,21 @@ public class EnemyDetectionFeedback : MonoBehaviour
 
     private void SetMaterial(Material mat)
     {
-        if (meshRenderers == null || originalMaterials == null) return;
-        for (int i = 0; i < meshRenderers.Length; i++)
+        if (renderers == null || originalMaterials == null) return;
+        for (int i = 0; i < renderers.Length; i++)
         {
             Material[] mats = new Material[originalMaterials[i].Length];
             for (int j = 0; j < mats.Length; j++)
                 mats[j] = mat;
-            meshRenderers[i].materials = mats;
+            renderers[i].materials = mats;
         }
     }
 
     private void RestoreMaterials()
     {
-        if (meshRenderers == null || originalMaterials == null) return;
-        for (int i = 0; i < meshRenderers.Length; i++)
-            meshRenderers[i].materials = originalMaterials[i];
+        if (renderers == null || originalMaterials == null) return;
+        for (int i = 0; i < renderers.Length; i++)
+            renderers[i].materials = originalMaterials[i];
         isCurrentlyDetected = false;
-
     }
 }
