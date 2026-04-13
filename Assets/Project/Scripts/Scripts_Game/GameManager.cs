@@ -236,6 +236,10 @@ public class GameManager : MonoBehaviour
             bool isInBourrade = grabSystem != null && grabSystem.isInBourradeDuration;
             bool isFakeGrabber = grabSystem != null && grabSystem.isFakeGrabbing;
 
+            HitAttack hitAttack = col.GetComponent<HitAttack>();
+            bool isHitterWindingUp = hitAttack != null && hitAttack.isInWindup;
+            bool isHitterAttacking = hitAttack != null && hitAttack.IsAttacking();
+
             Vector3 targetPos = GetTargetCenter(col);
             Vector3 direction = (targetPos - sentinelPos).normalized;
             float distance = Vector3.Distance(sentinelPos, targetPos);
@@ -549,7 +553,7 @@ public class GameManager : MonoBehaviour
             bool playerImmune = (col.gameObject == player.gameObject
                              && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed
                              && !isMoving);
-            if (isWindingUp) isMoving = true;
+            if (isWindingUp || isHitterWindingUp || isHitterAttacking) isMoving = true;
 
             bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit || (ai != null && ai.isKnockedDownByEpervier)) && !playerImmune;
             EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
@@ -588,7 +592,7 @@ public class GameManager : MonoBehaviour
 
             if (shouldBeShot && hasLOS && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
             {
-                bool isOffensiveAction = isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber;
+                bool isOffensiveAction = isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isHitterWindingUp || isHitterAttacking;
                 bool needsExposureDelay = !trackData.wasInLOS && !isOffensiveAction;
 
                 if (needsExposureDelay)
@@ -598,7 +602,7 @@ public class GameManager : MonoBehaviour
                     if (trackData.consecutiveLOSScans >= sentinelSettings.minimumExposureScans)
                     {
                         trackData.isBeingShot = true;
-                        trackData.scheduledDuringWindup = isWindingUp;
+                        trackData.scheduledDuringWindup = isWindingUp || isHitterWindingUp;
 
                         float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
                         trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
@@ -625,7 +629,7 @@ public class GameManager : MonoBehaviour
                 else
                 {
                     trackData.isBeingShot = true;
-                    trackData.scheduledDuringWindup = isWindingUp;
+                    trackData.scheduledDuringWindup = isWindingUp || isHitterWindingUp;
 
                     float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
                     trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
