@@ -12,6 +12,9 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI continueText;
     [SerializeField] private TextMeshProUGUI optionsText;
 
+    [Header("Audio")]
+    [SerializeField] private UIAudioPlayer uiAudio;
+
     [Header("Visual Settings")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color selectedColor = Color.yellow;
@@ -46,17 +49,13 @@ public class MainMenuUI : MonoBehaviour
             menuTexts.Add(optionsText);
         }
 
-       
-
         UpdateVisuals();
     }
 
     void Update()
     {
-        
         HandleNavigation();
         UpdateVisuals();
-       
     }
 
     void HandleNavigation()
@@ -75,15 +74,20 @@ public class MainMenuUI : MonoBehaviour
         {
             currentSelection = (currentSelection - 1 + menuTexts.Count) % menuTexts.Count;
             navigationCooldown = cooldownDuration;
+            if (uiAudio != null) uiAudio.PlayUp();
         }
         else if (input.y < -0.5f)
         {
             currentSelection = (currentSelection + 1) % menuTexts.Count;
             navigationCooldown = cooldownDuration;
+            if (uiAudio != null) uiAudio.PlayDown();
         }
 
         if (AnyFaceButtonPressed())
+        {
+            if (uiAudio != null) uiAudio.PlayA();
             SelectCurrentOption();
+        }
     }
 
     void SelectCurrentOption()
@@ -109,6 +113,8 @@ public class MainMenuUI : MonoBehaviour
 
     void NewGame()
     {
+        if (uiAudio != null) uiAudio.PlayNewGameAndSurvive();
+
         if (LevelProgressionManager.Instance != null)
             LevelProgressionManager.Instance.ResetProgression();
 

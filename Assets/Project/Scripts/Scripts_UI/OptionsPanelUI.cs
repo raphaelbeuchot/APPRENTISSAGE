@@ -6,6 +6,8 @@ public class OptionsPanelUI : MonoBehaviour
 {
     [Header("Panel")]
     [SerializeField] private GameObject optionsPanel;
+    [Header("Audio")]
+    [SerializeField] private UIAudioPlayer uiAudio;
 
     [Header("Option Texts")]
     [SerializeField] private TextMeshProUGUI gaugeText;
@@ -67,15 +69,32 @@ public class OptionsPanelUI : MonoBehaviour
         }
 
         if (up)
+        {
             currentSelection = (currentSelection - 1 + optionTexts.Count) % optionTexts.Count;
+            if (uiAudio != null) uiAudio.PlayUp();
+        }
         else if (down)
+        {
             currentSelection = (currentSelection + 1) % optionTexts.Count;
+            if (uiAudio != null) uiAudio.PlayDown();
+        }
 
-        if (left || right)
-            HandleHorizontal(left);
+        if (left)
+        {
+            HandleHorizontal(true);
+            if (uiAudio != null) uiAudio.PlayLeft();
+        }
+        else if (right)
+        {
+            HandleHorizontal(false);
+            if (uiAudio != null) uiAudio.PlayRight();
+        }
 
         if (Input.GetButtonDown("Cancel"))
+        {
+            if (uiAudio != null) uiAudio.PlayB();
             Close();
+        }
     }
 
     void HandleHorizontal(bool goLeft)

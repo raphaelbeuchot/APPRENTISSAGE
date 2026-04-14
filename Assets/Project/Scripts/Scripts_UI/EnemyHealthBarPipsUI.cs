@@ -19,6 +19,8 @@ public class EnemyHealthBarPipsUI : EnemyHealthBarUI
 
     [Header("Colors")]
     [SerializeField] private Color pipColorActive = new Color(1f, 0.5f, 0f);
+    [SerializeField] private Color outlineColorChase = Color.red;
+
     [SerializeField] private Color bonusColorActive = new Color(0.5f, 0f, 1f);
     [SerializeField] private Color outlineColorDefault = Color.black;
     [SerializeField] private Color lockOutlineColor = Color.white;
@@ -217,5 +219,14 @@ public class EnemyHealthBarPipsUI : EnemyHealthBarUI
         if (disableOnEnd)
             gameObject.SetActive(false);
         fadeCoroutineMain = null;
+    }
+    public void SetChaseOutline(bool isChasing)
+    {
+        Color target = isChasing ? outlineColorChase : outlineColorDefault;
+        for (int i = 0; i < outlineImages.Count; i++)
+        {
+            if (outlineImages[i] != null)
+                outlineImages[i].color = target;
+        }
     }
 }

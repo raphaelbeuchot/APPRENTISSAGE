@@ -11,6 +11,9 @@ public class PauseMenuUI : MonoBehaviour
     [SerializeField] private CanvasGroup pauseCanvasGroup;
     [SerializeField] private Image backgroundOverlay;
 
+    [Header("Audio")]
+    [SerializeField] private UIAudioPlayer uiAudio;
+
     [Header("Menu Options")]
     [SerializeField] private OptionsPanelUI optionsPanelUI;
     [SerializeField] private TextMeshProUGUI continueText;
@@ -83,24 +86,19 @@ public class PauseMenuUI : MonoBehaviour
     {
         if (optionsPanelUI != null && optionsPanelUI.IsOpen()) return;
 
-        // Cooldown entre navigations
         if (navigationCooldown > 0f)
         {
             navigationCooldown -= Time.unscaledDeltaTime;
         }
 
-        // Navigation haut/bas
         Vector2 moveInput = PlayerInputManager.Instance.MoveInput;
         bool upPressed = Input.GetKeyDown(KeyCode.UpArrow);
         bool downPressed = Input.GetKeyDown(KeyCode.DownArrow);
 
-        // Manette : detecter mouvement stick avec cooldown
         if (navigationCooldown <= 0f)
         {
-            if (moveInput.y > 0.5f)
-                upPressed = true;
-            else if (moveInput.y < -0.5f)
-                downPressed = true;
+            if (moveInput.y > 0.5f) upPressed = true;
+            else if (moveInput.y < -0.5f) downPressed = true;
 
             if (upPressed || downPressed)
                 navigationCooldown = cooldownDuration;
@@ -108,26 +106,24 @@ public class PauseMenuUI : MonoBehaviour
 
         if (upPressed)
         {
-            currentSelection--;
-            if (currentSelection < 0)
-                currentSelection = menuTexts.Count - 1;
+            currentSelection = (currentSelection - 1 + menuTexts.Count) % menuTexts.Count;
+            if (uiAudio != null) uiAudio.PlayUp();
         }
         else if (downPressed)
         {
-            currentSelection++;
-            if (currentSelection >= menuTexts.Count)
-                currentSelection = 0;
+            currentSelection = (currentSelection + 1) % menuTexts.Count;
+            if (uiAudio != null) uiAudio.PlayDown();
         }
 
-        // Validation avec Entree ou A/X manette - LIRE DIRECTEMENT L'INPUT
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetButtonDown("Submit"))
         {
+            if (uiAudio != null) uiAudio.PlayA();
             SelectCurrentOption();
         }
 
-        // Cancel avec B manette
         if (Input.GetButtonDown("Cancel"))
         {
+            if (uiAudio != null) uiAudio.PlayB();
             Resume();
         }
     }

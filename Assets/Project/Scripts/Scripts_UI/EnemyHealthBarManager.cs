@@ -117,6 +117,14 @@ public class EnemyHealthBarManager : MonoBehaviour
             EnemyAI_AStar ai = enemy.GetComponent<EnemyAI_AStar>();
             EnemyStats stats = ai != null ? ai.stats : null;
 
+            EnemyHealthBarPipsUI pipsUI = bar as EnemyHealthBarPipsUI;
+            if (pipsUI != null && ai != null)
+            {
+                bool isChasing = ai.currentState == EnemyAI_AStar.State.Chasing
+                              || ai.currentState == EnemyAI_AStar.State.Attacking;
+                pipsUI.SetChaseOutline(isChasing);
+            }
+
             if (stats != null && stats.attackType == EnemyStats.AttackType.Blinder)
             {
                 if (distance <= stats.blinderHealthBarRange)

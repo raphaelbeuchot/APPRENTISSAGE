@@ -10,6 +10,9 @@ public class LevelSelectUI : MonoBehaviour
     [SerializeField] private Transform listContainer;
     [SerializeField] private GameObject levelEntryPrefab;
 
+    [Header("Audio")]
+    [SerializeField] private UIAudioPlayer uiAudio;
+
     [Header("Visual Settings")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color selectedColor = Color.yellow;
@@ -32,7 +35,6 @@ public class LevelSelectUI : MonoBehaviour
     private float cooldownDuration = 0.2f;
     private Vector3 normalScale = Vector3.one;
 
-    // +1 pour le bouton Retour
     private int totalItems => levels != null ? levels.Count + 1 : 1;
 
     void Start()
@@ -77,20 +79,24 @@ public class LevelSelectUI : MonoBehaviour
             currentSelection = Mathf.Max(0, currentSelection - 1);
             AdjustScroll();
             navigationCooldown = cooldownDuration;
+            if (uiAudio != null) uiAudio.PlayUp();
         }
         else if (input.y < -0.5f)
         {
             currentSelection = Mathf.Min(totalItems - 1, currentSelection + 1);
             AdjustScroll();
             navigationCooldown = cooldownDuration;
+            if (uiAudio != null) uiAudio.PlayDown();
         }
 
         if (AnyFaceButtonPressed())
             SelectCurrentOption();
+
         if (Input.GetButtonDown("Cancel"))
+        {
+            if (uiAudio != null) uiAudio.PlayB();
             GoBack();
-
-
+        }
     }
 
     void AdjustScroll()
@@ -105,6 +111,7 @@ public class LevelSelectUI : MonoBehaviour
     {
         if (currentSelection == levels.Count)
         {
+            if (uiAudio != null) uiAudio.PlayB();
             GoBack();
             return;
         }
@@ -112,6 +119,8 @@ public class LevelSelectUI : MonoBehaviour
         LevelData data = levels[currentSelection];
         if (!LevelProgressionManager.Instance.IsUnlocked(data.sceneIndex))
             return;
+
+        if (uiAudio != null) uiAudio.PlayLevelSelectedAndSurvive();
 
         LoadingScreenManager.TargetSceneIndex = data.sceneIndex;
         SceneManager.LoadScene(1);
@@ -138,7 +147,6 @@ public class LevelSelectUI : MonoBehaviour
             entries.Add(entry);
         }
 
-        // Bouton Retour
         GameObject retourEntry = Instantiate(levelEntryPrefab, listContainer);
         LayoutElement lRetour = retourEntry.GetComponent<LayoutElement>();
         if (lRetour == null) lRetour = retourEntry.AddComponent<LayoutElement>();

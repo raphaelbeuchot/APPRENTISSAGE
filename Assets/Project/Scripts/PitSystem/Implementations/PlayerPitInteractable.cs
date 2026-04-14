@@ -33,6 +33,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     private PlayerPhysicsMovement playerMovement;
     private CapsuleCollider capsuleCollider;
     private Rigidbody rb;
+    private Animator animator;
 
     // State
     private bool isInPit = false;
@@ -58,6 +59,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         playerMovement = GetComponent<PlayerPhysicsMovement>();
         capsuleCollider = GetComponent<CapsuleCollider>();
         rb = GetComponent<Rigidbody>();
+        animator = GetComponentInChildren<Animator>();
 
         if (capsuleCollider != null)
         {
@@ -133,27 +135,23 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     /// <summary>
     /// Vérifie si le player peut sortir du pit
     /// </summary>
-    private bool CanClimbOut()
+    private bool CanClimbOut(out float groundY)
     {
+        groundY = currentPitZone != null ? currentPitZone.transform.position.y : 0f;
+
         if (capsuleCollider == null) return false;
 
         float feetY = transform.position.y - (capsuleCollider.height / 2f);
 
-        // Si le player est dans l'eau (shallow ou deep), check classique
         if (isInWater || isInShallowWater)
         {
-            float groundY = currentPitZone != null ? currentPitZone.transform.position.y : 0f;
             float distanceFromGround = groundY - feetY;
             bool canClimbWater = distanceFromGround <= maxClimbHeight;
-
             Debug.Log($"[PlayerPit] Water check: feetY={feetY:F2}, groundY={groundY:F2}, distance={distanceFromGround:F2}, canClimb={canClimbWater}");
             return canClimbWater;
         }
 
-        // Si le player n'est PAS dans l'eau = empty pit ou hors pit
-        // Autoriser climb out si Y entre -maxClimbHeight et 0
         bool canClimbEmpty = feetY >= -maxClimbHeight && feetY <= 0f;
-
         Debug.Log($"[PlayerPit] Empty/default check: feetY={feetY:F2}, canClimb={canClimbEmpty}");
         return canClimbEmpty;
     }
@@ -175,7 +173,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         }
 
         // CHECK 1 : Peut-on sortir ? (hauteur)
-        if (!CanClimbOut())
+        if (!CanClimbOut(out float groundY))
         {
             Debug.Log("[PlayerPit] Too deep to climb out!");
             return;
@@ -242,115 +240,109 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         }
 
         Debug.Log($"[PlayerPit] Starting climb out, wall normal: {pitWallNormal}, exit direction: {exitDirection}");
-        StartCoroutine(ClimbOutAnimation(exitDirection));
+        StartCoroutine(ClimbOutAnimation(exitDirection, groundY));
     }
 
-    private IEnumerator ClimbOutAnimation(Vector3 exitDirection)
+    private IEnumerator ClimbOutAnimation(Vector3 exitDirection, float groundY)
     {
         Debug.Log($"[PlayerPit] === COROUTINE STARTED === exitDirection: {exitDirection}");
-
         isClimbingOut = true;
 
-        // === BLOCAGE COMPLET INPUTS ===
         if (playerMovement != null)
         {
             playerMovement.enabled = false;
             playerMovement.canMove = false;
-            playerMovement.ResetAllInputs(); // Vide la mémoire des inputs
+            playerMovement.ResetAllInputs();
         }
 
-        // === FREEZE ROTATION ===
         RigidbodyConstraints oldConstraints = rb.constraints;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
 
-        // Normaliser la direction
         exitDirection.y = 0;
         if (exitDirection.sqrMagnitude > 0.01f)
-        {
             exitDirection.Normalize();
+
+        if (exitDirection != Vector3.zero)
+            transform.rotation = Quaternion.LookRotation(exitDirection);
+
+        Vector3 rayOrigin = transform.position + exitDirection * 0.5f + Vector3.up * 2f;
+        RaycastHit groundHit;
+        float detectedGroundY = transform.position.y;
+        if (Physics.Raycast(rayOrigin, Vector3.down, out groundHit, 5f, LayerMask.GetMask("Ground")))
+        {
+            detectedGroundY = groundHit.point.y;
+            Debug.Log($"[PlayerPit] Ground surface found at Y={detectedGroundY:F2}");
         }
-        Debug.Log($"[PlayerPit] Normalized exitDirection: {exitDirection}");
+        else
+        {
+            Debug.LogWarning("[PlayerPit] Ground raycast failed, using fallback Y");
+        }
 
+        float climbHeight = detectedGroundY - transform.position.y;
         Vector3 startPos = transform.position;
+        Vector3 topPos = startPos + Vector3.up * climbHeight;
 
-        // --- PHASE 1 : TRACTION VERTICALE (monte à Y=0) ---
+        // === PHASE 1 : MONTEE VERTICALE + ANIMATION ===
+        if (animator != null)
+            animator.SetTrigger("ExitPit");
+
         float tractionDuration = 0.6f;
-        Vector3 topPos = new Vector3(startPos.x, 0f, startPos.z);
-
-        Debug.Log($"[PlayerPit] Phase 1 - Traction: from {startPos} to {topPos}");
-
         float elapsedTime = 0f;
         while (elapsedTime < tractionDuration)
         {
-            elapsedTime += Time.fixedDeltaTime; // FIXE AU LIEU DE deltaTime
+            elapsedTime += Time.fixedDeltaTime;
             float t = elapsedTime / tractionDuration;
-
-            Vector3 targetPos = Vector3.Lerp(startPos, topPos, t);
-            rb.MovePosition(targetPos); // RIGIDBODY AU LIEU DE transform.position
-
-            // FORCE VELOCITY ZERO
+            rb.MovePosition(Vector3.Lerp(startPos, topPos, t));
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
-
-            yield return new WaitForFixedUpdate(); // FIXED AU LIEU DE null
+            yield return new WaitForFixedUpdate();
         }
-
-        // Force position exacte après traction
         rb.MovePosition(topPos);
+
+        // Attendre fin animation ExitPit
+        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName("ExitPit"));
+        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f);
+
         Debug.Log($"[PlayerPit] Phase 1 complete, position: {transform.position}");
 
-        // --- PHASE 2 : PAS EN AVANT (avance horizontalement) ---
+        // === PHASE 2 : PAS HORIZONTAL ===
         float stepDuration = 0.4f;
         float stepDistance = 0.5f;
         Vector3 finalPos = topPos + exitDirection * stepDistance;
 
-        Debug.Log($"[PlayerPit] Phase 2 - Step: from {topPos} to {finalPos}");
-
         elapsedTime = 0f;
         while (elapsedTime < stepDuration)
         {
-            elapsedTime += Time.fixedDeltaTime; // FIXE
+            elapsedTime += Time.fixedDeltaTime;
             float t = elapsedTime / stepDuration;
-
-            Vector3 targetPos = Vector3.Lerp(topPos, finalPos, t);
-            rb.MovePosition(targetPos); // RIGIDBODY
-
-            // FORCE VELOCITY ZERO
+            rb.MovePosition(Vector3.Lerp(topPos, finalPos, t));
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
-
-            yield return new WaitForFixedUpdate(); // FIXED
+            yield return new WaitForFixedUpdate();
         }
-
-        // Force position finale exacte
         rb.MovePosition(finalPos);
+
+        if (animator != null)
+            animator.SetTrigger("ExitDone");
+
         Debug.Log($"[PlayerPit] Phase 2 complete, final position: {transform.position}");
 
         // === RESTAURATION ===
         rb.constraints = oldConstraints;
-
-        // Sortie du pit
         ExitPit();
 
-        // Réactiver le contrôle
         if (playerMovement != null)
         {
             playerMovement.enabled = true;
             playerMovement.canMove = true;
         }
 
-        // Immunité temporaire
         StartCoroutine(ExitImmunityCoroutine());
-
         isClimbingOut = false;
         lastClimbOutTime = Time.time;
 
         Debug.Log("[PlayerPit] Climb out complete");
     }
-
-    /// <summary>
-    /// Donne une immunité temporaire après sortie pour éviter re-collision immédiate
-    /// </summary>
     private IEnumerator ExitImmunityCoroutine()
     {
         hasExitImmunity = true;
