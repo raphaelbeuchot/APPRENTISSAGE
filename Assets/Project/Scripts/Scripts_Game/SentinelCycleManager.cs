@@ -24,7 +24,6 @@ public class SentinelCycleManager : MonoBehaviour
     [SerializeField] private Light[] lightsToDisableInRedLight;
     [SerializeField] private SentinelCentralLight sentinelCentralLight;
     [SerializeField] private Light playerSpotLight;
-    //[SerializeField] private Color spotColorCompensated = new Color(0.5f, 0.8f, 1f, 1f);
     [SerializeField] private EpervierManager epervierManager;
     [SerializeField] private EpervierManagerLoop epervierManagerLoop;
     [SerializeField] private CanyonTileManager canyonTileManager;
@@ -37,6 +36,8 @@ public class SentinelCycleManager : MonoBehaviour
     private AudioSource audioSource;
     [SerializeField] private AudioClip greenLightMusicLoop;
     [SerializeField] private AudioClip redLightMusicLoop;
+    [SerializeField] private AudioClip alertSound;
+    [SerializeField] private AudioClip alertIgnitionSound;
 
     [SerializeField, Range(1f, 3f)] private float maxMusicPitch = 1.5f;
     private AudioSource musicAudioSource;
@@ -356,10 +357,10 @@ public class SentinelCycleManager : MonoBehaviour
                 audioSource.Stop();
             }
 
-            if (audioSource != null && sentinelSettings.redlightIgnitionSound != null)
+            if (audioSource != null && alertIgnitionSound != null)
             {
                 audioSource.spatialBlend = 0f;
-                audioSource.PlayOneShot(sentinelSettings.alertIgnitionSound);
+                audioSource.PlayOneShot(alertIgnitionSound);
             }
 
             if (alertCoroutine != null)
@@ -385,7 +386,7 @@ public class SentinelCycleManager : MonoBehaviour
 
             float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
             float pitch = Mathf.Lerp(1.0f, sentinelSettings.maxPitch, combinedFactor);
-            float alertDuration = sentinelSettings.alertSound.length / pitch;
+            float alertDuration = alertSound != null ? alertSound.length / pitch : 0f;
 
             alertCoroutine = StartCoroutine(BeethovenAlertCoroutine());
             Debug.Log("[CYCLE] Alert - duree = duree du son");
@@ -534,7 +535,7 @@ public class SentinelCycleManager : MonoBehaviour
     {
         Debug.Log("[ALERT] Debut - son unique avec pitch variable");
 
-        if (sentinelSettings.alertSound == null)
+        if (alertSound == null)
         {
             Debug.LogWarning("[ALERT] alertSound est NULL!");
             StartNewCycle(GameState.RedLight);
@@ -564,9 +565,9 @@ public class SentinelCycleManager : MonoBehaviour
 
         Debug.Log($"[ALERT] Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Combined: {combinedFactor:F2}, Pitch: {pitch:F2}");
 
-        PlaySoundAtPitch(sentinelSettings.alertSound, pitch);
+        PlaySoundAtPitch(alertSound, pitch);
 
-        float soundDuration = sentinelSettings.alertSound.length / pitch;
+        float soundDuration = alertSound.length / pitch;
         alertDuration = soundDuration;
 
         yield return new WaitForSeconds(soundDuration);
@@ -709,6 +710,7 @@ public class SentinelCycleManager : MonoBehaviour
 
         return totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
     }
+
     public float GetCycleProgress()
     {
         if (!gameStarted) return 0f;

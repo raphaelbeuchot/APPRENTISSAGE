@@ -124,21 +124,11 @@ public class OptionsPanelUI : MonoBehaviour
     {
         if (OptionsManager.Instance == null) return;
 
-        string c = "<color=#F5A623>";
-        string end = "</color>";
-
         bool gaugeOn = OptionsManager.Instance.gaugeVisible;
-        if (currentSelection == 0)
-            gaugeText.text = "Sentinel timer   " + c + (gaugeOn ? "[ On ]  Off" : "On  [ Off ]") + end;
-        else
-            gaugeText.text = "Sentinel timer   " + (gaugeOn ? "[ On ]  Off" : "On  [ Off ]");
+        gaugeText.text = "Timer display     " + (gaugeOn ? "On" : "Off");
 
-        bool isbanco = OptionsManager.Instance.difficulty == OptionsManager.Difficulty.Banco;
-        string diff = isbanco ? "[ Banco ]  Superbanco" : "Banco  [ Superbanco ]";
-        if (currentSelection == 1)
-            difficultyText.text = "Difficulty   " + c + diff + end;
-        else
-            difficultyText.text = "Difficulty   " + diff;
+        bool isBanco = OptionsManager.Instance.difficulty == OptionsManager.Difficulty.Banco;
+        difficultyText.text = "Difficulty     " + (isBanco ? "Easy" : "Hard");
 
         audioText.text = "Audio";
     }
