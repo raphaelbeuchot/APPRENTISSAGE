@@ -9,7 +9,7 @@ public class OptionsManager : MonoBehaviour
     private const string KEY_GAUGE = "GaugeVisible";
     private const string KEY_DIFFICULTY = "Difficulty";
 
-    public bool gaugeVisible { get; private set; } = true;
+    public bool gaugeVisible { get; private set; } = false;
     public Difficulty difficulty { get; private set; } = Difficulty.Banco;
 
     void Awake()
@@ -49,7 +49,7 @@ public class OptionsManager : MonoBehaviour
 
     void Load()
     {
-        gaugeVisible = PlayerPrefs.GetInt(KEY_GAUGE, 1) == 1;
+        gaugeVisible = PlayerPrefs.GetInt(KEY_GAUGE, 0) == 1;
         difficulty = (Difficulty)PlayerPrefs.GetInt(KEY_DIFFICULTY, 0);
     }
 }

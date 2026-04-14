@@ -26108,12 +26108,20 @@ MonoBehaviour:
   rearrangeSpeed: 4
   greenLightDelay: 0
   maxTraverseDelay: 0.3
+  rotationSpeedMin: 0.5
+  rotationSpeedMax: 2
+  enemyKnockbackForce: 30
   playerRigidbody: {fileID: 6978021389780206176}
   escapeRaycastHeight: 1.5
   escapeForceDuration: 0.2
   escapeForce: 15
   playerMovement: {fileID: 6140236864197050197}
   sweepRaycastDistance: 1.5
+  soundRearrange: {fileID: 0}
+  soundReady: {fileID: 0}
+  soundRolling: {fileID: 0}
+  soundReturn: {fileID: 0}
+  soundImpact: {fileID: 0}
   obstacleMaterials:
   - {fileID: 2100000, guid: 5dd3ddb7635282b4d93907f1d75b84c2, type: 2}
   - {fileID: 2100000, guid: 4c2d7ede1326d9e49a21298c866d5655, type: 2}
@@ -79463,6 +79471,8 @@ MonoBehaviour:
   wasAlreadyShotDuringSweep: 0
   pendingSweepShot: 0
   isInStandupPhase: 0
+  pendingKnockbackDir: {x: 0, y: 0, z: 0}
+  hasPendingKnockback: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -114245,6 +114255,8 @@ MonoBehaviour:
   wasAlreadyShotDuringSweep: 0
   pendingSweepShot: 0
   isInStandupPhase: 0
+  pendingKnockbackDir: {x: 0, y: 0, z: 0}
+  hasPendingKnockback: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -135088,7 +135100,7 @@ PrefabInstance:
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: redLightMusicLoop
       value: 
-      objectReference: {fileID: 8300000, guid: 33baaeebfb1ef4e4eb5c2b1e532c20a5, type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: sentinelTransform
       value: 
@@ -135097,6 +135109,10 @@ PrefabInstance:
       propertyPath: startZoneTransform
       value: 
       objectReference: {fileID: 1547379118}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: greenLightMusicLoop
+      value: 
+      objectReference: {fileID: 8300000, guid: a8266927534530242a96c8626ea6c54a, type: 3}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: redLightDirectional
       value: 
