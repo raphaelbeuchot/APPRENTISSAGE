@@ -222,19 +222,12 @@ public class LevelManager : MonoBehaviour
     void OnPlayerDeath()
     {
         if (gameOver || levelCompleted) return;
-
         gameOver = true;
-
-        if (player != null)
-            player.enabled = false;
-
+        if (player != null) player.enabled = false;
         if (gameOverUI != null)
             gameOverUI.Show();
-        
         else
-        {
             Invoke(nameof(RestartLevel), delayBeforeRestart);
-        }
     }
 
     // ============================================

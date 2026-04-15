@@ -1,8 +1,6 @@
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using TMPro;
-using System.Collections.Generic;
+using System.Collections;
 
 public class GameOverUI : MonoBehaviour
 {
@@ -10,171 +8,47 @@ public class GameOverUI : MonoBehaviour
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private CanvasGroup gameOverCanvasGroup;
     [SerializeField] private TextMeshProUGUI gameOverText;
-    [SerializeField] private Image backgroundOverlay;
 
-    [Header("Menu Options")]
-    [SerializeField] private TextMeshProUGUI restartText;
-    [SerializeField] private TextMeshProUGUI quitText;
-
-    [Header("Visual Settings")]
-    [SerializeField] private Color normalColor = Color.white;
-    [SerializeField] private Color selectedColor = Color.yellow;
-    [SerializeField] private float selectedScale = 1.2f;
-    [SerializeField] private float transitionSpeed = 10f;
+    [SerializeField] private float textAnimDuration = 0.4f;
+    [SerializeField] private float textAnimStartScaleX = 8f;
 
     [Header("Messages")]
     [SerializeField]
     private string[] deathMessages = new string[]
     {
-        "YOU DIED",
-        "GAME OVER",
-        "CAUGHT!",
-        "ELIMINATED",
-        "TERMINATED"
+        "RED MEANS DEAD !",
+        "DEAD MAN !",
+        "RESTLESS IS DEATH !",
+        "THE URGE TO BUDGE !",
+        "ONE MOVE TOO FAR !"
     };
 
     [Header("Audio")]
     [SerializeField] private AudioClip gameOverSound;
     private AudioSource audioSource;
 
-    
+    [Header("Settings")]
+    [SerializeField] private float delayBeforeRestart = 1f;
 
-    private List<TextMeshProUGUI> menuTexts = new List<TextMeshProUGUI>();
-    private int currentSelection = 0;
-    private Vector3 normalScale = Vector3.one;
-    private float navigationCooldown = 0f;
-    private float cooldownDuration = 0.2f;
     private bool isActive = false;
 
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
-        {
             audioSource = gameObject.AddComponent<AudioSource>();
-        }
-
-
-        
-
-        // Setup liste textes menu
-        menuTexts.Add(restartText);
-        menuTexts.Add(quitText);
-
-        // Initialiser couleurs et scales
-        foreach (var text in menuTexts)
-        {
-            if (text != null)
-            {
-                text.color = normalColor;
-                text.transform.localScale = normalScale;
-            }
-        }
 
         if (gameOverPanel != null)
-        {
             gameOverPanel.SetActive(true);
-        }
 
         Hide();
-    }
-
-    void Update()
-    {
-        if (isActive)
-        {
-            HandleNavigation();
-            UpdateVisuals();
-        }
-    }
-
-    void HandleNavigation()
-    {
-        // Cooldown entre navigations
-        if (navigationCooldown > 0f)
-        {
-            navigationCooldown -= Time.unscaledDeltaTime;
-        }
-
-        // Navigation haut/bas
-        Vector2 moveInput = PlayerInputManager.Instance.MoveInput;
-        bool upPressed = Input.GetKeyDown(KeyCode.UpArrow);
-        bool downPressed = Input.GetKeyDown(KeyCode.DownArrow);
-
-        // Manette : detecter mouvement stick avec cooldown
-        if (navigationCooldown <= 0f)
-        {
-            if (moveInput.y > 0.5f)
-                upPressed = true;
-            else if (moveInput.y < -0.5f)
-                downPressed = true;
-
-            if (upPressed || downPressed)
-                navigationCooldown = cooldownDuration;
-        }
-
-        if (upPressed)
-        {
-            currentSelection--;
-            if (currentSelection < 0)
-                currentSelection = menuTexts.Count - 1;
-        }
-        else if (downPressed)
-        {
-            currentSelection++;
-            if (currentSelection >= menuTexts.Count)
-                currentSelection = 0;
-        }
-
-        // Validation avec Entree ou A/X manette
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetButtonDown("Submit"))
-        {
-            SelectCurrentOption();
-        }
-
-        // Cancel direct vers Quit
-        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetButtonDown("Cancel"))
-        {
-            OnQuitClicked();
-        }
-    }
-
-    void UpdateVisuals()
-    {
-        for (int i = 0; i < menuTexts.Count; i++)
-        {
-            if (menuTexts[i] == null) continue;
-
-            // Couleur cible
-            Color targetColor = (i == currentSelection) ? selectedColor : normalColor;
-            menuTexts[i].color = Color.Lerp(menuTexts[i].color, targetColor, Time.unscaledDeltaTime * transitionSpeed);
-
-            // Scale cible
-            Vector3 targetScale = (i == currentSelection) ? normalScale * selectedScale : normalScale;
-            menuTexts[i].transform.localScale = Vector3.Lerp(menuTexts[i].transform.localScale, targetScale, Time.unscaledDeltaTime * transitionSpeed);
-        }
-    }
-
-    void SelectCurrentOption()
-    {
-        switch (currentSelection)
-        {
-            case 0: // Restart
-                OnRestartClicked();
-                break;
-            case 1: // Quit
-                OnQuitClicked();
-                break;
-        }
     }
 
     public void Show()
     {
         isActive = true;
 
-        // NOUVEAU : Freeze le temps comme en pause
-        Time.timeScale = 0f;
-
+        Time.timeScale = 1f;
 
         SentinelCycleManager cycle = FindObjectOfType<SentinelCycleManager>();
         if (cycle != null) cycle.PauseMusic();
@@ -190,17 +64,35 @@ public class GameOverUI : MonoBehaviour
         {
             string randomMessage = deathMessages[Random.Range(0, deathMessages.Length)];
             gameOverText.text = randomMessage;
+            StartCoroutine(AnimateText());
         }
 
         if (audioSource != null && gameOverSound != null)
-        {
             audioSource.PlayOneShot(gameOverSound);
+
+        Debug.Log("=== GAME OVER ===");
+
+        Invoke(nameof(AutoRestart), delayBeforeRestart);
+    }
+    private IEnumerator AnimateText()
+    {
+        if (gameOverText == null) yield break;
+
+        float elapsed = 0f;
+        Vector3 startScale = new Vector3(textAnimStartScaleX, 1f, 1f);
+        Vector3 endScale = Vector3.one;
+
+        while (elapsed < textAnimDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / textAnimDuration);
+            float smooth = Mathf.SmoothStep(0f, 1f, t);
+            gameOverText.transform.localScale = Vector3.LerpUnclamped(startScale, endScale, smooth);
+            yield return null;
         }
 
-        currentSelection = 0;
-        Debug.Log("=== GAME OVER ===");
+        gameOverText.transform.localScale = endScale;
     }
-
     public void Hide()
     {
         isActive = false;
@@ -213,42 +105,14 @@ public class GameOverUI : MonoBehaviour
         }
     }
 
-    void OnRestartClicked()
+    void AutoRestart()
     {
-        Debug.Log("Restart button clicked!");
-        Time.timeScale = 1f;
-
-
         LevelManager levelManager = FindObjectOfType<LevelManager>();
         if (levelManager != null)
-        {
             levelManager.RestartLevel();
-        }
         else
-        {
             UnityEngine.SceneManagement.SceneManager.LoadScene(
                 UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
             );
-        }
     }
-
-    void OnQuitClicked()
-    {
-        Debug.Log("Quit button clicked!");
-
-        LevelManager levelManager = FindObjectOfType<LevelManager>();
-        if (levelManager != null)
-        {
-            levelManager.QuitGame();
-        }
-        else
-        {
-            Application.Quit();
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#endif
-        }
-    }
-
-   
 }
