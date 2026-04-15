@@ -44,6 +44,15 @@ public class GameOverUI : MonoBehaviour
         Hide();
     }
 
+    void Update()
+    {
+        if (!isActive) return;
+        if (Input.GetButtonDown("Submit") || Input.GetKeyDown(KeyCode.Return))
+        {
+            CancelInvoke(nameof(AutoRestart));
+            AutoRestart();
+        }
+    }
     public void Show()
     {
         isActive = true;
@@ -51,7 +60,7 @@ public class GameOverUI : MonoBehaviour
         Time.timeScale = 1f;
 
         SentinelCycleManager cycle = FindObjectOfType<SentinelCycleManager>();
-        if (cycle != null) cycle.PauseMusic();
+        if (cycle != null) cycle.StopCycle();
 
         if (gameOverCanvasGroup != null)
         {
@@ -95,6 +104,7 @@ public class GameOverUI : MonoBehaviour
     }
     public void Hide()
     {
+        CancelInvoke(nameof(AutoRestart));
         isActive = false;
 
         if (gameOverCanvasGroup != null)
