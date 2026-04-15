@@ -12,6 +12,7 @@ public class GameOverUI : MonoBehaviour
     [SerializeField] private float textAnimDuration = 0.4f;
     [SerializeField] private float textAnimStartScaleX = 8f;
 
+
     [Header("Messages")]
     [SerializeField]
     private string[] deathMessages = new string[]
