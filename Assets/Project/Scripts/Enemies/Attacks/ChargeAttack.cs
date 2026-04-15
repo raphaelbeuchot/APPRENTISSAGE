@@ -12,6 +12,9 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
     private AIPath aiPath;
     private Rigidbody rb;
     private Transform player;
+    private Animator animator;
+    private BlinderSurprisedFeedback surprisedFeedback;
+
 
     private float originalLinearDamping = 5f;
     private float originalAngularDamping = 5f;
@@ -41,8 +44,13 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
         }
         enemyAI = GetComponent<EnemyAI_AStar>();
         wanderBehavior = GetComponent<BlinderWanderBehavior>();
+        surprisedFeedback = GetComponent<BlinderSurprisedFeedback>();
         aiPath = GetComponent<AIPath>();
         rb = GetComponent<Rigidbody>();
+        animator = GetComponent<Animator>();
+        Debug.Log("ChargeAttack animator: " + animator);
+
+
 
         // Sauvegarder les valeurs originales
         if (rb != null)
@@ -134,9 +142,12 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
         Vector3 lockedDirection = dir;
 
-        Debug.Log("Blinder charging, locked direction: " + lockedDirection);
+        // Phase Surprised : rotation progressive (0.3s)
+        Debug.Log("Blinder animator: " + animator + " | SetTrigger Surprised");
 
-        // Phase de rotation progressive (0.3s)
+        if (surprisedFeedback != null) surprisedFeedback.ShowExclamation();
+        if (animator != null) animator.SetTrigger("Surprised");
+
         float rotationDuration = 0.3f;
         float rotationElapsed = 0f;
         Quaternion startRotation = transform.rotation;
@@ -150,10 +161,16 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
             yield return null;
         }
 
-        // Force rotation finale
         transform.rotation = targetRotation;
 
-        // Acceleration phase
+        // Phase Run : acceleration
+        Debug.Log("Blinder animator: " + animator + " | SetTrigger Run");
+
+        if (animator != null)
+        {
+            animator.ResetTrigger("Surprised");
+            animator.SetTrigger("Run");
+        }
         float elapsed = 0f;
         while (elapsed < accelerateDuration)
         {
@@ -257,6 +274,8 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
         if (enemyAI != null) enemyAI.enabled = true;
         if (wanderBehavior != null) wanderBehavior.StartWandering();
+        if (animator != null) animator.SetTrigger("Idle");
+
     }
 
     void OnCollisionEnter(Collision collision)

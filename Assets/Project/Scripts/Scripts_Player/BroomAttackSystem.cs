@@ -261,15 +261,18 @@ public class BroomAttackSystem : MonoBehaviour
 
         }
 
-        // BLINDERS
-        ChargeAttack[] allBlinders = FindObjectsOfType<ChargeAttack>();
-        foreach (ChargeAttack blinder in allBlinders)
+        // BLINDERS - seulement si le broom a touche quelque chose
+        if (hitSomething)
         {
-            if (blinder.stats != null)
+            ChargeAttack[] allBlinders = FindObjectsOfType<ChargeAttack>();
+            foreach (ChargeAttack blinder in allBlinders)
             {
-                float distanceToPlayer = Vector3.Distance(blinder.transform.position, transform.position);
-                if (distanceToPlayer <= blinder.stats.audioDetectionRange)
-                    blinder.OnDirectHit(transform.position);
+                if (blinder.stats != null)
+                {
+                    float distanceToPlayer = Vector3.Distance(blinder.transform.position, transform.position);
+                    if (distanceToPlayer <= blinder.stats.audioDetectionRange)
+                        blinder.OnDirectHit(transform.position);
+                }
             }
         }
 

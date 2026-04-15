@@ -30,7 +30,6 @@ public class RisingPlatform : MonoBehaviour
             sentinelCycleManager = FindObjectOfType<SentinelCycleManager>();
             if (sentinelCycleManager == null)
             {
-                Debug.LogError("[RisingPlatform] SentinelCycleManager introuvable !");
             }
         }
     }
@@ -75,7 +74,6 @@ public class RisingPlatform : MonoBehaviour
             audioSource.Play();
         }
 
-        Debug.Log($"[RisingPlatform] {settings.platformName} commence a monter");
     }
 
     private void StartDescending()
@@ -90,7 +88,6 @@ public class RisingPlatform : MonoBehaviour
             audioSource.Play();
         }
 
-        Debug.Log($"[RisingPlatform] {settings.platformName} commence a descendre");
     }
 
     private void RisePlatform()
