@@ -74,6 +74,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
     void OnMeleeHitHeard(Vector3 soundPosition)
     {
+        if (enemyAI != null && enemyAI.isDead) return;
         Debug.Log($"BLINDER HEARD MELEE at {soundPosition}, distance: {Vector3.Distance(transform.position, soundPosition)}");
 
         // Ignorer si le son est sur nous
@@ -404,7 +405,9 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
 
     public void OnDirectHit(Vector3 hitSourcePosition)
     {
+        if (enemyAI != null && enemyAI.isDead) return;
         Debug.Log("Blinder hit by melee! Will charge after knockback...");
+
 
         if (isCharging || isStraightRunning)
         {

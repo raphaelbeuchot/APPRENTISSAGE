@@ -10101,7 +10101,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.78845537
+      value: -0.30075324
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.y
@@ -10109,7 +10109,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.0103315115
+      value: 0.24190664
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalRotation.w
@@ -21875,10 +21875,7 @@ PrefabInstance:
     - {fileID: 670925382924841455, guid: ea3a1f07eee322b46bdac64f5a56bb5c, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1832123752479731275, guid: ea3a1f07eee322b46bdac64f5a56bb5c, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1461384123}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ea3a1f07eee322b46bdac64f5a56bb5c, type: 3}
 --- !u!4 &402976106 stripped
 Transform:
@@ -79518,23 +79515,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
   m_PrefabInstance: {fileID: 513708635}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1461384111 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1832123752479731275, guid: ea3a1f07eee322b46bdac64f5a56bb5c, type: 3}
-  m_PrefabInstance: {fileID: 402380743}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1461384123
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1461384111}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf7fdf9d96cfc7e44acad20a5eb09d8a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DeadBodyPhysics
 --- !u!1 &1461542535
 GameObject:
   m_ObjectHideFlags: 0
@@ -107989,11 +107969,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BlinderSurprisedFeedback
   exclamationSprite: {fileID: 21300000, guid: 63d7a7faf8bf093488e872bf6862c9dc, type: 3}
-  offset: {x: 0, y: 2.5, z: 0}
-  popScale: 1.8
+  offset: {x: 0, y: 4, z: 0}
+  popScale: 0.5
   popDuration: 0.15
   settleDuration: 0.1
-  finalScale: 1
+  finalScale: 0.3
+  surprisedSound: {fileID: 8300000, guid: 8f0079034527d874bad8fc03803861b2, type: 3}
 --- !u!1001 &1980660400
 PrefabInstance:
   m_ObjectHideFlags: 0

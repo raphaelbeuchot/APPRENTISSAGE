@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 5292348613030770792}
   - component: {fileID: 670925382924841455}
   - component: {fileID: -6583994946397728262}
+  - component: {fileID: 6303682572311570370}
   - component: {fileID: 1164020118848615808}
   m_Layer: 6
   m_Name: ZombieBloat_NonExplosif
@@ -139,6 +140,8 @@ MonoBehaviour:
   wasAlreadyShotDuringSweep: 0
   pendingSweepShot: 0
   isInStandupPhase: 0
+  pendingKnockbackDir: {x: 0, y: 0, z: 0}
+  hasPendingKnockback: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -320,8 +323,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwarmSpawner
   swarmStats: {fileID: 11400000, guid: 75a5671836c93dc428d16e4944ef58c4, type: 2}
-  swarmPrefab: {fileID: 0}
-  spawnOffset: {x: 0, y: 0.5, z: 0}
   existingSwarm: {fileID: 4033938253126514885, guid: cd18332df2433d645af93251602e3d1f, type: 3}
 --- !u!114 &-6583994946397728262
 MonoBehaviour:
@@ -342,6 +343,18 @@ MonoBehaviour:
   detectionSound: {fileID: 8300000, guid: 27981f61a097d9d47ad776a5b7898095, type: 3}
   detectionSoundVolume: 0.3
   isCurrentlyDetected: 0
+--- !u!114 &6303682572311570370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832123752479731275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf7fdf9d96cfc7e44acad20a5eb09d8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeadBodyPhysics
 --- !u!114 &1164020118848615808
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -5032,7 +5032,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &96259489
 RectTransform:
   m_ObjectHideFlags: 0
@@ -36220,7 +36220,7 @@ Transform:
   m_GameObject: {fileID: 678885319}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.22, y: 0.86, z: 13.24}
+  m_LocalPosition: {x: 3.22, y: 0.6, z: 13.24}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -36239,7 +36239,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractBubble
   buttonSprite: {fileID: 21300000, guid: 6b06e2dfd47e53d41a72dc49c955a5d2, type: 3}
-  oneTimeOnly: 1
+  oneTimeOnly: 0
   detectionRange: 2
   verticalOffset: 1.25
   imageSize: 70
@@ -53905,7 +53905,7 @@ Transform:
   m_GameObject: {fileID: 927987582}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.71, y: 0.86, z: 9.48}
+  m_LocalPosition: {x: 8.71, y: 0.6, z: 9.48}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -53924,7 +53924,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractBubble
   buttonSprite: {fileID: 21300000, guid: 6b06e2dfd47e53d41a72dc49c955a5d2, type: 3}
-  oneTimeOnly: 1
+  oneTimeOnly: 0
   detectionRange: 2
   verticalOffset: 1.25
   imageSize: 70
@@ -63827,7 +63827,11 @@ MonoBehaviour:
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isKnockedDownByEpervier: 0
-  wasAlreadyShotDuringEpervier: 0
+  wasAlreadyShotDuringSweep: 0
+  pendingSweepShot: 0
+  isInStandupPhase: 0
+  pendingKnockbackDir: {x: 0, y: 0, z: 0}
+  hasPendingKnockback: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -64840,7 +64844,7 @@ Transform:
   m_GameObject: {fileID: 1143272520}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.33, y: 0.86, z: 6.57}
+  m_LocalPosition: {x: 4.33, y: 0.6, z: 6.57}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -64859,7 +64863,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractBubble
   buttonSprite: {fileID: 21300000, guid: 6b06e2dfd47e53d41a72dc49c955a5d2, type: 3}
-  oneTimeOnly: 1
+  oneTimeOnly: 0
   detectionRange: 2
   verticalOffset: 1.25
   imageSize: 70
@@ -100512,7 +100516,11 @@ MonoBehaviour:
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
   isKnockedDownByEpervier: 0
-  wasAlreadyShotDuringEpervier: 0
+  wasAlreadyShotDuringSweep: 0
+  pendingSweepShot: 0
+  isInStandupPhase: 0
+  pendingKnockbackDir: {x: 0, y: 0, z: 0}
+  hasPendingKnockback: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -100555,8 +100563,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwarmSpawner
   swarmStats: {fileID: 11400000, guid: 75a5671836c93dc428d16e4944ef58c4, type: 2}
-  swarmPrefab: {fileID: 0}
-  spawnOffset: {x: 0, y: 0.5, z: 0}
+  existingSwarm: {fileID: 0}
 --- !u!114 &1785196390
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107371,7 +107378,7 @@ Transform:
   m_GameObject: {fileID: 1887519678}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.01, y: 0.86, z: 19.49}
+  m_LocalPosition: {x: 7.01, y: 0.6, z: 19.49}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -107390,7 +107397,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractBubble
   buttonSprite: {fileID: 21300000, guid: 6b06e2dfd47e53d41a72dc49c955a5d2, type: 3}
-  oneTimeOnly: 1
+  oneTimeOnly: 0
   detectionRange: 2
   verticalOffset: 1.25
   imageSize: 70
@@ -119902,6 +119909,10 @@ PrefabInstance:
     - target: {fileID: 3870675793715944844, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4954242887214174368, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5592999826705333007, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_Enabled

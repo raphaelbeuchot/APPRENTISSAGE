@@ -13,14 +13,22 @@ public class BlinderSurprisedFeedback : MonoBehaviour
     [SerializeField] private float settleDuration = 0.1f;
     [SerializeField] private float finalScale = 1f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip surprisedSound;
+    private AudioSource audioSource;
+
     private GameObject iconGO;
     private SpriteRenderer spriteRenderer;
     private Camera mainCamera;
+    private bool isSurprised = false;
+
 
     void Start()
     {
         mainCamera = Camera.main;
         CreateIcon();
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 0f;
     }
 
     void CreateIcon()
@@ -48,15 +56,20 @@ public class BlinderSurprisedFeedback : MonoBehaviour
 
     public void ShowExclamation()
     {
-        Debug.Log("ShowExclamation called, iconGO=" + iconGO + " active=" + iconGO?.activeSelf);
+        if (isSurprised) return;
+        isSurprised = true;
+        Debug.Log("ShowExclamation called");
         if (iconGO == null) return;
         StopAllCoroutines();
         iconGO.SetActive(true);
+        if (surprisedSound != null)
+            audioSource.PlayOneShot(surprisedSound);
         StartCoroutine(PopIn());
     }
 
     public void HideExclamation()
     {
+        isSurprised = false;
         if (iconGO == null) return;
         StopAllCoroutines();
         iconGO.SetActive(false);
@@ -90,6 +103,7 @@ public class BlinderSurprisedFeedback : MonoBehaviour
         iconGO.transform.localScale = Vector3.one * finalScale;
 
         yield return new WaitForSeconds(1f);
+        isSurprised = false;
         HideExclamation();
     }
 }
