@@ -92,6 +92,13 @@ public class CleaningBonusManager : MonoBehaviour
         if (audioSource != null)
             audioSource.Stop();
     }
+
+    public void PlayCleanFeedback()
+    {
+        if (audioSource != null && cleanSound != null)
+            audioSource.PlayOneShot(cleanSound);
+        CommentPanel.Show("Cleaned Up !");
+    }
     public List<EnemyHealth> GetRegisteredEnemies()
     {
         return registeredEnemies;

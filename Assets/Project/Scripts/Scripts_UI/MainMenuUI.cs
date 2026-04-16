@@ -11,6 +11,7 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI newGameText;
     [SerializeField] private TextMeshProUGUI continueText;
     [SerializeField] private TextMeshProUGUI optionsText;
+    [SerializeField] private TextMeshProUGUI quitText;
 
     [Header("Audio")]
     [SerializeField] private UIAudioPlayer uiAudio;
@@ -41,12 +42,14 @@ public class MainMenuUI : MonoBehaviour
             optionsText.transform.position = continueText.transform.position;
             menuTexts.Add(newGameText);
             menuTexts.Add(optionsText);
+            menuTexts.Add(quitText);
         }
         else
         {
             menuTexts.Add(newGameText);
             menuTexts.Add(continueText);
             menuTexts.Add(optionsText);
+            menuTexts.Add(quitText);
         }
 
         UpdateVisuals();
@@ -61,6 +64,12 @@ public class MainMenuUI : MonoBehaviour
     void HandleNavigation()
     {
         if (optionsPanelUI != null && optionsPanelUI.IsOpen()) return;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Screen.fullScreen = false;
+            return;
+        }
 
         if (navigationCooldown > 0f)
         {
@@ -98,6 +107,7 @@ public class MainMenuUI : MonoBehaviour
             {
                 case 0: NewGame(); break;
                 case 1: OpenOptions(); break;
+                case 2: Quit(); break;
             }
         }
         else
@@ -107,6 +117,7 @@ public class MainMenuUI : MonoBehaviour
                 case 0: NewGame(); break;
                 case 1: Continue(); break;
                 case 2: OpenOptions(); break;
+                case 3: Quit(); break;
             }
         }
     }
@@ -132,6 +143,15 @@ public class MainMenuUI : MonoBehaviour
     {
         if (optionsPanelUI != null)
             optionsPanelUI.Open();
+    }
+
+    void Quit()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     void UpdateVisuals()

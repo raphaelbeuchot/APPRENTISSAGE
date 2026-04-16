@@ -402,4 +402,20 @@ public class TutoFreezeTile : MonoBehaviour
         if (messageText != null)
             messageText.gameObject.SetActive(false);
     }
+
+    private void OnEnable()
+    {
+        CorpsePitHandler.OnCorpseCleaned += HandleCorpseCleaned;
+    }
+
+    private void OnDisable()
+    {
+        CorpsePitHandler.OnCorpseCleaned -= HandleCorpseCleaned;
+    }
+
+    private void HandleCorpseCleaned(CorpsePitHandler corpse)
+    {
+        if (CleaningBonusManager.Instance != null)
+            CleaningBonusManager.Instance.PlayCleanFeedback();
+    }
 }
