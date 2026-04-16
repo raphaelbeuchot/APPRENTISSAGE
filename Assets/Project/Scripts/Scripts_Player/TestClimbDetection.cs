@@ -36,12 +36,7 @@ public class TestClimbDetection : MonoBehaviour
             return;
         }
 
-        if (playerMovement.grabState != PlayerPhysicsMovement.GrabState.None)
-        {
-            if (climbPrompt != null)
-                climbPrompt.Hide();
-            return;
-        }
+       
 
         // NOUVEAU : Empecher climb en chute
         Rigidbody rb = GetComponent<Rigidbody>();
@@ -139,8 +134,6 @@ public class TestClimbDetection : MonoBehaviour
         if (!PlayerInputManager.Instance.InteractPressed)
             return;
 
-        // === CLIMB DECLENCHE ===
-        Debug.LogWarning("[Climb] E PRESSE - grabState = " + playerMovement.grabState);
 
         // Cacher prompt
         if (climbPrompt != null)
@@ -249,16 +242,7 @@ public class TestClimbDetection : MonoBehaviour
 
         while (elapsed < rotationDuration)
         {
-            if (playerMovement.grabState != PlayerPhysicsMovement.GrabState.None)
-            {
-                Debug.LogWarning("[CLIMB] ANNULE - Player grabbed pendant la rotation!");
-
-                isClimbing = false;
-                playerMovement.isClimbing = false;
-                playerMovement.enabled = true;
-                playerMovement.canMove = true;
-                yield break;
-            }
+           
 
             elapsed += Time.deltaTime;
             float t = elapsed / rotationDuration;
@@ -279,7 +263,6 @@ public class TestClimbDetection : MonoBehaviour
         float startY = transform.position.y;
         startPos = transform.position;
 
-        playerMovement.isImmuneToGrab = true;
 
         int playerLayer = gameObject.layer;
         int zombieLayer = LayerMask.NameToLayer("Zombie");
@@ -373,7 +356,6 @@ public class TestClimbDetection : MonoBehaviour
         playerMovement.enabled = true;
         playerMovement.isClimbing = false;
 
-        playerMovement.isImmuneToGrab = false;
 
         ReEnableMovement();
         

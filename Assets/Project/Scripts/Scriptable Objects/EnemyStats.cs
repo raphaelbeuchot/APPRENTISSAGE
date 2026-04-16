@@ -9,7 +9,7 @@ public class EnemyStats : ScriptableObject
     public GameObject[] skinVariants;
 
     [Header("TYPE D'ENNEMI")]
-    public AttackType attackType = AttackType.Grabber;
+    public AttackType attackType = AttackType.Hitter;
 
     [Header("SANTE")]
     public float maxHealth = 100f;
@@ -41,17 +41,8 @@ public class EnemyStats : ScriptableObject
     public float attackRange = 1.5f;
     public float attackCooldown = 1f;
 
-    [Header("ATTAQUE - GRABBER")]
-    public Material windupMaterial;
-    public float grabDuration = 4f;
-    public float biteDamage = 15f;
-    [Range(0f, 1f)]
-    public float oneArmMashReduction = 0.5f;
-    public float fakeGrabRange = 3f;
-    public float biteTickDamage = 5f;
-    public float grabWindupDuration = 0.5f;
-
     [Header("ATTAQUE - HITTER")]
+    public Material windupMaterial;
     public float meleeDamage = 20f;
     public float meleeKnockbackForce = 8f;
     public float meleeAttackDuration = 0.8f;
@@ -144,7 +135,6 @@ public class EnemyStats : ScriptableObject
 
     public enum AttackType
     {
-        Grabber,
         Hitter,
         Spitter,
         Kamikaze,
@@ -183,7 +173,6 @@ public class EnemyStats : ScriptableObject
     {
         switch (attackType)
         {
-            case AttackType.Grabber: return biteDamage * forceMultiplier;
             case AttackType.Hitter: return meleeDamage * forceMultiplier;
             case AttackType.Spitter: return spitDamage * forceMultiplier;
             default: return 0f;

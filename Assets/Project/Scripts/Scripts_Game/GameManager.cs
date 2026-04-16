@@ -16,10 +16,9 @@ public class GameManager : MonoBehaviour
     public SentinelSettings sentinel;
     public PlayerHealth playerHealth;
     public PlayerDetectionFeedback playerDetectionFeedback;
-    
+
     [Header("Laser Manager")]
     [SerializeField] private SentinelLaserManager laserManager;
-
 
     public Renderer sentinelLightRenderer;
     public Material greenMaterial;
@@ -41,15 +40,12 @@ public class GameManager : MonoBehaviour
     public int totalEnemies = 0;
     public int enemiesKilled = 0;
 
-
     private bool playerAlarmTriggered = false;
     private HashSet<GameObject> alreadyShot = new HashSet<GameObject>();
     private float detectionTimer = 0f;
 
-    // Systeme de raycasts et LOS
     private Dictionary<GameObject, TargetTrackingData> trackedTargets = new Dictionary<GameObject, TargetTrackingData>();
 
-    // Systeme anti-tirs simultanes
     private List<float> scheduledShotTimes = new List<float>();
     private const float SHOT_SPACING_WINDOW = 0.05f;
     private float lastActualShotTime = -999f;
@@ -62,29 +58,22 @@ public class GameManager : MonoBehaviour
         public bool canShoot;
         public bool scheduledDuringWindup = false;
 
-
-        // Variables pour securiser les tirs
         public bool isBeingShot = false;
         public float lastShotTime = -999f;
         public float shootScheduledTime = -1f;
 
-        // Compteur de scans consecutifs avec LOS
         public int consecutiveLOSScans = 0;
 
-        // Headshot system
         public bool isHeadshot = false;
         public Vector3 lastKnownPosition;
 
         public bool wasPlayerCrouched = false;
 
-        // NOUVEAU : Detection changement crouch
         public bool crouchStateChangeInProgress = false;
         public float crouchStateChangeScheduledTime = -1f;
 
-        // NOUVEAU : Flag premier scan
         public bool hasBeenTrackedBefore = false;
 
-        // NOUVEAU : Detection mouvement sur plateforme
         public Vector3 lastCheckPosition;
         public float lastCheckTime;
     }
@@ -95,7 +84,6 @@ public class GameManager : MonoBehaviour
 
     Vector3 GetTargetCenter(Collider col)
     {
-        // Utilise le centre du bounds du collider (s'adapte automatiquement au crouch)
         return col.bounds.center;
     }
 
@@ -104,14 +92,11 @@ public class GameManager : MonoBehaviour
         Collider col = obj.GetComponent<Collider>();
         if (col != null)
             return col.bounds.center;
-
-        // Fallback si pas de collider
         return obj.transform.position + Vector3.up * 1f;
     }
 
     Vector3 GetHeadPosition(Collider col)
     {
-        // Tete = 90% de la hauteur totale du collider
         float headHeight = col.bounds.min.y + (col.bounds.size.y * 0.9f);
         return new Vector3(col.bounds.center.x, headHeight, col.bounds.center.z);
     }
@@ -121,19 +106,15 @@ public class GameManager : MonoBehaviour
         Collider col = obj.GetComponent<Collider>();
         if (col != null)
             return GetHeadPosition(col);
-
-        // Fallback
         return obj.transform.position + Vector3.up * 1.8f;
     }
 
     float GetSafeShootTime(float baseRandomDelay)
     {
-        // Nettoyer les tirs passes
         scheduledShotTimes.RemoveAll(t => t < Time.time);
 
         float proposedTime = Time.time + sentinelSettings.shootDelay + baseRandomDelay;
 
-        // Checker si un tir existe deja proche de ce timing
         while (scheduledShotTimes.Exists(t => Mathf.Abs(t - proposedTime) < SHOT_SPACING_WINDOW))
         {
             proposedTime += SHOT_SPACING_WINDOW;
@@ -141,7 +122,6 @@ public class GameManager : MonoBehaviour
 
         scheduledShotTimes.Add(proposedTime);
 
-        // Retourner le delai final ajuste
         return proposedTime - Time.time - sentinelSettings.shootDelay;
     }
 
@@ -156,18 +136,14 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-         if (playerHealth == null)
+        if (playerHealth == null)
         {
             playerHealth = player != null ? player.GetComponent<PlayerHealth>() : null;
-            
         }
-
-       
 
         audioSource = GetComponent<AudioSource>();
         Time.timeScale = 1f;
 
-        // Compter les ennemis au demarrage (SAUF BrightEyes)
         CountEnemiesAtStart();
     }
 
@@ -176,7 +152,6 @@ public class GameManager : MonoBehaviour
         if (sentinelCycleManager == null || !sentinelCycleManager.IsGameStarted() || sentinelSettings == null)
             return;
 
-        // Detection uniquement en RedLight
         if (sentinelCycleManager.IsInRedLight())
         {
             detectionTimer += Time.deltaTime;
@@ -209,10 +184,10 @@ public class GameManager : MonoBehaviour
 
         foreach (Collider col in targets)
         {
-            // Exclure les ennemis en cours de sequence sweep/standup
             EnemyAI_AStar sequenceGuard = col.GetComponent<EnemyAI_AStar>();
             if (sequenceGuard != null && (sequenceGuard.isKnockedDownByEpervier || sequenceGuard.isInStandupPhase))
                 continue;
+
             if (!trackedTargets.ContainsKey(col.gameObject))
                 trackedTargets[col.gameObject] = new TargetTrackingData();
 
@@ -232,10 +207,6 @@ public class GameManager : MonoBehaviour
             EnemyAI_AStar stunnedCheck = col.GetComponent<EnemyAI_AStar>();
             if (stunnedCheck != null && stunnedCheck.isStunnedBySentinel) continue;
 
-            GrabAttack grabSystem = col.GetComponent<GrabAttack>();
-            bool isInBourrade = grabSystem != null && grabSystem.isInBourradeDuration;
-            bool isFakeGrabber = grabSystem != null && grabSystem.isFakeGrabbing;
-
             HitAttack hitAttack = col.GetComponent<HitAttack>();
             bool isHitterWindingUp = hitAttack != null && hitAttack.isInWindup;
             bool isHitterAttacking = hitAttack != null && hitAttack.IsAttacking();
@@ -250,7 +221,7 @@ public class GameManager : MonoBehaviour
             Vector3 finalTargetPos = targetPos;
 
             if (Physics.Raycast(sentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers)
-    && hit.collider.gameObject != col.gameObject)
+                && hit.collider.gameObject != col.gameObject)
             {
                 Vector3 headPos = GetHeadPosition(col);
                 Vector3 directionToHead = (headPos - sentinelPos).normalized;
@@ -350,8 +321,6 @@ public class GameManager : MonoBehaviour
                         GameObject vfx = Instantiate(sentinelSettings.ricochetVFX, obstacleHit.point, Quaternion.LookRotation(obstacleHit.normal));
                         Destroy(vfx, sentinelSettings.ricochetVFXDuration);
                     }
-
-                    //StartCoroutine(ShowShootLaser(sentinelPos, obstacleHit.point, sentinelSettings.shootLaserFadeDuration));
                 }
 
                 trackData.crouchStateChangeInProgress = false;
@@ -428,8 +397,6 @@ public class GameManager : MonoBehaviour
                         GameObject vfx = Instantiate(sentinelSettings.ricochetVFX, obstacleHit.point, Quaternion.LookRotation(obstacleHit.normal));
                         Destroy(vfx, sentinelSettings.ricochetVFXDuration);
                     }
-
-                    //StartCoroutine(ShowShootLaser(sentinelPos, obstacleHit.point, sentinelSettings.shootLaserFadeDuration));
                 }
 
                 trackData.isBeingShot = false;
@@ -443,14 +410,11 @@ public class GameManager : MonoBehaviour
                 continue;
             }
 
-            bool isWindingUp = grabSystem != null && grabSystem.isInWindup;
             EnemyAI_AStar ai = col.GetComponent<EnemyAI_AStar>();
             if (ai != null && hasLOS)
                 ai.isDetectedBySentinel = true;
 
             Rigidbody rb = col.GetComponent<Rigidbody>();
-            MeleeAttackSystem meleeSystem = col.GetComponent<MeleeAttackSystem>();
-            bool isAttacking = meleeSystem != null && meleeSystem.IsAttacking();
 
             BroomAttackSystem broomSystem = col.GetComponent<BroomAttackSystem>();
             bool isBroomAttacking = broomSystem != null && broomSystem.IsAttacking();
@@ -550,12 +514,10 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            bool playerImmune = (col.gameObject == player.gameObject
-                             && player.grabState == PlayerPhysicsMovement.GrabState.Grabbed
-                             && !isMoving);
-            if (isWindingUp || isHitterWindingUp || isHitterAttacking) isMoving = true;
+            if (isHitterWindingUp || isHitterAttacking) isMoving = true;
 
-            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit || (ai != null && ai.isKnockedDownByEpervier)) && !playerImmune;
+            bool shouldBeShot = isMoving || isBroomAttacking || isClimbing || isClimbingOutOfPit || (ai != null && ai.isKnockedDownByEpervier);
+
             EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isInShallowWater)
             {
@@ -592,7 +554,7 @@ public class GameManager : MonoBehaviour
 
             if (shouldBeShot && hasLOS && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
             {
-                bool isOffensiveAction = isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isHitterWindingUp || isHitterAttacking;
+                bool isOffensiveAction = isBroomAttacking || isHitterWindingUp || isHitterAttacking;
                 bool needsExposureDelay = !trackData.wasInLOS && !isOffensiveAction;
 
                 if (needsExposureDelay)
@@ -602,7 +564,7 @@ public class GameManager : MonoBehaviour
                     if (trackData.consecutiveLOSScans >= sentinelSettings.minimumExposureScans)
                     {
                         trackData.isBeingShot = true;
-                        trackData.scheduledDuringWindup = isWindingUp || isHitterWindingUp;
+                        trackData.scheduledDuringWindup = isHitterWindingUp;
 
                         float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
                         trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
@@ -629,7 +591,7 @@ public class GameManager : MonoBehaviour
                 else
                 {
                     trackData.isBeingShot = true;
-                    trackData.scheduledDuringWindup = isWindingUp || isHitterWindingUp;
+                    trackData.scheduledDuringWindup = isHitterWindingUp;
 
                     float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
                     trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
@@ -660,7 +622,7 @@ public class GameManager : MonoBehaviour
 
             if (col.gameObject == player.gameObject)
             {
-                bool isInDanger = (shouldBeShot && hasLOS) || trackData.crouchStateChangeInProgress;
+                bool isInDanger = shouldBeShot && hasLOS;
 
                 if (stunBySentinel)
                     isInDanger = false;
@@ -689,10 +651,8 @@ public class GameManager : MonoBehaviour
 
     IEnumerator ShowShootLaser(Vector3 from, Vector3 to, float duration)
     {
-        // Remplace par SentinelLaserManager.TriggerShotAnimation()
         yield break;
     }
-
 
     // ============================================
     // METHODES DE TIR
@@ -700,10 +660,6 @@ public class GameManager : MonoBehaviour
 
     void ShootEnemy(GameObject enemy, EnemyHealth enemyHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, bool isHeadshot = false)
     {
-        // PAS de verification d'interception pour les ennemis entre eux
-        // Tir normal direct
-        string headshotTag = isHeadshot ? " [HEADSHOT]" : "";
-
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
 
@@ -720,7 +676,6 @@ public class GameManager : MonoBehaviour
         SentinelTarget sentinelTarget = enemy.GetComponent<SentinelTarget>();
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
-        // StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
         if (laserManager != null)
             laserManager.TriggerShotAnimation(sentinelPos, currentTargetPos);
 
@@ -742,7 +697,6 @@ public class GameManager : MonoBehaviour
         ai.isStunnedBySentinel = false;
         alreadyShot.Remove(ai.gameObject);
 
-        // Reset cooldown pour eviter re-tir immediat apres stun
         if (trackedTargets.ContainsKey(ai.gameObject))
         {
             TargetTrackingData td = trackedTargets[ai.gameObject];
@@ -755,13 +709,11 @@ public class GameManager : MonoBehaviour
             td.lastCheckTime = Time.time;
         }
 
-        // Reset lastPathDestination pour forcer recalcul path a la reprise
         ai.lastPathDestination = Vector3.positiveInfinity;
     }
 
     void ShootPlayer(GameObject human, PlayerHealth humanHealth, string reason, Vector3 sentinelPos, Vector3 targetPos, bool isHeadshot = false)
     {
-        // NOUVEAU : Verifier interception par un ennemi
         Vector3 currentTargetPos = GetTargetCenter(human);
         Vector3 direction = (currentTargetPos - sentinelPos).normalized;
         float distance = Vector3.Distance(sentinelPos, currentTargetPos);
@@ -769,7 +721,6 @@ public class GameManager : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(sentinelPos, direction, out hit, distance, sentinelSettings.obstacleLayers))
         {
-            // Si on tape un layer Enemy ou Zombie
             int enemyLayer = LayerMask.NameToLayer("Enemy");
             int zombieLayer = LayerMask.NameToLayer("Zombie");
 
@@ -784,27 +735,21 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // Tir normal
-        string headshotTag = isHeadshot ? " [HEADSHOT]" : "";
-
         if (audioSource != null && sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(sentinelSettings.shootSound);
 
         SentinelTarget sentinelTarget = human.GetComponent<SentinelTarget>();
         if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
-        // StartCoroutine(ShowShootLaser(sentinelPos, currentTargetPos, sentinelSettings.shootLaserFadeDuration));
         if (laserManager != null)
             laserManager.TriggerShotAnimation(sentinelPos, currentTargetPos);
 
         if (playerDetectionFeedback != null)
             playerDetectionFeedback.OnShotBySentinel();
 
-        // Enlever le blanc au moment du tir
         if (playerDetectionFeedback != null)
             playerDetectionFeedback.OnNoLongerDetected();
 
-        
         StartCoroutine(PlayerStunBySentinel());
 
         if (isHeadshot)
@@ -818,7 +763,6 @@ public class GameManager : MonoBehaviour
     {
         stunBySentinel = true;
 
-        
         yield return new WaitForSeconds(sentinel.stunDuration);
         stunBySentinel = false;
 
@@ -826,7 +770,6 @@ public class GameManager : MonoBehaviour
         {
             alreadyShot.Remove(player.gameObject);
             playerAlarmTriggered = false;
-
         }
     }
 
@@ -836,7 +779,6 @@ public class GameManager : MonoBehaviour
         {
             Vector3 currentPos = GetTargetCenter(playerObject);
 
-            // StartCoroutine(ShowShootLaser(sentinelPos, currentPos, sentinelSettings.shootLaserFadeDuration));
             if (laserManager != null)
                 laserManager.TriggerShotAnimation(sentinelPos, currentPos);
 
@@ -885,13 +827,10 @@ public class GameManager : MonoBehaviour
             kvp.Value.isBeingShot = false;
             kvp.Value.shootScheduledTime = -1f;
             kvp.Value.hasBeenTrackedBefore = false;
-
-            // NOUVEAU : Reset les positions pour eviter faux mouvement au premier scan RedLight
             kvp.Value.lastCheckPosition = Vector3.zero;
             kvp.Value.lastCheckTime = 0f;
         }
 
-        // Reset le blanc au passage en GreenLight
         if (playerDetectionFeedback != null)
             playerDetectionFeedback.OnNoLongerDetected();
     }
@@ -902,11 +841,8 @@ public class GameManager : MonoBehaviour
 
         foreach (EnemyHealth enemy in allEnemies)
         {
-            
-
             totalEnemies++;
         }
-
     }
 
     public void OnEnemyKilled()
@@ -927,14 +863,15 @@ public class GameManager : MonoBehaviour
         float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
         td.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
         td.lastShotTime = Time.time;
-
     }
+
     public void NotifyStandUpDetected(GameObject enemy)
     {
         EnemyDetectionFeedback enemyFeedback = enemy.GetComponent<EnemyDetectionFeedback>();
         if (enemyFeedback != null) enemyFeedback.OnDetected();
         alreadyShot.Add(enemy);
     }
+
     public void ExecutePlayerShotOnGroggy()
     {
         if (player == null || playerHealth == null || playerHealth.IsDead()) return;
@@ -954,6 +891,7 @@ public class GameManager : MonoBehaviour
 
         playerHealth.TakeDamage(sentinelSettings.playerDamage);
     }
+
     public void ExecuteSequenceShot(GameObject enemy)
     {
         EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
@@ -993,7 +931,6 @@ public class GameManager : MonoBehaviour
         td.lastCheckTime = Time.time;
     }
 
-    // Getters pour VictoryUI
     public int GetTotalEnemies() => totalEnemies;
     public int GetEnemiesKilled() => enemiesKilled;
 }

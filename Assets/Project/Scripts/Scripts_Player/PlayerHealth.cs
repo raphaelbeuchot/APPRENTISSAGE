@@ -166,8 +166,7 @@ public class PlayerHealth : MonoBehaviour
             Debug.Log("FALLBACK : OnDeath invoque directement");
             OnDeath?.Invoke();
             if (movement != null) movement.enabled = false;
-            var meleeSystem = GetComponent<MeleeAttackSystem>();
-            if (meleeSystem != null) meleeSystem.enabled = false;
+            
         }
     }
     public void TriggerOnDeath()

@@ -15,8 +15,8 @@ public class EnemyAnimationController : MonoBehaviour
     {
         if (animator == null || enemyAI == null) return;
 
-        GrabAttack grabAttack = enemyAI.GetComponent<GrabAttack>();
-        bool isInBourrade = grabAttack != null && grabAttack.IsInBourrade();
+        bool isInBourrade = false; // TODO: rebrancher quand bourrade migree
+
 
         bool isChasing = enemyAI.enabled
     && (enemyAI.currentState == EnemyAI_AStar.State.Chasing

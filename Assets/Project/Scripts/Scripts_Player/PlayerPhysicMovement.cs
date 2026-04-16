@@ -10,11 +10,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     private Transform currentParent = null;
 
-    [Header("Grab Immunity")]
-    [HideInInspector] public bool isImmuneToGrab = false;
-    [HideInInspector] public float lastGrabEndTime = -999f; 
-
-
     [Header("Camera")]
     public Transform cameraTransform;
     public TargetLockSystem lockSystem;
@@ -30,37 +25,27 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     // === SWARM EFFECTS (sans grab) ===
     private float swarmSlowdownMultiplier = 1f;
-    private float waterSlowdownMultiplier = 1f; // NOUVEAU
+    private float waterSlowdownMultiplier = 1f;
 
     private bool isInSwarmVision = false;
 
     [Header("Crouch")]
     private bool isCrouching = false;
-    [SerializeField] private Transform playerMesh; // Assigner mesh dans Inspector
+    [SerializeField] private Transform playerMesh;
     private CapsuleCollider capsuleCollider;
     private float originalColliderHeight;
     private Vector3 originalColliderCenter;
     private Vector3 originalMeshScale;
 
-    [Header("Step Climbing")]  // <--- AJOUTER ICI
+    [Header("Step Climbing")]
     [SerializeField] private float maxStepHeight = 0.4f;
     [SerializeField] private float stepCheckDistance = 0.1f;
     [SerializeField] private float stepRayHeightOffset = 0.1f;
     private float lastStepClimbTime = 0f;
 
-
-
     private Material originalMaterial;
 
     public bool isClimbing = false;
-
-
-
-    // Grab States
-    public enum GrabState { None, Grabbed, Recoil, Knockdown }
-    public GrabState grabState = GrabState.None;
-    public float grabProgress = 0f;
-    public bool isBeingGrabbed => grabState == GrabState.Grabbed;
 
     // Variables runtime
     private Rigidbody rb;
@@ -74,9 +59,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     [HideInInspector] public bool isSweepImmune = false;
     private bool wasBroomLowActive = false;
 
-
     private PlayerPitInteractable pitInteractable;
-
 
     private bool isGroggyReached = false;
     private bool isGroggyStunned = false;
@@ -113,13 +96,13 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     [HideInInspector] public bool isInContactWithEnemy = false;
     private int enemyContactCount = 0;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         pitInteractable = GetComponent<PlayerPitInteractable>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
-        // Camera
         if (cameraTransform == null)
         {
             GameObject camObj = GameObject.Find("MainCamera");
@@ -127,21 +110,17 @@ public class PlayerPhysicsMovement : MonoBehaviour
                 cameraTransform = camObj.transform;
         }
 
-        // GameManager
         if (gameManager == null)
         {
             gameManager = FindAnyObjectByType<GameManager>();
         }
 
-        // Stats
         if (stats != null)
         {
             currentHealth = stats.maxHealth;
             currentStamina = stats.maxStamina;
         }
-        
 
-        // Renderer auto si non assigné
         if (playerRenderer == null)
             playerRenderer = GetComponentInChildren<Renderer>();
 
@@ -157,9 +136,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
         currentStamina = stats.maxStamina * enduranceMultiplier;
 
         animator = GetComponentInChildren<Animator>();
-
-        
-
 
         if (gameManager == null)
         {
@@ -191,7 +167,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         HandleInput();
         HandleStamina();
 
-        if (!canMove && grabState == GrabState.None && !gameManager.stunBySentinel && !isGroggy && !isSweeping && !isGroggyStunned)
+        if (!canMove && !gameManager.stunBySentinel && !isGroggy && !isSweeping && !isGroggyStunned)
             canMove = true;
 
         if (isGroggy && isGroggyReached && !isSweeping && !isGroggyStunned && PlayerInputManager.Instance.SprintPressed && standUpCoroutine == null)
@@ -250,21 +226,15 @@ public class PlayerPhysicsMovement : MonoBehaviour
             if (feedback != null) feedback.OnBroomLowExit();
         }
         wasBroomLowActive = broomLowNow;
-
-        if (!isClimbing)
-        {
-            isImmuneToGrab = !IsGrounded() || isDashing;
-        }
     }
 
     void FixedUpdate()
     {
         if (stats == null) return;
-        if (grabState == GrabState.Recoil || grabState == GrabState.Knockdown) return;
         if (isFrozen) return;
         if (isGroggy) return;
         if (isPushing) return;
-        if (isSweeping) return; // AJOUT
+        if (isSweeping) return;
         if (isDashing) return;
 
         HandleStepClimb();
@@ -273,12 +243,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void HandleInput()
     {
-        if (grabState != GrabState.None || gameManager.stunBySentinel || !canMove || isClimbing || isGroggy || isSweeping)
+        if (gameManager.stunBySentinel || !canMove || isClimbing || isGroggy || isSweeping)
         {
             moveInput = Vector3.zero;
             return;
         }
-
 
         if (isFrozen)
         {
@@ -288,16 +257,12 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         Vector2 inputVector = PlayerInputManager.Instance.MoveInput;
 
-        // NOUVEAU : Garder la magnitude AVANT de normaliser
         float inputMagnitude = inputVector.magnitude;
 
-        // Normaliser juste pour la direction
         Vector3 direction = new Vector3(inputVector.x, 0f, inputVector.y).normalized;
 
-        // Multiplier par la magnitude originale pour garder l'intensité du stick
         moveInput = direction * Mathf.Clamp01(inputMagnitude);
 
-        // Dash
         if (PlayerInputManager.Instance.SprintPressed && CanDash())
         {
             Vector3 dashDir = GetCameraRelativeMovement(moveInput);
@@ -307,7 +272,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void HandleStamina()
     {
-        // Regen passive (pas de condition sprint)
         currentStamina += stats.staminaRegenPerSecond * Time.deltaTime;
         float enduranceMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.enduranceMultiplier : 1f;
         currentStamina = Mathf.Min(stats.maxStamina * enduranceMult, currentStamina);
@@ -315,8 +279,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void HandleStepClimb()
     {
-        // AJOUTER ICI : check conditions bloquantes
-        if (isClimbing || grabState != GrabState.None || moveInput.magnitude < 0.1f)
+        if (isClimbing || moveInput.magnitude < 0.1f)
             return;
 
         Vector3 moveDirection = GetCameraRelativeMovement(moveInput);
@@ -335,41 +298,24 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
                 if (stepHeight > 0.05f && stepHeight <= maxStepHeight)
                 {
-                    // CALCULER VELOCITY Y PROPORTIONNELLE
                     Vector3 currentVel = rb.linearVelocity;
                     float horizontalSpeed = new Vector3(currentVel.x, 0f, currentVel.z).magnitude;
 
                     float ratio = stepHeight / stepCheckDistance;
                     float targetVelocityY = stepHeight * 20f;
 
-                    // APPLIQUER VELOCITY Y
                     Vector3 newVelocity = rb.linearVelocity;
                     newVelocity.y = targetVelocityY;
                     rb.linearVelocity = newVelocity;
 
-                    return; // Step climb actif, Y reste unfreeze
+                    return;
                 }
             }
         }
-
-        
     }
-
 
     public void ApplyKnockdown(Vector3 knockbackDirection, float force, float duration)
     {
-        if (grabState == GrabState.Grabbed)
-        {
-            GrabAttack[] allGrabs = FindObjectsByType<GrabAttack>(FindObjectsSortMode.None);
-            foreach (GrabAttack grab in allGrabs)
-            {
-                if (grab.isGrabbing)
-                {
-                    grab.ForceStop();
-                }
-            }
-        }
-
         StartCoroutine(KnockdownCoroutine(knockbackDirection, force, duration));
     }
 
@@ -383,29 +329,27 @@ public class PlayerPhysicsMovement : MonoBehaviour
         StartCoroutine(ProgressivePushCoroutine(direction, force, duration));
     }
 
-
-   IEnumerator SweepCoroutine()
-{
+    IEnumerator SweepCoroutine()
+    {
         isSweepImmune = true;
 
         isSweeping = true;
-    canMove = false;
-    isGroggyReached = false;
-    rb.linearVelocity = Vector3.zero;
+        canMove = false;
+        isGroggyReached = false;
+        rb.linearVelocity = Vector3.zero;
 
-    animator.SetTrigger("Sweep");
+        animator.SetTrigger("Sweep");
 
-    yield return null;
-
-    while (animator.GetCurrentAnimatorStateInfo(0).IsName("Sweep") &&
-           animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.95f)
-    {
         yield return null;
-    }
 
-    isSweeping = false;
-    // EnterGroggyState() supprime
-}
+        while (animator.GetCurrentAnimatorStateInfo(0).IsName("Sweep") &&
+               animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.95f)
+        {
+            yield return null;
+        }
+
+        isSweeping = false;
+    }
 
     IEnumerator SweepFromObstacleCoroutine()
     {
@@ -426,7 +370,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
 
         isSweeping = false;
-        // EnterGroggyState() supprime - c'est l'animation event qui s'en charge
     }
 
     IEnumerator ProgressivePushCoroutine(Vector3 direction, float force, float duration)
@@ -445,6 +388,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         isPushing = false;
     }
+
     public void EnterGroggyState()
     {
         if (standUpCoroutine != null)
@@ -457,6 +401,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         canMove = false;
         Debug.Log("[Player] Entre en etat groggy");
     }
+
     public void OnGroggyStart()
     {
         isSweeping = false;
@@ -482,7 +427,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
         EnterGroggyState();
     }
 
-    
     IEnumerator StandUpCoroutine()
     {
         CommentPanel.Hide();
@@ -491,10 +435,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         yield return null;
 
-        // Attendre d'etre bien dans StandUp
         yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName("StandUp") && !animator.IsInTransition(0));
 
-        // Puis attendre 70%
         while (animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.7f)
         {
             yield return null;
@@ -518,14 +460,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     IEnumerator KnockdownCoroutine(Vector3 direction, float force, float duration)
     {
-        grabState = GrabState.Knockdown;
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         rb.linearVelocity = direction * force;
         yield return new WaitForSeconds(duration);
-        if (grabState == GrabState.Knockdown)
-        {
-            grabState = GrabState.None;
-        }
     }
 
     public void HandleMovement()
@@ -534,7 +471,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         if (moveInput.magnitude < 0.1f)
         {
-            // Arret plus rapide
             currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, 15f * Time.fixedDeltaTime);
         }
         else
@@ -542,7 +478,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
             moveDirection = GetCameraRelativeMovement(moveInput);
             float targetSpeed = CalculateSpeed();
             Vector3 targetVelocity = moveDirection * targetSpeed;
-            // Acceleration plus reactive pour eviter le drift
             currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, 20f * Time.fixedDeltaTime);
         }
 
@@ -564,10 +499,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
             }
         }
 
-        // Appliquer velocity de base
         Vector3 finalVelocity = new Vector3(currentVelocity.x, rb.linearVelocity.y, currentVelocity.z);
 
-        // === BRIGHT EYES ATTRACTION (force radiale continue) ===
         if (brightEyesAttractor != null)
         {
             Vector3 directionToAttractor = (brightEyesAttractor.position - transform.position).normalized;
@@ -575,7 +508,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
             finalVelocity += directionToAttractor * brightEyesForce;
         }
 
-        // === MOVING PLATFORM SUPPORT ===
         DetectMovingPlatform();
         if (currentPlatform != null)
         {
@@ -583,10 +515,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
             if (rotPlatform != null)
             {
-                // ROTATING PLATFORM
                 if (moveInput.magnitude < 0.1f)
                 {
-                    // Idle : teleportation (reste solidaire)
                     Vector3 pivotPoint = rotPlatform.GetTransform().position + new Vector3(
                         rotPlatform.settings.pivotOffset.x,
                         0f,
@@ -601,12 +531,10 @@ public class PlayerPhysicsMovement : MonoBehaviour
                     directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
                     transform.position = pivotPoint + directionFromPivot;
 
-                    // AJOUTER CETTE LIGNE : Rotation de l'orientation
                     transform.Rotate(Vector3.up, angleThisFrame);
                 }
                 else
                 {
-                    // Bouge : velocite tangentielle (lutte/boost)
                     Vector3 tangentialVel = rotPlatform.GetTangentialVelocityAtPoint(transform.position);
                     finalVelocity.x += tangentialVel.x * rotPlatform.settings.playerInfluence;
                     finalVelocity.z += tangentialVel.z * rotPlatform.settings.playerInfluence;
@@ -614,7 +542,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
             }
             else
             {
-                // ROAMING OBSTACLE : toujours teleportation (idle OU en mouvement)
                 Vector3 platformCurrentPos = currentPlatform.GetTransform().position;
                 Vector3 platformDelta = platformCurrentPos - lastPlatformPosition;
                 platformDelta.y = 0f;
@@ -624,18 +551,15 @@ public class PlayerPhysicsMovement : MonoBehaviour
             }
         }
 
-
         rb.linearVelocity = finalVelocity;
     }
+
     float CalculateSpeed()
     {
         float baseSpeed = stats.GetAdjustedSpeed(currentHealth);
         float stickMagnitude = moveInput.magnitude;
         baseSpeed *= stickMagnitude;
 
-       
-
-        // AJOUTE CES LIGNES :
         if (isCrouching)
         {
             baseSpeed *= stats.crouchSpeedMultiplier;
@@ -677,6 +601,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         brightEyesForce = 0f;
         brightEyesSlowdown = 1f;
     }
+
     public void UpdateStamina(float newStamina)
     {
         currentStamina = Mathf.Clamp(newStamina, 0f, stats.maxStamina);
@@ -729,23 +654,19 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         waterSlowdownMultiplier = 1f;
     }
+
     public void ApplySwarmVision(bool active)
     {
         isInSwarmVision = active;
-
-
     }
 
     void EnterCrouch()
     {
         isCrouching = true;
 
-        // SUPPRIME TOUTE LA PARTIE MESH (lignes playerMesh.localScale)
-
-        // GARDE ET CORRIGE le collider (détection sentinelle)
         if (capsuleCollider != null)
         {
-            float newHeight = originalColliderHeight * 0.5f; //  CORRIGE ICI
+            float newHeight = originalColliderHeight * 0.5f;
             capsuleCollider.height = newHeight;
             capsuleCollider.center = new Vector3(
                 originalColliderCenter.x,
@@ -761,9 +682,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         isCrouching = false;
 
-        // SUPPRIME TOUTE LA PARTIE MESH
-
-        // GARDE la restauration collider
         if (capsuleCollider != null)
         {
             capsuleCollider.height = originalColliderHeight;
@@ -778,6 +696,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
     }
+
     public bool IsCrouching()
     {
         return isCrouching;
@@ -792,22 +711,20 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         return isGroggy;
     }
+
     public bool IsGroggyStunned()
     {
         return isGroggyStunned;
     }
 
-   
-
-    
     public Vector3 GetMoveInput()
     {
         Vector2 input = PlayerInputManager.Instance.MoveInput;
         Vector3 input3D = new Vector3(input.x, 0f, input.y);
         return transform.TransformDirection(input3D);
     }
-    // === FREEZE FUNCTIONS ===
-    private Color originalColor; // <--- ajoute cette ligne dans tes variables privées
+
+    private Color originalColor;
 
     void StartFreeze()
     {
@@ -817,10 +734,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         if (playerRenderer != null)
         {
-            // On sauvegarde la couleur du matériau (pas le matériau lui-même)
             originalColor = playerRenderer.material.color;
-
-            // Et on le rend bleu
             playerRenderer.material.color = Color.blue;
         }
 
@@ -834,7 +748,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         if (playerRenderer != null)
         {
-            // On restaure simplement la couleur sauvegardée
             playerRenderer.material.color = originalColor;
         }
 
@@ -844,10 +757,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private bool IsGrounded()
     {
         float rayLength = 0.3f;
-        Vector3 rayStart = transform.position + Vector3.up * 0.1f; // Légèrement au-dessus des pieds
+        Vector3 rayStart = transform.position + Vector3.up * 0.1f;
         return Physics.Raycast(rayStart, Vector3.down, rayLength, LayerMask.GetMask("Ground", "LavaTrain"));
     }
-
 
     void DetectMovingPlatform()
     {
@@ -869,7 +781,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
             {
                 if (currentPlatform != platform)
                 {
-                    // Nouvelle plateforme
                     currentPlatform = platform;
                     lastPlatformPosition = platform.GetTransform().position;
                 }
@@ -884,14 +795,14 @@ public class PlayerPhysicsMovement : MonoBehaviour
             currentPlatform = null;
         }
     }
+
     bool CanDash()
     {
         if (isDashing) return false;
         if (isClimbing) return false;
         if (isCrouching) return false;
-        if (grabState != GrabState.None) return false;
         if (gameManager.stunBySentinel) return false;
-        if (moveInput.magnitude < 0.1f) return false; // Pas de dash sur place
+        if (moveInput.magnitude < 0.1f) return false;
         if (currentStamina < stats.dashStaminaCost) return false;
         if (Time.time < lastDashTime + stats.dashCooldown) return false;
         if (pitInteractable != null && pitInteractable.IsInAnyWater()) return false;
@@ -901,41 +812,34 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     IEnumerator DashCoroutine(Vector3 direction)
     {
-        // Consommer stamina
         currentStamina -= stats.dashStaminaCost;
         currentStamina = Mathf.Max(0f, currentStamina);
 
-        // Setup dash
         isDashing = true;
         isDashing = true;
-        lastDashTime = Time.time; // ICI au lieu de la fin
+        lastDashTime = Time.time;
         if (animator != null)
             animator.SetTrigger("DoDash");
 
-        // AJOUTER CES 2 LIGNES :
         if (animator != null)
             animator.SetTrigger("DoDash");
 
         dashDirection = direction.normalized;
         float dashSpeed = stats.dashDistance / stats.dashDuration;
-        
 
-        // Bloquer inputs normaux
         canMove = false;
 
         float elapsed = 0f;
         while (elapsed < stats.dashDuration)
         {
-            // Forcer velocity dans dashDirection
             Vector3 dashVelocity = dashDirection * dashSpeed;
-            dashVelocity.y = rb.linearVelocity.y; // Garder gravité
+            dashVelocity.y = rb.linearVelocity.y;
             rb.linearVelocity = dashVelocity;
 
             elapsed += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
         }
 
-        // Fin dash
         isDashing = false;
         canMove = true;
     }
@@ -966,6 +870,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         canMove = false;
         StartCoroutine(SweepFromObstacleCoroutine());
     }
+
     public RisingPlatform GetCurrentRisingPlatform()
     {
         float rayLength = 0.3f;
@@ -983,6 +888,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     {
         return currentPlatform;
     }
+
     void OnCollisionEnter(Collision collision)
     {
         if (!PlayerInputManager.Instance.BroomLowActive) return;
@@ -1008,5 +914,4 @@ public class PlayerPhysicsMovement : MonoBehaviour
             isInContactWithEnemy = false;
         }
     }
-
 }

@@ -217,11 +217,7 @@ public class EnemyHealth : MonoBehaviour
             shouldBounce = true;
         }
 
-        GrabAttack grabAttack = GetComponent<GrabAttack>();
-        if (grabAttack != null && grabAttack.isInBourradeDuration)
-        {
-            shouldBounce = true;
-        }
+        
 
 
         if (!shouldBounce)
@@ -384,11 +380,7 @@ public class EnemyHealth : MonoBehaviour
             return;
         }
 
-        GrabAttack grabCheck = GetComponent<GrabAttack>();
-        if (grabCheck != null && grabCheck.isInWindup)
-        {
-            grabCheck.CancelWindup();
-        }
+       
 
         HitAttack hitAttackCheck = GetComponent<HitAttack>();
         if (hitAttackCheck != null && (hitAttackCheck.isInWindup || hitAttackCheck.IsAttacking()))
@@ -495,13 +487,7 @@ public class EnemyHealth : MonoBehaviour
             ai.enabled = false;
         }
 
-        GrabAttack grabAttack = GetComponent<GrabAttack>();
-        if (grabAttack != null)
-        {
-            if (grabAttack.isInWindup)
-                grabAttack.CancelWindup();
-            grabAttack.enabled = false;
-        }
+       
 
         Pathfinding.AIPath aiPath = GetComponent<Pathfinding.AIPath>();
         if (aiPath != null)

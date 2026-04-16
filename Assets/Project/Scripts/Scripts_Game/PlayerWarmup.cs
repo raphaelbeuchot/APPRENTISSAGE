@@ -5,7 +5,6 @@ public class PlayerWarmup : MonoBehaviour
 {
     private Animator animator;
     private Rigidbody rb;
-    private MeleeAttackSystem meleeSystem;
     private PlayerPhysicsMovement playerMovement;
 
     private void Awake()
@@ -16,7 +15,6 @@ public class PlayerWarmup : MonoBehaviour
         // Recuperer les references
         animator = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody>();
-        meleeSystem = GetComponent<MeleeAttackSystem>();
         playerMovement = GetComponent<PlayerPhysicsMovement>();
 
         // 1. WARMUP ANIMATOR
@@ -37,20 +35,7 @@ public class PlayerWarmup : MonoBehaviour
             Debug.Log("[WARMUP] Rigidbody prechauffe");
         }
 
-        // 3. WARMUP AUDIO CLIPS
-        if (meleeSystem != null && meleeSystem.stats != null)
-        {
-            if (meleeSystem.stats.sprayFrontSound != null)
-            {
-                meleeSystem.stats.sprayFrontSound.LoadAudioData();
-            }
-            if (meleeSystem.stats.sprayFrontSound != null)
-            {
-                meleeSystem.stats.sprayFrontSound.LoadAudioData();
-            }
-            
-            Debug.Log("[WARMUP] AudioClips precharges");
-        }
+       
 
         // 4. WARMUP RAYCAST PHYSICS
         RaycastHit hit;

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,10 +10,6 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private float damageFlashDuration = 0.3f;
     [SerializeField] private Color damageColor = new Color(1f, 0f, 0f, 0.5f);
 
-    [Header("Grab UI")]
-    [SerializeField] private TextMeshProUGUI mashText;
-    [SerializeField] private float mashBlinkSpeed = 2f;
-
     [Header("Countdown UI")]
     [SerializeField] private TextMeshProUGUI countdownText;
     [SerializeField] private float countdownFontSize = 100f;
@@ -22,7 +17,6 @@ public class GameUIManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private PlayerHealth playerHealth;
-    [SerializeField] private GrabAttack[] zombies;
     [SerializeField] private GameObject pressureGauge;
     [SerializeField] private GameObject creditBar;
     [SerializeField] private GameObject enemyIconsContainer;
@@ -41,13 +35,9 @@ public class GameUIManager : MonoBehaviour
         if (enemyIconsContainer != null) enemyIconsContainer.SetActive(false);
     }
 
-    private bool isGrabbed = false;
-
     void Start()
     {
-        zombies = FindObjectsOfType<GrabAttack>();
-        SprayAmmoUI sprayAmmoUI = FindObjectOfType<SprayAmmoUI>();
-        if (sprayAmmoUI != null) sprayBar = sprayAmmoUI.gameObject;
+       
 
         StaminaBarFollower staminaBarFollower = FindObjectOfType<StaminaBarFollower>();
         if (staminaBarFollower != null) staminaBar = staminaBarFollower.gameObject;
@@ -55,17 +45,15 @@ public class GameUIManager : MonoBehaviour
         PlayerHealthUI playerHealthUI = FindObjectOfType<PlayerHealthUI>();
         if (playerHealthUI != null) healthBar = playerHealthUI.gameObject;
 
-        // === FIX : Trouver PlayerHealth automatiquement si non assigné ===
         if (playerHealth == null)
         {
             playerHealth = FindObjectOfType<PlayerHealth>();
             if (playerHealth == null)
             {
-                Debug.LogError("GameUIManager: PlayerHealth non trouvé!");
+                Debug.LogError("GameUIManager: PlayerHealth non trouve!");
             }
         }
 
-        // Setup initial
         if (damageVignette != null)
         {
             Color c = damageVignette.color;
@@ -74,40 +62,29 @@ public class GameUIManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("GameUIManager: damageVignette non assignée!");
-        }
-
-        if (mashText != null)
-        {
-            mashText.gameObject.SetActive(false);
+            Debug.LogError("GameUIManager: damageVignette non assignee!");
         }
 
         if (countdownText != null)
         {
             countdownText.gameObject.SetActive(false);
         }
-        // NOUVEAU : Récupérer la config
+
         countdownConfig = countdownText.GetComponent<CountdownTextConfig>();
         if (countdownConfig == null)
         {
             Debug.LogWarning("CountdownTextConfig non trouve sur CountdownText !");
         }
 
-        // S'abonner UNIQUEMENT au damage flash
         if (playerHealth != null)
         {
             playerHealth.OnHealthChanged += OnPlayerDamaged;
-            Debug.Log("GameUIManager: Abonné aux events PlayerHealth");
+            Debug.Log("GameUIManager: Abonne aux events PlayerHealth");
         }
-    }
-    void Update()
-    {
-        CheckGrabStatus();
     }
 
     void OnPlayerDamaged(float currentHealth, float maxHealth)
     {
-        // Flash de degats seulement
         StartCoroutine(DamageFlash());
     }
 
@@ -115,7 +92,6 @@ public class GameUIManager : MonoBehaviour
     {
         if (damageVignette == null) yield break;
 
-        // Apparition rapide
         float elapsed = 0f;
         while (elapsed < damageFlashDuration * 0.3f)
         {
@@ -127,7 +103,6 @@ public class GameUIManager : MonoBehaviour
             yield return null;
         }
 
-        // Disparition lente
         elapsed = 0f;
         while (elapsed < damageFlashDuration * 0.7f)
         {
@@ -144,84 +119,18 @@ public class GameUIManager : MonoBehaviour
         damageVignette.color = finalColor;
     }
 
-    void CheckGrabStatus()
-    {
-        if (zombies == null || zombies.Length == 0) return;
-
-        bool currentlyGrabbed = false;
-
-        foreach (GrabAttack zombie in zombies)
-        {
-            if (zombie != null && zombie.IsGrabbing())
-            {
-                currentlyGrabbed = true;
-                break;
-            }
-        }
-
-        if (currentlyGrabbed && !isGrabbed)
-        {
-            StartCoroutine(ShowMashPrompt());
-        }
-        else if (!currentlyGrabbed && isGrabbed)
-        {
-            HideMashPrompt();
-        }
-
-        isGrabbed = currentlyGrabbed;
-    }
-
-    IEnumerator ShowMashPrompt()
-    {
-        if (mashText == null) yield break;
-
-        Debug.Log("MASH PROMPT STARTED");
-        mashText.gameObject.SetActive(true);
-
-        while (true)
-        {
-            bool stillGrabbed = false;
-            foreach (GrabAttack zombie in zombies)
-            {
-                if (zombie != null && zombie.IsGrabbing())
-                {
-                    stillGrabbed = true;
-                    break;
-                }
-            }
-
-            if (!stillGrabbed) break;
-
-            float cycleTime = 1f / mashBlinkSpeed;
-            mashText.enabled = (Time.time % cycleTime) < (cycleTime * 0.5f);
-
-            yield return null;
-        }
-
-        Debug.Log("MASH PROMPT STOPPED");
-        HideMashPrompt();
-    }
-
-    void HideMashPrompt()
-    {
-        if (mashText != null)
-        {
-            mashText.gameObject.SetActive(false);
-        }
-    }
-
     public void ShowCountdown(bool skipText = false)
     {
-        Debug.Log($"[GameUIManager] ShowCountdown appele avec skipText = {skipText}"); // NOUVEAU
+        Debug.Log($"[GameUIManager] ShowCountdown appele avec skipText = {skipText}");
 
         if (!skipText)
         {
-            Debug.Log("[GameUIManager] Lancement CountdownSequence"); // NOUVEAU
+            Debug.Log("[GameUIManager] Lancement CountdownSequence");
             StartCoroutine(CountdownSequence());
         }
         else
         {
-            Debug.Log("[GameUIManager] Skip CountdownSequence (restart)"); // NOUVEAU
+            Debug.Log("[GameUIManager] Skip CountdownSequence (restart)");
         }
     }
 
@@ -232,7 +141,6 @@ public class GameUIManager : MonoBehaviour
         countdownText.gameObject.SetActive(true);
         countdownText.fontSize = countdownFontSize;
 
-        // Récupérer config
         string titleText = countdownConfig != null
             ? countdownConfig.GetTitle()
             : "Super Panopticon!";
@@ -245,33 +153,28 @@ public class GameUIManager : MonoBehaviour
             ? countdownConfig.GetFadeOutDuration()
             : 1f;
 
-        // Afficher le texte
         countdownText.text = titleText;
         countdownText.transform.localScale = Vector3.one;
         Color c = countdownText.color;
         c.a = 1f;
         countdownText.color = c;
 
-        // PHASE 1 : Rotation 360 degrés
         float elapsed = 0f;
         Quaternion startRotation = countdownText.transform.localRotation;
 
-        // NOUVEAU : Direction de rotation
         bool clockwise = countdownConfig != null ? countdownConfig.IsClockwise() : true;
         float rotationDirection = clockwise ? 360f : -360f;
 
         while (elapsed < rotationDuration)
         {
             elapsed += Time.deltaTime;
-            float angle = Mathf.Lerp(0f, rotationDirection, elapsed / rotationDuration); // Modifié
+            float angle = Mathf.Lerp(0f, rotationDirection, elapsed / rotationDuration);
             countdownText.transform.localRotation = Quaternion.Euler(0f, 0f, angle);
             yield return null;
         }
 
-        // Reset rotation
         countdownText.transform.localRotation = startRotation;
 
-        // PHASE 2 : Fade out
         elapsed = 0f;
         while (elapsed < fadeOutDuration)
         {
@@ -283,27 +186,11 @@ public class GameUIManager : MonoBehaviour
             yield return null;
         }
 
-        // Cleanup
         countdownText.gameObject.SetActive(false);
         countdownText.transform.localRotation = startRotation;
         c = countdownText.color;
         c.a = 1f;
         countdownText.color = c;
-    }
-
-    public void UpdateZombiesList()
-    {
-        zombies = FindObjectsOfType<GrabAttack>();
-    }
-
-    public void RegisterGrab(GrabAttack grab)
-    {
-        if (!zombies.Contains(grab))
-        {
-            var newList = zombies.ToList();
-            newList.Add(grab);
-            zombies = newList.ToArray();
-        }
     }
 
     void OnDestroy()

@@ -128,9 +128,7 @@ public class EnemyAI_AStar : MonoBehaviour
     {
         switch (stats.attackType)
         {
-            case EnemyStats.AttackType.Grabber:
-                attackBehavior = GetComponent<GrabAttack>() ?? gameObject.AddComponent<GrabAttack>();
-                break;
+            
             case EnemyStats.AttackType.Hitter:
                 attackBehavior = GetComponent<HitAttack>() ?? gameObject.AddComponent<HitAttack>();
                 break;
@@ -273,10 +271,8 @@ public class EnemyAI_AStar : MonoBehaviour
 
         if (attackBehavior != null && attackBehavior.IsInSpecialState())
         {
-            GrabAttack grab = attackBehavior as GrabAttack;
-            bool inBourrade = grab != null && grab.isInBourradeDuration;
-            if (!inBourrade)
-                StopMovement();
+            bool inBourrade = false; // TODO: rebrancher quand bourrade migree
+            if (!inBourrade) StopMovement();
             return;
         }
 
@@ -327,8 +323,7 @@ public class EnemyAI_AStar : MonoBehaviour
             if (isInStandupPhase) continue;
             if (gameManager != null && gameManager.zombieStunBySentinel) continue;
             if (isStunnedBySentinel) continue;
-            GrabAttack grab = GetComponent<GrabAttack>();
-            if (grab != null && (grab.isInWindup || Time.time - grab.windupEndTime < 0.5f)) continue;
+            
             DetectHumans();
         }
     }
@@ -398,10 +393,7 @@ public class EnemyAI_AStar : MonoBehaviour
 
     public virtual void DetectHumans()
     {
-        GrabAttack grab = GetComponent<GrabAttack>();
-        if (grab != null && grab.isLockedInIdle) return;
-
-        if (grab != null && grab.isInWindup) return;
+       
 
         if (currentState == State.StunBySpray)
             return;
@@ -721,17 +713,8 @@ public class EnemyAI_AStar : MonoBehaviour
             {
                 lastAttackTime = Time.time;
 
-                GrabAttack grabAttack = attackBehavior as GrabAttack;
                 HitAttack hitAttack = attackBehavior as HitAttack;
-
-                if (grabAttack != null)
-                {
-                    grabAttack.StartWindup();
-                }
-                else if (hitAttack != null)
-                {
-                    hitAttack.StartWindup();
-                }
+                if (hitAttack != null) hitAttack.StartWindup();
                 else
                 {
                     attackBehavior.AttemptAttack(targetHuman.gameObject);
@@ -973,12 +956,9 @@ public class EnemyAI_AStar : MonoBehaviour
                 if (Time.time - lastAttackTime >= stats.attackCooldown)
                 {
                     lastAttackTime = Time.time;
-                    GrabAttack grabAttack = attackBehavior as GrabAttack;
                     HitAttack hitAttack = attackBehavior as HitAttack;
-                    if (grabAttack != null)
-                        grabAttack.StartWindup();
-                    else if (hitAttack != null)
-                        hitAttack.StartWindup();
+                    if (hitAttack != null) hitAttack.StartWindup();
+                    else attackBehavior.AttemptAttack(targetHuman.gameObject);
                 }
             }
             return;

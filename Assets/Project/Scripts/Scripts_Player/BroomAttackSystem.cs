@@ -19,7 +19,6 @@ public class BroomAttackSystem : MonoBehaviour
 
     private bool isAttacking = false;
    
-    private bool isGrabbed = false;
     private Animator animator;
     void Start()
     {
@@ -53,16 +52,9 @@ public class BroomAttackSystem : MonoBehaviour
 
     bool CanAttack()
     {
-        if (isGrabbed)
-        {
-            Debug.Log("Cannot broom attack: player is grabbed!");
-            return false;
-        }
+        
 
-        if (movement != null && movement.grabState == PlayerPhysicsMovement.GrabState.Recoil)
-        {
-            return false;
-        }
+       
         if (PlayerInputManager.Instance.BroomLowActive)
         {
             return false;
@@ -198,12 +190,7 @@ public class BroomAttackSystem : MonoBehaviour
 
                 enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Broom);
 
-                GrabAttack grab = enemyHealth.GetComponent<GrabAttack>();
-                if (grab != null && grab.isInWindup)
-                {
-                    grab.CancelWindup();
-                    Debug.Log($"[BROOM] Cancelled {enemyHealth.gameObject.name} grab windup");
-                }
+                
 
                 HitAttack hitAttack = enemyHealth.GetComponent<HitAttack>();
                 if (hitAttack != null && (hitAttack.isInWindup || hitAttack.IsAttacking()))
@@ -426,25 +413,7 @@ public class BroomAttackSystem : MonoBehaviour
         }
     }
 
-    public void OnGrabStart()
-    {
-        isGrabbed = true;
-
-        if (isAttacking)
-        {
-            StopAllCoroutines();
-            isAttacking = false;
-            if (animator != null)
-                animator.SetLayerWeight(1, 0f);
-            Debug.Log("BroomAttack: CANCELLED by grab");
-        }
-    }
-
-    public void OnGrabEnd()
-    {
-        isGrabbed = false;
-        Debug.Log("BroomAttack: Player released, isGrabbed now FALSE");
-    }
+   
 
     public bool IsAttacking() => isAttacking;
 }

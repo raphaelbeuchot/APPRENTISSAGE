@@ -9,7 +9,6 @@ public class PlayerAnimationEvents : MonoBehaviour
     void Start()
     {
         broomAttack = GetComponentInParent<BroomAttackSystem>();
-        meleeAttack = GetComponentInParent<MeleeAttackSystem>();
         playerMovement = GetComponentInParent<PlayerPhysicsMovement>();
 
     }
@@ -19,14 +18,9 @@ public class PlayerAnimationEvents : MonoBehaviour
         if (broomAttack != null)
             broomAttack.OnBroomHit();
     }
-    private MeleeAttackSystem meleeAttack;
 
   
-    public void OnSprayHit()
-    {
-        if (meleeAttack != null)
-            meleeAttack.OnSprayHit();
-    }
+    
     public void OnGroggyStart()
     {
         if (playerMovement != null)

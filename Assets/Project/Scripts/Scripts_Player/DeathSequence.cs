@@ -44,8 +44,7 @@ public class DeathSequence : MonoBehaviour
         Debug.Log("DeathRoutine START");
         PlayerPhysicsMovement movement = GetComponent<PlayerPhysicsMovement>();
         if (movement != null) movement.enabled = false;
-        MeleeAttackSystem melee = GetComponent<MeleeAttackSystem>();
-        if (melee != null) melee.enabled = false;
+       
 
         if (ragdoll != null)
             ragdoll.Activate(deathDirection);
