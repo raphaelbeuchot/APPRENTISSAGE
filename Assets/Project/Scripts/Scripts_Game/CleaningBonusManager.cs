@@ -79,7 +79,19 @@ public class CleaningBonusManager : MonoBehaviour
         CommentPanel.Show("Spick and span !");
         Debug.Log("[CleaningBonus] Tous les ennemis nettoyes.");
     }
-
+    public void Shutdown()
+    {
+        CorpsePitHandler.OnCorpseCleaned -= HandleCorpseCleaned;
+        if (enemyIconsUI != null)
+            enemyIconsUI.OnAllIconsCleaned -= HandleAllIconsCleaned;
+        if (CommentPanel.Instance != null)
+        {
+            CommentPanel.Instance.StopAllCoroutines();
+            CommentPanel.Instance.gameObject.SetActive(false);
+        }
+        if (audioSource != null)
+            audioSource.Stop();
+    }
     public List<EnemyHealth> GetRegisteredEnemies()
     {
         return registeredEnemies;

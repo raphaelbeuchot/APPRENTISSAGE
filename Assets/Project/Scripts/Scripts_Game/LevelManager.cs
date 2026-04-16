@@ -152,6 +152,7 @@ public class LevelManager : MonoBehaviour
     }
     void OnPlayerReachedGoal(GameObject playerObject)
     {
+        CleaningBonusManager.Instance?.Shutdown();
         GetComponent<GoalDoorDebug>()?.TriggerDebug();
         if (levelCompleted || gameOver) return;
 
