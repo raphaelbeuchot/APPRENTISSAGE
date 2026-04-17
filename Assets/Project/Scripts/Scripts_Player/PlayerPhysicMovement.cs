@@ -181,6 +181,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             {
                 PlayerInputManager.Instance.ForceBroomLowOff();
                 ExitCrouch();
+                PlayerInputManager.Instance.ForceBroomLowOn();
             }
             else
             {
@@ -812,15 +813,13 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     IEnumerator DashCoroutine(Vector3 direction)
     {
+        PlayerInputManager.Instance.ForceBroomLowOff();
+
         currentStamina -= stats.dashStaminaCost;
         currentStamina = Mathf.Max(0f, currentStamina);
 
         isDashing = true;
-        isDashing = true;
         lastDashTime = Time.time;
-        if (animator != null)
-            animator.SetTrigger("DoDash");
-
         if (animator != null)
             animator.SetTrigger("DoDash");
 
@@ -842,6 +841,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         isDashing = false;
         canMove = true;
+        PlayerInputManager.Instance.ForceBroomLowOn();
     }
 
     public void TriggerSweep()

@@ -610,8 +610,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerPhysicsMovement
   stats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
-  isImmuneToGrab: 0
-  lastGrabEndTime: -999
   cameraTransform: {fileID: 0}
   lockSystem: {fileID: 1340301836282980366}
   isRedLight: 0
@@ -621,8 +619,6 @@ MonoBehaviour:
   stepCheckDistance: 0.3
   stepRayHeightOffset: 0.05
   isClimbing: 0
-  grabState: 0
-  grabProgress: 0
   isSweepImmune: 0
   isDashing: 0
   gameManager: {fileID: 0}
@@ -653,7 +649,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5794444067654349612}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 266be2cf256ee0a46980962df37fe9b6, type: 3}
   m_Name: 
@@ -764,6 +760,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BroomLowWall
   wallRadius: 0.4
+  playerHealth: {fileID: 0}
 --- !u!114 &5886150620188446577
 MonoBehaviour:
   m_ObjectHideFlags: 0

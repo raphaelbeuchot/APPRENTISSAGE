@@ -15,11 +15,10 @@ public class BroomAttackSystem : MonoBehaviour
     [Header("Impact Effects")]
     [SerializeField] private GameObject[] broomImpactEffects;
 
-
-
     private bool isAttacking = false;
-   
+
     private Animator animator;
+
     void Start()
     {
         if (stats == null)
@@ -27,7 +26,6 @@ public class BroomAttackSystem : MonoBehaviour
             Debug.LogError("PlayerStats non assigne sur " + gameObject.name);
             return;
         }
-        
 
         rb = GetComponent<Rigidbody>();
         health = GetComponent<PlayerHealth>();
@@ -43,7 +41,6 @@ public class BroomAttackSystem : MonoBehaviour
     {
         if (stats == null) return;
 
-
         if (PlayerInputManager.Instance.BroomAttackPressed && CanAttack())
         {
             StartCoroutine(PerformBroomAttack());
@@ -52,21 +49,11 @@ public class BroomAttackSystem : MonoBehaviour
 
     bool CanAttack()
     {
-        
-
-       
-        if (PlayerInputManager.Instance.BroomLowActive)
-        {
-            return false;
-        }
-        // CHECK STAMINA
         if (movement != null && movement.GetCurrentStamina() < stats.broomStaminaCost)
         {
             Debug.Log("Cannot broom attack: not enough stamina!");
             return false;
         }
-
-        
 
         if (isAttacking)
         {
@@ -92,33 +79,28 @@ public class BroomAttackSystem : MonoBehaviour
     IEnumerator PerformBroomAttack()
     {
         isAttacking = true;
+        PlayerInputManager.Instance.ForceBroomLowOff();
 
         if (movement != null)
             movement.ExitCrouch();
 
-        // CONSOMMER LA STAMINA
         if (movement != null)
         {
             float currentStamina = movement.GetCurrentStamina();
             movement.UpdateStamina(currentStamina - stats.broomStaminaCost);
         }
 
-        // ACTIVER LE LAYER UPPER BODY + TRIGGER
         if (animator != null)
         {
             animator.SetLayerWeight(1, 1f);
             animator.SetTrigger("BroomAttack");
         }
 
-        
-
-        // ATTENDRE TOUTE LA DUREE DE L'ANIMATION
         yield return new WaitForSeconds(stats.broomAttackDuration);
 
-        // Plus de lerp forcé, laisser l'Animator gérer la transition
+        PlayerInputManager.Instance.ForceBroomLowOn();
         isAttacking = false;
 
-        // Reset SEULEMENT si nécessaire pour éviter conflits spray
         if (animator != null)
         {
             animator.Rebind();
@@ -190,8 +172,6 @@ public class BroomAttackSystem : MonoBehaviour
 
                 enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Broom);
 
-                
-
                 HitAttack hitAttack = enemyHealth.GetComponent<HitAttack>();
                 if (hitAttack != null && (hitAttack.isInWindup || hitAttack.IsAttacking()))
                 {
@@ -231,7 +211,7 @@ public class BroomAttackSystem : MonoBehaviour
             if (swarmAStar != null)
             {
                 hitSomething = true;
-                swarmAStar.TakeDamage(swarmAStar.stats.broomDamageTaken);  // <-- ici
+                swarmAStar.TakeDamage(swarmAStar.stats.broomDamageTaken);
                 Debug.Log(gameObject.name + " BROOM hit swarm (A*) for " + swarmAStar.stats.broomDamageTaken + " damage!");
             }
             else
@@ -244,11 +224,8 @@ public class BroomAttackSystem : MonoBehaviour
                     Debug.Log(gameObject.name + " BROOM hit swarm for " + swarm.stats.broomDamageTaken + " damage!");
                 }
             }
-
-
         }
 
-        // BLINDERS - seulement si le broom a touche quelque chose
         if (hitSomething)
         {
             ChargeAttack[] allBlinders = FindObjectsOfType<ChargeAttack>();
@@ -263,7 +240,6 @@ public class BroomAttackSystem : MonoBehaviour
             }
         }
 
-        // BOMBES
         Collider[] bombHits = Physics.OverlapSphere(
             transform.position + Vector3.up * 1f,
             stats.broomBombRange,
@@ -285,7 +261,6 @@ public class BroomAttackSystem : MonoBehaviour
             hitSomething = true;
         }
 
-        // CORPSES
         Collider[] corpseHits = Physics.OverlapSphere(
             transform.position + Vector3.up * 0.3f,
             stats.broomRange + 0.5f,
@@ -301,7 +276,6 @@ public class BroomAttackSystem : MonoBehaviour
             float angle = Vector3.Angle(transform.forward, dir);
             if (angle > stats.broomConeAngle / 2f) continue;
 
-            // CAS 1 : corpse scene/tuto avec CorpseRagdoll
             CorpseRagdoll corpseRagdoll = hit.GetComponentInParent<CorpseRagdoll>();
             if (corpseRagdoll != null)
             {
@@ -316,7 +290,6 @@ public class BroomAttackSystem : MonoBehaviour
                 continue;
             }
 
-            // CAS 2 : ennemi mort avec DeadBodyPhysics
             DeadBodyPhysics deadBody = hit.GetComponentInParent<DeadBodyPhysics>();
             if (deadBody != null)
             {
@@ -333,7 +306,7 @@ public class BroomAttackSystem : MonoBehaviour
                 continue;
             }
         }
-        // PROPS
+
         Collider[] propHits = Physics.OverlapSphere(
             transform.position + Vector3.up * 1f,
             stats.broomRange,
@@ -351,8 +324,8 @@ public class BroomAttackSystem : MonoBehaviour
             if (prop != null)
                 prop.ReceiveImpact(transform.position, stats.broomKnockbackForce, ImpactSource.Broom);
         }
-
     }
+
     IEnumerator KnockdownTarget(GameObject target, Vector3 knockbackDirection)
     {
         EnemyAI_AStar zombieAI_AStar = target.GetComponent<EnemyAI_AStar>();
@@ -412,8 +385,6 @@ public class BroomAttackSystem : MonoBehaviour
             }
         }
     }
-
-   
 
     public bool IsAttacking() => isAttacking;
 }

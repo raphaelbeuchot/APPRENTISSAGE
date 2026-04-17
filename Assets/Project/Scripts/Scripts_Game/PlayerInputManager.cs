@@ -8,7 +8,6 @@ public class PlayerInputManager : MonoBehaviour
     [Header("Input Action Asset")]
     [SerializeField] private PlayerInputActions inputActions;
 
-    // Properties publiques pour que les autres scripts puissent lire les inputs
     public Vector2 MoveInput { get; private set; }
     public Vector2 LookInput { get; private set; }
     public bool SprintPressed { get; private set; }
@@ -18,7 +17,6 @@ public class PlayerInputManager : MonoBehaviour
     public bool LockOnHeld { get; private set; }
     public bool ThrowBottlePressed { get; private set; }
     public bool InteractPressed { get; private set; }
-
     public bool InteractHeld { get; private set; }
     public bool ReloadPressed { get; private set; }
     public bool MashEscapePressed { get; private set; }
@@ -29,17 +27,8 @@ public class PlayerInputManager : MonoBehaviour
     public bool PausePressed { get; private set; }
     public bool BroomLowActive { get; private set; }
 
-    [Header("Broom Hold Threshold")]
-    [SerializeField] private float broomHoldThreshold = 0.7f;
-
-    private float broomPressStartTime;
-    private bool broomIsHeld;
-    private bool wasInBroomLow = false;
-
-
     private void Awake()
     {
-        // Singleton
         if (Instance == null)
         {
             Instance = this;
@@ -50,30 +39,18 @@ public class PlayerInputManager : MonoBehaviour
             return;
         }
 
-        // Initialiser l'Input Action Asset
         inputActions = new PlayerInputActions();
+        BroomLowActive = true;
     }
+
     private void Update()
     {
-        if (broomIsHeld && !BroomLowActive && Time.time - broomPressStartTime >= broomHoldThreshold)
-        {
-            BroomLowActive = true;
-            Debug.Log("BROOM LOW ACTIF");
-        }
-
-        // Sortie immediate si bouton relache
-        if (BroomLowActive && !inputActions.Player.BroomAttack.IsPressed())
-        {
-            BroomLowActive = false;
-            wasInBroomLow = true;
-        }
     }
+
     private void OnEnable()
     {
-        // Activer l'action map Player
         inputActions.Player.Enable();
 
-        // S'abonner aux actions
         inputActions.Player.Movement.performed += OnMovement;
         inputActions.Player.Movement.canceled += OnMovement;
 
@@ -88,24 +65,11 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.BroomAttack.started += ctx =>
         {
-            broomIsHeld = true;
-            broomPressStartTime = Time.time;
+            BroomAttackPressed = true;
         };
 
         inputActions.Player.BroomAttack.canceled += ctx =>
         {
-            broomIsHeld = false;
-            if (BroomLowActive || wasInBroomLow)
-            {
-                BroomLowActive = false;
-                wasInBroomLow = false;
-            }
-            else
-            {
-                float duration = Time.time - broomPressStartTime;
-                if (duration < broomHoldThreshold)
-                    BroomAttackPressed = true;
-            }
         };
 
         inputActions.Player.LockOn.performed += ctx => LockOnHeld = true;
@@ -134,14 +98,12 @@ public class PlayerInputManager : MonoBehaviour
         };
         inputActions.Player.SentinelCamera.canceled += ctx => SentinelCameraPressed = false;
 
-        // NOUVEAU : Brancher Pause et Cancel
         inputActions.Player.Pause.performed += OnPause;
         inputActions.Player.Cancel.performed += OnCancel;
     }
 
     private void OnDisable()
     {
-        // Se desabonner
         inputActions.Player.Movement.performed -= OnMovement;
         inputActions.Player.Movement.canceled -= OnMovement;
 
@@ -158,11 +120,9 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.ToggleCameraView.performed -= OnToggleCameraView;
 
-        // NOUVEAU : Debrancher Pause et Cancel
         inputActions.Player.Pause.performed -= OnPause;
         inputActions.Player.Cancel.performed -= OnCancel;
 
-        // Desactiver l'action map
         inputActions.Player.Disable();
     }
 
@@ -171,10 +131,12 @@ public class PlayerInputManager : MonoBehaviour
         if (context.performed)
             CancelPressed = true;
     }
+
     private void OnToggleCameraView(InputAction.CallbackContext context)
     {
         ToggleCameraViewPressed = true;
     }
+
     private void OnMovement(InputAction.CallbackContext context)
     {
         MoveInput = context.ReadValue<Vector2>();
@@ -192,6 +154,7 @@ public class PlayerInputManager : MonoBehaviour
 
         SprayAttackHeld = context.ReadValueAsButton();
     }
+
     private void OnPause(InputAction.CallbackContext context)
     {
         if (context.performed)
@@ -205,17 +168,20 @@ public class PlayerInputManager : MonoBehaviour
 
         InteractHeld = context.ReadValueAsButton();
     }
+
     public void ForceBroomLowOff()
     {
         BroomLowActive = false;
-        broomIsHeld = false;
+    }
+
+    public void ForceBroomLowOn()
+    {
+        BroomLowActive = true;
     }
 
     private void LateUpdate()
     {
-        // Reset des inputs "pressed" pour frame suivante
         SprayAttackPressed = false;
-        // NE PAS reset SprayAttackHeld ici
         BroomAttackPressed = false;
         ThrowBottlePressed = false;
         InteractPressed = false;
@@ -227,7 +193,5 @@ public class PlayerInputManager : MonoBehaviour
         CancelPressed = false;
         PausePressed = false;
         SprintPressed = false;
-
-
     }
 }

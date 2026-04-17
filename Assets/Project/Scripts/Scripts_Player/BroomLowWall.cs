@@ -5,6 +5,9 @@ public class BroomLowWall : MonoBehaviour
     [Header("Wall Collider")]
     [SerializeField] private float wallRadius = 0.4f;
 
+    [Header("References")]
+    [SerializeField] private PlayerHealth playerHealth;
+
     private GameObject wallObject;
     private CapsuleCollider wallCollider;
     private CapsuleCollider playerCollider;
@@ -44,7 +47,8 @@ public class BroomLowWall : MonoBehaviour
     void Update()
     {
         bool shouldBeActive = PlayerInputManager.Instance.BroomLowActive
-            && PlayerInputManager.Instance.MoveInput.magnitude < 0.1f;
+            && PlayerInputManager.Instance.MoveInput.magnitude < 0.1f
+            && (playerHealth == null || !playerHealth.IsDead());
 
         if (wallObject.activeSelf != shouldBeActive)
             wallObject.SetActive(shouldBeActive);
