@@ -56,6 +56,9 @@ public class LevelManager : MonoBehaviour
         if (goalDoor == null)
             goalDoor = FindObjectOfType<GoalDoor>();
 
+        if (goalDoor != null && goalDoorNew == null)
+            goalDoorNew = goalDoor.GetComponent<GoalDoorNew>();
+
         if (goalDoorNew != null)
             goalDoorNew.OnPlayerReached += OnPlayerReachedGoal;
 

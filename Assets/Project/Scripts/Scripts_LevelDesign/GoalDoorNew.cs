@@ -11,8 +11,9 @@ public class GoalDoorNew : MonoBehaviour
 
     
 
+    [HideInInspector] public Renderer doorRenderer;
     [Header("Visuels")]
-    public Renderer doorRenderer;
+
     public Material activeMaterial;
     public Material inactiveMaterial;
 
@@ -22,9 +23,8 @@ public class GoalDoorNew : MonoBehaviour
     public AudioClip doorLockedSound;   // son feedback si le joueur arrive sans cle
     private AudioSource audioSource;
 
-    [Header("Effets")]
-    public GameObject victoryEffectPrefab;
-    public bool destroyPlayerOnReach = false;
+    //public GameObject victoryEffectPrefab;
+    //public bool destroyPlayerOnReach = false;
 
     public event Action<GameObject> OnPlayerReached;
 
@@ -32,6 +32,9 @@ public class GoalDoorNew : MonoBehaviour
 
     void Start()
     {
+
+        if (doorRenderer == null)
+            doorRenderer = GetComponent<Renderer>();
         Collider col = GetComponent<Collider>();
         if (col != null)
             col.isTrigger = true;
@@ -75,8 +78,8 @@ public class GoalDoorNew : MonoBehaviour
         if (audioSource != null && doorReachedSound != null)
             audioSource.PlayOneShot(doorReachedSound);
 
-        if (victoryEffectPrefab != null)
-            Instantiate(victoryEffectPrefab, transform.position, Quaternion.identity);
+        //if (victoryEffectPrefab != null)
+          //  Instantiate(victoryEffectPrefab, transform.position, Quaternion.identity);
 
         OnPlayerReached?.Invoke(player);
 
@@ -93,8 +96,8 @@ public class GoalDoorNew : MonoBehaviour
         foreach (BombSpawner b in FindObjectsOfType<BombSpawner>())
             b.StopChargeAudio();
 
-        if (destroyPlayerOnReach)
-            Destroy(player, 2f);
+        //if (destroyPlayerOnReach)
+            //Destroy(player, 2f);
     }
 
     public void UnlockWithKey()

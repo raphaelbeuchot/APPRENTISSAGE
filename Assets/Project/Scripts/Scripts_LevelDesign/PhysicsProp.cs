@@ -35,6 +35,8 @@ public class PhysicsProp : MonoBehaviour
         if (rb == null)
             rb = gameObject.AddComponent<Rigidbody>();
 
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
         rb.isKinematic = false;
         rb.linearDamping = linearDamping;
         rb.angularDamping = angularDamping;

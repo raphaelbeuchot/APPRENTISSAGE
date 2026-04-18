@@ -4,7 +4,7 @@ using UnityEngine;
 public class KeyCollectible : MonoBehaviour
 {
     [Header("References")]
-    public GoalDoorNew goalDoor;
+    [HideInInspector] public GoalDoorNew goalDoor;
 
     [Header("Feedback")]
     public AudioClip collectSound;
@@ -24,11 +24,16 @@ public class KeyCollectible : MonoBehaviour
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
 
+
+        if (goalDoor == null)
+            goalDoor = FindObjectOfType<GoalDoorNew>();
+
         if (goalDoor == null)
             Debug.LogWarning("[KeyCollectible] GoalDoor non assignee!");
     }
 
-    void Update()
+
+        void Update()
     {
         transform.Rotate(0f, rotationSpeed * Time.deltaTime, 0f);
     }
