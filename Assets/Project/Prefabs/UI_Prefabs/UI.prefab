@@ -135,15 +135,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealthUI
   playerHealth: {fileID: 0}
-  pipDiameter: 20
+  pipDiameter: 40
   outlineExtra: 4
-  overlapRatio: 0.7
-  healthPerPip: 12.5
+  overlapRatio: 1.5
+  healthPerPip: 50
   pipSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   pipColorActive: {r: 1, g: 0.44046083, b: 0, a: 1}
   bonusColorActive: {r: 1, g: 0.6401813, b: 0, a: 1}
-  pipColorEmpty: {r: 0.7877358, g: 0.21517718, b: 0, a: 1}
+  pipColorEmpty: {r: 0, g: 0, b: 0, a: 0}
   outlineColorDefault: {r: 0.4764151, g: 0.33808354, b: 0.2134879, a: 1}
+  outlineColorEmpty: {r: 0.2, g: 0.2, b: 0.2, a: 0}
   damageFlashColor: {r: 1, g: 1, b: 1, a: 1}
   damageFlashDuration: 0.15
   damageFadeDuration: 0.4
@@ -2381,13 +2382,13 @@ MonoBehaviour:
   textAnimDuration: 1
   textAnimStartScaleX: 8
   deathMessages:
-  - STOP, LOOK, LISTEN (or die)
   - DEAD MAN WALKING
-  - ONE MOVE TOO FAR !
+  - ONE MOVE TOO FAR
   - DEATH IS NOT THE END
-  - WHY SO NERVOUS ?
-  - 'WHY DID YOU MOVE ? '
+  - DEAD AGAIN
+  - SORRY, YOU MOVED
   - THE URGE TO BUDGE
+  - RED MEANS DEAD
   gameOverSound: {fileID: 8300000, guid: b0753557c4969994e86dc3f00971fd79, type: 3}
   delayBeforeRestart: 2.3
 --- !u!225 &7544618979531371940
@@ -2572,9 +2573,9 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2167081246981342598}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 290, y: 180}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 275, y: -300}
   m_SizeDelta: {x: 150, y: 20}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &2880000189980898460
@@ -3423,10 +3424,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StaminaBarFollower
   playerMovement: {fileID: 0}
-  pipDiameter: 20
+  pipDiameter: 40
   outlineExtra: 4
-  overlapRatio: 0.7
-  staminaPerPip: 12.5
+  overlapRatio: 0.5
+  staminaPerPip: 25
   pipSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   pipColorActive: {r: 0.654902, g: 0.7529412, b: 0.31764707, a: 1}
   bonusColorActive: {r: 1, g: 0.7411765, b: 0, a: 1}

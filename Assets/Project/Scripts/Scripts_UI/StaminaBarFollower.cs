@@ -126,7 +126,7 @@ public class StaminaBarFollower : MonoBehaviour
         if (playerMovement == null || pipImages.Count == 0) return;
 
         float current = playerMovement.GetCurrentStamina();
-        int activePips = Mathf.CeilToInt(Mathf.Max(0f, current) / staminaPerPip);
+        int activePips = Mathf.FloorToInt(Mathf.Max(0f, current) / staminaPerPip);
         activePips = Mathf.Clamp(activePips, 0, totalPips);
 
         if (activePips == lastActivePips) return;

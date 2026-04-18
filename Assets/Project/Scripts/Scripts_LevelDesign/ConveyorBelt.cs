@@ -5,6 +5,7 @@ public class ConveyorBelt : MonoBehaviour, IMovingPlatform
 {
     [Header("Movement")]
     public float speed = 3f;
+    public float textureTilingY = 1f;
 
     [Header("Audio")]
     public AudioClip movementSound;
@@ -12,6 +13,13 @@ public class ConveyorBelt : MonoBehaviour, IMovingPlatform
 
     private AudioSource audioSource;
     private Collider beltCollider;
+    private MaterialPropertyBlock mpb;
+    private Renderer beltRenderer;
+
+    private float uvScrollSpeed;
+    private float uvOffset = 0f;
+
+    private static readonly int ScrollOffsetProperty = Shader.PropertyToID("_ScrollOffset");
 
     private HashSet<EnemyAI_AStar> enemiesOnBelt = new HashSet<EnemyAI_AStar>();
     private HashSet<RagdollDeathEffect> corpsesOnBelt = new HashSet<RagdollDeathEffect>();
@@ -21,6 +29,20 @@ public class ConveyorBelt : MonoBehaviour, IMovingPlatform
     void Start()
     {
         beltCollider = GetComponent<Collider>();
+
+        beltRenderer = GetComponent<Renderer>();
+        MeshFilter mf = GetComponent<MeshFilter>();
+        if (beltRenderer != null && mf != null)
+        {
+            float meshLength = mf.sharedMesh.bounds.size.z;
+            float worldLength = meshLength * transform.localScale.z;
+            uvScrollSpeed = worldLength > 0f ? (speed * textureTilingY) / worldLength : speed;
+
+            mpb = new MaterialPropertyBlock();
+            beltRenderer.GetPropertyBlock(mpb);
+            mpb.SetFloat(ScrollOffsetProperty, 0f);
+            beltRenderer.SetPropertyBlock(mpb);
+        }
 
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.loop = true;
@@ -35,9 +57,9 @@ public class ConveyorBelt : MonoBehaviour, IMovingPlatform
         }
     }
 
-    void Update()
+    void FixedUpdate()
     {
-        Vector3 displacement = transform.forward * speed * Time.deltaTime;
+        Vector3 displacement = transform.forward * speed * Time.fixedDeltaTime;
 
         List<EnemyAI_AStar> enemiesToRemove = new List<EnemyAI_AStar>();
         foreach (EnemyAI_AStar enemy in enemiesOnBelt)
@@ -62,6 +84,12 @@ public class ConveyorBelt : MonoBehaviour, IMovingPlatform
         }
         foreach (PhysicsProp prop in propsToRemove)
             propsOnBelt.Remove(prop);
+
+        uvOffset += uvScrollSpeed * Time.fixedDeltaTime;
+        if (uvOffset > 1f) uvOffset -= 1f;
+
+        mpb.SetFloat(ScrollOffsetProperty, uvOffset);
+        beltRenderer.SetPropertyBlock(mpb);
     }
 
     public void RemoveCorpse(RagdollDeathEffect corpse)

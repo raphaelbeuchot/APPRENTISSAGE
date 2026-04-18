@@ -23,6 +23,8 @@ public class PlayerHealthUI : MonoBehaviour
     [SerializeField] private Color pipColorEmpty = new Color(0.2f, 0.2f, 0.2f);
 
     [SerializeField] private Color outlineColorDefault = Color.black;
+    [SerializeField] private Color outlineColorEmpty = new Color(0.2f, 0.2f, 0.2f, 0f);
+
     [SerializeField] private Color damageFlashColor = Color.red;
     [SerializeField] private float damageFlashDuration = 0.15f;
     [SerializeField] private float damageFadeDuration = 0.4f;
@@ -173,21 +175,19 @@ public class PlayerHealthUI : MonoBehaviour
         Color pipStart = pip.color;
         Color pipEnd = isBonus[index] ? new Color(pipStart.r, pipStart.g, pipStart.b, 0f) : pipColorEmpty;
         Color outlineStart = outline.color;
-        Color outlineEnd = new Color(outlineStart.r, outlineStart.g, outlineStart.b, 0f);
+        Color outlineEnd = isBonus[index] ? new Color(outlineStart.r, outlineStart.g, outlineStart.b, 0f) : outlineColorEmpty;
 
         while (elapsed < damageFadeDuration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / damageFadeDuration;
             pip.color = Color.Lerp(pipStart, pipEnd, t);
-            if (isBonus[index])
-                outline.color = Color.Lerp(outlineStart, outlineEnd, t);
+            outline.color = Color.Lerp(outlineStart, outlineEnd, t);
             yield return null;
         }
 
         pip.color = pipEnd;
-        if (isBonus[index])
-            outline.color = outlineEnd;
+        outline.color = outlineEnd;
         fadeCoroutines[index] = null;
     }
 

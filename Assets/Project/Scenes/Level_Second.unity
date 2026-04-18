@@ -7102,6 +7102,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
+  gameManager: {fileID: 0}
 --- !u!65 &373248140
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10972,6 +10973,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
+  gameManager: {fileID: 0}
 --- !u!4 &602665619 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -28526,6 +28528,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
+  gameManager: {fileID: 0}
 --- !u!65 &1547379115
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -31971,6 +31974,7 @@ GameObject:
   - component: {fileID: 1824342109}
   - component: {fileID: 1824342108}
   - component: {fileID: 1824342107}
+  - component: {fileID: 1824342110}
   m_Layer: 0
   m_Name: Press A to Lundge
   m_TagString: Untagged
@@ -32139,6 +32143,21 @@ RectTransform:
   m_AnchoredPosition: {x: 3.8999999, y: 0.05}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1824342110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1824342106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 283e7bc124bde6d41bbddba524086ccd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TextFadeByDistance
+  distance: 5
+  fadeDuration: 1
+  startVisible: 0
 --- !u!1001 &1825281565
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -38048,10 +38067,6 @@ PrefabInstance:
       propertyPath: victorySound
       value: 
       objectReference: {fileID: 8300000, guid: 66f5647459bc04147be64765d5fd4af9, type: 3}
-    - target: {fileID: 3488911472616675715, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: playerMovement
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 3870675793715944844, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_Name
       value: UI
@@ -38083,18 +38098,6 @@ PrefabInstance:
     - target: {fileID: 5648480121366310667, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_Color.r
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: pipDiameter
-      value: 40
-      objectReference: {fileID: 0}
-    - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: healthPerPip
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-      propertyPath: overlapRatio
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: playerHealth
