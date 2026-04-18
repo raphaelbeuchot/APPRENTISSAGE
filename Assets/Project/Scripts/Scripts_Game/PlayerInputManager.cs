@@ -8,7 +8,6 @@ public class PlayerInputManager : MonoBehaviour
     [Header("Input Action Asset")]
     [SerializeField] private PlayerInputActions inputActions;
 
-    // Properties publiques pour que les autres scripts puissent lire les inputs
     public Vector2 MoveInput { get; private set; }
     public Vector2 LookInput { get; private set; }
     public bool SprintPressed { get; private set; }
@@ -18,7 +17,6 @@ public class PlayerInputManager : MonoBehaviour
     public bool LockOnHeld { get; private set; }
     public bool ThrowBottlePressed { get; private set; }
     public bool InteractPressed { get; private set; }
-
     public bool InteractHeld { get; private set; }
     public bool ReloadPressed { get; private set; }
     public bool MashEscapePressed { get; private set; }
@@ -29,6 +27,9 @@ public class PlayerInputManager : MonoBehaviour
     public bool PausePressed { get; private set; }
     public bool BroomLowActive { get; private set; }
 
+    public bool HasBroom { get; private set; } = true;
+    public bool HasSpray { get; private set; } = true;
+
     [Header("Broom Hold Threshold")]
     [SerializeField] private float broomHoldThreshold = 0.7f;
 
@@ -36,10 +37,14 @@ public class PlayerInputManager : MonoBehaviour
     private bool broomIsHeld;
     private bool wasInBroomLow = false;
 
+    public void SetLoadout(bool broom, bool spray)
+    {
+        HasBroom = broom;
+        HasSpray = spray;
+    }
 
     private void Awake()
     {
-        // Singleton
         if (Instance == null)
         {
             Instance = this;
@@ -50,30 +55,30 @@ public class PlayerInputManager : MonoBehaviour
             return;
         }
 
-        // Initialiser l'Input Action Asset
         inputActions = new PlayerInputActions();
     }
+
     private void Update()
     {
+        if (!HasBroom) return;
+
         if (broomIsHeld && !BroomLowActive && Time.time - broomPressStartTime >= broomHoldThreshold)
         {
             BroomLowActive = true;
             Debug.Log("BROOM LOW ACTIF");
         }
 
-        // Sortie immediate si bouton relache
         if (BroomLowActive && !inputActions.Player.BroomAttack.IsPressed())
         {
             BroomLowActive = false;
             wasInBroomLow = true;
         }
     }
+
     private void OnEnable()
     {
-        // Activer l'action map Player
         inputActions.Player.Enable();
 
-        // S'abonner aux actions
         inputActions.Player.Movement.performed += OnMovement;
         inputActions.Player.Movement.canceled += OnMovement;
 
@@ -88,12 +93,14 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.BroomAttack.started += ctx =>
         {
+            if (!HasBroom) return;
             broomIsHeld = true;
             broomPressStartTime = Time.time;
         };
 
         inputActions.Player.BroomAttack.canceled += ctx =>
         {
+            if (!HasBroom) return;
             broomIsHeld = false;
             if (BroomLowActive || wasInBroomLow)
             {
@@ -134,14 +141,12 @@ public class PlayerInputManager : MonoBehaviour
         };
         inputActions.Player.SentinelCamera.canceled += ctx => SentinelCameraPressed = false;
 
-        // NOUVEAU : Brancher Pause et Cancel
         inputActions.Player.Pause.performed += OnPause;
         inputActions.Player.Cancel.performed += OnCancel;
     }
 
     private void OnDisable()
     {
-        // Se desabonner
         inputActions.Player.Movement.performed -= OnMovement;
         inputActions.Player.Movement.canceled -= OnMovement;
 
@@ -158,11 +163,9 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.ToggleCameraView.performed -= OnToggleCameraView;
 
-        // NOUVEAU : Debrancher Pause et Cancel
         inputActions.Player.Pause.performed -= OnPause;
         inputActions.Player.Cancel.performed -= OnCancel;
 
-        // Desactiver l'action map
         inputActions.Player.Disable();
     }
 
@@ -171,10 +174,12 @@ public class PlayerInputManager : MonoBehaviour
         if (context.performed)
             CancelPressed = true;
     }
+
     private void OnToggleCameraView(InputAction.CallbackContext context)
     {
         ToggleCameraViewPressed = true;
     }
+
     private void OnMovement(InputAction.CallbackContext context)
     {
         MoveInput = context.ReadValue<Vector2>();
@@ -187,11 +192,14 @@ public class PlayerInputManager : MonoBehaviour
 
     private void OnSprayAttack(InputAction.CallbackContext context)
     {
+        if (!HasSpray) return;
+
         if (context.performed)
             SprayAttackPressed = true;
 
         SprayAttackHeld = context.ReadValueAsButton();
     }
+
     private void OnPause(InputAction.CallbackContext context)
     {
         if (context.performed)
@@ -205,6 +213,7 @@ public class PlayerInputManager : MonoBehaviour
 
         InteractHeld = context.ReadValueAsButton();
     }
+
     public void ForceBroomLowOff()
     {
         BroomLowActive = false;
@@ -213,9 +222,7 @@ public class PlayerInputManager : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Reset des inputs "pressed" pour frame suivante
         SprayAttackPressed = false;
-        // NE PAS reset SprayAttackHeld ici
         BroomAttackPressed = false;
         ThrowBottlePressed = false;
         InteractPressed = false;
@@ -227,7 +234,5 @@ public class PlayerInputManager : MonoBehaviour
         CancelPressed = false;
         PausePressed = false;
         SprintPressed = false;
-
-
     }
 }

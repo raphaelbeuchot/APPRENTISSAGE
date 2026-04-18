@@ -6,6 +6,7 @@ public class LevelManager : MonoBehaviour
 {
     [Header("References")]
     public GoalDoor goalDoor;
+    public GoalDoorNew goalDoorNew;
     public GameManager gameManager;
     public PlayerPhysicsMovement player;
     public PlayerHealth playerHealth;
@@ -54,6 +55,9 @@ public class LevelManager : MonoBehaviour
 
         if (goalDoor == null)
             goalDoor = FindObjectOfType<GoalDoor>();
+
+        if (goalDoorNew != null)
+            goalDoorNew.OnPlayerReached += OnPlayerReachedGoal;
 
         if (gameManager == null)
             gameManager = FindObjectOfType<GameManager>();
@@ -304,6 +308,9 @@ public class LevelManager : MonoBehaviour
     {
         if (goalDoor != null)
             goalDoor.OnPlayerReached -= OnPlayerReachedGoal;
+
+        if (goalDoorNew != null)
+            goalDoorNew.OnPlayerReached -= OnPlayerReachedGoal;
 
         if (playerHealth != null)
             playerHealth.OnDeath -= OnPlayerDeath;

@@ -33,6 +33,12 @@ public class SprayAmmoUI : MonoBehaviour
 
     void Start()
     {
+        if (PlayerInputManager.Instance != null && !PlayerInputManager.Instance.HasSpray)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
         if (meleeSystem == null)
             meleeSystem = FindObjectOfType<MeleeAttackSystem>();
 

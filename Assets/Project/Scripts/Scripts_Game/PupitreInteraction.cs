@@ -231,7 +231,7 @@ public class PupitreInteraction : MonoBehaviour
         Debug.Log("[Pupitre] === LANCEMENT DU JEU ===");
 
         if (gameManager != null)
-            gameManager.StartGameCycle();
+          gameManager.StartGameCycle();
        
 
         EnemyIconsUI enemyIconsUI = FindObjectOfType<EnemyIconsUI>();
