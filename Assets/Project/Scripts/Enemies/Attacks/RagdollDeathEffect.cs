@@ -39,11 +39,14 @@ public class RagdollDeathEffect : MonoBehaviour, IDeathEffect
     {
         EnemyAI_AStar enemyAI = GetComponent<EnemyAI_AStar>();
         if (enemyAI != null && enemyAI.isOnRotatingPlatform && enemyAI.currentRotatingPlatform != null)
-            enemyAI.currentRotatingPlatform.RemoveCorpse(GetComponent<RagdollDeathEffect>());
-
+        {
+            RotatingPlatform rotPlat = enemyAI.currentRotatingPlatform as RotatingPlatform;
+            if (rotPlat != null) rotPlat.RemoveCorpse(GetComponent<RagdollDeathEffect>());
+            ConveyorBelt belt = enemyAI.currentRotatingPlatform as ConveyorBelt;
+            if (belt != null) belt.RemoveCorpse(GetComponent<RagdollDeathEffect>());
+        }
         if (animator != null)
             animator.enabled = false;
-
         if (rootRb != null)
         {
             rootRb.isKinematic = true;

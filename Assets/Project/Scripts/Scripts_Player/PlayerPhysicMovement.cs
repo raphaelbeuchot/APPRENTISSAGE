@@ -614,13 +614,30 @@ public class PlayerPhysicsMovement : MonoBehaviour
             }
             else
             {
-                // ROAMING OBSTACLE : toujours teleportation (idle OU en mouvement)
-                Vector3 platformCurrentPos = currentPlatform.GetTransform().position;
-                Vector3 platformDelta = platformCurrentPos - lastPlatformPosition;
-                platformDelta.y = 0f;
+                ConveyorBelt belt = currentPlatform.GetTransform().GetComponent<ConveyorBelt>();
+                if (belt != null)
+                {
+                    if (moveInput.magnitude < 0.1f)
+                    {
+                        transform.position += belt.GetPlatformVelocity() * Time.fixedDeltaTime;
+                    }
+                    else
+                    {
+                        Vector3 beltVelocity = belt.GetPlatformVelocity();
+                        finalVelocity.x += beltVelocity.x;
+                        finalVelocity.z += beltVelocity.z;
+                    }
+                }
+                else
+                {
+                    // ROAMING OBSTACLE : toujours teleportation (idle OU en mouvement)
+                    Vector3 platformCurrentPos = currentPlatform.GetTransform().position;
+                    Vector3 platformDelta = platformCurrentPos - lastPlatformPosition;
+                    platformDelta.y = 0f;
 
-                transform.position += platformDelta;
-                lastPlatformPosition = platformCurrentPos;
+                    transform.position += platformDelta;
+                    lastPlatformPosition = platformCurrentPos;
+                }
             }
         }
 

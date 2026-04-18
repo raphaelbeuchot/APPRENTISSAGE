@@ -89,8 +89,7 @@ public class EnemyAI_AStar : MonoBehaviour
     private bool isRotatingToImpact = false;
 
     private bool isBlinder = false;
-    public RotatingPlatform currentRotatingPlatform;
-
+    public IMovingPlatform currentRotatingPlatform;
 
     public enum State { Idle, Wandering, Chasing, Attacking, StunBySpray, OnRotatingPlatform, RotatingToImpact, OnIslandPlatform, Dead }
     public State currentState = State.Idle;
@@ -896,7 +895,7 @@ public class EnemyAI_AStar : MonoBehaviour
         }
     }
 
-    public void EnableRotatingPlatformMode(RotatingPlatform platform)
+    public void EnableRotatingPlatformMode(IMovingPlatform platform)
     {
         if (isDead) return;
         isOnRotatingPlatform = true;
