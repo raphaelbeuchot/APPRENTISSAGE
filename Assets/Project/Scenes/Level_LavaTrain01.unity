@@ -9079,7 +9079,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7285879791149396182, guid: d9c8ddd2c20c71247a4436ea065cf7ac, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 13.37356
+      value: 12.123559
       objectReference: {fileID: 0}
     - target: {fileID: 7285879791149396182, guid: d9c8ddd2c20c71247a4436ea065cf7ac, type: 3}
       propertyPath: m_LocalPosition.y
@@ -9087,7 +9087,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7285879791149396182, guid: d9c8ddd2c20c71247a4436ea065cf7ac, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 18.38583
+      value: 15.53583
       objectReference: {fileID: 0}
     - target: {fileID: 7285879791149396182, guid: d9c8ddd2c20c71247a4436ea065cf7ac, type: 3}
       propertyPath: m_LocalRotation.w
@@ -24319,6 +24319,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EpervierManager
   sentinelCycleManager: {fileID: 0}
+  ballPhysicsMaterial: {fileID: 0}
   spawnPoint: {fileID: 576217686}
   arrivalPoint: {fileID: 671211048}
   groundY: 0
@@ -47998,15 +47999,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6206311881450325017, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.0931818
+      value: 2.0922568
       objectReference: {fileID: 0}
     - target: {fileID: 6206311881450325017, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.22300905
+      value: -0.41131425
       objectReference: {fileID: 0}
     - target: {fileID: 6206311881450325017, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.01007843
+      value: -0.09008026
       objectReference: {fileID: 0}
     - target: {fileID: 6206311881450325017, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
       propertyPath: m_LocalRotation.w
@@ -63828,8 +63829,8 @@ Transform:
   m_GameObject: {fileID: 871157096}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.29, y: 1.4, z: 15.06}
-  m_LocalScale: {x: 0.85, y: 1.9, z: 0.55176}
+  m_LocalPosition: {x: 8.29, y: 1, z: 14.86}
+  m_LocalScale: {x: 0.7, y: 1.5, z: 0.55176}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1890326246}
@@ -74438,7 +74439,6 @@ MonoBehaviour:
   isForcedChase: 0
   isDead: 0
   isDetectedBySentinel: 0
-  currentRotatingPlatform: {fileID: 0}
   currentState: 0
 --- !u!114 &1118344335
 MonoBehaviour:
@@ -85572,7 +85572,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1344271812}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.13176927, y: 0.8682301, z: -0.33767825, w: -0.33880198}
+  m_LocalRotation: {x: -0.13162683, y: 0.86829257, z: -0.34447834, w: -0.33177873}
   m_LocalPosition: {x: 4.5, y: 5, z: 16.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -108740,7 +108740,6 @@ MonoBehaviour:
   isForcedChase: 0
   isDead: 0
   isDetectedBySentinel: 0
-  currentRotatingPlatform: {fileID: 0}
   currentState: 0
 --- !u!114 &1785196388
 MonoBehaviour:
@@ -126171,6 +126170,42 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2960485458859247056, guid: 3a0358a463ed2284a8c0e4e9b9b0da09, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2960485458859247056, guid: 3a0358a463ed2284a8c0e4e9b9b0da09, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2960485458859247056, guid: 3a0358a463ed2284a8c0e4e9b9b0da09, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 6.108156
+      objectReference: {fileID: 0}
+    - target: {fileID: 2960485458859247056, guid: 3a0358a463ed2284a8c0e4e9b9b0da09, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.4625378
+      objectReference: {fileID: 0}
+    - target: {fileID: 2960485458859247056, guid: 3a0358a463ed2284a8c0e4e9b9b0da09, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.953717
+      objectReference: {fileID: 0}
+    - target: {fileID: 2960485458859247056, guid: 3a0358a463ed2284a8c0e4e9b9b0da09, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2960485458859247056, guid: 3a0358a463ed2284a8c0e4e9b9b0da09, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.30070576
+      objectReference: {fileID: 0}
+    - target: {fileID: 2960485458859247056, guid: 3a0358a463ed2284a8c0e4e9b9b0da09, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2960485458859247056, guid: 3a0358a463ed2284a8c0e4e9b9b0da09, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 35
+      objectReference: {fileID: 0}
     - target: {fileID: 4738703397774273872, guid: 3a0358a463ed2284a8c0e4e9b9b0da09, type: 3}
       propertyPath: m_Name
       value: DecorLava
