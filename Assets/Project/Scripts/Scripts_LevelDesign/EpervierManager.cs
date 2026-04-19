@@ -6,6 +6,7 @@ public class EpervierManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private SentinelCycleManager sentinelCycleManager;
+    [SerializeField] private PhysicsMaterial ballPhysicsMaterial;
 
     [Header("Terrain")]
     [SerializeField] private Transform spawnPoint;
@@ -68,6 +69,7 @@ public class EpervierManager : MonoBehaviour
         public float[] rotationSpeeds;
         public float[] rotationSpeedsY;
         public Coroutine activeCoroutine;
+        public Rigidbody[] rigidbodies; // AJOUT
     }
 
     private const int POOL_SIZE = 1;
@@ -261,6 +263,7 @@ public class EpervierManager : MonoBehaviour
             for (int j = 0; j < obstacleCount; j++)
                 line.rotationSpeeds[j] = Random.Range(rotationSpeedMin, rotationSpeedMax);
             line.rotationSpeedsY = new float[obstacleCount];
+            line.rigidbodies = new Rigidbody[obstacleCount];
             for (int j = 0; j < obstacleCount; j++)
                 line.rotationSpeedsY[j] = Random.Range(-1f, 1f);
             line.currentY = spawnPoint.position.y;
@@ -275,10 +278,9 @@ public class EpervierManager : MonoBehaviour
                 obs.name = "Obs_" + i + "_" + j;
                 obs.transform.parent = root.transform;
                 obs.transform.localScale = new Vector3(slotWidth, slotWidth, slotWidth);
-
-                Rigidbody rb = obs.AddComponent<Rigidbody>();
-                rb.isKinematic = true;
-
+                SphereCollider col = obs.GetComponent<SphereCollider>();
+                if (col != null && ballPhysicsMaterial != null)
+                    col.material = ballPhysicsMaterial;
                 line.currentX[j] = slotXPositions[j];
                 line.currentZ[j] = spawnPoint.position.z;
                 obs.transform.position = new Vector3(slotXPositions[j], spawnPoint.position.y, spawnPoint.position.z);
@@ -508,24 +510,31 @@ public class EpervierManager : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
 
-        float radius = slotWidth / 2f;
+        Rigidbody rb = line.obstacles[i].AddComponent<Rigidbody>();
+        rb.mass = 200f;
+        rb.linearDamping = 0f;
+        rb.angularDamping = 0.05f;
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        line.rigidbodies[i] = rb;
 
-        while (Mathf.Abs(line.currentZ[i] - targetZ) > 0.02f)
+        Vector3 dir = (arrivalPoint.position - spawnPoint.position).normalized;
+
+        while (line.obstacles[i] != null)
         {
-            float previousZ = line.currentZ[i];
-            line.currentZ[i] = Mathf.MoveTowards(line.currentZ[i], targetZ, traverseSpeed * Time.deltaTime);
-            line.obstacles[i].transform.position = new Vector3(line.currentX[i], line.currentY, line.currentZ[i]);
-
-            float distanceMoved = line.currentZ[i] - previousZ;
-            float angle = (distanceMoved / radius) * Mathf.Rad2Deg * line.rotationSpeeds[i];
-            line.obstacles[i].transform.Rotate(angle, 0f, 0f, Space.World);
-            line.obstacles[i].transform.Rotate(0f, line.rotationSpeedsY[i] * Time.deltaTime * 300f, 0f, Space.Self);
-
-            yield return null;
+            Vector3 toArrival = arrivalPoint.position - line.obstacles[i].transform.position;
+            if (Vector3.Dot(toArrival, dir) <= 0f) break;
+            rb.linearVelocity = dir * traverseSpeed;
+            yield return new WaitForFixedUpdate();
         }
 
-        line.currentZ[i] = targetZ;
-        line.obstacles[i].transform.position = new Vector3(line.currentX[i], line.currentY, targetZ);
+        if (line.obstacles[i] != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.isKinematic = true;
+            line.currentZ[i] = targetZ;
+            line.obstacles[i].transform.position = new Vector3(line.currentX[i], line.currentY, targetZ);
+        }
+
         onDone();
     }
 
@@ -561,7 +570,14 @@ public class EpervierManager : MonoBehaviour
         }
 
         for (int i = 0; i < line.obstacles.Length; i++)
+        {
             line.currentZ[i] = targetZ;
+            if (line.rigidbodies[i] != null)
+            {
+                Destroy(line.rigidbodies[i]);
+                line.rigidbodies[i] = null;
+            }
+        }
 
         ApplyLineTransform(idx);
 

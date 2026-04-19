@@ -25,6 +25,10 @@ public class SentinelCycleManager : MonoBehaviour
     [SerializeField] private SentinelCentralLight sentinelCentralLight;
     [SerializeField] private Light playerSpotLight;
     [SerializeField] private EpervierManager epervierManager;
+
+    [SerializeField] private EpervierManagerNEW epervierManagerNEW;
+
+
     [SerializeField] private EpervierManagerLoop epervierManagerLoop;
     [SerializeField] private CanyonTileManager canyonTileManager;
     [Header("Pressure Gauge Target")]
@@ -307,6 +311,8 @@ public class SentinelCycleManager : MonoBehaviour
                 epervierManager.OnGreenLight();
             if (epervierManagerLoop != null)
                 epervierManagerLoop.OnGreenLight();
+            if (epervierManagerNEW != null)
+                epervierManagerNEW.OnGreenLight();
 
             targetDuration = GetDynamicGreenLightDuration();
             Debug.Log(string.Format("[CYCLE] GreenLight - Duree: {0:F1}s", targetDuration));
@@ -404,6 +410,8 @@ public class SentinelCycleManager : MonoBehaviour
                 gameManager.ResetAllTracking();
             if (epervierManager != null)
                 epervierManager.OnRedLight();
+            if (epervierManagerNEW != null)
+                epervierManagerNEW.OnRedLight();
             if (epervierManagerLoop != null)
                 epervierManagerLoop.OnRedLight();
 
