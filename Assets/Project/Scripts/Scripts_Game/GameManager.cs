@@ -993,6 +993,27 @@ public class GameManager : MonoBehaviour
         td.lastCheckTime = Time.time;
     }
 
+    // Dans GameManager.cs - ajouter cette methode publique
+
+    public bool IsPlayerMoving()
+    {
+        if (player == null || sentinelSettings == null) return false;
+
+        float movementThreshold = sentinelSettings.movementThreshold *
+            (ModifierApplier.Instance != null ? ModifierApplier.Instance.sentinelMovementThresholdMultiplier : 1f);
+
+        bool isMovingByVelocity = player.GetComponent<Rigidbody>().linearVelocity.magnitude > movementThreshold;
+
+        bool isAttacking = player.GetComponent<MeleeAttackSystem>()?.IsAttacking() ?? false;
+        bool isBroomAttacking = player.GetComponent<BroomAttackSystem>()?.IsAttacking() ?? false;
+        bool isClimbing = player.GetComponent<TestClimbDetection>()?.IsClimbing() ?? false;
+        bool isClimbingOutOfPit = player.GetComponent<PlayerPitInteractable>()?.IsClimbingOut() ?? false;
+        GrabAttack grab = player.GetComponent<GrabAttack>();
+        bool isInBourrade = grab != null && grab.isInBourradeDuration;
+
+        return isMovingByVelocity || isAttacking || isBroomAttacking || isClimbing || isClimbingOutOfPit || isInBourrade;
+    }
+
     // Getters pour VictoryUI
     public int GetTotalEnemies() => totalEnemies;
     public int GetEnemiesKilled() => enemiesKilled;
