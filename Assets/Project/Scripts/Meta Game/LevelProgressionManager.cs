@@ -140,6 +140,13 @@ public class LevelProgressionManager : MonoBehaviour
         return levels;
     }
 
+    public int GetNextLevelSceneIndex(int currentSceneIndex)
+    {
+        int idx = GetLevelIndex(currentSceneIndex);
+        if (idx == -1 || idx + 1 >= levels.Count) return -1;
+        return levels[idx + 1].sceneIndex;
+    }
+
     private int GetLevelIndex(int sceneIndex)
     {
         for (int i = 0; i < levels.Count; i++)

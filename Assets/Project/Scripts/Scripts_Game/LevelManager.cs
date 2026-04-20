@@ -219,7 +219,7 @@ public class LevelManager : MonoBehaviour
         {
             if (LevelProgressionManager.Instance != null)
                 LevelProgressionManager.Instance.SetActiveModifier(ModifierType.None);
-            LoadLevelSelect();
+            LoadNextLevel();
         }
     }
 
@@ -300,6 +300,22 @@ public class LevelManager : MonoBehaviour
             player.enabled = false;
 
         Invoke(nameof(LoadLevelSelect), 0.5f);
+    }
+
+    public void LoadNextLevel()
+    {
+        Time.timeScale = 1f;
+        int nextScene = -1;
+        if (LevelProgressionManager.Instance != null)
+            nextScene = LevelProgressionManager.Instance.GetNextLevelSceneIndex(SceneManager.GetActiveScene().buildIndex);
+
+        if (nextScene == -1)
+        {
+            LoadLevelSelect();
+            return;
+        }
+        LoadingScreenManager.TargetSceneIndex = nextScene;
+        SceneManager.LoadScene(1);
     }
 
     // ============================================

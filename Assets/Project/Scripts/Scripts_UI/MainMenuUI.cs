@@ -129,13 +129,16 @@ public class MainMenuUI : MonoBehaviour
         if (LevelProgressionManager.Instance != null)
             LevelProgressionManager.Instance.ResetProgression();
 
-        LoadingScreenManager.TargetSceneIndex = 2;
+        LoadingScreenManager.TargetSceneIndex = LevelProgressionManager.Instance.levels[0].sceneIndex;
         SceneManager.LoadScene(1);
     }
 
     void Continue()
     {
-        LoadingScreenManager.TargetSceneIndex = 2;
+        int idx = LevelProgressionManager.Instance.lastUnlockedLevelIndex;
+        if (idx < 0 || idx >= LevelProgressionManager.Instance.levels.Count)
+            idx = 0;
+        LoadingScreenManager.TargetSceneIndex = LevelProgressionManager.Instance.levels[idx].sceneIndex;
         SceneManager.LoadScene(1);
     }
 
