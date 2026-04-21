@@ -206,7 +206,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
                 PlayerInputManager.Instance.ForceBroomLowOff();
                 ExitCrouch();
             }
-            else
+            else if (pitInteractable == null || !pitInteractable.IsInAnyWater())
             {
                 PlayerInputManager.Instance.ForceBroomLowOff();
                 EnterCrouch();

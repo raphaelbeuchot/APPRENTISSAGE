@@ -18,6 +18,8 @@ public class EnemyHealthBarManager : MonoBehaviour
     private Transform playerTransform;
     private Dictionary<Transform, EnemyHealthBarUI> healthBars = new Dictionary<Transform, EnemyHealthBarUI>();
     private Camera mainCamera;
+    private float displayRadius;
+
 
     private void Awake()
     {
@@ -43,6 +45,8 @@ public class EnemyHealthBarManager : MonoBehaviour
         if (player != null)
         {
             playerTransform = player.transform;
+            PlayerStats playerStats = player != null ? player.stats : null;
+            displayRadius = playerStats != null ? playerStats.lockOnRange : maxDisplayDistance;
         }
     }
 
@@ -144,7 +148,7 @@ public class EnemyHealthBarManager : MonoBehaviour
             if (enemyHealth != null && enemyHealth.recentlyHitBySentinel)
                 shouldIgnoreDistance = true;
 
-            float displayRadius = stats != null ? stats.detectionRadius : maxDisplayDistance;
+            //float displayRadius = stats != null ? stats.detectionRadius : maxDisplayDistance;
 
             if (shouldIgnoreDistance || distance <= displayRadius)
                 bar.Show();
