@@ -959,6 +959,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     public void TriggerSweep()
     {
+        if (isSweeping || isSweepImmune) return;
         isSweeping = true;
         isDashing = false;
         canMove = false;
