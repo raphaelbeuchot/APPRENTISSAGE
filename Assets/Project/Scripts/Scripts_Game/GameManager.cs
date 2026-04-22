@@ -807,10 +807,10 @@ public class GameManager : MonoBehaviour
         
         StartCoroutine(PlayerStunBySentinel());
 
-        if (isHeadshot)
-        {
-            humanHealth.TakeSentinelShot(sentinelPos);
-        }
+        //if (isHeadshot)
+        //{
+           // humanHealth.TakeSentinelShot(sentinelPos);
+       // }
         humanHealth.TakeSentinelShot(sentinelPos);
     }
 
