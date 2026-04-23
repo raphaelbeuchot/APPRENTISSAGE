@@ -17,8 +17,6 @@ public class PitFill : MonoBehaviour
     public MeshFilter fillMeshFilter;
     public MeshRenderer fillRenderer;
 
-   
-
     private void Awake()
     {
         if (pitZone == null)
@@ -68,7 +66,6 @@ public class PitFill : MonoBehaviour
 
         Debug.Log("PitFill: Generated fill content - " + fillType.contentName + " at " + GetFillHeightMeters().ToString("F2") + "m");
 
-
         PitFillDamageController damageController = GetComponent<PitFillDamageController>();
         if (damageController == null)
         {
@@ -86,6 +83,7 @@ public class PitFill : MonoBehaviour
             }
         }
     }
+
     private void SetupFillMeshObjects()
     {
         if (fillMeshFilter == null)
@@ -123,7 +121,6 @@ public class PitFill : MonoBehaviour
         Dictionary<Vector2Int, float> ownedCells = pitZone.gridData.GetCellsForZone(pitZone.zoneID);
         if (ownedCells.Count == 0) return null;
 
-        // Pour Empty : pas de mesh visuel
         if (fillType.category == PitContentType.ContentCategory.Empty)
         {
             Debug.Log("PitFill: Empty pit - no visual mesh generated");
@@ -138,12 +135,10 @@ public class PitFill : MonoBehaviour
         float fillHeightAbsolute = Mathf.Abs(fillHeight);
         float fillSurfaceY = pitZone.GetMaxDepth() + fillHeightAbsolute;
 
-        // Crée un quad (surface plane) par cellule
         foreach (var kvp in ownedCells)
         {
             Vector2Int cellPos = kvp.Key;
             Vector3 cellWorldPos = pitZone.gridData.CellToWorld(cellPos);
-
             AddSurfaceQuad(vertices, triangles, uvs, cellWorldPos, cellSize, fillSurfaceY);
         }
 
@@ -160,103 +155,26 @@ public class PitFill : MonoBehaviour
         return mesh;
     }
 
-    
-
-    private void AddBorderQuad(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
-        Vector3 cellWorldPos, float cellSize, float surfaceY, Vector2Int direction, float width)
-    {
-        int startIndex = vertices.Count;
-
-        Vector3 v0, v1, v2, v3;
-
-        if (direction == new Vector2Int(0, 1)) // Nord
-        {
-            v0 = cellWorldPos + new Vector3(0, surfaceY, cellSize);
-            v1 = cellWorldPos + new Vector3(cellSize, surfaceY, cellSize);
-            v2 = cellWorldPos + new Vector3(cellSize, surfaceY, cellSize - width);
-            v3 = cellWorldPos + new Vector3(0, surfaceY, cellSize - width);
-        }
-        else if (direction == new Vector2Int(0, -1)) // Sud
-        {
-            v0 = cellWorldPos + new Vector3(0, surfaceY, width);
-            v1 = cellWorldPos + new Vector3(cellSize, surfaceY, width);
-            v2 = cellWorldPos + new Vector3(cellSize, surfaceY, 0);
-            v3 = cellWorldPos + new Vector3(0, surfaceY, 0);
-        }
-        else if (direction == new Vector2Int(1, 0)) // Est
-        {
-            v0 = cellWorldPos + new Vector3(cellSize, surfaceY, 0);
-            v1 = cellWorldPos + new Vector3(cellSize, surfaceY, cellSize);
-            v2 = cellWorldPos + new Vector3(cellSize - width, surfaceY, cellSize);
-            v3 = cellWorldPos + new Vector3(cellSize - width, surfaceY, 0);
-        }
-        else // Ouest
-        {
-            v0 = cellWorldPos + new Vector3(0, surfaceY, 0);
-            v1 = cellWorldPos + new Vector3(0, surfaceY, cellSize);
-            v2 = cellWorldPos + new Vector3(width, surfaceY, cellSize);
-            v3 = cellWorldPos + new Vector3(width, surfaceY, 0);
-        }
-
-        vertices.Add(v0);
-        vertices.Add(v1);
-        vertices.Add(v2);
-        vertices.Add(v3);
-
-        // U=0 cote mur, U=1 cote interieur
-        uvs.Add(new Vector2(0, 0));
-        uvs.Add(new Vector2(0, 1));
-        uvs.Add(new Vector2(1, 1));
-        uvs.Add(new Vector2(1, 0));
-
-        triangles.Add(startIndex);
-        triangles.Add(startIndex + 2);
-        triangles.Add(startIndex + 1);
-
-        triangles.Add(startIndex);
-        triangles.Add(startIndex + 3);
-        triangles.Add(startIndex + 2);
-    }
-
-    private void SetupBorderMeshObjects()
-    {
-        // Cherche ou cree un child GameObject dedie
-        Transform borderChild = transform.Find("BorderMesh");
-        if (borderChild == null)
-        {
-            borderChild = new GameObject("BorderMesh").transform;
-            borderChild.SetParent(transform);
-            borderChild.localPosition = Vector3.zero;
-            borderChild.localRotation = Quaternion.identity;
-            borderChild.localScale = Vector3.one;
-        }
-
-       
-    }
     private void AddSurfaceQuad(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,
                             Vector3 cellWorldPos, float cellSize, float surfaceY)
     {
         int startIndex = vertices.Count;
 
-        // 4 coins du quad (surface du liquide uniquement)
         Vector3 v0 = cellWorldPos + new Vector3(0, surfaceY, 0);
         Vector3 v1 = cellWorldPos + new Vector3(cellSize, surfaceY, 0);
         Vector3 v2 = cellWorldPos + new Vector3(cellSize, surfaceY, cellSize);
         Vector3 v3 = cellWorldPos + new Vector3(0, surfaceY, cellSize);
 
-        // Ajouter les vertices
         vertices.Add(v0);
         vertices.Add(v1);
         vertices.Add(v2);
         vertices.Add(v3);
 
-        // UVs
         uvs.Add(new Vector2(0, 0));
         uvs.Add(new Vector2(1, 0));
         uvs.Add(new Vector2(1, 1));
         uvs.Add(new Vector2(0, 1));
 
-        // Triangles INVERSÉS (normales vers le haut)
         triangles.Add(startIndex);
         triangles.Add(startIndex + 2);
         triangles.Add(startIndex + 1);
@@ -270,7 +188,6 @@ public class PitFill : MonoBehaviour
     {
         if (pitZone == null || pitZone.gridData == null) return;
 
-        // Supprime les anciens colliders
         BoxCollider[] oldColliders = GetComponents<BoxCollider>();
         foreach (BoxCollider col in oldColliders)
         {
@@ -283,22 +200,18 @@ public class PitFill : MonoBehaviour
         float triggerY;
         float triggerHeight = 0.1f;
 
-        // Déterminer la position Y du trigger selon le type
         if (fillType.category == PitContentType.ContentCategory.Empty)
         {
-            // Empty : trigger proche du sol (-0.3m) pour détecter l'entrée rapidement
             triggerY = -0.3f;
             Debug.Log(string.Format("PitFill: Empty pit - trigger at Y={0:F2}m", triggerY));
         }
         else
         {
-            // Liquides : trigger aligné avec la surface visuelle
             float fillHeightAbsolute = Mathf.Abs(maxDepth * fillHeightPercent);
             triggerY = maxDepth + fillHeightAbsolute;
             Debug.Log($"PitFill: {fillType.contentName} - trigger at Y={triggerY:F2}m (surface level)");
         }
 
-        // Crée un BoxCollider trigger fin par cellule
         foreach (var kvp in ownedCells)
         {
             Vector2Int cellPos = kvp.Key;
@@ -322,7 +235,6 @@ public class PitFill : MonoBehaviour
             fillMeshFilter.sharedMesh = null;
         }
 
-        // Supprime tous les BoxColliders
         BoxCollider[] colliders = GetComponents<BoxCollider>();
         foreach (BoxCollider col in colliders)
         {
@@ -330,9 +242,6 @@ public class PitFill : MonoBehaviour
         }
 
         Debug.Log("PitFill: Content cleared");
-        Transform borderChild = transform.Find("BorderMesh");
-        if (borderChild != null)
-            DestroyImmediate(borderChild.gameObject);
     }
 
     public float GetFillHeightMeters()

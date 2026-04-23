@@ -23,6 +23,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
     public bool isRedLight = false;
     public bool canMove;
 
+    private bool isSlippery = false;
+    private float slipperyAccel;
+    private float slipperyBrake;
+    private float slipperyRotation;
+
     // === BRIGHT EYES ATTRACTION ===
     private Transform brightEyesAttractor;
     private float brightEyesForce;
@@ -222,16 +227,23 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (animator != null)
         {
             Vector3 localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
-            animator.SetFloat("SpeedX", localVelocity.x);
-            animator.SetFloat("SpeedZ", localVelocity.z);
-            animator.SetBool("IsCrouching", isCrouching);
 
+            if (isSlippery && moveInput.magnitude < 0.1f)
+            {
+                animator.SetFloat("SpeedX", 0f);
+                animator.SetFloat("SpeedZ", 0f);
+            }
+            else
+            {
+                animator.SetFloat("SpeedX", localVelocity.x);
+                animator.SetFloat("SpeedZ", localVelocity.z);
+            }
+
+            animator.SetBool("IsCrouching", isCrouching);
             bool broomLowIdle = PlayerInputManager.Instance.BroomLowActive && moveInput.magnitude < 0.1f;
             bool broomLowMoving = PlayerInputManager.Instance.BroomLowActive && moveInput.magnitude >= 0.1f;
-
             animator.SetBool("BroomLowIdle", broomLowIdle);
             animator.SetBool("BroomLowMoving", broomLowMoving);
-
             int broomLowLayerIndex = animator.GetLayerIndex("BroomLow");
             float targetBroomLowWeight = broomLowMoving ? 1f : 0f;
             float currentBroomLowWeight = animator.GetLayerWeight(broomLowLayerIndex);
@@ -530,20 +542,22 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     public void HandleMovement()
     {
+        float accelCoef = isSlippery ? slipperyAccel : 20f;
+        float brakeCoef = isSlippery ? slipperyBrake : 15f;
+        float rotCoef = isSlippery ? slipperyRotation : 40f;
+
         Vector3 moveDirection = Vector3.zero;
 
         if (moveInput.magnitude < 0.1f)
         {
-            // Arret plus rapide
-            currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, 15f * Time.fixedDeltaTime);
+            currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, brakeCoef * Time.fixedDeltaTime);
         }
         else
         {
             moveDirection = GetCameraRelativeMovement(moveInput);
             float targetSpeed = CalculateSpeed();
             Vector3 targetVelocity = moveDirection * targetSpeed;
-            // Acceleration plus reactive pour eviter le drift
-            currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, 20f * Time.fixedDeltaTime);
+            currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, accelCoef * Time.fixedDeltaTime);
         }
 
         if (lockSystem != null && lockSystem.IsLocked)
@@ -552,7 +566,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             if (targetDirection != Vector3.zero)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 40f * Time.fixedDeltaTime);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotCoef * Time.fixedDeltaTime);
             }
         }
         else
@@ -560,14 +574,12 @@ public class PlayerPhysicsMovement : MonoBehaviour
             if (moveInput.magnitude > 0.1f)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 40f * Time.fixedDeltaTime);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotCoef * Time.fixedDeltaTime);
             }
         }
 
-        // Appliquer velocity de base
         Vector3 finalVelocity = new Vector3(currentVelocity.x, rb.linearVelocity.y, currentVelocity.z);
 
-        // === BRIGHT EYES ATTRACTION (force radiale continue) ===
         if (brightEyesAttractor != null)
         {
             Vector3 directionToAttractor = (brightEyesAttractor.position - transform.position).normalized;
@@ -575,7 +587,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
             finalVelocity += directionToAttractor * brightEyesForce;
         }
 
-        // === MOVING PLATFORM SUPPORT ===
         DetectMovingPlatform();
         if (currentPlatform != null)
         {
@@ -583,10 +594,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
             if (rotPlatform != null)
             {
-                // ROTATING PLATFORM
                 if (moveInput.magnitude < 0.1f)
                 {
-                    // Idle : teleportation (reste solidaire)
                     Vector3 pivotPoint = rotPlatform.GetTransform().position + new Vector3(
                         rotPlatform.settings.pivotOffset.x,
                         0f,
@@ -601,12 +610,10 @@ public class PlayerPhysicsMovement : MonoBehaviour
                     directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
                     transform.position = pivotPoint + directionFromPivot;
 
-                    // AJOUTER CETTE LIGNE : Rotation de l'orientation
                     transform.Rotate(Vector3.up, angleThisFrame);
                 }
                 else
                 {
-                    // Bouge : velocite tangentielle (lutte/boost)
                     Vector3 tangentialVel = rotPlatform.GetTangentialVelocityAtPoint(transform.position);
                     finalVelocity.x += tangentialVel.x * rotPlatform.settings.playerInfluence;
                     finalVelocity.z += tangentialVel.z * rotPlatform.settings.playerInfluence;
@@ -630,7 +637,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
                 }
                 else
                 {
-                    // ROAMING OBSTACLE : toujours teleportation (idle OU en mouvement)
                     Vector3 platformCurrentPos = currentPlatform.GetTransform().position;
                     Vector3 platformDelta = platformCurrentPos - lastPlatformPosition;
                     platformDelta.y = 0f;
@@ -640,7 +646,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
                 }
             }
         }
-
 
         rb.linearVelocity = finalVelocity;
     }
@@ -1025,6 +1030,14 @@ public class PlayerPhysicsMovement : MonoBehaviour
             enemyContactCount = 0;
             isInContactWithEnemy = false;
         }
+    }
+
+    public void SetSlippery(bool state, float accel, float brake, float rotation)
+    {
+        isSlippery = state;
+        slipperyAccel = accel;
+        slipperyBrake = brake;
+        slipperyRotation = rotation;
     }
 
 }
