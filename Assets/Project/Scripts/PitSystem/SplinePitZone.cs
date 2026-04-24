@@ -98,7 +98,8 @@ public class SplinePitZone : MonoBehaviour
             if (contour[i].z > maxZ) maxZ = contour[i].z;
         }
 
-        float triggerY = contour[0].y - depth * 0.5f;
+        float sinkBelowRim = 0.3f;
+        float triggerY = contour[0].y - sinkBelowRim - depth * 0.5f;
         float sizeX = maxX - minX;
         float sizeZ = maxZ - minZ;
         float centerX = (minX + maxX) * 0.5f;
