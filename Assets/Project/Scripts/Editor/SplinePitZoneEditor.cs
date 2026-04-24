@@ -37,6 +37,18 @@ public class SplinePitZoneEditor : Editor
             }
         }
 
+        GUILayout.Space(5);
+        GUILayout.BeginVertical(EditorStyles.helpBox);
+        GUILayout.Label("A* Pathfinding", EditorStyles.boldLabel);
+        GUI.backgroundColor = Color.yellow;
+        if (GUILayout.Button("Apply A* Walkability", GUILayout.Height(30)))
+        {
+            zone.ApplyAStarWalkability();
+            EditorUtility.SetDirty(zone);
+        }
+        GUI.backgroundColor = Color.white;
+        GUILayout.EndVertical();
+
         GUI.backgroundColor = Color.white;
         GUILayout.EndVertical();
 
