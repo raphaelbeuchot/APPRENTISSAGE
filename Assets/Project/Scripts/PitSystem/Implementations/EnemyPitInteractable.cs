@@ -235,6 +235,48 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         Debug.Log($"[EnemyPit] {name} speed restored to {originalNavSpeed:F2}");
     }
 
+    public void OnEnterSplinePit(SplinePitZone.FillType fillType, float depth)
+    {
+        isInPit = true;
+
+        bool isShallowPit = depth <= 1f;
+
+        if (fillType == SplinePitZone.FillType.None)
+        {
+            isFallingInPit = true;
+            if (enemyHealth != null && enemyHealth.stats.fallSound != null)
+                audioSource2D.PlayOneShot(enemyHealth.stats.fallSound);
+            if (enemyHealth != null && enemyHealth.healthBarUI != null)
+                enemyHealth.healthBarUI.Show();
+        }
+        else if (fillType == SplinePitZone.FillType.Water)
+        {
+            if (isShallowPit)
+            {
+                ApplyWaterSlowdown();
+                isInWaterShallow = true;
+                if (enemyHealth != null && enemyHealth.stats.waterSplashSound != null)
+                    audioSource2D.PlayOneShot(enemyHealth.stats.waterSplashSound);
+            }
+            else
+            {
+                if (enemyHealth != null && enemyHealth.stats.waterSplashSound != null)
+                    audioSource2D.PlayOneShot(enemyHealth.stats.waterSplashSound);
+                if (enemyAI != null)
+                    enemyAI.enabled = false;
+            }
+        }
+        else if (fillType == SplinePitZone.FillType.Lava)
+        {
+            if (enemyHealth != null && enemyHealth.stats.lavaSplashSound != null)
+                audioSource2D.PlayOneShot(enemyHealth.stats.lavaSplashSound);
+            if (enemyAI != null)
+                enemyAI.enabled = false;
+        }
+
+        Debug.Log(string.Format("[EnemyPit] {0} entered spline pit - fillType={1}, depth={2}", name, fillType, depth));
+    }
+
     public bool IsInPit() => isInPit;
     public PitZone GetCurrentPitZone() => currentPitZone;
 }

@@ -276,4 +276,40 @@ public static class SplinePitMeshGenerator
 
         return points;
     }
+    public static Mesh GenerateFillMesh(Vector3[] contour, float depth, float fillLevel)
+    {
+        int count = contour.Length;
+        float fillY = contour[0].y - depth + fillLevel;
+
+        Vector3 center = Vector3.zero;
+        for (int i = 0; i < count; i++)
+            center += contour[i];
+        center /= count;
+        center.y = fillY;
+
+        Vector3[] vertices = new Vector3[count + 1];
+        for (int i = 0; i < count; i++)
+            vertices[i] = new Vector3(contour[i].x, fillY, contour[i].z);
+        vertices[count] = center;
+
+        int[] tris = new int[count * 3];
+        for (int i = 0; i < count; i++)
+        {
+            int next = (i + 1) % count;
+            tris[i * 3 + 0] = count;
+            tris[i * 3 + 1] = i;
+            tris[i * 3 + 2] = next;
+        }
+
+        Vector3[] normals = new Vector3[vertices.Length];
+        for (int i = 0; i < normals.Length; i++)
+            normals[i] = Vector3.up;
+
+        Mesh mesh = new Mesh();
+        mesh.name = "SplinePitFill";
+        mesh.vertices = vertices;
+        mesh.triangles = tris;
+        mesh.normals = normals;
+        return mesh;
+    }
 }

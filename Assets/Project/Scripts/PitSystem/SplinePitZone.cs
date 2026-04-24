@@ -20,6 +20,14 @@ public class SplinePitZone : MonoBehaviour
 
     private SplineContainer splineContainer;
 
+    public enum FillType { None, Water, Lava }
+
+    [Header("Fill Settings")]
+    public FillType fillType = FillType.None;
+    public float fillLevel = 0.5f;
+    public PitContentType fillContentType;
+    public Material fillMaterial;
+
     private void Start()
     {
         if (AstarPath.active != null)
@@ -71,8 +79,12 @@ public class SplinePitZone : MonoBehaviour
         floorGO.transform.localPosition = Vector3.zero;
         MeshFilter floorMF = floorGO.AddComponent<MeshFilter>();
         MeshRenderer floorMR = floorGO.AddComponent<MeshRenderer>();
-        floorMF.sharedMesh = SplinePitMeshGenerator.GenerateFloorMeshFan(contour, depth);
+        Mesh floorMesh = SplinePitMeshGenerator.GenerateFloorMeshFan(contour, depth);
+        floorMF.sharedMesh = floorMesh;
+        MeshCollider floorMC = floorGO.AddComponent<MeshCollider>();
+        floorMC.sharedMesh = floorMesh;
         if (floorMaterial != null) floorMR.sharedMaterial = floorMaterial;
+
 
         // Rim
         GameObject rimGO = new GameObject("SplinePit_Rim");
@@ -87,7 +99,7 @@ public class SplinePitZone : MonoBehaviour
         rimMC.sharedMesh = rimMesh;
         if (rimMaterial != null) rimMR.sharedMaterial = rimMaterial;
 
-        // Trigger entry
+        // Calcul bounding box commun
         float minX = float.MaxValue, maxX = float.MinValue;
         float minZ = float.MaxValue, maxZ = float.MinValue;
         for (int i = 0; i < contour.Length; i++)
@@ -97,13 +109,14 @@ public class SplinePitZone : MonoBehaviour
             if (contour[i].z < minZ) minZ = contour[i].z;
             if (contour[i].z > maxZ) maxZ = contour[i].z;
         }
-
-        float sinkBelowRim = 0.3f;
-        float triggerY = contour[0].y - sinkBelowRim - depth * 0.5f;
         float sizeX = maxX - minX;
         float sizeZ = maxZ - minZ;
         float centerX = (minX + maxX) * 0.5f;
         float centerZ = (minZ + maxZ) * 0.5f;
+
+        // Trigger entry
+        float sinkBelowRim = 0.3f;
+        float triggerY = contour[0].y - sinkBelowRim - depth * 0.5f;
 
         GameObject triggerGO = new GameObject("SplinePit_Trigger");
         triggerGO.transform.SetParent(transform);
@@ -113,13 +126,35 @@ public class SplinePitZone : MonoBehaviour
         bc.size = new Vector3(sizeX, depth, sizeZ);
         triggerGO.AddComponent<SplinePitTriggerZone>();
 
+        // Fill
+        if (fillType != FillType.None && fillLevel > 0f)
+        {
+            float fillY = contour[0].y - depth + fillLevel;
+
+            GameObject fillGO = new GameObject("SplinePit_Fill");
+            fillGO.transform.SetParent(transform);
+            fillGO.transform.localPosition = Vector3.zero;
+            MeshFilter fillMF = fillGO.AddComponent<MeshFilter>();
+            MeshRenderer fillMR = fillGO.AddComponent<MeshRenderer>();
+            fillMF.sharedMesh = SplinePitMeshGenerator.GenerateFillMesh(contour, depth, fillLevel);
+            if (fillMaterial != null) fillMR.sharedMaterial = fillMaterial;
+
+            GameObject fillTriggerGO = new GameObject("SplinePit_FillTrigger");
+            fillTriggerGO.transform.SetParent(transform);
+            fillTriggerGO.transform.localPosition = new Vector3(centerX, fillY - fillLevel * 0.5f, centerZ);
+            BoxCollider fillBC = fillTriggerGO.AddComponent<BoxCollider>();
+            fillBC.isTrigger = true;
+            fillBC.size = new Vector3(sizeX, fillLevel, sizeZ);
+            SplinePitFillController fillCtrl = fillTriggerGO.AddComponent<SplinePitFillController>();
+            fillCtrl.fillContentType = fillContentType;
+        }
+
         Debug.Log("[SplinePitZone] Meshes generated for " + name);
     }
 
     public void ClearMeshes()
     {
-        string[] names = { "SplinePit_Walls", "SplinePit_Floor", "SplinePit_Rim", "SplinePit_Trigger" };
-        foreach (string n in names)
+        string[] names = { "SplinePit_Walls", "SplinePit_Floor", "SplinePit_Rim", "SplinePit_Trigger", "SplinePit_Fill", "SplinePit_FillTrigger" }; foreach (string n in names)
         {
             Transform t = transform.Find(n);
             if (t != null) DestroyImmediate(t.gameObject);

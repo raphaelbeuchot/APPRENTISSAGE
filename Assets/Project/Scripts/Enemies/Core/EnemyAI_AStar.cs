@@ -281,7 +281,6 @@ public class EnemyAI_AStar : MonoBehaviour
 
         if (currentState == State.Chasing && !isInPitMode)
         {
-            Debug.Log($"[DEBUG] {name} canMove={canMove} isStunned={isStunnedBySentinel} isRecovering={isRecoveringFromPlatform} isAttacking={attackBehavior?.IsAttacking()} isSpecial={attackBehavior?.IsInSpecialState()} aiPathEnabled={aiPath?.enabled} aiPathCanMove={aiPath?.canMove}");
         }
         switch (currentState)
         {
