@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class SplinePitFillController : MonoBehaviour
 {
     [HideInInspector] public PitContentType fillContentType;
-
     private SplinePitZone pitZone;
     private Dictionary<GameObject, Coroutine> activeCoroutines = new Dictionary<GameObject, Coroutine>();
 
@@ -28,6 +27,13 @@ public class SplinePitFillController : MonoBehaviour
         if (enemyPit != null && pitZone != null)
             enemyPit.OnEnterSplinePit(pitZone.fillType, pitZone.depth);
 
+        PlayerPitInteractable playerPit = go.GetComponent<PlayerPitInteractable>();
+        if (playerPit != null && pitZone != null && pitZone.fillType == SplinePitZone.FillType.Water)
+        {
+            playerPit.OnEnterSplineFill(pitZone);
+            return; // Pas de degats en water pour le player
+        }
+
         if (!activeCoroutines.ContainsKey(go))
         {
             Coroutine c = StartCoroutine(DamageCoroutine(go, interactable));
@@ -41,6 +47,13 @@ public class SplinePitFillController : MonoBehaviour
         if (interactable == null) return;
 
         GameObject go = interactable.GetGameObject();
+
+        PlayerPitInteractable playerPit = go.GetComponent<PlayerPitInteractable>();
+        if (playerPit != null)
+        {
+            if (playerPit.IsClimbingOut()) return; // AJOUTER
+            playerPit.OnExitSplineFill();
+        }
 
         if (activeCoroutines.ContainsKey(go))
         {
@@ -88,6 +101,7 @@ public class SplinePitFillController : MonoBehaviour
         {
             EnemyHealth eh = go.GetComponent<EnemyHealth>();
             if (eh != null) eh.deathByPit = true;
+
             interactable.TakePitDamage(100f, PitDamageType.InstantKill);
             CheckAndCleanup(go);
         }
@@ -106,6 +120,7 @@ public class SplinePitFillController : MonoBehaviour
         CorpsePitHandler handler = go.GetComponent<CorpsePitHandler>();
         if (handler == null)
             handler = go.AddComponent<CorpsePitHandler>();
+
         handler.sourceEnemy = eh;
         handler.OnEnterPit(fillContentType.category);
 

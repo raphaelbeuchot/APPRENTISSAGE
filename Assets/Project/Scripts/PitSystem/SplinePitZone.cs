@@ -68,9 +68,13 @@ public class SplinePitZone : MonoBehaviour
         GameObject wallGO = new GameObject("SplinePit_Walls");
         wallGO.transform.SetParent(transform);
         wallGO.transform.localPosition = Vector3.zero;
+        wallGO.layer = LayerMask.NameToLayer("PitWall");
         MeshFilter wallMF = wallGO.AddComponent<MeshFilter>();
         MeshRenderer wallMR = wallGO.AddComponent<MeshRenderer>();
-        wallMF.sharedMesh = SplinePitMeshGenerator.GenerateWallMesh(contour, depth);
+        Mesh wallMesh = SplinePitMeshGenerator.GenerateWallMesh(contour, depth);
+        wallMF.sharedMesh = wallMesh;
+        MeshCollider wallMC = wallGO.AddComponent<MeshCollider>();
+        wallMC.sharedMesh = wallMesh;
         if (wallMaterial != null) wallMR.sharedMaterial = wallMaterial;
 
         // Floor
