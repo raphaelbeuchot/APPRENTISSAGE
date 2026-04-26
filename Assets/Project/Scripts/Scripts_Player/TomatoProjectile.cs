@@ -1,0 +1,99 @@
+using UnityEngine;
+using System.Collections;
+
+public class TomatoProjectile : MonoBehaviour
+{
+    private PlayerStats stats;
+    private Vector3 targetPos;
+    private bool hasImpacted = false;
+
+    private Rigidbody rb;
+    private AudioSource audioSource;
+
+    [SerializeField] private float flightTime = 1f;
+
+    public void Init(PlayerStats playerStats, Vector3 destination)
+    {
+        stats = playerStats;
+        targetPos = destination;
+
+        rb = GetComponent<Rigidbody>();
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 1f;
+        audioSource.playOnAwake = false;
+
+        rb.linearVelocity = CalculateLaunchVelocity(transform.position, targetPos);
+    }
+
+    Vector3 CalculateLaunchVelocity(Vector3 origin, Vector3 target)
+    {
+        Vector3 displacementXZ = new Vector3(target.x - origin.x, 0f, target.z - origin.z);
+        float displacementY = target.y - origin.y;
+
+        Vector3 velocityXZ = displacementXZ / flightTime;
+        float velocityY = (displacementY / flightTime) + (0.5f * Mathf.Abs(Physics.gravity.y) * flightTime);
+
+        return velocityXZ + Vector3.up * velocityY;
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (hasImpacted) return;
+        hasImpacted = true;
+
+        if (stats != null && stats.bottleImpactSound != null)
+            AudioSource.PlayClipAtPoint(stats.bottleImpactSound, transform.position);
+
+        // Check ennemi touche
+        EnemyHealth enemyHealth = collision.gameObject.GetComponent<EnemyHealth>();
+        if (enemyHealth != null && enemyHealth.IsAlive())
+        {
+            enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Bottle);
+
+            EnemyAI_AStar enemyAI = collision.gameObject.GetComponent<EnemyAI_AStar>();
+            if (enemyAI != null)
+                enemyAI.StartCoroutine(StunAndChase(enemyAI));
+
+            // Coller la tomate sur l'ennemi
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+            transform.SetParent(collision.transform);
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+
+            Collider col = GetComponent<Collider>();
+            if (col != null)
+                col.enabled = false;
+
+            transform.SetParent(collision.transform);
+        }
+
+    }
+
+    IEnumerator StunAndChase(EnemyAI_AStar enemyAI)
+    {
+        enemyAI.canMove = false;
+        Pathfinding.AIPath aiPath = enemyAI.GetComponent<Pathfinding.AIPath>();
+        if (aiPath != null) aiPath.canMove = false;
+
+        yield return new WaitForSeconds(stats.bottleStunDuration);
+
+        PlayerPhysicsMovement player = FindObjectOfType<PlayerPhysicsMovement>();
+        if (player != null)
+        {
+            enemyAI.targetHuman = player.transform;
+            enemyAI.currentState = EnemyAI_AStar.State.Chasing;
+            enemyAI.isForcedChase = true;
+        }
+
+        enemyAI.canMove = true;
+        if (aiPath != null)
+        {
+            aiPath.canMove = true;
+            if (player != null)
+                aiPath.destination = player.transform.position;
+        }
+    }
+}

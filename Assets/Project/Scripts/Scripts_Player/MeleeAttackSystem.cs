@@ -89,31 +89,7 @@ public class MeleeAttackSystem : MonoBehaviour
                 movement.ExitCrouch();
         }
 
-        // Sortir crouch dès qu'on lance bouteille
-        if (PlayerInputManager.Instance.ThrowTomatoPressed
-)
-        {
-            if (movement != null)
-                movement.ExitCrouch();
-        }
-
-        if (PlayerInputManager.Instance.ThrowTomatoPressed
- && CanThrowBottle())
-        {
-            ThrowBottle();
-        }
-
         HandleReload();
-
-        // Check bottle pickup
-        if (bottleThrown && thrownBottleInstance != null)
-        {
-            float distance = Vector3.Distance(transform.position, thrownBottleInstance.transform.position);
-            if (distance <= 1.5f && PlayerInputManager.Instance.InteractPressed)
-            {
-                PickupBottle();
-            }
-        }
 
         // === SPRAY = RB/R2 uniquement ===
         // Tap simple
@@ -182,7 +158,6 @@ public class MeleeAttackSystem : MonoBehaviour
     }
     bool CanAttack()
     {
-        if (bottleThrown) { Debug.Log("[SPRAY BLOCKED] bottleThrown"); return false; }
         if (currentSprayAmmo <= 0) { Debug.Log("[SPRAY BLOCKED] no ammo"); return false; }
         if (isReloading) { Debug.Log("[SPRAY BLOCKED] reloading"); return false; }
         if (isGrabbed) { Debug.Log("[SPRAY BLOCKED] isGrabbed"); return false; }

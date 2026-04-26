@@ -81,16 +81,18 @@ public class PlayerStats : ScriptableObject
     public GameObject sprayVFX;
     [Tooltip("Son du spray pshit")]
     public AudioClip sprayFrontSound;
-    
 
-    [Header("BOTTLE THROW")]
-    [Tooltip("Force de lancer de la bouteille")]
+
+    [Header("TOMATO THROW")]
+    [Tooltip("Nombre de tomates au depart")]
+    public int tomatoCount = 3;
+    [Tooltip("Force de lancer")]
     public float bottleThrowForce = 15f;
     [Tooltip("Duree du stun ennemi secondes")]
     public float bottleStunDuration = 0.5f;
-    [Tooltip("Prefab de la bouteille jetee")]
+    [Tooltip("Prefab de la tomate")]
     public GameObject bottlePrefab;
-    [Tooltip("Son de l'impact blong")]
+    [Tooltip("Son de l'impact")]
     public AudioClip bottleImpactSound;
 
 
