@@ -11,6 +11,10 @@ public class TargetLockSystem : MonoBehaviour
     [Header("Detection Layers")]
     public LayerMask enemyLayers;
 
+    [SerializeField] private float switchCooldown = 0.3f;
+    private float lastSwitchTime = 0f;
+    private bool switchAxisWasNeutral = true;
+
     private Transform currentTarget;
     private EnemyHealthBarUI currentTargetHealthBar;
 
@@ -28,7 +32,6 @@ public class TargetLockSystem : MonoBehaviour
 
     private void Update()
     {
-        // === NOUVEAU : Utiliser PlayerInputManager ===
         if (PlayerInputManager.Instance.LockOnHeld)
         {
             if (!IsLocked)
@@ -47,6 +50,18 @@ public class TargetLockSystem : MonoBehaviour
             if (currentTarget == null || !IsTargetValid(currentTarget))
             {
                 UnlockTarget();
+            }
+
+            float switchInput = PlayerInputManager.Instance.SwitchTargetInput;
+            if (Mathf.Abs(switchInput) < 0.3f)
+            {
+                switchAxisWasNeutral = true;
+            }
+            else if (switchAxisWasNeutral && Time.time >= lastSwitchTime + switchCooldown)
+            {
+                switchAxisWasNeutral = false;
+                lastSwitchTime = Time.time;
+                SwitchTarget(switchInput);
             }
         }
     }
@@ -78,29 +93,47 @@ public class TargetLockSystem : MonoBehaviour
         }
     }
 
-    /*private void SwitchTarget(int direction)
+    private void SwitchTarget(float stickX)
     {
-        if (availableTargets.Count <= 1)
-            return;
+        // Rafraichir la liste sans appeler UnlockTarget
+        Collider[] hits = Physics.OverlapSphere(transform.position, stats.lockOnRange, enemyLayers);
+        availableTargets.Clear();
+        foreach (Collider hit in hits)
+        {
+            if (IsTargetValid(hit.transform))
+                availableTargets.Add(hit.transform);
+        }
 
-        // Force clear de toutes les outlines
+        if (availableTargets.Count <= 1) return;
+
+        // Trier par position X ecran (gauche vers droite)
+        availableTargets.Sort((a, b) =>
+        {
+            float ax = mainCamera.WorldToScreenPoint(a.position).x;
+            float bx = mainCamera.WorldToScreenPoint(b.position).x;
+            return ax.CompareTo(bx);
+        });
+
+        // Trouver l'index de la cible actuelle dans la liste triee
+        int idx = availableTargets.IndexOf(currentTarget);
+        if (idx < 0) idx = 0;
+
+        // Avancer dans le bon sens
+        if (stickX > 0)
+            idx = (idx + 1) % availableTargets.Count;
+        else
+            idx = (idx - 1 + availableTargets.Count) % availableTargets.Count;
+
+        if (availableTargets[idx] == currentTarget) return;
+
         ClearAllOutlines();
-
-        // Changer l'index
-        currentTargetIndex += direction;
-
-        if (currentTargetIndex >= availableTargets.Count)
-            currentTargetIndex = 0;
-        else if (currentTargetIndex < 0)
-            currentTargetIndex = availableTargets.Count - 1;
-
-        // Lock la nouvelle cible
-        currentTarget = availableTargets[currentTargetIndex];
+        currentTarget = availableTargets[idx];
+        currentTargetIndex = idx;
 
         EnemyHealthBarUI healthBar = currentTarget.GetComponent<EnemyHealth>()?.healthBarUI;
         if (healthBar == null)
         {
-            SwarmController swarm = currentTarget.GetComponent<SwarmController>();
+            SwarmController_AStar swarm = currentTarget.GetComponent<SwarmController_AStar>();
             if (swarm != null)
                 healthBar = swarm.GetHealthBarUI();
         }
@@ -111,8 +144,8 @@ public class TargetLockSystem : MonoBehaviour
             currentTargetHealthBar.SetLockedOutline(true);
         }
 
-        Debug.Log($"Switched to: {currentTarget.name}");
-    }*/
+        Debug.Log("Switched to: " + currentTarget.name);
+    }
 
     private void LockOntoTarget()
     {
@@ -175,7 +208,7 @@ public class TargetLockSystem : MonoBehaviour
         {
             Transform target = hit.transform;
 
-            if (IsTargetValid(target) && IsInCameraAngle(target))
+            if (IsTargetValid(target))
             {
                 availableTargets.Add(target);
             }

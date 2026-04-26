@@ -90,13 +90,15 @@ public class MeleeAttackSystem : MonoBehaviour
         }
 
         // Sortir crouch dès qu'on lance bouteille
-        if (PlayerInputManager.Instance.ThrowBottlePressed)
+        if (PlayerInputManager.Instance.ThrowTomatoPressed
+)
         {
             if (movement != null)
                 movement.ExitCrouch();
         }
 
-        if (PlayerInputManager.Instance.ThrowBottlePressed && CanThrowBottle())
+        if (PlayerInputManager.Instance.ThrowTomatoPressed
+ && CanThrowBottle())
         {
             ThrowBottle();
         }

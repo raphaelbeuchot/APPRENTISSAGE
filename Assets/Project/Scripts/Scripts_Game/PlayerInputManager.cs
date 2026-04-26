@@ -15,7 +15,10 @@ public class PlayerInputManager : MonoBehaviour
     public bool SprayAttackHeld { get; private set; }
     public bool BroomAttackPressed { get; private set; }
     public bool LockOnHeld { get; private set; }
-    public bool ThrowBottlePressed { get; private set; }
+    public bool ThrowTomatoPressed { get; private set; }
+
+    public float SwitchTargetInput { get; private set; }
+
     public bool InteractPressed { get; private set; }
     public bool InteractHeld { get; private set; }
     public bool ReloadPressed { get; private set; }
@@ -118,8 +121,11 @@ public class PlayerInputManager : MonoBehaviour
         inputActions.Player.LockOn.performed += ctx => LockOnHeld = true;
         inputActions.Player.LockOn.canceled += ctx => LockOnHeld = false;
 
-        inputActions.Player.ThrowBottle.performed += ctx => ThrowBottlePressed = true;
-        inputActions.Player.ThrowBottle.canceled += ctx => ThrowBottlePressed = false;
+        inputActions.Player.ThrowTomato.performed += ctx => ThrowTomatoPressed = true;
+        inputActions.Player.ThrowTomato.canceled += ctx => ThrowTomatoPressed = false;
+
+        inputActions.Player.SwitchTarget.performed += ctx => SwitchTargetInput = ctx.ReadValue<float>();
+        inputActions.Player.SwitchTarget.canceled += ctx => SwitchTargetInput = 0f;
 
         inputActions.Player.Interact.performed += OnInteract;
         inputActions.Player.Interact.canceled += OnInteract;
@@ -224,7 +230,7 @@ public class PlayerInputManager : MonoBehaviour
     {
         SprayAttackPressed = false;
         BroomAttackPressed = false;
-        ThrowBottlePressed = false;
+        ThrowTomatoPressed = false;
         InteractPressed = false;
         ReloadPressed = false;
         MashEscapePressed = false;
