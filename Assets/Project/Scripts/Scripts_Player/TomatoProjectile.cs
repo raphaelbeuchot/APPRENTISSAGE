@@ -6,19 +6,27 @@ public class TomatoProjectile : MonoBehaviour
     private PlayerStats stats;
     private Vector3 targetPos;
     private bool hasImpacted = false;
-
     private Rigidbody rb;
-    private AudioSource audioSource;
 
-    [SerializeField] private float flightTime = 1f;
+    [SerializeField] private float tomatoSpeed = 12f;
+    [SerializeField] private GameObject squishedTomatoPrefab;
+
+    private static readonly int zombieLayer = -1;
+
+    void Awake()
+    {
+        zombieLayerCached = LayerMask.NameToLayer("Zombie");
+    }
+
+    private int zombieLayerCached;
 
     public void Init(PlayerStats playerStats, Vector3 destination)
     {
         stats = playerStats;
-        targetPos = destination;
-
+        targetPos = destination + Vector3.up * 0.5f;
         rb = GetComponent<Rigidbody>();
-        audioSource = gameObject.AddComponent<AudioSource>();
+
+        AudioSource audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.spatialBlend = 1f;
         audioSource.playOnAwake = false;
 
@@ -28,8 +36,10 @@ public class TomatoProjectile : MonoBehaviour
     Vector3 CalculateLaunchVelocity(Vector3 origin, Vector3 target)
     {
         Vector3 displacementXZ = new Vector3(target.x - origin.x, 0f, target.z - origin.z);
-        float displacementY = target.y - origin.y;
+        float distanceXZ = displacementXZ.magnitude;
+        float flightTime = distanceXZ / tomatoSpeed;
 
+        float displacementY = target.y - origin.y;
         Vector3 velocityXZ = displacementXZ / flightTime;
         float velocityY = (displacementY / flightTime) + (0.5f * Mathf.Abs(Physics.gravity.y) * flightTime);
 
@@ -44,32 +54,51 @@ public class TomatoProjectile : MonoBehaviour
         if (stats != null && stats.bottleImpactSound != null)
             AudioSource.PlayClipAtPoint(stats.bottleImpactSound, transform.position);
 
-        // Check ennemi touche
-        EnemyHealth enemyHealth = collision.gameObject.GetComponent<EnemyHealth>();
-        if (enemyHealth != null && enemyHealth.IsAlive())
+        if (collision.gameObject.layer == zombieLayerCached)
         {
-            enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Bottle);
+            EnemyHealth enemyHealth = collision.gameObject.GetComponent<EnemyHealth>();
+            if (enemyHealth != null && enemyHealth.IsAlive())
+            {
+                enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Bottle);
 
-            EnemyAI_AStar enemyAI = collision.gameObject.GetComponent<EnemyAI_AStar>();
-            if (enemyAI != null)
-                enemyAI.StartCoroutine(StunAndChase(enemyAI));
+                EnemyAI_AStar enemyAI = collision.gameObject.GetComponent<EnemyAI_AStar>();
+                if (enemyAI != null)
+                    enemyAI.StartCoroutine(StunAndChase(enemyAI));
 
-            // Coller la tomate sur l'ennemi
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-            rb.isKinematic = true;
-            transform.SetParent(collision.transform);
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-            rb.isKinematic = true;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.isKinematic = true;
 
-            Collider col = GetComponent<Collider>();
-            if (col != null)
-                col.enabled = false;
+                Collider col = GetComponent<Collider>();
+                if (col != null)
+                    col.enabled = false;
 
-            transform.SetParent(collision.transform);
+                transform.SetParent(collision.transform);
+
+                StartCoroutine(WatchEnemyDeath(enemyHealth));
+                return;
+            }
         }
 
+        // Sol ou tout autre layer : ecrasement
+        SpawnSquished();
+        Destroy(gameObject);
+    }
+
+    void SpawnSquished()
+    {
+        if (squishedTomatoPrefab == null) return;
+
+        Vector3 spawnPos = new Vector3(transform.position.x, 0f, transform.position.z);
+        Instantiate(squishedTomatoPrefab, spawnPos, Quaternion.identity);
+    }
+
+    IEnumerator WatchEnemyDeath(EnemyHealth enemyHealth)
+    {
+        while (enemyHealth != null && enemyHealth.IsAlive())
+            yield return null;
+
+        Destroy(gameObject);
     }
 
     IEnumerator StunAndChase(EnemyAI_AStar enemyAI)

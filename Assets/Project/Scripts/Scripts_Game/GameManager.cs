@@ -455,6 +455,9 @@ public class GameManager : MonoBehaviour
             BroomAttackSystem broomSystem = col.GetComponent<BroomAttackSystem>();
             bool isBroomAttacking = broomSystem != null && broomSystem.IsAttacking();
 
+            TomatoThrowSystem tomatoThrow = col.GetComponent<TomatoThrowSystem>();
+            bool isThrowing = tomatoThrow != null && tomatoThrow.IsThrowingTomato();
+
             TestClimbDetection climbSystem = col.GetComponent<TestClimbDetection>();
             bool isClimbing = climbSystem != null && climbSystem.IsClimbing();
 
@@ -555,8 +558,7 @@ public class GameManager : MonoBehaviour
                              && !isMoving);
             if (isWindingUp || isHitterWindingUp || isHitterAttacking) isMoving = true;
 
-            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit || (ai != null && ai.isKnockedDownByEpervier)) && !playerImmune;
-            EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
+            bool shouldBeShot = (isMoving || isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isClimbing || isClimbingOutOfPit || isThrowing || (ai != null && ai.isKnockedDownByEpervier)) && !playerImmune; EnemyPitInteractable pitInt = col.GetComponent<EnemyPitInteractable>();
             if (pitInt != null && pitInt.isInShallowWater)
             {
             }
@@ -592,7 +594,7 @@ public class GameManager : MonoBehaviour
 
             if (shouldBeShot && hasLOS && !trackData.isBeingShot && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
             {
-                bool isOffensiveAction = isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isHitterWindingUp || isHitterAttacking;
+                bool isOffensiveAction = isAttacking || isBroomAttacking || isInBourrade || isFakeGrabber || isHitterWindingUp || isHitterAttacking || isThrowing;
                 bool needsExposureDelay = !trackData.wasInLOS && !isOffensiveAction;
 
                 if (needsExposureDelay)

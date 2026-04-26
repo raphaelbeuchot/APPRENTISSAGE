@@ -12,6 +12,9 @@ public class TomatoThrowSystem : MonoBehaviour
 
     private int currentTomatoCount;
 
+    private bool isThrowing = false;
+    public bool IsThrowingTomato() => isThrowing;
+
     void Start()
     {
         lockSystem = GetComponent<TargetLockSystem>();
@@ -55,7 +58,7 @@ public class TomatoThrowSystem : MonoBehaviour
 
         currentTomatoCount--;
 
-        OnThrowAnimation();
+        StartCoroutine(ThrowingWindow());
 
         Vector3 spawnPos = transform.position + Vector3.up * 1.5f;
         GameObject tomato = Instantiate(stats.bottlePrefab, spawnPos, Quaternion.identity);
@@ -67,6 +70,13 @@ public class TomatoThrowSystem : MonoBehaviour
         }
 
         Debug.Log("Tomate lancee ! Restantes : " + currentTomatoCount);
+    }
+
+    IEnumerator ThrowingWindow()
+    {
+        isThrowing = true;
+        yield return new WaitForSeconds(0.5f);
+        isThrowing = false;
     }
 
     // --- Hooks animations - a brancher plus tard ---
