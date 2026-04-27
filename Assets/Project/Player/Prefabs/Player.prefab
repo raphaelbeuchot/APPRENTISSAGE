@@ -485,6 +485,7 @@ GameObject:
   - component: {fileID: 5742306782079411465}
   - component: {fileID: 4829273372821787564}
   - component: {fileID: 158569115125722414}
+  - component: {fileID: 8814719026016554961}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -695,6 +696,7 @@ MonoBehaviour:
   enemyLayers:
     serializedVersion: 2
     m_Bits: 576
+  switchCooldown: 0.3
 --- !u!114 &3990312807863808665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -854,6 +856,19 @@ MonoBehaviour:
   hasSpray: 0
   broomObject: {fileID: 1191817633621186349}
   sprayObject: {fileID: 2141512017560207537}
+--- !u!114 &8814719026016554961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5794444067654349612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d11493d4f60c0e49a4b46c80581ee68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TomatoThrowSystem
+  stats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
 --- !u!1001 &640906551379516490
 PrefabInstance:
   m_ObjectHideFlags: 0

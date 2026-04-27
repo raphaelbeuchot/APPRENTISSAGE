@@ -9,6 +9,8 @@ public class TomatoUI : MonoBehaviour
     [SerializeField] private Image tomatoIcon;
 
     private TomatoThrowSystem throwSystem;
+    private bool hasBeenFilled = false;
+
 
     private void Start()
     {
@@ -29,6 +31,10 @@ public class TomatoUI : MonoBehaviour
 
     private void UpdateUI(int current, int max)
     {
+        if (current > 0) hasBeenFilled = true;
+
+        gameObject.SetActive(hasBeenFilled);
+
         if (countText != null)
             countText.text = "x" + current.ToString();
     }
