@@ -18380,7 +18380,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
-  gameManager: {fileID: 0}
 --- !u!65 &373248140
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -28474,7 +28473,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
-  gameManager: {fileID: 0}
 --- !u!4 &601632572 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 8c6fa7ab62026104b805b357479e7e2d, type: 3}
@@ -57388,6 +57386,7 @@ GameObject:
   - component: {fileID: 1152110367}
   - component: {fileID: 1152110366}
   - component: {fileID: 1152110365}
+  - component: {fileID: 1152110369}
   m_Layer: 8
   m_Name: Sol (1)
   m_TagString: Untagged
@@ -57441,7 +57440,7 @@ MeshRenderer:
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
+  - {fileID: -4565884009001823619, guid: d5c027045b0ec1240985ae2bd424e61c, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -57481,12 +57480,27 @@ Transform:
   m_GameObject: {fileID: 1152110364}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.97, y: -2, z: 27.5}
-  m_LocalScale: {x: 10, y: 4, z: 16}
+  m_LocalPosition: {x: 4.97, y: 0.1, z: 26.93}
+  m_LocalScale: {x: 10, y: 0.2, z: 16}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1152110369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1152110364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9500d866e224e641830eccf1708dc68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlipperyZone
+  slipperyAccel: 4
+  slipperyBrake: 1.5
+  slipperyRotation: 10
 --- !u!1001 &1152540970
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -101135,7 +101149,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
-  gameManager: {fileID: 0}
 --- !u!65 &2038059293
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -103755,7 +103768,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &2104448443
 BoxCollider:
   m_ObjectHideFlags: 0
