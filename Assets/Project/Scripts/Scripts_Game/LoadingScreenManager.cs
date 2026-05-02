@@ -110,9 +110,20 @@ public class LoadingScreenManager : MonoBehaviour
         AsyncOperation op = SceneManager.LoadSceneAsync(TargetSceneIndex);
         op.allowSceneActivation = false;
 
-        while (op.progress < 0.9f)
+        float elapsed = 0f;
+        float minDuration = 1.5f;
+        float displayFill = 0f;
+
+        while (elapsed < minDuration || op.progress < 0.9f)
         {
-            UpdatePips(op.progress / 0.9f);
+            elapsed += Time.unscaledDeltaTime;
+
+            float realFill = op.progress / 0.9f;
+            float timeFill = elapsed / minDuration;
+            float targetFill = Mathf.Min(realFill, timeFill);
+
+            displayFill = Mathf.Lerp(displayFill, targetFill, Time.unscaledDeltaTime * 4f);
+            UpdatePips(displayFill);
 
             if (loadingText != null)
                 loadingText.text = "Loading...";
