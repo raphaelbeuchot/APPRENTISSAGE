@@ -16,6 +16,24 @@ public class CrowdReactionManager : MonoBehaviour
     private bool wasMovingLastFrame = false;
     private Coroutine monitorCoroutine;
 
+    private void Awake()
+    {
+        gameManager = FindObjectOfType<GameManager>();
+        if (gameManager == null)
+            Debug.LogWarning("[CrowdReactionManager] GameManager introuvable dans la scene.");
+
+        sentinelCycleManager = FindObjectOfType<SentinelCycleManager>();
+        if (sentinelCycleManager == null)
+            Debug.LogWarning("[CrowdReactionManager] SentinelCycleManager introuvable dans la scene.");
+
+        if (gameManager != null)
+        {
+            audioSource = gameManager.GetComponent<AudioSource>();
+            if (audioSource == null)
+                Debug.LogWarning("[CrowdReactionManager] AudioSource introuvable sur GameManager.");
+        }
+    }
+
     private void OnEnable()
     {
         SentinelCycleManager.OnCycleChanged += OnCycleChanged;
@@ -46,45 +64,38 @@ public class CrowdReactionManager : MonoBehaviour
 
     private IEnumerator MonitorWindow()
     {
-        // Attendre alertDuration - breathWindowDuration avant de commencer a surveiller
-        yield return null; // laisse le temps a alertDuration d'etre calcule
+        yield return null;
+
         float waitDuration = sentinelCycleManager.alertDuration - breathWindowDuration;
         if (waitDuration > 0f)
             yield return new WaitForSeconds(waitDuration);
 
-        // Initialiser wasMovingLastFrame avant la fenetre
         wasMovingLastFrame = gameManager.IsPlayerMoving();
 
-        // Surveiller pendant breathWindowDuration avant RedLight
         float elapsed = 0f;
         while (elapsed < breathWindowDuration)
         {
             elapsed += Time.deltaTime;
             bool isMovingNow = gameManager.IsPlayerMoving();
-
             if (wasMovingLastFrame && !isMovingNow && !soundPlayedThisCycle)
             {
                 TryPlayCrowdBreath();
                 yield break;
             }
-
             wasMovingLastFrame = isMovingNow;
             yield return null;
         }
 
-        // Continuer a surveiller pendant breathWindowDuration apres debut RedLight
         elapsed = 0f;
         while (elapsed < breathWindowDuration)
         {
             elapsed += Time.deltaTime;
             bool isMovingNow = gameManager.IsPlayerMoving();
-
             if (wasMovingLastFrame && !isMovingNow && !soundPlayedThisCycle)
             {
                 TryPlayCrowdBreath();
                 yield break;
             }
-
             wasMovingLastFrame = isMovingNow;
             yield return null;
         }
@@ -101,7 +112,6 @@ public class CrowdReactionManager : MonoBehaviour
     {
         if (crowdBreathClips == null || crowdBreathClips.Length == 0) return;
         if (audioSource == null) return;
-
         AudioClip clip = crowdBreathClips[Random.Range(0, crowdBreathClips.Length)];
         if (clip != null)
             audioSource.PlayOneShot(clip);

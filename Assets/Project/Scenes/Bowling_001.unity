@@ -86564,6 +86564,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56d5810ad60215d41995cf7955fd9429, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+--- !u!82 &1801742137 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 7776503836475769553, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
+  m_PrefabInstance: {fileID: 3739046734473817271}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1801763525 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
@@ -103601,6 +103606,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8378823367964864721, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: audioSource
+      value: 
+      objectReference: {fileID: 1801742137}
+    - target: {fileID: 8378823367964864721, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: gameManager
+      value: 
+      objectReference: {fileID: 1801742136}
+    - target: {fileID: 8378823367964864721, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: breathWindowDuration
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 8378823367964864721, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: sentinelCycleManager
+      value: 
+      objectReference: {fileID: 2103414916}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

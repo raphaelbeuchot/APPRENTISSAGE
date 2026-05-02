@@ -7895,56 +7895,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
   m_PrefabInstance: {fileID: 1952315274}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &125418590
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 125418592}
-  - component: {fileID: 125418591}
-  m_Layer: 0
-  m_Name: CrowdReactionManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &125418591
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 125418590}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c13daee0313816a47be79634e259f1f3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CrowdReactionManager
-  gameManager: {fileID: 1801742136}
-  sentinelCycleManager: {fileID: 2103414916}
-  audioSource: {fileID: 2017687139}
-  crowdBreathClips:
-  - {fileID: 8300000, guid: b674e048bdc8deb44aeab24b05e9d2b5, type: 3}
-  breathWindowDuration: 0.25
---- !u!4 &125418592
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 125418590}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.73463, y: 0.05, z: 21.46525}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &125612664
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -139342,6 +139292,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8378823367964864721, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: audioSource
+      value: 
+      objectReference: {fileID: 2017687139}
+    - target: {fileID: 8378823367964864721, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: gameManager
+      value: 
+      objectReference: {fileID: 1801742136}
+    - target: {fileID: 8378823367964864721, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+      propertyPath: sentinelCycleManager
+      value: 
+      objectReference: {fileID: 2103414916}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -139949,7 +139911,6 @@ SceneRoots:
   - {fileID: 1551312464}
   - {fileID: 565715951296508113}
   - {fileID: 732358286}
-  - {fileID: 125418592}
   - {fileID: 115993669638194592}
   - {fileID: 1890326246}
   - {fileID: 1697455044}
