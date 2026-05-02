@@ -108,6 +108,7 @@ public class LevelProgressionManager : MonoBehaviour
             CollectibleManager.Instance.ResetAllCollectibles();
         if (CleaningCreditManager.Instance != null)
             CleaningCreditManager.Instance.ResetCredits();
+        lastUnlockedLevelIndex = -1;
     }
 
     public int GetCollectedCountForLevel(int sceneIndex)
@@ -161,6 +162,7 @@ public class LevelProgressionManager : MonoBehaviour
     {
         PlayerPrefs.SetString(PREFS_COMPLETED, SerializeSet(completedLevels));
         PlayerPrefs.SetString(PREFS_UNLOCKED, SerializeSet(unlockedLevels));
+        PlayerPrefs.SetInt("LastUnlockedLevel", lastUnlockedLevelIndex);
         PlayerPrefs.Save();
     }
 
@@ -168,6 +170,7 @@ public class LevelProgressionManager : MonoBehaviour
     {
         completedLevels = DeserializeSet(PlayerPrefs.GetString(PREFS_COMPLETED, ""));
         unlockedLevels = DeserializeSet(PlayerPrefs.GetString(PREFS_UNLOCKED, ""));
+        lastUnlockedLevelIndex = PlayerPrefs.GetInt("LastUnlockedLevel", -1);
 
         if (levels.Count > 0) unlockedLevels.Add(0);
         if (levels.Count > 1) unlockedLevels.Add(1);

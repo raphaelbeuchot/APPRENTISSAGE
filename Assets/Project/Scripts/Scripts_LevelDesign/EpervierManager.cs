@@ -287,6 +287,8 @@ public class EpervierManager : MonoBehaviour
                 line.obstacles[j] = obs;
                 obs.layer = LayerMask.NameToLayer("Obstacle");
                 obs.tag = "EpervierObstacle";
+                EpervierObstacle epObs = obs.AddComponent<EpervierObstacle>();
+                epObs.manager = this;
 
                 if (obstacleMaterials != null && j < obstacleMaterials.Length && obstacleMaterials[j] != null)
                 {
@@ -584,5 +586,14 @@ public class EpervierManager : MonoBehaviour
         AssignGaps(line);
         line.state = LineState.Idle;
         line.activeCoroutine = StartCoroutine(RearrangeAndDropCoroutine(idx));
+    }
+
+    public void OnQuillImpact()
+    {
+        if (soundImpact != null && Time.time - lastImpactSoundTime > 0.5f)
+        {
+            audioSource.PlayOneShot(soundImpact);
+            lastImpactSoundTime = Time.time;
+        }
     }
 }
