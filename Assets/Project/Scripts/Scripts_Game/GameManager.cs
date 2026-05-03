@@ -286,7 +286,7 @@ public class GameManager : MonoBehaviour
                 hasCrouchStateChanged = (trackData.wasPlayerCrouched != isPlayerCrouched);
             }
 
-            if (hasCrouchStateChanged && !trackData.crouchStateChangeInProgress && !trackData.isBeingShot)
+            if (hasCrouchStateChanged && !trackData.crouchStateChangeInProgress && !trackData.isBeingShot && trackData.wasInLOS)
             {
                 Debug.Log($"[CROUCH STATE CHANGE] {col.name} - Timer 0.3s lance!");
 
