@@ -77,7 +77,7 @@ public class CrowdReactionManager : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             bool isMovingNow = gameManager.IsPlayerMoving();
-            if (wasMovingLastFrame && !isMovingNow && !soundPlayedThisCycle)
+            if (wasMovingLastFrame && !isMovingNow && !soundPlayedThisCycle && gameManager.IsPlayerInSentinelLOS())
             {
                 TryPlayCrowdBreath();
                 yield break;
@@ -91,7 +91,7 @@ public class CrowdReactionManager : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             bool isMovingNow = gameManager.IsPlayerMoving();
-            if (wasMovingLastFrame && !isMovingNow && !soundPlayedThisCycle)
+            if (wasMovingLastFrame && !isMovingNow && !soundPlayedThisCycle && gameManager.IsPlayerInSentinelLOS())
             {
                 TryPlayCrowdBreath();
                 yield break;

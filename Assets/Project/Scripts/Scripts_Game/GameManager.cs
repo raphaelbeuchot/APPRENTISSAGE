@@ -669,6 +669,16 @@ public class GameManager : MonoBehaviour
 
                 if (isInDanger)
                 {
+                    if (!trackData.isBeingShot && !trackData.crouchStateChangeInProgress && Time.time - trackData.lastShotTime >= sentinelSettings.shootCooldown)
+                    {
+                        trackData.isBeingShot = true;
+                        float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
+                        trackData.shootScheduledTime = Time.time + sentinelSettings.shootDelay + randomOffset;
+                        trackData.lastShotTime = Time.time;
+                        playerAlarmTriggered = true;
+                        alreadyShot.Add(col.gameObject);
+                    }
+
                     if (playerDetectionFeedback != null && !playerDetectionFeedback.isCurrentlyDetected)
                         playerDetectionFeedback.OnDetected();
                 }
@@ -1014,6 +1024,13 @@ public class GameManager : MonoBehaviour
         bool isInBourrade = grab != null && grab.isInBourradeDuration;
 
         return isMovingByVelocity || isAttacking || isBroomAttacking || isClimbing || isClimbingOutOfPit || isInBourrade;
+    }
+
+    public bool IsPlayerInSentinelLOS()
+    {
+        if (player == null) return false;
+        if (!trackedTargets.ContainsKey(player.gameObject)) return false;
+        return trackedTargets[player.gameObject].canShoot;
     }
 
     // Getters pour VictoryUI
