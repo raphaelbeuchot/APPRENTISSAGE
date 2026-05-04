@@ -10,6 +10,7 @@ public class TargetLockSystem : MonoBehaviour
 
     [Header("Detection Layers")]
     public LayerMask enemyLayers;
+    public LayerMask lockableTargetLayers;
 
     [SerializeField] private float switchCooldown = 0.3f;
     private float lastSwitchTime = 0f;
@@ -17,6 +18,7 @@ public class TargetLockSystem : MonoBehaviour
 
     private Transform currentTarget;
     private EnemyHealthBarUI currentTargetHealthBar;
+    private LockableTarget currentLockableTarget;
 
     private List<Transform> availableTargets = new List<Transform>();
     private int currentTargetIndex = 0;
@@ -66,43 +68,30 @@ public class TargetLockSystem : MonoBehaviour
         }
     }
 
-    private void RefreshAvailableTargets()
+    private List<Transform> GatherAllTargets()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, stats.lockOnRange, enemyLayers);
+        List<Transform> results = new List<Transform>();
 
-        availableTargets.Clear();
-
-        foreach (Collider hit in hits)
+        Collider[] enemyHits = Physics.OverlapSphere(transform.position, stats.lockOnRange, enemyLayers);
+        foreach (Collider hit in enemyHits)
         {
-            Transform target = hit.transform;
-
-            if (IsTargetValid(target) && IsInCameraAngle(target))
-            {
-                availableTargets.Add(target);
-            }
+            if (IsTargetValid(hit.transform))
+                results.Add(hit.transform);
         }
 
-        // Verifier que la cible actuelle est toujours dans la liste
-        if (!availableTargets.Contains(currentTarget))
+        Collider[] lockableHits = Physics.OverlapSphere(transform.position, stats.lockOnRange, lockableTargetLayers);
+        foreach (Collider hit in lockableHits)
         {
-            UnlockTarget();
+            if (IsTargetValid(hit.transform) && !results.Contains(hit.transform))
+                results.Add(hit.transform);
         }
-        else
-        {
-            currentTargetIndex = availableTargets.IndexOf(currentTarget);
-        }
+
+        return results;
     }
 
     private void SwitchTarget(float stickX)
     {
-        // Rafraichir la liste sans appeler UnlockTarget
-        Collider[] hits = Physics.OverlapSphere(transform.position, stats.lockOnRange, enemyLayers);
-        availableTargets.Clear();
-        foreach (Collider hit in hits)
-        {
-            if (IsTargetValid(hit.transform))
-                availableTargets.Add(hit.transform);
-        }
+        availableTargets = GatherAllTargets();
 
         if (availableTargets.Count <= 1) return;
 
@@ -114,11 +103,9 @@ public class TargetLockSystem : MonoBehaviour
             return ax.CompareTo(bx);
         });
 
-        // Trouver l'index de la cible actuelle dans la liste triee
         int idx = availableTargets.IndexOf(currentTarget);
         if (idx < 0) idx = 0;
 
-        // Avancer dans le bon sens
         if (stickX > 0)
             idx = (idx + 1) % availableTargets.Count;
         else
@@ -126,9 +113,80 @@ public class TargetLockSystem : MonoBehaviour
 
         if (availableTargets[idx] == currentTarget) return;
 
-        ClearAllOutlines();
+        ClearCurrentTargetVisual();
         currentTarget = availableTargets[idx];
         currentTargetIndex = idx;
+        ApplyCurrentTargetVisual();
+
+        Debug.Log("Switched to: " + currentTarget.name);
+    }
+
+    private void LockOntoTarget()
+    {
+        ClearCurrentTargetVisual();
+
+        availableTargets = GatherAllTargets();
+
+        if (availableTargets.Count == 0)
+            return;
+
+        // Trouver la cible la plus alignee avec le forward du player
+        Transform bestTarget = null;
+        float bestAlignment = -1f;
+
+        for (int i = 0; i < availableTargets.Count; i++)
+        {
+            Transform target = availableTargets[i];
+            Vector3 dirToTarget = (target.position - transform.position).normalized;
+            dirToTarget.y = 0f;
+            dirToTarget.Normalize();
+
+            Vector3 playerFwd = transform.forward;
+            playerFwd.y = 0f;
+            playerFwd.Normalize();
+
+            float alignment = Vector3.Dot(playerFwd, dirToTarget);
+
+            if (alignment > bestAlignment)
+            {
+                bestAlignment = alignment;
+                bestTarget = target;
+                currentTargetIndex = i;
+            }
+        }
+
+        if (bestTarget != null)
+        {
+            currentTarget = bestTarget;
+            ApplyCurrentTargetVisual();
+            Debug.Log("Locked onto: " + currentTarget.name);
+        }
+    }
+
+    public void UnlockTarget()
+    {
+        ClearCurrentTargetVisual();
+        ClearAllEnemyOutlines();
+
+        currentTarget = null;
+        availableTargets.Clear();
+        currentTargetIndex = 0;
+
+        Debug.Log("Target unlocked");
+    }
+
+    // Applique le feedback visuel selon le type de cible lockee
+    private void ApplyCurrentTargetVisual()
+    {
+        if (currentTarget == null) return;
+
+        LockableTarget lockable = currentTarget.GetComponent<LockableTarget>();
+        if (lockable != null)
+        {
+            currentLockableTarget = lockable;
+            currentLockableTarget.SetLockedVisual(true);
+            return;
+        }
 
         EnemyHealthBarUI healthBar = currentTarget.GetComponent<EnemyHealth>()?.healthBarUI;
         if (healthBar == null)
@@ -143,123 +201,41 @@ public class TargetLockSystem : MonoBehaviour
             currentTargetHealthBar = healthBar;
             currentTargetHealthBar.SetLockedOutline(true);
         }
-
-        Debug.Log("Switched to: " + currentTarget.name);
     }
 
-    private void LockOntoTarget()
+    // Efface uniquement le feedback de la cible courante
+    private void ClearCurrentTargetVisual()
     {
-        ClearAllOutlines();
-
-        Transform bestTarget = FindBestTarget();
-
-        if (bestTarget != null)
-        {
-            currentTarget = bestTarget;
-
-            EnemyHealthBarUI healthBar = currentTarget.GetComponent<EnemyHealth>()?.healthBarUI;
-            if (healthBar == null)
-            {
-                SwarmController_AStar swarm = currentTarget.GetComponent<SwarmController_AStar>();
-                if (swarm != null)
-                    healthBar = swarm.GetHealthBarUI();
-            }
-
-            if (healthBar != null)
-            {
-                currentTargetHealthBar = healthBar;
-                currentTargetHealthBar.SetLockedOutline(true);
-            }
-
-            Debug.Log($"Locked onto: {currentTarget.name}");
-        }
-    }
-
-    public void UnlockTarget()
-    {
-        // 1. Désactiver l'outline de la cible actuelle
         if (currentTargetHealthBar != null)
         {
             currentTargetHealthBar.SetLockedOutline(false);
             currentTargetHealthBar = null;
         }
 
-        // 2. Force clear TOUTES les outlines
-        ClearAllOutlines();
-
-        // 3. Clear les références
-        currentTarget = null;
-        availableTargets.Clear();
-        currentTargetIndex = 0;
-
-        Debug.Log("Target unlocked - all outlines cleared");
+        if (currentLockableTarget != null)
+        {
+            currentLockableTarget.SetLockedVisual(false);
+            currentLockableTarget = null;
+        }
     }
 
-    private Transform FindBestTarget()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, stats.lockOnRange, enemyLayers);
-
-        if (hits.Length == 0)
-            return null;
-
-        availableTargets.Clear();
-
-        foreach (Collider hit in hits)
-        {
-            Transform target = hit.transform;
-
-            if (IsTargetValid(target))
-            {
-                availableTargets.Add(target);
-            }
-        }
-
-        if (availableTargets.Count == 0)
-            return null;
-
-        // Trouver la cible la plus alignee avec le forward du player
-        Transform bestTarget = null;
-        float bestAlignment = -1f;
-
-        for (int i = 0; i < availableTargets.Count; i++)
-        {
-            Transform target = availableTargets[i];
-            Vector3 directionToTarget = (target.position - transform.position).normalized;
-            directionToTarget.y = 0f;
-            directionToTarget.Normalize();
-
-            Vector3 playerForward = transform.forward;
-            playerForward.y = 0f;
-            playerForward.Normalize();
-
-            float alignment = Vector3.Dot(playerForward, directionToTarget);
-
-            if (alignment > bestAlignment)
-            {
-                bestAlignment = alignment;
-                bestTarget = target;
-                currentTargetIndex = i;
-            }
-        }
-
-        return bestTarget;
-    }
-
-    private void ClearAllOutlines()
+    // Garde le clear force sur toutes les barres ennemis (securite)
+    private void ClearAllEnemyOutlines()
     {
         EnemyHealthBarUI[] allBars = FindObjectsByType<EnemyHealthBarUI>(FindObjectsSortMode.None);
-        Debug.Log("Clearing " + allBars.Length + " health bars outlines");
         foreach (EnemyHealthBarUI bar in allBars)
         {
             if (bar != null)
-            {
                 bar.SetLockedOutline(false);
-            }
         }
     }
 
     private bool IsTargetValid(Transform target)
     {
+        LockableTarget lockable = target.GetComponent<LockableTarget>();
+        if (lockable != null)
+            return lockable.IsValidTarget();
+
         EnemyHealth enemyHealth = target.GetComponent<EnemyHealth>();
         if (enemyHealth != null)
             return enemyHealth.IsAlive();

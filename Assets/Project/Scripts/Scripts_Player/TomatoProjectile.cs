@@ -80,6 +80,33 @@ public class TomatoProjectile : MonoBehaviour
             }
         }
 
+        // Cible lockable (panneau, prop de comptage)
+        LockableTarget lockable = collision.gameObject.GetComponent<LockableTarget>();
+        if (lockable != null)
+        {
+            lockable.OnTomatoHit();
+
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+
+            Collider col = GetComponent<Collider>();
+            if (col != null)
+                col.enabled = false;
+
+            transform.SetParent(collision.transform);
+
+            if (squishedTomatoPrefab != null)
+            {
+                Quaternion squishRot = Quaternion.Euler(90f, 0f, 0f);
+                GameObject squished = Instantiate(squishedTomatoPrefab, transform.position, squishRot);
+                squished.transform.SetParent(collision.transform);
+            }
+
+            Destroy(gameObject);
+            return;
+        }
+
         // Sol ou tout autre layer : ecrasement
         SpawnSquished();
         Destroy(gameObject);

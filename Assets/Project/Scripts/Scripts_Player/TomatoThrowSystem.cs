@@ -52,21 +52,29 @@ public class TomatoThrowSystem : MonoBehaviour
             Debug.LogError("Tomato prefab non assigne dans PlayerStats");
             return;
         }
-
         Transform target = lockSystem.CurrentTarget;
         if (target == null) return;
-
         currentTomatoCount--;
         OnTomatoCountChanged?.Invoke(currentTomatoCount, stats.tomatoCount);
-
         StartCoroutine(ThrowingWindow());
-
         Vector3 spawnPos = transform.position + Vector3.up * 1.5f;
         GameObject tomato = Instantiate(stats.bottlePrefab, spawnPos, Quaternion.identity);
         TomatoProjectile proj = tomato.GetComponent<TomatoProjectile>();
         if (proj != null)
-            proj.Init(stats, target.position + Vector3.up * 0.5f);
-
+        {
+            int lockableLayer = LayerMask.NameToLayer("Lockable");
+            Vector3 aimPos;
+            if (target.gameObject.layer == lockableLayer)
+            {
+                LockableTarget lockable = target.GetComponent<LockableTarget>();
+                aimPos = lockable != null ? lockable.GetAimPosition() : target.position;
+            }
+            else
+            {
+                aimPos = target.position + Vector3.up * 0.5f;
+            }
+            proj.Init(stats, aimPos);
+        }
         Debug.Log("Tomate lancee ! Restantes : " + currentTomatoCount);
     }
 
