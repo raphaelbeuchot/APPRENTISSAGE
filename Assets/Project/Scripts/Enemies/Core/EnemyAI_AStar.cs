@@ -74,6 +74,8 @@ public class EnemyAI_AStar : MonoBehaviour
     private bool wasChasing = false;
 
     [HideInInspector] public bool isForcedChase = false;
+    [HideInInspector] public bool isAttractedByBrightEyes = false;
+
 
 
     protected float lastWanderTime = 0f;
@@ -822,7 +824,8 @@ public class EnemyAI_AStar : MonoBehaviour
             aiPath.canMove = false;
         }
 
-        rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+        if (!isAttractedByBrightEyes)
+            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
     }
 
     public void ResetChaseState()

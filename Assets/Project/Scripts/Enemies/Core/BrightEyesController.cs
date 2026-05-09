@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using System.Collections.Generic;
 
 public class BrightEyesController : MonoBehaviour
 {
@@ -13,6 +14,11 @@ public class BrightEyesController : MonoBehaviour
     [Header("Health Bar")]
     public EnemyHealthBarUI healthBarUI;
 
+    [Header("Enemy Attraction")]
+    [SerializeField] private float enemyDetectionRange = 8f;
+    [SerializeField] private float enemyAttractionForce = 3f;
+    [SerializeField] private LayerMask enemyLayer;
+
     private GameManager gameManager;
     private Transform player;
 
@@ -20,6 +26,8 @@ public class BrightEyesController : MonoBehaviour
     private bool isDead = false;
 
     private Material materialInstance;
+
+    private Dictionary<EnemyAI_AStar, Rigidbody> attractedEnemies = new Dictionary<EnemyAI_AStar, Rigidbody>();
 
     void Start()
     {
@@ -65,6 +73,69 @@ public class BrightEyesController : MonoBehaviour
         }
 
         CheckPlayerDetection();
+        UpdateEnemyAttraction();
+    }
+
+    void FixedUpdate()
+    {
+        if (isDead) return;
+
+        List<EnemyAI_AStar> toRemove = new List<EnemyAI_AStar>();
+        foreach (KeyValuePair<EnemyAI_AStar, Rigidbody> pair in attractedEnemies)
+        {
+            EnemyAI_AStar enemy = pair.Key;
+            Rigidbody rb = pair.Value;
+
+            if (enemy == null || rb == null || enemy.isDead)
+            {
+                toRemove.Add(enemy);
+                continue;
+            }
+
+            Vector3 direction = (transform.position - enemy.transform.position);
+            direction.y = 0f;
+            direction.Normalize();
+
+            rb.AddForce(direction * enemyAttractionForce, ForceMode.Acceleration);
+        }
+        foreach (EnemyAI_AStar enemy in toRemove)
+            attractedEnemies.Remove(enemy);
+    }
+
+    void UpdateEnemyAttraction()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, enemyDetectionRange, enemyLayer);
+        HashSet<EnemyAI_AStar> currentlyInRange = new HashSet<EnemyAI_AStar>();
+
+        foreach (Collider hit in hits)
+        {
+            EnemyAI_AStar enemy = hit.GetComponent<EnemyAI_AStar>();
+            if (enemy == null || enemy.isDead) continue;
+
+            currentlyInRange.Add(enemy);
+
+            if (!attractedEnemies.ContainsKey(enemy))
+            {
+                Rigidbody rb = enemy.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    attractedEnemies.Add(enemy, rb);
+                    enemy.isAttractedByBrightEyes = true;
+                }
+            }
+        }
+
+        List<EnemyAI_AStar> toRemove = new List<EnemyAI_AStar>();
+        foreach (EnemyAI_AStar enemy in attractedEnemies.Keys)
+        {
+            if (!currentlyInRange.Contains(enemy))
+                toRemove.Add(enemy);
+        }
+        foreach (EnemyAI_AStar enemy in toRemove)
+        {
+            enemy.isAttractedByBrightEyes = false;
+            attractedEnemies.Remove(enemy);
+        }
     }
 
     void CheckPlayerDetection()
@@ -155,6 +226,9 @@ public class BrightEyesController : MonoBehaviour
         RemoveAttractionFromPlayer();
         NotifyBrightEyesNoLongerDetected();
 
+        foreach (EnemyAI_AStar enemy in attractedEnemies.Keys)
+            enemy.isAttractedByBrightEyes = false;
+        attractedEnemies.Clear();
         StartCoroutine(ShrinkAndDisableSpheres());
 
         if (flameRenderer != null)
@@ -178,8 +252,6 @@ public class BrightEyesController : MonoBehaviour
             if (manager != null)
                 manager.UnregisterEnemy(transform);
         }
-
-        Debug.Log($"{gameObject.name} DEAD!");
     }
 
     IEnumerator ShrinkAndDisableSpheres()

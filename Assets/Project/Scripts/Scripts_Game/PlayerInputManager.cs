@@ -30,6 +30,8 @@ public class PlayerInputManager : MonoBehaviour
     public bool PausePressed { get; private set; }
     public bool BroomLowActive { get; private set; }
 
+    public bool IsLocked { get; set; } = false;
+
     public bool HasBroom { get; private set; } = true;
     public bool HasSpray { get; private set; } = true;
 
@@ -136,7 +138,7 @@ public class PlayerInputManager : MonoBehaviour
         inputActions.Player.MashEscape.performed += ctx => MashEscapePressed = true;
         inputActions.Player.MashEscape.canceled += ctx => MashEscapePressed = false;
 
-        inputActions.Player.Crouch.performed += ctx => CrouchPressed = true;
+        inputActions.Player.Crouch.performed += ctx => { if (!IsLocked) CrouchPressed = true; };
 
         inputActions.Player.ToggleCameraView.performed += OnToggleCameraView;
 
@@ -224,6 +226,23 @@ public class PlayerInputManager : MonoBehaviour
     {
         BroomLowActive = false;
         broomIsHeld = false;
+    }
+
+    public void FlushInputs()
+    {
+        SprayAttackPressed = false;
+        BroomAttackPressed = false;
+        ThrowTomatoPressed = false;
+        InteractPressed = false;
+        ReloadPressed = false;
+        MashEscapePressed = false;
+        CrouchPressed = false;
+        SentinelCameraPressed = false;
+        ToggleCameraViewPressed = false;
+        CancelPressed = false;
+        PausePressed = false;
+        SprintPressed = false;
+        MoveInput = Vector2.zero;
     }
 
     private void LateUpdate()

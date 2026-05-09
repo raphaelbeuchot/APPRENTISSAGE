@@ -21,7 +21,7 @@ public class ConveyorBelt : MonoBehaviour, IMovingPlatform
 
     private static readonly int ScrollOffsetProperty = Shader.PropertyToID("_ScrollOffset");
 
-    private HashSet<EnemyAI_AStar> enemiesOnBelt = new HashSet<EnemyAI_AStar>();
+    private Dictionary<EnemyAI_AStar, Rigidbody> enemiesOnBelt = new Dictionary<EnemyAI_AStar, Rigidbody>();
     private HashSet<RagdollDeathEffect> corpsesOnBelt = new HashSet<RagdollDeathEffect>();
     private HashSet<PhysicsProp> propsOnBelt = new HashSet<PhysicsProp>();
     private Dictionary<RagdollDeathEffect, float> corpseCooldowns = new Dictionary<RagdollDeathEffect, float>();
@@ -62,10 +62,15 @@ public class ConveyorBelt : MonoBehaviour, IMovingPlatform
         Vector3 displacement = transform.forward * speed * Time.fixedDeltaTime;
 
         List<EnemyAI_AStar> enemiesToRemove = new List<EnemyAI_AStar>();
-        foreach (EnemyAI_AStar enemy in enemiesOnBelt)
+        foreach (KeyValuePair<EnemyAI_AStar, Rigidbody> pair in enemiesOnBelt)
         {
+            EnemyAI_AStar enemy = pair.Key;
+            Rigidbody rb = pair.Value;
+
             if (enemy == null || enemy.isDead) { enemiesToRemove.Add(enemy); continue; }
-            enemy.transform.position += displacement;
+            if (rb == null) { enemiesToRemove.Add(enemy); continue; }
+
+            rb.MovePosition(rb.position + displacement);
         }
         foreach (EnemyAI_AStar enemy in enemiesToRemove)
             enemiesOnBelt.Remove(enemy);
@@ -111,8 +116,12 @@ public class ConveyorBelt : MonoBehaviour, IMovingPlatform
     void OnCollisionStay(Collision collision)
     {
         EnemyAI_AStar enemy = collision.gameObject.GetComponent<EnemyAI_AStar>();
-        if (enemy != null && !enemiesOnBelt.Contains(enemy))
-            enemiesOnBelt.Add(enemy);
+        if (enemy != null && !enemiesOnBelt.ContainsKey(enemy))
+        {
+            Rigidbody rb = enemy.GetComponent<Rigidbody>();
+            if (rb != null)
+                enemiesOnBelt.Add(enemy, rb);
+        }
 
         RagdollDeathEffect corpse = collision.gameObject.GetComponentInParent<RagdollDeathEffect>();
         if (corpse != null && !corpsesOnBelt.Contains(corpse))

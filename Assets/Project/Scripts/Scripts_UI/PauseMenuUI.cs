@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 using System.Collections.Generic;
+using System.Collections;
 
 public class PauseMenuUI : MonoBehaviour
 {
@@ -165,6 +166,7 @@ public class PauseMenuUI : MonoBehaviour
 
     public void Pause()
     {
+        PlayerInputManager.Instance.IsLocked = true;
         isPaused = true;
         Time.timeScale = 0f;
         AudioListener.pause = true;
@@ -190,17 +192,16 @@ public class PauseMenuUI : MonoBehaviour
     public void Resume()
     {
         isPaused = false;
+        StartCoroutine(UnlockNextFrame());
+        PlayerInputManager.Instance.FlushInputs();
         Time.timeScale = 1f;
         AudioListener.pause = false;
-
         Hide();
 
-        // Resume ambient track
         CountdownManager countdown = FindObjectOfType<CountdownManager>();
         if (countdown != null) countdown.ResumeAmbient();
         SentinelCycleManager cycle = FindObjectOfType<SentinelCycleManager>();
         if (cycle != null) cycle.ResumeMusic();
-
     }
     void Hide()
     {
@@ -253,5 +254,10 @@ public class PauseMenuUI : MonoBehaviour
     public bool IsPaused()
     {
         return isPaused;
+    }
+    IEnumerator UnlockNextFrame()
+    {
+        yield return null;
+        PlayerInputManager.Instance.IsLocked = false;
     }
 }

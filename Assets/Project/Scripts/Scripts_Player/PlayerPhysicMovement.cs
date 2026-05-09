@@ -28,6 +28,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private float slipperyBrake;
     private float slipperyRotation;
 
+    private PauseMenuUI pauseMenuUI;
+
+
     // === BRIGHT EYES ATTRACTION ===
     private Transform brightEyesAttractor;
     private float brightEyesForce;
@@ -187,10 +190,14 @@ public class PlayerPhysicsMovement : MonoBehaviour
         {
             originalMeshScale = playerMesh.localScale;
         }
+        pauseMenuUI = FindObjectOfType<PauseMenuUI>();
+
     }
 
     void Update()
     {
+        if (Time.timeScale == 0f) return;
+
         if (stats == null) return;
 
         HandleInput();
@@ -204,7 +211,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             standUpCoroutine = StartCoroutine(StandUpCoroutine());
         }
 
-        if (PlayerInputManager.Instance.CrouchPressed)
+        if (PlayerInputManager.Instance.CrouchPressed && (pauseMenuUI == null || !pauseMenuUI.IsPaused()))
         {
             if (isCrouching)
             {
@@ -224,20 +231,28 @@ public class PlayerPhysicsMovement : MonoBehaviour
             ExitCrouch();
         }
 
+
         if (animator != null)
         {
-            Vector3 localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
+            Vector3 animVelocity;
 
             if (isSlippery && moveInput.magnitude < 0.1f)
             {
-                animator.SetFloat("SpeedX", 0f);
-                animator.SetFloat("SpeedZ", 0f);
+                animVelocity = Vector3.zero;
+            }
+            else if (moveInput.magnitude < 0.1f)
+            {
+                animVelocity = Vector3.zero;
             }
             else
             {
-                animator.SetFloat("SpeedX", localVelocity.x);
-                animator.SetFloat("SpeedZ", localVelocity.z);
+                Vector3 worldDir = GetCameraRelativeMovement(moveInput);
+                float targetSpeed = CalculateSpeed();
+                animVelocity = transform.InverseTransformDirection(worldDir * targetSpeed);
             }
+
+            animator.SetFloat("SpeedX", animVelocity.x);
+            animator.SetFloat("SpeedZ", animVelocity.z);
 
             animator.SetBool("IsCrouching", isCrouching);
             bool broomLowIdle = PlayerInputManager.Instance.BroomLowActive && moveInput.magnitude < 0.1f;
@@ -285,6 +300,12 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void HandleInput()
     {
+        if (Time.timeScale == 0f)
+        {
+            moveInput = Vector3.zero;
+            return;
+        }
+
         if (grabState != GrabState.None || gameManager.stunBySentinel || !canMove || isClimbing || isGroggy || isSweeping)
         {
             moveInput = Vector3.zero;

@@ -7102,6 +7102,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
+  gameManager: {fileID: 0}
 --- !u!65 &373248140
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11450,6 +11451,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
+  gameManager: {fileID: 0}
 --- !u!4 &602665619 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -15735,8 +15737,6 @@ MonoBehaviour:
   doorReachedSound: {fileID: 8300000, guid: 66f5647459bc04147be64765d5fd4af9, type: 3}
   doorUnlockedSound: {fileID: 8300000, guid: d7a73023f94824c4290ef18a5f0e42a7, type: 3}
   doorLockedSound: {fileID: 0}
-  victoryEffectPrefab: {fileID: 2076582919}
-  destroyPlayerOnReach: 0
 --- !u!1 &871435854
 GameObject:
   m_ObjectHideFlags: 0
@@ -28138,6 +28138,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 158569115125722414, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
+      propertyPath: hasBroom
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 158569115125722414, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: hasSpray
       value: 0
       objectReference: {fileID: 0}
@@ -30133,6 +30137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
+  gameManager: {fileID: 0}
 --- !u!65 &1547379115
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -32222,7 +32227,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1697455044
 Transform:
   m_ObjectHideFlags: 0
@@ -39596,11 +39601,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2075159485}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &2076582919 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5471817284978064633, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
-  m_PrefabInstance: {fileID: 1454380196}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2076847585
 GameObject:
   m_ObjectHideFlags: 0
