@@ -12,7 +12,7 @@ public class TomatoThrowSystem : MonoBehaviour
 
     private int currentTomatoCount;
     private bool isThrowing = false;
-
+    [SerializeField] private float throwCooldown = 0.5f;
     public event Action<int, int> OnTomatoCountChanged;
 
     public bool IsThrowingTomato() => isThrowing;
@@ -39,6 +39,7 @@ public class TomatoThrowSystem : MonoBehaviour
     bool CanThrow()
     {
         if (stats == null) return false;
+        if (isThrowing) return false;
         if (currentTomatoCount <= 0) return false;
         if (health != null && health.IsDead()) return false;
         if (lockSystem == null || !lockSystem.IsLocked) return false;
@@ -81,7 +82,7 @@ public class TomatoThrowSystem : MonoBehaviour
     IEnumerator ThrowingWindow()
     {
         isThrowing = true;
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(throwCooldown);
         isThrowing = false;
     }
 

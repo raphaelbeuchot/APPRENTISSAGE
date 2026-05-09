@@ -9089,6 +9089,11 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: 56f8281de24256a43a9268333d0e4791, type: 2}
   flameRenderer: {fileID: 496632967}
   healthBarUI: {fileID: 0}
+  enemyDetectionRange: 8
+  enemyAttractionForce: 3
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!65 &496632966
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -19052,6 +19057,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 742136373979444410, guid: 4cc52cedbde31994fa18d5cd351b66d3, type: 3}
   m_PrefabInstance: {fileID: 2131751919}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1077903903
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1077903904}
+  m_Layer: 0
+  m_Name: KeySpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1077903904
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1077903903}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.87605, y: 0.3, z: 12.057}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1078833810 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c50348682fd856c4891accc19fc2c27c, type: 3}
@@ -26719,6 +26755,10 @@ PrefabInstance:
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8814719026016554961, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
+      propertyPath: throwCooldown
+      value: 0.25
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2390640153932763705, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
@@ -34983,8 +35023,8 @@ MonoBehaviour:
   - {fileID: 13926781}
   - {fileID: 891592419}
   requiredCount: -1
-  keyPrefab: {fileID: 0}
-  keySpawnPoint: {fileID: 0}
+  keyPrefab: {fileID: 8591396982751902204, guid: c2b037246706813429f860180c3f50d8, type: 3}
+  keySpawnPoint: {fileID: 1077903904}
   audioSource: {fileID: 0}
   allTargetsSound: {fileID: 0}
   pipSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
@@ -38915,7 +38955,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 22
+      value: 11.46
       objectReference: {fileID: 0}
     - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
       propertyPath: m_LocalRotation.w
@@ -38948,6 +38988,10 @@ PrefabInstance:
     - target: {fileID: 8591396982751902204, guid: c2b037246706813429f860180c3f50d8, type: 3}
       propertyPath: m_Name
       value: KeyCollectible
+      objectReference: {fileID: 0}
+    - target: {fileID: 8591396982751902204, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -39613,3 +39657,4 @@ SceneRoots:
   - {fileID: 1593091889}
   - {fileID: 13926782}
   - {fileID: 891592420}
+  - {fileID: 1077903904}

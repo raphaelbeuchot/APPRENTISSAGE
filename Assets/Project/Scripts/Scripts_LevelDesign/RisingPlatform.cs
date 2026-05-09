@@ -12,11 +12,15 @@ public class RisingPlatform : MonoBehaviour
     private AudioSource audioSource;
     private bool isRising = false;
     private bool isDescending = false;
+    private float previousY;
+
 
     void Start()
     {
         // Sauvegarder position initiale
         initialPosition = transform.position;
+
+        previousY = transform.position.y;
 
         // Setup audio
         audioSource = gameObject.AddComponent<AudioSource>();
@@ -116,6 +120,7 @@ public class RisingPlatform : MonoBehaviour
                 newPosition.y = Mathf.Max(newPosition.y, targetPosition.y);
 
             transform.position = newPosition;
+            CarryEnemies();
         }
         else
         {
@@ -169,5 +174,27 @@ public class RisingPlatform : MonoBehaviour
         audioSource.Stop();
         isRising = false;
         isDescending = false;
+    }
+    private void CarryEnemies()
+    {
+        float deltaY = transform.position.y - previousY;
+        previousY = transform.position.y;
+
+        if (Mathf.Abs(deltaY) < 0.0001f) return;
+
+        Collider col = GetComponent<Collider>();
+        if (col == null) return;
+
+        Vector3 center = col.bounds.center + Vector3.up * 1f;
+        Vector3 halfExtents = new Vector3(col.bounds.extents.x, 1f, col.bounds.extents.z);
+
+        Collider[] hits = Physics.OverlapBox(center, halfExtents, transform.rotation, LayerMask.GetMask("Zombie"));
+
+        foreach (Collider hit in hits)
+        {
+            Rigidbody enemyRb = hit.GetComponent<Rigidbody>();
+            if (enemyRb != null)
+                enemyRb.position += new Vector3(0f, deltaY, 0f);
+        }
     }
 }
