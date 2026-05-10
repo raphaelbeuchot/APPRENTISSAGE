@@ -17,7 +17,9 @@ public class SplineConveyor : MonoBehaviour, IMovingPlatform
 
     [Header("Movement")]
     public float speed = 3f;
-    public float textureTilingY = 1f;
+
+    [Header("Material")]
+    public Material beltMaterial;
 
     [Header("Audio")]
     public AudioClip movementSound;
@@ -34,9 +36,10 @@ public class SplineConveyor : MonoBehaviour, IMovingPlatform
 
     private Dictionary<EnemyAI_AStar, Rigidbody> enemiesOnBelt = new Dictionary<EnemyAI_AStar, Rigidbody>();
     private HashSet<RagdollDeathEffect> corpsesOnBelt = new HashSet<RagdollDeathEffect>();
-    private HashSet<PhysicsProp> propsOnBelt = new HashSet<PhysicsProp>();
     private Dictionary<RagdollDeathEffect, float> corpseCooldowns = new Dictionary<RagdollDeathEffect, float>();
+    private HashSet<PhysicsProp> propsOnBelt = new HashSet<PhysicsProp>();
 
+    [ContextMenu("Generate Mesh")]
     public void GenerateMesh()
     {
         if (splineContainer == null)
@@ -45,13 +48,17 @@ public class SplineConveyor : MonoBehaviour, IMovingPlatform
             return;
         }
 
-        Mesh mesh = SplineConveyorMeshGenerator.Generate(splineContainer, width, sampleCount);
+        float len = splineContainer.Spline.GetLength();
+        Mesh mesh = SplineConveyorMeshGenerator.Generate(splineContainer, width, sampleCount, len);
 
         MeshFilter mf = GetComponent<MeshFilter>();
         mf.sharedMesh = mesh;
 
         MeshCollider mc = GetComponent<MeshCollider>();
         mc.sharedMesh = mesh;
+
+        if (beltMaterial != null)
+            GetComponent<MeshRenderer>().sharedMaterial = beltMaterial;
 
         Debug.Log("[SplineConveyor] Mesh genere.");
     }
@@ -61,7 +68,7 @@ public class SplineConveyor : MonoBehaviour, IMovingPlatform
         if (splineContainer == null) return;
 
         splineLength = splineContainer.Spline.GetLength();
-        uvScrollSpeed = splineLength > 0f ? (speed * textureTilingY) / splineLength : speed;
+        uvScrollSpeed = speed;
 
         beltRenderer = GetComponent<Renderer>();
         if (beltRenderer != null)
@@ -121,8 +128,8 @@ public class SplineConveyor : MonoBehaviour, IMovingPlatform
 
         if (beltRenderer != null && mpb != null)
         {
-            uvOffset += uvScrollSpeed * Time.fixedDeltaTime;
-            if (uvOffset > 1f) uvOffset -= 1f;
+            uvOffset -= uvScrollSpeed * Time.fixedDeltaTime;
+            if (uvOffset < 0f) uvOffset += 1f;
             mpb.SetFloat(ScrollOffsetProperty, uvOffset);
             beltRenderer.SetPropertyBlock(mpb);
         }
@@ -141,7 +148,6 @@ public class SplineConveyor : MonoBehaviour, IMovingPlatform
         return worldTangent * speed;
     }
 
-    // IMovingPlatform
     public Vector3 GetPlatformVelocity()
     {
         return splineContainer.transform.TransformDirection(
@@ -198,7 +204,6 @@ public class SplineConveyor : MonoBehaviour, IMovingPlatform
         if (audioSource != null && audioSource.isPlaying)
             audioSource.Stop();
     }
-
 
     void OnDrawGizmos()
     {
