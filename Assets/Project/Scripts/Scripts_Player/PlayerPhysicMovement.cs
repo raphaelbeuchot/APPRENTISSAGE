@@ -643,12 +643,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
             else
             {
                 ConveyorBelt belt = currentPlatform.GetTransform().GetComponent<ConveyorBelt>();
+                SplineConveyor splineBelt = currentPlatform.GetTransform().GetComponent<SplineConveyor>();
                 if (belt != null)
                 {
                     if (moveInput.magnitude < 0.1f)
-                    {
                         transform.position += belt.GetPlatformVelocity() * Time.fixedDeltaTime;
-                    }
                     else
                     {
                         Vector3 beltVelocity = belt.GetPlatformVelocity();
@@ -656,14 +655,16 @@ public class PlayerPhysicsMovement : MonoBehaviour
                         finalVelocity.z += beltVelocity.z;
                     }
                 }
-                else
+                else if (splineBelt != null)
                 {
-                    Vector3 platformCurrentPos = currentPlatform.GetTransform().position;
-                    Vector3 platformDelta = platformCurrentPos - lastPlatformPosition;
-                    platformDelta.y = 0f;
-
-                    transform.position += platformDelta;
-                    lastPlatformPosition = platformCurrentPos;
+                    Vector3 beltVelocity = splineBelt.GetVelocityAtPoint(transform.position);
+                    if (moveInput.magnitude < 0.1f)
+                        transform.position += beltVelocity * Time.fixedDeltaTime;
+                    else
+                    {
+                        finalVelocity.x += beltVelocity.x;
+                        finalVelocity.z += beltVelocity.z;
+                    }
                 }
             }
         }
