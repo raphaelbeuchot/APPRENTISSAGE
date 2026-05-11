@@ -31,7 +31,7 @@ public static class SplineConveyorMeshGenerator
             vertices[i * 2] = localCenter - localRight * width * 0.5f;
             vertices[i * 2 + 1] = localCenter + localRight * width * 0.5f;
 
-            float vCoord = t * splineLength;
+            float vCoord = t * splineLength / width;
             uvs[i * 2] = new Vector2(0f, vCoord);
             uvs[i * 2 + 1] = new Vector2(1f, vCoord);
         }
