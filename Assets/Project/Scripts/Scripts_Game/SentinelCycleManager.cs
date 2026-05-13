@@ -230,7 +230,7 @@ public class SentinelCycleManager : MonoBehaviour
             enemyFactor = 1f - enemyRatio;
         }
 
-        float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
+        float combinedFactor = totalEnemies > 0 ? distanceFactor * (1f - enemyFactor * 0.5f) : distanceFactor;
         float durationMultiplier = 1f - (combinedFactor * (1f - minCycleDurationMultiplier));
 
         float baseDuration = sentinelSettings.GetRandomGreenlightDuration();
@@ -263,7 +263,7 @@ public class SentinelCycleManager : MonoBehaviour
             enemyFactor = 1f - enemyRatio;
         }
 
-        float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
+        float combinedFactor = totalEnemies > 0 ? distanceFactor * (1f - enemyFactor * 0.5f) : distanceFactor;
         float durationMultiplier = 1f - (combinedFactor * (1f - minCycleDurationMultiplier));
 
         float baseDuration = sentinelSettings.GetRandomRedlightDuration();
@@ -337,7 +337,7 @@ public class SentinelCycleManager : MonoBehaviour
                     }
                 }
 
-                float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
+                float combinedFactor = totalEnemies > 0 ? distanceFactor * (1f - enemyFactor * 0.5f) : distanceFactor;
                 musicAudioSource.volume = musicVolume;
                 musicAudioSource.pitch = Mathf.Lerp(1f, maxMusicPitch, combinedFactor);
                 musicAudioSource.clip = greenLightMusicLoop;
@@ -390,7 +390,7 @@ public class SentinelCycleManager : MonoBehaviour
                 }
             }
 
-            float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
+            float combinedFactor = totalEnemies > 0 ? distanceFactor * (1f - enemyFactor * 0.5f) : distanceFactor;
             float pitch = Mathf.Lerp(1.0f, sentinelSettings.maxPitch, combinedFactor);
             float alertDuration = alertSound != null ? alertSound.length / pitch : 0f;
 
@@ -452,7 +452,7 @@ public class SentinelCycleManager : MonoBehaviour
                     }
                 }
 
-                float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
+                float combinedFactor = totalEnemies > 0 ? distanceFactor * (1f - enemyFactor * 0.5f) : distanceFactor;
                 musicAudioSource.volume = musicVolume;
                 musicAudioSource.pitch = Mathf.Lerp(1f, maxMusicPitch, combinedFactor);
                 musicAudioSource.clip = redLightMusicLoop;
@@ -568,7 +568,7 @@ public class SentinelCycleManager : MonoBehaviour
             }
         }
 
-        float combinedFactor = totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
+        float combinedFactor = totalEnemies > 0 ? distanceFactor * (1f - enemyFactor * 0.5f) : distanceFactor;
         float pitch = Mathf.Lerp(1.0f, sentinelSettings.maxPitch, combinedFactor);
 
         Debug.Log($"[ALERT] Distance: {distanceFactor:F2}, Ennemis: {enemyFactor:F2}, Combined: {combinedFactor:F2}, Pitch: {pitch:F2}");
@@ -716,7 +716,7 @@ public class SentinelCycleManager : MonoBehaviour
         if (totalEnemies > 0)
             enemyFactor = (float)enemiesKilled / totalEnemies;
 
-        return totalEnemies > 0 ? (distanceFactor + enemyFactor) * 0.5f : distanceFactor;
+        return totalEnemies > 0 ? distanceFactor * (1f - enemyFactor * 0.5f) : distanceFactor;
     }
 
     public float GetCycleProgress()

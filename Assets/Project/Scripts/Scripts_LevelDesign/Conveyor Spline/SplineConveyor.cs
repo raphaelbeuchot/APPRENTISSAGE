@@ -14,6 +14,7 @@ public class SplineConveyor : MonoBehaviour, IMovingPlatform
     [Header("Shape")]
     public float width = 1f;
     public int sampleCount = 32;
+    public int widthSegments = 8;
 
     [Header("Movement")]
     public float speed = 3f;
@@ -49,7 +50,7 @@ public class SplineConveyor : MonoBehaviour, IMovingPlatform
         }
 
         float len = splineContainer.Spline.GetLength();
-        Mesh mesh = SplineConveyorMeshGenerator.Generate(splineContainer, width, sampleCount, len);
+        Mesh mesh = SplineConveyorMeshGenerator.Generate(splineContainer, width, sampleCount, widthSegments, len);
 
         MeshFilter mf = GetComponent<MeshFilter>();
         mf.sharedMesh = mesh;
@@ -68,7 +69,7 @@ public class SplineConveyor : MonoBehaviour, IMovingPlatform
         if (splineContainer == null) return;
 
         splineLength = splineContainer.Spline.GetLength();
-        uvScrollSpeed = speed;
+        uvScrollSpeed = speed / width;
 
         beltRenderer = GetComponent<Renderer>();
         if (beltRenderer != null)

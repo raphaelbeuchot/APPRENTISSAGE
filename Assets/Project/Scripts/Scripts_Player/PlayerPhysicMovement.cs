@@ -644,6 +644,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             {
                 ConveyorBelt belt = currentPlatform.GetTransform().GetComponent<ConveyorBelt>();
                 SplineConveyor splineBelt = currentPlatform.GetTransform().GetComponent<SplineConveyor>();
+                // APRES : ajouter le else generique (LavaTrain, RisingPlatform depuis le sol, etc.)
                 if (belt != null)
                 {
                     if (moveInput.magnitude < 0.1f)
@@ -665,6 +666,13 @@ public class PlayerPhysicsMovement : MonoBehaviour
                         finalVelocity.x += beltVelocity.x;
                         finalVelocity.z += beltVelocity.z;
                     }
+                }
+                else
+                {
+                    // Plateforme generique mobile (LavaTrain, etc.) : transport par delta de position
+                    Vector3 platformDelta = currentPlatform.GetTransform().position - lastPlatformPosition;
+                    transform.position += platformDelta;
+                    lastPlatformPosition = currentPlatform.GetTransform().position;
                 }
             }
         }

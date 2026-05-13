@@ -53,6 +53,7 @@ public class EnemyHealth : MonoBehaviour
     public bool destroyOnDeath = true;
 
     public event Action OnDeath;
+    public static event Action OnAnyEnemyDeath;
     public event Action<float, float> OnHealthChanged;
     public event System.Action OnTakeDamage;
 
@@ -451,6 +452,8 @@ public class EnemyHealth : MonoBehaviour
         HideSpiral();
 
         OnDeath?.Invoke();
+        OnAnyEnemyDeath?.Invoke();
+
 
         ChainConstraint cc = GetComponent<ChainConstraint>();
         if (cc != null)
