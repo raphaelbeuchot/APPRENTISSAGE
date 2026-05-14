@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class LockableTarget : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class LockableTarget : MonoBehaviour
     [Header("Lock Visual")]
     [SerializeField] private Image lockPip;
     [SerializeField] private Color pipColor = new Color(1f, 1f, 1f, 1f);
+
     [Header("Aim")]
     [SerializeField] private Vector3 aimOffset = Vector3.zero;
 
@@ -20,20 +22,30 @@ public class LockableTarget : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip hitSound;
 
+    [Header("Reset")]
+    [SerializeField] private float resetDuration = 0.4f;
+    [SerializeField] private AudioClip resetSound;
+
     private bool triggered = false;
+    private Quaternion originalRotation;
+    private Coroutine activeCoroutine;
 
     private void Awake()
     {
+        originalRotation = transform.rotation;
+
         if (lockPip != null)
         {
             lockPip.color = pipColor;
             lockPip.enabled = false;
         }
     }
+
     public Vector3 GetAimPosition()
     {
         return transform.position + aimOffset;
     }
+
     public bool IsValidTarget()
     {
         return !triggered;
@@ -54,24 +66,31 @@ public class LockableTarget : MonoBehaviour
         if (audioSource != null && hitSound != null)
             audioSource.PlayOneShot(hitSound);
 
-        StartCoroutine(TriggerCoroutine());
+        if (activeCoroutine != null)
+            StopCoroutine(activeCoroutine);
+        activeCoroutine = StartCoroutine(TriggerCoroutine());
 
         if (manager != null)
             manager.OnTargetTriggered(this);
     }
 
-    private System.Collections.IEnumerator TriggerCoroutine()
+    public void ResetTarget()
     {
-        Quaternion startRot = transform.rotation;
-        Quaternion recoilRot = startRot * Quaternion.Euler(hitRecoilAngle, 0f, 0f);
-        Quaternion fallRot = startRot * Quaternion.Euler(-fallAngle, 0f, 0f);
+        if (activeCoroutine != null)
+            StopCoroutine(activeCoroutine);
+        activeCoroutine = StartCoroutine(ResetCoroutine());
+    }
+
+    private IEnumerator TriggerCoroutine()
+    {
+        Quaternion recoilRot = originalRotation * Quaternion.Euler(hitRecoilAngle, 0f, 0f);
+        Quaternion fallRot = originalRotation * Quaternion.Euler(-fallAngle, 0f, 0f);
 
         float elapsed = 0f;
         while (elapsed < hitRecoilDuration)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.SmoothStep(0f, 1f, elapsed / hitRecoilDuration);
-            transform.rotation = Quaternion.Lerp(startRot, recoilRot, t);
+            transform.rotation = Quaternion.Lerp(originalRotation, recoilRot, Mathf.SmoothStep(0f, 1f, elapsed / hitRecoilDuration));
             yield return null;
         }
 
@@ -79,11 +98,32 @@ public class LockableTarget : MonoBehaviour
         while (elapsed < fallDuration)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.SmoothStep(0f, 1f, elapsed / fallDuration);
-            transform.rotation = Quaternion.Lerp(recoilRot, fallRot, t);
+            transform.rotation = Quaternion.Lerp(recoilRot, fallRot, Mathf.SmoothStep(0f, 1f, elapsed / fallDuration));
             yield return null;
         }
 
         transform.rotation = fallRot;
+        activeCoroutine = null;
+    }
+
+    private IEnumerator ResetCoroutine()
+    {
+        if (audioSource != null && resetSound != null)
+            audioSource.PlayOneShot(resetSound);
+
+        Quaternion startRot = transform.rotation;
+        float elapsed = 0f;
+
+        while (elapsed < resetDuration)
+        {
+            elapsed += Time.deltaTime;
+            transform.rotation = Quaternion.Lerp(startRot, originalRotation, Mathf.SmoothStep(0f, 1f, elapsed / resetDuration));
+            yield return null;
+        }
+
+        transform.rotation = originalRotation;
+        triggered = false;
+        activeCoroutine = null;
+        Debug.Log("[LockableTarget] " + name + " reset");
     }
 }
