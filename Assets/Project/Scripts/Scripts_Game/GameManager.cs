@@ -489,6 +489,9 @@ public class GameManager : MonoBehaviour
                     trackData.lastCheckTime = Time.time;
                 }
 
+                if (player.GetCurrentPlatform() != null)
+                    isMoving = true;
+
                 if (PlayerInputManager.Instance.BroomLowActive
                     && PlayerInputManager.Instance.MoveInput.magnitude < 0.1f
                     && player.isInContactWithEnemy)
