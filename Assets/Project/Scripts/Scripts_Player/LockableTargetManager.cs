@@ -11,6 +11,9 @@ public class LockableTargetManager : MonoBehaviour
     [Header("Targets")]
     [SerializeField] private List<LockableTarget> targets;
     [SerializeField] private int requiredCount = -1;
+    [SerializeField] private List<Renderer> targetIndicators;
+    [SerializeField] private Material indicatorMatOff;
+    [SerializeField] private Material indicatorMatOn;
 
     [Header("Timer")]
     [SerializeField] private bool useTimer = false;
@@ -24,6 +27,7 @@ public class LockableTargetManager : MonoBehaviour
     [SerializeField] private float pipPunchScale = 1.3f;
     [SerializeField] private float pipPunchDuration = 0.1f;
     [SerializeField] private float pipFadeOutDuration = 0.6f;
+    [SerializeField] private float pipExplosionSpeed = 2f;
     [SerializeField] private Material timerMatIdle;
     [SerializeField] private Material timerMatActive;
     [SerializeField] private Material timerMatOff;
@@ -41,14 +45,20 @@ public class LockableTargetManager : MonoBehaviour
     [Header("Door")]
     [SerializeField] private GameObject doorGO;
     [SerializeField] private SlideMode slideMode = SlideMode.Lateral;
+    [SerializeField] private float doorSlideDelay = 1f;
     [SerializeField] private float slideDistance = 0f;
     [SerializeField] private float slideDuration = 1f;
 
+
+
     [Header("Audio")]
     [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip allTargetsSound;
-    [SerializeField] private AudioClip timerExpiredSound;
+  
     [SerializeField] private AudioClip resetSound;
+    [SerializeField] private AudioClip countdownLoopSound;
+    [SerializeField] private AudioClip victoryJingleSound;
+    [SerializeField] private AudioClip doorOpeningSound;
+    [SerializeField] private AudioClip defeatJingleSound;
 
     [Header("Lock Pip UI")]
     [SerializeField] private Sprite pipSprite;
@@ -119,6 +129,9 @@ public class LockableTargetManager : MonoBehaviour
 
                 timerPipRenderers.Add(sr);
             }
+            for (int i = 0; i < targetIndicators.Count; i++)
+                if (targetIndicators[i] != null)
+                    targetIndicators[i].sharedMaterial = indicatorMatOff;
         }
 
         SetAllTimerPips(PipState.Idle);
@@ -205,6 +218,9 @@ public class LockableTargetManager : MonoBehaviour
             punchCoroutine = StartCoroutine(PipsHitPunchCoroutine());
         }
 
+        if (triggeredCount < targetIndicators.Count && targetIndicators[triggeredCount] != null)
+            targetIndicators[triggeredCount].sharedMaterial = indicatorMatOn;
+
         triggeredCount++;
         Debug.Log("[LockableTargetManager] " + triggeredCount + " / " + requiredCount);
 
@@ -218,6 +234,14 @@ public class LockableTargetManager : MonoBehaviour
         timerElapsed = 0f;
         lastPipsOff = 0;
         SetAllTimerPips(PipState.Active);
+
+        if (audioSource != null && countdownLoopSound != null)
+        {
+            audioSource.clip = countdownLoopSound;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+
         Debug.Log("[LockableTargetManager] Timer demarre");
     }
 
@@ -237,8 +261,13 @@ public class LockableTargetManager : MonoBehaviour
 
         SetAllTimerPips(PipState.Off);
 
-        if (audioSource != null && timerExpiredSound != null)
-            audioSource.PlayOneShot(timerExpiredSound);
+        if (audioSource != null)
+        {
+            audioSource.loop = false;
+            audioSource.Stop();
+            if (defeatJingleSound != null)
+                audioSource.PlayOneShot(defeatJingleSound);
+        }
 
         Debug.Log("[LockableTargetManager] Timer expire - reset");
         StartCoroutine(ResetCoroutine());
@@ -255,11 +284,13 @@ public class LockableTargetManager : MonoBehaviour
         if (audioSource != null && resetSound != null)
             audioSource.PlayOneShot(resetSound);
 
-        foreach (LockableTarget target in targets)
-        {
-            if (target != null)
-                target.ResetTarget();
-        }
+        foreach(LockableTarget target in targets)
+    if (target != null)
+            target.ResetTarget();
+
+        for (int i = 0; i < targetIndicators.Count; i++)
+            if (targetIndicators[i] != null)
+                targetIndicators[i].sharedMaterial = indicatorMatOff;
 
         for (int i = 0; i < timerPipRenderers.Count; i++)
         {
@@ -287,8 +318,13 @@ public class LockableTargetManager : MonoBehaviour
         completed = true;
         timerRunning = false;
 
-        if (audioSource != null && allTargetsSound != null)
-            audioSource.PlayOneShot(allTargetsSound);
+        if (audioSource != null)
+        {
+            audioSource.loop = false;
+            audioSource.Stop();
+            if (victoryJingleSound != null)
+                audioSource.PlayOneShot(victoryJingleSound);
+        }
 
         StartCoroutine(PipsSuccessCoroutine());
 
@@ -348,7 +384,7 @@ public class LockableTargetManager : MonoBehaviour
         float punchTarget = timerPipScale * pipPunchScale;
         float elapsed = 0f;
 
-        // Gonflement
+        // Punch initial
         while (elapsed < pipPunchDuration)
         {
             elapsed += Time.deltaTime;
@@ -360,21 +396,43 @@ public class LockableTargetManager : MonoBehaviour
             yield return null;
         }
 
-        // Fade out
+        // Calcul des directions radiales et durees aleatoires par pip
+        Vector3 center = transform.position;
+        Vector3[] directions = new Vector3[timerPipRenderers.Count];
+        float[] fadeDurations = new float[timerPipRenderers.Count];
+
+        for (int i = 0; i < timerPipRenderers.Count; i++)
+        {
+            if (timerPipRenderers[i] == null) continue;
+            Vector3 dir = timerPipRenderers[i].transform.position - center;
+            directions[i] = dir.normalized;
+            fadeDurations[i] = pipFadeOutDuration * Random.Range(0.7f, 1.3f);
+        }
+
+        // Explosion + fadeout
         elapsed = 0f;
-        while (elapsed < pipFadeOutDuration)
+        float maxDuration = pipFadeOutDuration * 1.3f;
+
+        while (elapsed < maxDuration)
         {
             elapsed += Time.deltaTime;
-            float alpha = Mathf.Lerp(1f, 0f, elapsed / pipFadeOutDuration);
+
             for (int i = 0; i < timerPipRenderers.Count; i++)
             {
-                if (timerPipRenderers[i] != null)
-                {
-                    Color c = timerPipRenderers[i].color;
-                    c.a = alpha;
-                    timerPipRenderers[i].color = c;
-                }
+                if (timerPipRenderers[i] == null) continue;
+
+                float t = Mathf.Clamp01(elapsed / fadeDurations[i]);
+
+                // Deplacement radial
+                timerPipRenderers[i].transform.position =
+                    center + directions[i] * (timerCircleRadius + elapsed * pipExplosionSpeed);
+
+                // Fadeout
+                Color c = timerPipRenderers[i].color;
+                c.a = Mathf.Lerp(1f, 0f, t);
+                timerPipRenderers[i].color = c;
             }
+
             yield return null;
         }
 
@@ -390,6 +448,10 @@ public class LockableTargetManager : MonoBehaviour
             Debug.LogWarning("[LockableTargetManager] doorGO non assigne");
             yield break;
         }
+
+        yield return new WaitForSeconds(doorSlideDelay);
+        if (audioSource != null && doorOpeningSound != null)
+            audioSource.PlayOneShot(doorOpeningSound);
 
         float distance = slideDistance;
 

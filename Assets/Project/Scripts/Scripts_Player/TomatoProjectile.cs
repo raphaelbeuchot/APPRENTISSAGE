@@ -8,6 +8,7 @@ public class TomatoProjectile : MonoBehaviour
     private bool hasImpacted = false;
     private Rigidbody rb;
 
+
     [SerializeField] private float tomatoSpeed = 12f;
     [SerializeField] private GameObject squishedTomatoPrefab;
 
@@ -26,10 +27,7 @@ public class TomatoProjectile : MonoBehaviour
         targetPos = destination + Vector3.up * 0.5f;
         rb = GetComponent<Rigidbody>();
 
-        AudioSource audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.spatialBlend = 1f;
-        audioSource.playOnAwake = false;
-
+        
         rb.linearVelocity = CalculateLaunchVelocity(transform.position, targetPos);
     }
 
@@ -52,7 +50,13 @@ public class TomatoProjectile : MonoBehaviour
         hasImpacted = true;
 
         if (stats != null && stats.bottleImpactSound != null)
-            AudioSource.PlayClipAtPoint(stats.bottleImpactSound, transform.position);
+        {
+            GameObject tempAudio = new GameObject("TomatoImpactSound");
+            AudioSource tempSource = tempAudio.AddComponent<AudioSource>();
+            tempSource.spatialBlend = 0f;
+            tempSource.PlayOneShot(stats.bottleImpactSound);
+            Destroy(tempAudio, stats.bottleImpactSound.length);
+        }
 
         if (collision.gameObject.layer == zombieLayerCached)
         {

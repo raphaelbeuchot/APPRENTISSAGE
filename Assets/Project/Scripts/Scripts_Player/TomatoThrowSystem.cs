@@ -14,6 +14,8 @@ public class TomatoThrowSystem : MonoBehaviour
     private bool isThrowing = false;
     [SerializeField] private float throwCooldown = 0.5f;
     public event Action<int, int> OnTomatoCountChanged;
+    public event Action<int> OnRefill;
+
 
     public bool IsThrowingTomato() => isThrowing;
 
@@ -88,8 +90,11 @@ public class TomatoThrowSystem : MonoBehaviour
 
     public void Refill()
     {
+        int added = stats.tomatoCount - currentTomatoCount;
+        if (added <= 0) return;
         currentTomatoCount = stats.tomatoCount;
         OnTomatoCountChanged?.Invoke(currentTomatoCount, stats.tomatoCount);
+        OnRefill?.Invoke(added);
         Debug.Log("Tomates rechargees : " + currentTomatoCount);
     }
 
