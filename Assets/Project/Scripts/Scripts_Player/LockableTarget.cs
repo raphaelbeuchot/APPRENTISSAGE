@@ -30,7 +30,7 @@ public class LockableTarget : MonoBehaviour
     private Quaternion originalRotation;
     private Coroutine activeCoroutine;
 
-    private void Awake()
+    private void Start()
     {
         originalRotation = transform.rotation;
 
@@ -78,6 +78,8 @@ public class LockableTarget : MonoBehaviour
     {
         if (activeCoroutine != null)
             StopCoroutine(activeCoroutine);
+
+        triggered = false;
         activeCoroutine = StartCoroutine(ResetCoroutine());
     }
 
@@ -122,7 +124,6 @@ public class LockableTarget : MonoBehaviour
         }
 
         transform.rotation = originalRotation;
-        triggered = false;
         activeCoroutine = null;
         Debug.Log("[LockableTarget] " + name + " reset");
     }
