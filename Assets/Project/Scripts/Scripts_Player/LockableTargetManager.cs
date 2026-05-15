@@ -63,6 +63,7 @@ public class LockableTargetManager : MonoBehaviour
     private bool timerRunning = false;
     private float timerElapsed = 0f;
     private int lastPipsOff = 0;
+    private Coroutine punchCoroutine;
 
     private List<SpriteRenderer> timerPipRenderers = new List<SpriteRenderer>();
     private Dictionary<LockableTarget, Image> pipImages = new Dictionary<LockableTarget, Image>();
@@ -199,7 +200,10 @@ public class LockableTargetManager : MonoBehaviour
             StartTimer();
 
         if (useTimer && timerRunning)
-            StartCoroutine(PipsHitPunchCoroutine());
+        {
+            if (punchCoroutine != null) StopCoroutine(punchCoroutine);
+            punchCoroutine = StartCoroutine(PipsHitPunchCoroutine());
+        }
 
         triggeredCount++;
         Debug.Log("[LockableTargetManager] " + triggeredCount + " / " + requiredCount);
@@ -221,6 +225,16 @@ public class LockableTargetManager : MonoBehaviour
     {
         timerRunning = false;
         resetting = true;
+
+        if (punchCoroutine != null)
+        {
+            StopCoroutine(punchCoroutine);
+            punchCoroutine = null;
+            for (int i = 0; i < timerPipRenderers.Count; i++)
+                if (timerPipRenderers[i] != null)
+                    timerPipRenderers[i].transform.localScale = Vector3.one * timerPipScale;
+        }
+
         SetAllTimerPips(PipState.Off);
 
         if (audioSource != null && timerExpiredSound != null)
@@ -235,6 +249,8 @@ public class LockableTargetManager : MonoBehaviour
 
         triggeredCount = 0;
         completed = false;
+        timerElapsed = 0f;
+        lastPipsOff = 0;
 
         if (audioSource != null && resetSound != null)
             audioSource.PlayOneShot(resetSound);
@@ -258,10 +274,14 @@ public class LockableTargetManager : MonoBehaviour
         }
 
         SetAllTimerPips(PipState.Idle);
+
+        foreach (LockableTarget target in targets)
+            if (target != null)
+                target.ForceResetState();
+
         resetting = false;
         Debug.Log("[LockableTargetManager] Reset complet");
     }
-
     private void OnAllTargetsTriggered()
     {
         completed = true;

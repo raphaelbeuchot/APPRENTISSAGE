@@ -82,6 +82,9 @@ public class TomatoProjectile : MonoBehaviour
 
         // Cible lockable (panneau, prop de comptage)
         LockableTarget lockable = collision.gameObject.GetComponent<LockableTarget>();
+        if (lockable == null)
+            lockable = collision.gameObject.GetComponentInParent<LockableTarget>();
+
         if (lockable != null)
         {
             lockable.OnTomatoHit();
@@ -94,13 +97,13 @@ public class TomatoProjectile : MonoBehaviour
             if (col != null)
                 col.enabled = false;
 
-            transform.SetParent(collision.transform);
+            transform.SetParent(lockable.transform);
 
             if (squishedTomatoPrefab != null)
             {
                 Quaternion squishRot = Quaternion.Euler(90f, 0f, 0f);
                 GameObject squished = Instantiate(squishedTomatoPrefab, transform.position, squishRot);
-                squished.transform.SetParent(collision.transform);
+                squished.transform.SetParent(lockable.transform);
             }
 
             Destroy(gameObject);

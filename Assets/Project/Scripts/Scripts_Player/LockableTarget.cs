@@ -79,8 +79,11 @@ public class LockableTarget : MonoBehaviour
         if (activeCoroutine != null)
             StopCoroutine(activeCoroutine);
 
+        bool wasTriggered = triggered;
         triggered = false;
-        activeCoroutine = StartCoroutine(ResetCoroutine());
+        SetLockedVisual(false);
+
+        activeCoroutine = StartCoroutine(ResetCoroutine(wasTriggered));
     }
 
     private IEnumerator TriggerCoroutine()
@@ -105,12 +108,19 @@ public class LockableTarget : MonoBehaviour
         }
 
         transform.rotation = fallRot;
-        activeCoroutine = null;
+
+        foreach (Transform child in transform)
+        {
+            if (child.CompareTag("TomatoSquished"))
+                Destroy(child.gameObject);
+        }
+
+        activeCoroutine = null; 
     }
 
-    private IEnumerator ResetCoroutine()
+    private IEnumerator ResetCoroutine(bool wasTriggered)
     {
-        if (audioSource != null && resetSound != null)
+        if (wasTriggered && audioSource != null && resetSound != null)
             audioSource.PlayOneShot(resetSound);
 
         Quaternion startRot = transform.rotation;
@@ -126,5 +136,9 @@ public class LockableTarget : MonoBehaviour
         transform.rotation = originalRotation;
         activeCoroutine = null;
         Debug.Log("[LockableTarget] " + name + " reset");
+    }
+    public void ForceResetState()
+    {
+        triggered = false;
     }
 }
