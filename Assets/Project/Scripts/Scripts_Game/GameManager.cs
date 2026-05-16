@@ -489,7 +489,7 @@ public class GameManager : MonoBehaviour
                     trackData.lastCheckTime = Time.time;
                 }
 
-                if (player.GetCurrentPlatform() != null)
+                if (player.GetCurrentPlatform() != null && !(player.GetCurrentPlatform() is PlatformTrainCar))
                     isMoving = true;
 
                 if (PlayerInputManager.Instance.BroomLowActive
