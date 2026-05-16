@@ -11,6 +11,7 @@ public class PupitreInteraction : MonoBehaviour
     [Header("Game Start")]
     [SerializeField] private float gameStartDelay = 4.5f; // Temps du countdown
     [SerializeField] private GameManager gameManager;
+    [SerializeField] private bool launchCyclesOnActivation = true;
 
     [Header("Camera Switch")]
     [SerializeField] private CinemachineCamera startZoneCamera;
@@ -154,7 +155,8 @@ public class PupitreInteraction : MonoBehaviour
         SwitchToNormalCamera();
         LaunchCountdownAndShutter();
 
-        StartGameLogic(); //  AJOUTER CETTE LIGNE
+        if (launchCyclesOnActivation)
+            StartGameLogic(); //  AJOUTER CETTE LIGNE
     }
 
     private IEnumerator SinkPupitreCoroutine()
@@ -182,7 +184,8 @@ public class PupitreInteraction : MonoBehaviour
         SwitchToNormalCamera();
         LaunchCountdownAndShutter();
 
-        StartGameLogic(); //  AJOUTER CETTE LIGNE
+        if (launchCyclesOnActivation)
+            StartGameLogic(); //  AJOUTER CETTE LIGNE
     }
 
     private void SwitchToNormalCamera()
