@@ -23081,6 +23081,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
+  gameManager: {fileID: 0}
 --- !u!65 &373248140
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -27824,67 +27825,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 457681839}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1001 &458864693
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2874823356820071546, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: collectibleID
-      value: WesternCanyon_01
-      objectReference: {fileID: 0}
-    - target: {fileID: 7973928896185996577, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 6.025
-      objectReference: {fileID: 0}
-    - target: {fileID: 7973928896185996577, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.421
-      objectReference: {fileID: 0}
-    - target: {fileID: 7973928896185996577, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 16.886
-      objectReference: {fileID: 0}
-    - target: {fileID: 7973928896185996577, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7973928896185996577, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7973928896185996577, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7973928896185996577, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7973928896185996577, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7973928896185996577, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7973928896185996577, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8202391839488399740, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
-      propertyPath: m_Name
-      value: CollectibleParent
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: a62c0a8ebd116084495895d5717bf636, type: 3}
 --- !u!1001 &460011670
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -29922,6 +29862,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EpervierManager
   sentinelCycleManager: {fileID: 0}
+  ballPhysicsMaterial: {fileID: 0}
   spawnPoint: {fileID: 576217686}
   arrivalPoint: {fileID: 671211048}
   groundY: 0
@@ -30395,6 +30336,11 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: 56f8281de24256a43a9268333d0e4791, type: 2}
   flameRenderer: {fileID: 496632967}
   healthBarUI: {fileID: 0}
+  enemyDetectionRange: 8
+  enemyAttractionForce: 3
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!65 &496632966
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -30685,6 +30631,7 @@ MonoBehaviour:
   metalShutter: {fileID: 1803505161}
   gameStartDelay: 4.5
   gameManager: {fileID: 1801742136}
+  launchCyclesOnActivation: 1
   startZoneCamera: {fileID: 1189802041}
   normalCamera: {fileID: 1231677634}
   activePriority: 20
@@ -57903,6 +57850,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
+  gameManager: {fileID: 0}
 --- !u!4 &601632572 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 8c6fa7ab62026104b805b357479e7e2d, type: 3}
@@ -73958,7 +73906,7 @@ GameObject:
   - component: {fileID: 871157100}
   - component: {fileID: 871157099}
   - component: {fileID: 871157098}
-  - component: {fileID: 871157097}
+  - component: {fileID: 871157102}
   m_Layer: 0
   m_Name: GoalDoor
   m_TagString: Untagged
@@ -73966,26 +73914,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
   m_IsActive: 1
---- !u!114 &871157097
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 871157096}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13f46b692273f7140adbb68819b9b395, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GoalDoor
-  isActive: 1
-  doorRenderer: {fileID: 871157099}
-  activeMaterial: {fileID: 2100000, guid: e9e73c7ed777b064d8861a8a0ed08d30, type: 2}
-  inactiveMaterial: {fileID: 2100000, guid: cdc1119035bdb6b48873886c877be377, type: 2}
-  doorReachedSound: {fileID: 8300000, guid: 66f5647459bc04147be64765d5fd4af9, type: 3}
-  doorActivatedSound: {fileID: 8300000, guid: d7a73023f94824c4290ef18a5f0e42a7, type: 3}
-  victoryEffectPrefab: {fileID: 0}
-  destroyPlayerOnReach: 0
 --- !u!65 &871157098
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -74078,6 +74006,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1890326246}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &871157102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 871157096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e7c438f6ac2e39419182a019b34064e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GoalDoorNew
+  isActive: 0
+  unlockDelay: 1
+  doorRenderer: {fileID: 0}
+  activeMaterial: {fileID: 2100000, guid: e9e73c7ed777b064d8861a8a0ed08d30, type: 2}
+  inactiveMaterial: {fileID: 2100000, guid: cdc1119035bdb6b48873886c877be377, type: 2}
+  doorReachedSound: {fileID: 8300000, guid: 66f5647459bc04147be64765d5fd4af9, type: 3}
+  doorUnlockedSound: {fileID: 8300000, guid: d7a73023f94824c4290ef18a5f0e42a7, type: 3}
+  doorLockedSound: {fileID: 0}
 --- !u!1 &871435854
 GameObject:
   m_ObjectHideFlags: 0
@@ -77847,6 +77795,63 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 8c6fa7ab62026104b805b357479e7e2d, type: 3}
   m_PrefabInstance: {fileID: 1299135254}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &931103343
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 6.063
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.486
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 16.914
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298065901071126008, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8591396982751902204, guid: c2b037246706813429f860180c3f50d8, type: 3}
+      propertyPath: m_Name
+      value: KeyCollectible
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c2b037246706813429f860180c3f50d8, type: 3}
 --- !u!4 &932174302 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
@@ -115263,6 +115268,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
+  gameManager: {fileID: 0}
 --- !u!65 &1547379115
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -150106,6 +150112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01f1e24c9c9319343b766d6275973fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartZone
+  gameManager: {fileID: 0}
 --- !u!65 &2038059293
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -156492,7 +156499,7 @@ PrefabInstance:
     - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: goalDoor
       value: 
-      objectReference: {fileID: 871157097}
+      objectReference: {fileID: 0}
     - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: victoryUI
       value: 
@@ -156650,6 +156657,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 158569115125722414, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
+      propertyPath: hasBroom
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 385622020930126507, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_Shadows.m_Type
       value: 0
@@ -157082,7 +157093,6 @@ SceneRoots:
   - {fileID: 1499074933}
   - {fileID: 1979583481}
   - {fileID: 1889279570}
-  - {fileID: 458864693}
   - {fileID: 1469583871}
   - {fileID: 335969854}
   - {fileID: 513695147}
@@ -157110,3 +157120,4 @@ SceneRoots:
   - {fileID: 1466792529}
   - {fileID: 811283108}
   - {fileID: 1783927866}
+  - {fileID: 931103343}

@@ -16,10 +16,10 @@ public class DeadBodyPhysics : MonoBehaviour
 
     void Update()
     {
+        // TEST - corpse toujours en resting stats, broomLow ignore
+        /*
         if (!isActive) return;
-
         bool broomLow = PlayerInputManager.Instance.BroomLowActive;
-
         if (broomLow && !isBroomLowState)
         {
             SetBoneProperties(
@@ -33,6 +33,7 @@ public class DeadBodyPhysics : MonoBehaviour
             SetBoneProperties(corpseData.restingMass, corpseData.restingDrag);
             isBroomLowState = false;
         }
+        */
     }
 
     public void Activate(EnemyStats.CorpseData data)
@@ -42,7 +43,6 @@ public class DeadBodyPhysics : MonoBehaviour
         isBroomLowState = false;
         SetBoneProperties(corpseData.restingMass, corpseData.restingDrag);
     }
-
     private void SetBoneProperties(float mass, float drag)
     {
         foreach (Rigidbody bone in boneRigidbodies)

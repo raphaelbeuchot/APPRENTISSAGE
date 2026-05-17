@@ -17,7 +17,6 @@ MonoBehaviour:
   skinVariants: []
   attackType: 0
   maxHealth: 400
-  limbLossThreshold: 0.5
   obstacleMask:
     serializedVersion: 2
     m_Bits: 0
@@ -25,7 +24,6 @@ MonoBehaviour:
   chaseSpeed: 0.5
   rotationSpeed: 1
   crawlSpeed: 0.2
-  speedReductionPerHealthPercent: 0.3
   detectionRadius: 4
   detectionAngle: 200
   detectionCheckInterval: 0.5
@@ -34,9 +32,6 @@ MonoBehaviour:
     m_Bits: 128
   stealthDetectionMultiplier: 1
   blinderHealthBarRange: 5
-  idleWanderChance: 0
-  wanderInterval: 5
-  wanderDuration: 1
   chasePersistenceDuration: 2
   attackRange: 0.75
   attackCooldown: 2
@@ -52,6 +47,7 @@ MonoBehaviour:
   meleeAttackDuration: 0.8
   hitWindupSound: {fileID: 0}
   hitLandSound: {fileID: 0}
+  hitWindupFailSound: {fileID: 0}
   spitDamage: 15
   spitSpeed: 10
   spitRange: 15
@@ -74,23 +70,17 @@ MonoBehaviour:
   sprayStunDuration: 2.5
   knockbackStunDuration: 0.5
   rotationToImpactDuration: 1.5
-  startingArmCount: 2
-  startingLegCount: 2
-  swellDuration: 1.5
-  swellScale: 1.5
-  canBecomeCrawler: 1
-  meleeHitsForFinisher: 3
   forceMultiplier: 1
   hasWeapon: 0
   weaponPrefab: {fileID: 0}
   sentinelDamageTaken: 60
   sentinelKnockbackForce: 500
-  waterSplashSound: {fileID: 0}
-  lavaSplashSound: {fileID: 0}
-  fallSound: {fileID: 0}
   sprayDamageTaken: 25
   broomDamageTaken: 40
   bottleDamageTaken: 2
+  waterSplashSound: {fileID: 0}
+  lavaSplashSound: {fileID: 0}
+  fallSound: {fileID: 0}
   idleSounds: []
   chaseSounds: []
   attackSound: {fileID: 0}
@@ -101,7 +91,11 @@ MonoBehaviour:
   ragdollTorque: 10
   meleeForceMultiplier: 1
   sentinelForceMultiplier: 1.5
-  explosionVFX: {fileID: 0}
-  explosionSound: {fileID: 0}
-  explosionSoundVolume: 1
-  explosionVFXScale: 1
+  corpseData:
+    projectionMass: 10
+    projectionDrag: 0.5
+    restingMass: 1
+    restingDrag: 3
+    velocityThreshold: 0.5
+    broomLowMassMultiplier: 1
+    broomLowDragMultiplier: 1

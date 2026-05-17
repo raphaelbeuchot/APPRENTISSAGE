@@ -501,6 +501,7 @@ public class GameManager : MonoBehaviour
             {
                 EnemyAI_AStar zombieAI = col.GetComponent<EnemyAI_AStar>();
                 bool isInPitMode = zombieAI != null && zombieAI.isInPitMode;
+                bool isOnIslandPlatform = zombieAI != null && zombieAI.isOnIslandPlatform;
 
                 if (isInPitMode)
                 {
@@ -509,6 +510,11 @@ public class GameManager : MonoBehaviour
                     if (enemyPit != null && enemyPit.isInShallowWater)
                         effectiveThreshold *= enemyPit.waterSlowdownMultiplier;
                     isMoving = rb.linearVelocity.magnitude > effectiveThreshold;
+                }
+                else if (isOnIslandPlatform)
+                {
+                    isMoving = zombieAI.targetHuman != null;
+
                 }
                 else
                 {

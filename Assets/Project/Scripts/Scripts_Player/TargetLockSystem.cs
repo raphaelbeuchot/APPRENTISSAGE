@@ -54,6 +54,11 @@ public class TargetLockSystem : MonoBehaviour
                 UnlockTarget();
             }
 
+            if (IsLocked && Vector3.Distance(transform.position, currentTarget.position) > stats.lockOnRange)
+            {
+                UnlockTarget();
+            }
+
             float switchInput = PlayerInputManager.Instance.SwitchTargetInput;
             if (Mathf.Abs(switchInput) < 0.3f)
             {

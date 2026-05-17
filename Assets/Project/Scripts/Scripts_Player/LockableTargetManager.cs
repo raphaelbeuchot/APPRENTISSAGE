@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class LockableTargetManager : MonoBehaviour
 {
@@ -49,11 +52,8 @@ public class LockableTargetManager : MonoBehaviour
     [SerializeField] private float slideDistance = 0f;
     [SerializeField] private float slideDuration = 1f;
 
-
-
     [Header("Audio")]
     [SerializeField] private AudioSource audioSource;
-  
     [SerializeField] private AudioClip resetSound;
     [SerializeField] private AudioClip countdownLoopSound;
     [SerializeField] private AudioClip victoryJingleSound;
@@ -82,6 +82,8 @@ public class LockableTargetManager : MonoBehaviour
     private enum PipState { Idle, Active, Off }
 
     private bool resetting = false;
+
+    private Transform previewContainer;
 
     private void Start()
     {
@@ -272,6 +274,7 @@ public class LockableTargetManager : MonoBehaviour
         Debug.Log("[LockableTargetManager] Timer expire - reset");
         StartCoroutine(ResetCoroutine());
     }
+
     private IEnumerator ResetCoroutine()
     {
         yield return new WaitForSeconds(resetDelay);
@@ -284,9 +287,9 @@ public class LockableTargetManager : MonoBehaviour
         if (audioSource != null && resetSound != null)
             audioSource.PlayOneShot(resetSound);
 
-        foreach(LockableTarget target in targets)
-    if (target != null)
-            target.ResetTarget();
+        foreach (LockableTarget target in targets)
+            if (target != null)
+                target.ResetTarget();
 
         for (int i = 0; i < targetIndicators.Count; i++)
             if (targetIndicators[i] != null)
@@ -313,6 +316,7 @@ public class LockableTargetManager : MonoBehaviour
         resetting = false;
         Debug.Log("[LockableTargetManager] Reset complet");
     }
+
     private void OnAllTargetsTriggered()
     {
         completed = true;
@@ -348,7 +352,6 @@ public class LockableTargetManager : MonoBehaviour
         float punchTarget = timerPipScale * pipPunchScale;
         float elapsed = 0f;
 
-        // Gonflement
         while (elapsed < pipPunchDuration)
         {
             elapsed += Time.deltaTime;
@@ -360,7 +363,6 @@ public class LockableTargetManager : MonoBehaviour
             yield return null;
         }
 
-        // Retour
         elapsed = 0f;
         while (elapsed < pipPunchDuration)
         {
@@ -384,7 +386,6 @@ public class LockableTargetManager : MonoBehaviour
         float punchTarget = timerPipScale * pipPunchScale;
         float elapsed = 0f;
 
-        // Punch initial
         while (elapsed < pipPunchDuration)
         {
             elapsed += Time.deltaTime;
@@ -396,7 +397,6 @@ public class LockableTargetManager : MonoBehaviour
             yield return null;
         }
 
-        // Calcul des directions radiales et durees aleatoires par pip
         Vector3 center = transform.position;
         Vector3[] directions = new Vector3[timerPipRenderers.Count];
         float[] fadeDurations = new float[timerPipRenderers.Count];
@@ -409,7 +409,6 @@ public class LockableTargetManager : MonoBehaviour
             fadeDurations[i] = pipFadeOutDuration * Random.Range(0.7f, 1.3f);
         }
 
-        // Explosion + fadeout
         elapsed = 0f;
         float maxDuration = pipFadeOutDuration * 1.3f;
 
@@ -423,11 +422,9 @@ public class LockableTargetManager : MonoBehaviour
 
                 float t = Mathf.Clamp01(elapsed / fadeDurations[i]);
 
-                // Deplacement radial
                 timerPipRenderers[i].transform.position =
                     center + directions[i] * (timerCircleRadius + elapsed * pipExplosionSpeed);
 
-                // Fadeout
                 Color c = timerPipRenderers[i].color;
                 c.a = Mathf.Lerp(1f, 0f, t);
                 timerPipRenderers[i].color = c;
@@ -494,4 +491,64 @@ public class LockableTargetManager : MonoBehaviour
         doorGO.transform.position = endPos;
         Debug.Log("[LockableTargetManager] Porte ouverte");
     }
+
+#if UNITY_EDITOR
+    public void GeneratePreviewCircle()
+    {
+        ClearPreviewCircle();
+
+        if (timerPipSprite == null || timerPipCount <= 0) return;
+
+        GameObject containerObj = new GameObject("_PreviewCircle");
+        containerObj.transform.SetParent(transform, false);
+        containerObj.transform.localPosition = Vector3.zero;
+        containerObj.hideFlags = HideFlags.DontSave;
+        previewContainer = containerObj.transform;
+
+        for (int i = 0; i < timerPipCount; i++)
+        {
+            float angle = Mathf.PI * 0.5f - (float)i / timerPipCount * Mathf.PI * 2f;
+
+            GameObject pip = new GameObject("PreviewPip_" + i);
+            pip.transform.SetParent(previewContainer, false);
+            pip.transform.localPosition = new Vector3(
+                timerCircleRadius * Mathf.Cos(angle),
+                timerCircleRadius * Mathf.Sin(angle),
+                0f);
+            pip.transform.localScale = Vector3.one * timerPipScale;
+            pip.hideFlags = HideFlags.DontSave;
+
+            SpriteRenderer sr = pip.AddComponent<SpriteRenderer>();
+            sr.sprite = timerPipSprite;
+            if (timerMatIdle != null)
+                sr.sharedMaterial = timerMatIdle;
+        }
+    }
+
+    public void ClearPreviewCircle()
+    {
+        if (previewContainer != null)
+        {
+            DestroyImmediate(previewContainer.gameObject);
+            previewContainer = null;
+        }
+    }
+#endif
 }
+
+#if UNITY_EDITOR
+[CustomEditor(typeof(LockableTargetManager))]
+public class LockableTargetManagerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
+        EditorGUILayout.Space(6f);
+        LockableTargetManager mgr = (LockableTargetManager)target;
+        if (GUILayout.Button("Generer cercle preview", GUILayout.Height(26f)))
+            mgr.GeneratePreviewCircle();
+        if (GUILayout.Button("Supprimer cercle preview", GUILayout.Height(22f)))
+            mgr.ClearPreviewCircle();
+    }
+}
+#endif
