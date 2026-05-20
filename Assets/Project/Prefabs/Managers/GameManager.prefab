@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2988491372564320349}
   - component: {fileID: 8872986562732300510}
   - component: {fileID: 7776503836475769553}
+  - component: {fileID: 422293158748416462}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -50,6 +51,8 @@ MonoBehaviour:
   player: {fileID: 0}
   sentinel: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
   playerHealth: {fileID: 0}
+  playerDetectionFeedback: {fileID: 0}
+  laserManager: {fileID: 0}
   sentinelLightRenderer: {fileID: 0}
   greenMaterial: {fileID: 2100000, guid: 7d4919ec70114eb48a54864c2cc6636b, type: 2}
   redMaterial: {fileID: 2100000, guid: 23d8ea2022ab1654c87fc6d911610a35, type: 2}
@@ -60,6 +63,7 @@ MonoBehaviour:
   zombieStunBySentinel: 0
   totalEnemies: 0
   enemiesKilled: 0
+  playerAlarmTriggered: 0
 --- !u!82 &7776503836475769553
 AudioSource:
   m_ObjectHideFlags: 0
@@ -157,3 +161,15 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &422293158748416462
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4840671087495672062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2860c69e3e09ac949985631ac30bf132, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelShooter
