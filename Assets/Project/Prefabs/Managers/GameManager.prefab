@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8872986562732300510}
   - component: {fileID: 7776503836475769553}
   - component: {fileID: 422293158748416462}
+  - component: {fileID: 457342960238016109}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -63,7 +64,6 @@ MonoBehaviour:
   zombieStunBySentinel: 0
   totalEnemies: 0
   enemiesKilled: 0
-  playerAlarmTriggered: 0
 --- !u!82 &7776503836475769553
 AudioSource:
   m_ObjectHideFlags: 0
@@ -173,3 +173,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2860c69e3e09ac949985631ac30bf132, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SentinelShooter
+--- !u!114 &457342960238016109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4840671087495672062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d0cca532ae6cff43b2df59aa2a7d0da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelDetector
+  playerAlarmTriggered: 0
