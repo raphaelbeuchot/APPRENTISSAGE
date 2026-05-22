@@ -8,6 +8,7 @@ public class DoorReturnTrigger : MonoBehaviour
 
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip sonDescente;
+    [SerializeField] private PupitreStartRoomFX sphereFX;
 
     private Vector3 initialDoorPosition;
     private bool triggered = false;
@@ -42,5 +43,8 @@ public class DoorReturnTrigger : MonoBehaviour
         }
 
         door.position = initialDoorPosition;
+
+        if (sphereFX != null)
+            sphereFX.OnPorteFermee();
     }
 }

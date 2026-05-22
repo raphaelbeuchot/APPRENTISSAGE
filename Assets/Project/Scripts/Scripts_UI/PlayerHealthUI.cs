@@ -40,7 +40,12 @@ public class PlayerHealthUI : MonoBehaviour
     private float realMaxHealth;
     private bool subscribed = false;
 
-    IEnumerator OnEnable()
+    private void OnEnable()
+    {
+        StartCoroutine(InitCoroutine());
+    }
+
+    private IEnumerator InitCoroutine()
     {
         if (playerHealth == null)
             playerHealth = FindObjectOfType<PlayerHealth>();

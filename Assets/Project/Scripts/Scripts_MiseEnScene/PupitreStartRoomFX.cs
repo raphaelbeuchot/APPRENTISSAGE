@@ -22,9 +22,21 @@ public class PupitreStartRoomFX : MonoBehaviour
 
     private Material mat;
     private Coroutine fxCoroutine;
+    private bool isRestart;
+
+    private void Awake()
+    {
+        isRestart = PlayerPrefs.GetInt("AutoStartCountdown", 0) == 1;
+    }
 
     private void Start()
     {
+        if (isRestart)
+        {
+            ApplyMaterial(materialPorteFermee);
+            return;
+        }
+
         if (sphereRenderer != null)
         {
             mat = sphereRenderer.material;

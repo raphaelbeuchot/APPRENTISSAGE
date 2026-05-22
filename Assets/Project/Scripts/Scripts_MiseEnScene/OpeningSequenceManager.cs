@@ -25,7 +25,7 @@ public class OpeningSequenceManager : MonoBehaviour
 
     [Header("Scene")]
     [SerializeField] private GameObject celluleGO;
-    [SerializeField] private Collider[] blockerColliders;
+    // [SerializeField] private Collider[] blockerColliders;
 
     [Header("Sons")]
     [SerializeField] private AudioSource audioSource;
@@ -67,8 +67,8 @@ public class OpeningSequenceManager : MonoBehaviour
 
         playerMovement.enabled = false;
 
-        foreach (Collider c in blockerColliders)
-            c.enabled = false;
+        // foreach (Collider c in blockerColliders)
+        //     c.enabled = false;
 
         camStartZoneGO.SetActive(false);
         cameraConfiner.enabled = false;
@@ -181,8 +181,8 @@ public class OpeningSequenceManager : MonoBehaviour
 
         celluleGO.SetActive(false);
 
-        foreach (Collider c in blockerColliders)
-            c.enabled = true;
+        // foreach (Collider c in blockerColliders)
+        //     c.enabled = true;
     }
 
     private void OnDrawGizmosSelected()
