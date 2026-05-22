@@ -151,6 +151,9 @@ public class PupitreInteraction : MonoBehaviour
     {
         hasActivated = true;
 
+        GameUIManager gameUIManager = FindAnyObjectByType<GameUIManager>();
+        if (gameUIManager != null) gameUIManager.ShowGameplayBars();
+
         StartCoroutine(SinkPupitreCoroutine());
         SwitchToNormalCamera();
         LaunchCountdownAndShutter();
@@ -180,6 +183,9 @@ public class PupitreInteraction : MonoBehaviour
     {
         hasActivated = true;
 
+        GameUIManager gameUIManager = FindAnyObjectByType<GameUIManager>();
+        if (gameUIManager != null) gameUIManager.ShowGameplayBars();
+
         transform.position = transform.position + Vector3.down * sinkDistance;
         SwitchToNormalCamera();
         LaunchCountdownAndShutter();
@@ -207,7 +213,7 @@ public class PupitreInteraction : MonoBehaviour
 
     private void LaunchCountdownAndShutter()
     {
-        // Vérifier que le GameObject est actif
+        // Vï¿½rifier que le GameObject est actif
         if (countdownManager != null && countdownManager.gameObject.activeInHierarchy)
         {
             countdownManager.StartCountdown();

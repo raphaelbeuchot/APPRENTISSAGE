@@ -31,6 +31,8 @@ public class GameUIManager : MonoBehaviour
     private GameObject staminaBar;
     private GameObject sprayBar;
 
+    private bool isGrabbed = false;
+
     public void HideGameplayBars()
     {
         if (healthBar != null) healthBar.SetActive(false);
@@ -41,27 +43,32 @@ public class GameUIManager : MonoBehaviour
         if (enemyIconsContainer != null) enemyIconsContainer.SetActive(false);
     }
 
-    private bool isGrabbed = false;
+    public void ShowGameplayBars()
+    {
+        if (healthBar != null) healthBar.SetActive(true);
+        if (staminaBar != null) staminaBar.SetActive(true);
+        if (pressureGauge != null) pressureGauge.SetActive(true);
+    }
 
     void Start()
     {
         zombies = FindObjectsOfType<GrabAttack>();
-        SprayAmmoUI sprayAmmoUI = FindObjectOfType<SprayAmmoUI>();
+        SprayAmmoUI sprayAmmoUI = FindObjectOfType<SprayAmmoUI>(true);
         if (sprayAmmoUI != null) sprayBar = sprayAmmoUI.gameObject;
 
-        StaminaBarFollower staminaBarFollower = FindObjectOfType<StaminaBarFollower>();
+        StaminaBarFollower staminaBarFollower = FindObjectOfType<StaminaBarFollower>(true);
         if (staminaBarFollower != null) staminaBar = staminaBarFollower.gameObject;
 
-        PlayerHealthUI playerHealthUI = FindObjectOfType<PlayerHealthUI>();
+        PlayerHealthUI playerHealthUI = FindObjectOfType<PlayerHealthUI>(true);
         if (playerHealthUI != null) healthBar = playerHealthUI.gameObject;
 
-        // === FIX : Trouver PlayerHealth automatiquement si non assigné ===
+        // === FIX : Trouver PlayerHealth automatiquement si non assignï¿½ ===
         if (playerHealth == null)
         {
             playerHealth = FindObjectOfType<PlayerHealth>();
             if (playerHealth == null)
             {
-                Debug.LogError("GameUIManager: PlayerHealth non trouvé!");
+                Debug.LogError("GameUIManager: PlayerHealth non trouvï¿½!");
             }
         }
 
@@ -74,7 +81,7 @@ public class GameUIManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("GameUIManager: damageVignette non assignée!");
+            Debug.LogError("GameUIManager: damageVignette non assignï¿½e!");
         }
 
         if (mashText != null)
@@ -86,7 +93,7 @@ public class GameUIManager : MonoBehaviour
         {
             countdownText.gameObject.SetActive(false);
         }
-        // NOUVEAU : Récupérer la config
+        // NOUVEAU : Rï¿½cupï¿½rer la config
         countdownConfig = countdownText.GetComponent<CountdownTextConfig>();
         if (countdownConfig == null)
         {
@@ -97,8 +104,10 @@ public class GameUIManager : MonoBehaviour
         if (playerHealth != null)
         {
             playerHealth.OnHealthChanged += OnPlayerDamaged;
-            Debug.Log("GameUIManager: Abonné aux events PlayerHealth");
+            Debug.Log("GameUIManager: Abonnï¿½ aux events PlayerHealth");
         }
+
+        HideGameplayBars();
     }
     void Update()
     {
@@ -232,7 +241,7 @@ public class GameUIManager : MonoBehaviour
         countdownText.gameObject.SetActive(true);
         countdownText.fontSize = countdownFontSize;
 
-        // Récupérer config
+        // Rï¿½cupï¿½rer config
         string titleText = countdownConfig != null
             ? countdownConfig.GetTitle()
             : "Super Panopticon!";
@@ -252,7 +261,7 @@ public class GameUIManager : MonoBehaviour
         c.a = 1f;
         countdownText.color = c;
 
-        // PHASE 1 : Rotation 360 degrés
+        // PHASE 1 : Rotation 360 degrï¿½s
         float elapsed = 0f;
         Quaternion startRotation = countdownText.transform.localRotation;
 
@@ -263,7 +272,7 @@ public class GameUIManager : MonoBehaviour
         while (elapsed < rotationDuration)
         {
             elapsed += Time.deltaTime;
-            float angle = Mathf.Lerp(0f, rotationDirection, elapsed / rotationDuration); // Modifié
+            float angle = Mathf.Lerp(0f, rotationDirection, elapsed / rotationDuration); // Modifiï¿½
             countdownText.transform.localRotation = Quaternion.Euler(0f, 0f, angle);
             yield return null;
         }

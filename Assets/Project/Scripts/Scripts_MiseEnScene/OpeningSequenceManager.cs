@@ -33,6 +33,11 @@ public class OpeningSequenceManager : MonoBehaviour
     [SerializeField] private AudioClip sonPorte;
     [SerializeField] private AudioClip sonGrille;
 
+    [Header("Ecran Noir")]
+    [SerializeField] private CanvasGroup ecranNoir;
+    [SerializeField] private float dureeEcranNoir = 4f;
+    [SerializeField] private float dureeFadeOut = 1f;
+
     [Header("Lever")]
     [SerializeField] private float delaiAvantPrompt = 2f;
     [SerializeField] private string textePrompt = "Press X";
@@ -55,6 +60,7 @@ public class OpeningSequenceManager : MonoBehaviour
         if (isRestart)
         {
             if (camStartRoomVcam != null) camStartRoomVcam.Priority = 0;
+            if (ecranNoir != null) ecranNoir.alpha = 0f;
             wakeUpDone = true;
             return;
         }
@@ -67,6 +73,8 @@ public class OpeningSequenceManager : MonoBehaviour
         camStartZoneGO.SetActive(false);
         cameraConfiner.enabled = false;
 
+        if (ecranNoir != null) ecranNoir.alpha = 1f;
+
         playerAnimator.Play("StandUpOPENING", 0, 0f);
         playerAnimator.speed = 0f;
         StartCoroutine(AttendreFinLever());
@@ -75,6 +83,21 @@ public class OpeningSequenceManager : MonoBehaviour
     private IEnumerator AttendreFinLever()
     {
         yield return null;
+
+        if (ecranNoir != null)
+        {
+            ecranNoir.alpha = 1f;
+            yield return new WaitForSeconds(dureeEcranNoir);
+
+            float elapsed = 0f;
+            while (elapsed < dureeFadeOut)
+            {
+                elapsed += Time.deltaTime;
+                ecranNoir.alpha = Mathf.Lerp(1f, 0f, elapsed / dureeFadeOut);
+                yield return null;
+            }
+            ecranNoir.alpha = 0f;
+        }
 
         yield return new WaitForSeconds(delaiAvantPrompt);
 
@@ -110,6 +133,7 @@ public class OpeningSequenceManager : MonoBehaviour
         boutonActive = true;
 
         boutonTransform.GetComponent<InteractBubble>()?.Hide();
+        boutonTransform.GetComponent<PupitreStartRoomFX>()?.Stop();
 
         if (sonBouton != null)
             audioSource.PlayOneShot(sonBouton);

@@ -38,8 +38,9 @@ public class PlayerHealthUI : MonoBehaviour
     private int normalPipCount = 0;
     private float baseMaxHealth;
     private float realMaxHealth;
+    private bool subscribed = false;
 
-    IEnumerator Start()
+    IEnumerator OnEnable()
     {
         if (playerHealth == null)
             playerHealth = FindObjectOfType<PlayerHealth>();
@@ -56,12 +57,14 @@ public class PlayerHealthUI : MonoBehaviour
 
         baseMaxHealth = playerHealth.GetBaseMaxHealth();
         realMaxHealth = playerHealth.GetMaxHealth();
-        baseMaxHealth = playerHealth.GetBaseMaxHealth();
-        realMaxHealth = playerHealth.GetMaxHealth();
 
         BuildPips();
 
-        playerHealth.OnHealthChanged += OnHealthChanged;
+        if (!subscribed)
+        {
+            playerHealth.OnHealthChanged += OnHealthChanged;
+            subscribed = true;
+        }
         OnHealthChanged(playerHealth.GetCurrentHealth(), realMaxHealth);
     }
 
@@ -193,7 +196,7 @@ public class PlayerHealthUI : MonoBehaviour
 
     void OnDestroy()
     {
-        if (playerHealth != null)
+        if (playerHealth != null && subscribed)
             playerHealth.OnHealthChanged -= OnHealthChanged;
     }
 }
