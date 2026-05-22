@@ -19,6 +19,7 @@ public class OpeningSequenceManager : MonoBehaviour
 
     [Header("Cameras")]
     [SerializeField] private GameObject camStartZoneGO;
+    [SerializeField] private CinemachineCamera camStartRoomVcam;
     [SerializeField] private CameraConfiner cameraConfiner;
     [SerializeField] private GameObject cameraPanningGO;
 
@@ -48,7 +49,6 @@ public class OpeningSequenceManager : MonoBehaviour
 
         camStartZoneGO.SetActive(false);
         cameraConfiner.enabled = false;
-        cameraPanningGO.SetActive(false);
 
         // TEMPORAIRE : a remplacer par les deux lignes commentees quand StandUpNEW est pret
         playerMovement.canMove = true;
@@ -75,7 +75,9 @@ public class OpeningSequenceManager : MonoBehaviour
     {
         if (!wakeUpDone || boutonActive || player == null) return;
 
+        if (boutonTransform == null) { Debug.LogError("[OSM] boutonTransform non assigne !"); return; }
         float distance = Vector3.Distance(boutonTransform.position, player.position);
+        Debug.Log($"[OSM] dist={distance:F2} range={interactionRange} interact={PlayerInputManager.Instance?.InteractPressed}");
         if (distance <= interactionRange && PlayerInputManager.Instance.InteractPressed)
             ActiverBouton();
     }
@@ -121,9 +123,9 @@ public class OpeningSequenceManager : MonoBehaviour
 
     private IEnumerator FranchiSeuil()
     {
+        if (camStartRoomVcam != null) camStartRoomVcam.Priority = 0;
         camStartZoneGO.SetActive(true);
         cameraConfiner.enabled = true;
-        cameraPanningGO.SetActive(true);
 
         yield return new WaitForSeconds(0.3f);
 
