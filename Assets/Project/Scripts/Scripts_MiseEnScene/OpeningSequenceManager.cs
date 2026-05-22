@@ -33,16 +33,33 @@ public class OpeningSequenceManager : MonoBehaviour
     [SerializeField] private AudioClip sonPorte;
     [SerializeField] private AudioClip sonGrille;
 
+    [Header("Lever")]
+    [SerializeField] private float delaiAvantPrompt = 2f;
+    [SerializeField] private string textePrompt = "Press X";
+
     private Transform player;
     private bool wakeUpDone = false;
     private bool boutonActive = false;
     private bool seuilFranchi = false;
+    private bool isRestart = false;
+
+    private void Awake()
+    {
+        isRestart = PlayerPrefs.GetInt("AutoStartCountdown", 0) == 1;
+    }
 
     private void Start()
     {
         player = playerMovement.transform;
 
-        playerMovement.canMove = false;
+        if (isRestart)
+        {
+            if (camStartRoomVcam != null) camStartRoomVcam.Priority = 0;
+            wakeUpDone = true;
+            return;
+        }
+
+        playerMovement.enabled = false;
 
         foreach (Collider c in blockerColliders)
             c.enabled = false;
@@ -50,34 +67,40 @@ public class OpeningSequenceManager : MonoBehaviour
         camStartZoneGO.SetActive(false);
         cameraConfiner.enabled = false;
 
-        // TEMPORAIRE : a remplacer par les deux lignes commentees quand StandUpNEW est pret
-        playerMovement.canMove = true;
-        wakeUpDone = true;
-
-        // playerAnimator.Play("StandUpNEW");
-        // StartCoroutine(AttendreFinLever());
+        playerAnimator.Play("StandUpOPENING", 0, 0f);
+        playerAnimator.speed = 0f;
+        StartCoroutine(AttendreFinLever());
     }
 
     private IEnumerator AttendreFinLever()
     {
         yield return null;
+
+        yield return new WaitForSeconds(delaiAvantPrompt);
+
+        CommentPanel.ShowPersistent(textePrompt);
+
+        yield return new WaitUntil(() => PlayerInputManager.Instance.InteractPressed);
+
+        CommentPanel.Hide();
+        playerAnimator.speed = 1f;
+
         yield return new WaitUntil(() =>
         {
             AnimatorStateInfo info = playerAnimator.GetCurrentAnimatorStateInfo(0);
-            return info.IsName("StandUpNEW") && info.normalizedTime >= 1f;
+            return info.IsName("StandUpOPENING") && info.normalizedTime >= 0.99f;
         });
 
-        playerMovement.canMove = true;
+        playerMovement.enabled = true;
         wakeUpDone = true;
     }
 
     private void Update()
     {
         if (!wakeUpDone || boutonActive || player == null) return;
+        if (boutonTransform == null) return;
 
-        if (boutonTransform == null) { Debug.LogError("[OSM] boutonTransform non assigne !"); return; }
         float distance = Vector3.Distance(boutonTransform.position, player.position);
-        Debug.Log($"[OSM] dist={distance:F2} range={interactionRange} interact={PlayerInputManager.Instance?.InteractPressed}");
         if (distance <= interactionRange && PlayerInputManager.Instance.InteractPressed)
             ActiverBouton();
     }
@@ -90,6 +113,10 @@ public class OpeningSequenceManager : MonoBehaviour
 
         if (sonBouton != null)
             audioSource.PlayOneShot(sonBouton);
+
+        if (camStartRoomVcam != null) camStartRoomVcam.Priority = 0;
+        camStartZoneGO.SetActive(true);
+        cameraConfiner.enabled = true;
 
         StartCoroutine(MonterPorte());
     }
@@ -123,10 +150,6 @@ public class OpeningSequenceManager : MonoBehaviour
 
     private IEnumerator FranchiSeuil()
     {
-        if (camStartRoomVcam != null) camStartRoomVcam.Priority = 0;
-        camStartZoneGO.SetActive(true);
-        cameraConfiner.enabled = true;
-
         yield return new WaitForSeconds(0.3f);
 
         if (sonGrille != null)
