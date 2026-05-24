@@ -48,6 +48,7 @@ public class GameUIManager : MonoBehaviour
         if (healthBar != null) healthBar.SetActive(true);
         if (staminaBar != null) staminaBar.SetActive(true);
         if (pressureGauge != null) pressureGauge.SetActive(true);
+        if (enemyIconsContainer != null) enemyIconsContainer.SetActive(true);
     }
 
     void Start()

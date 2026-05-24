@@ -4,7 +4,10 @@
       "Bash(Get-Content \"C:\\\\Users\\\\rapha\\\\APPRENTISSAGE\\\\Assets\\\\Project\\\\Scripts\\\\Scripts_Game\\\\GameManager.cs\")",
       "Bash(Measure-Object -Line)",
       "Bash(Select-Object -ExpandProperty Lines)",
-      "PowerShell(Get-Content *)"
+      "PowerShell(Get-Content *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\rapha\\\\Documents\\\\GitHub\\\\APPRENTISSAGE\\\\Assets\" -Recurse -Filter \"*.cs\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)"
     ]
   }
 }
