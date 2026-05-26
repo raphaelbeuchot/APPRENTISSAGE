@@ -22,6 +22,10 @@ public class PostVictorySequencer : MonoBehaviour
     [Tooltip("AudioSource utilisee pour les sons de la sequence (optionnel — si null, PlayOneShot ne jouera pas)")]
     [SerializeField] private AudioSource audioSource;
 
+    [Header("5c — Decor Exit")]
+    [Tooltip("Sequenceur d'expulsion du decor")]
+    [SerializeField] private DecorExitSequencer decorExit;
+
     [Header("5d — EndCurtain")]
     [Tooltip("Le rideau de fin a lever une fois le decor vide")]
     [SerializeField] private EndCurtainRise endCurtain;
@@ -77,11 +81,10 @@ public class PostVictorySequencer : MonoBehaviour
         // --- 5b : lights out (placeholder lerp — sera remplace par flashs) ---
         yield return StartCoroutine(Step5b_LightsOut());
 
-        // --- 5c (TODO) : vidage decor ---
+        // --- 5c : vidage decor ---
+        yield return StartCoroutine(Step5c_DecorExit());
 
         // --- 5d : EndCurtain se leve ---
-        // TODO: remplacer le WaitForSeconds par le callback OnDecorExitComplete de 5c
-        yield return new WaitForSeconds(3f);
         yield return StartCoroutine(Step5d_EndCurtainRise());
 
         // --- 6a (TODO) : TransitionRoomDoor activee ---
@@ -128,6 +131,24 @@ public class PostVictorySequencer : MonoBehaviour
         }
 
         yield break;
+    }
+
+    // ============================================
+    // ETAPE 5c — DECOR EXIT
+    // ============================================
+
+    private IEnumerator Step5c_DecorExit()
+    {
+        if (decorExit == null)
+        {
+            Debug.LogWarning("[PostVictory] Pas de DecorExitSequencer assigne — etape 5c skippee.");
+            yield break;
+        }
+
+        bool exitDone = false;
+        decorExit.OnDecorExitComplete += () => exitDone = true;
+        decorExit.StartExit();
+        yield return new WaitUntil(() => exitDone);
     }
 
     // ============================================
