@@ -30,6 +30,10 @@ public class PostVictorySequencer : MonoBehaviour
     [Tooltip("Le rideau de fin a lever une fois le decor vide")]
     [SerializeField] private EndCurtainRise endCurtain;
 
+    [Header("6a — Porte TransitionRoom")]
+    [Tooltip("La porte a activer une fois le rideau leve")]
+    [SerializeField] private TransitionRoomDoor transitionRoomDoor;
+
     [Header("5b — Lights Out")]
     [Tooltip("Le Global Volume de la scene (profil avec ColorAdjustments)")]
     [SerializeField] private Volume globalVolume;
@@ -87,8 +91,11 @@ public class PostVictorySequencer : MonoBehaviour
         // --- 5d : EndCurtain se leve ---
         yield return StartCoroutine(Step5d_EndCurtainRise());
 
-        // --- 6a (TODO) : TransitionRoomDoor activee ---
-        Debug.Log("[PostVictory] 5a+5b+5d OK. 5c et 6a a implementer.");
+        // --- 6a : TransitionRoomDoor activee ---
+        if (transitionRoomDoor != null)
+            transitionRoomDoor.Enable();
+
+        Debug.Log("[PostVictory] Sequence complete.");
     }
 
     // ============================================
