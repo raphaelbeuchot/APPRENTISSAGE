@@ -114,38 +114,31 @@ public class DecorExitSequencer : MonoBehaviour
     private List<Transform> CollectTargets()
     {
         HashSet<Transform> roots = new HashSet<Transform>();
+        HashSet<Transform> checked_ = new HashSet<Transform>();
 
         foreach (Renderer rend in FindObjectsOfType<Renderer>())
         {
             if (rend is ParticleSystemRenderer) continue;
 
             Transform root = rend.transform.root;
+            if (checked_.Contains(root)) continue;
+            checked_.Add(root);
 
-            // Exclure si n'importe quel ancetre est Ground (tag ou layer)
-            if (HasGroundAncestor(rend.transform)) continue;
+            string reason = null;
 
-            // Exclure le player
-            if (root.CompareTag("Player")) continue;
+            if      (HasGroundAncestor(rend.transform))                      reason = "Ground ancestor";
+            else if (root.tag == "Player")                                    reason = "Player";
+            else if (root.GetComponentInChildren<EndCurtainRise>() != null)   reason = "EndCurtainRise";
+            else if (root.GetComponentInChildren<Camera>() != null)           reason = "Camera";
+            else if (root.GetComponentInChildren<Canvas>() != null)           reason = "Canvas";
+            else if (root.GetComponent<LevelManager>() != null)              reason = "LevelManager";
+            else if (exitPivot != null && root == exitPivot.root)            reason = "ExitPivot";
+            else if (IsManuallyExcluded(root))                               reason = "ManualExclusion";
 
-            // Exclure l'EndCurtain (il a son propre script de montee)
-            if (root.GetComponentInChildren<EndCurtainRise>() != null) continue;
-
-            // Exclure tout GO contenant une Camera (evite de casser Cinemachine)
-            if (root.GetComponentInChildren<Camera>() != null) continue;
-
-            // Exclure les Canvas / UI
-            if (root.GetComponentInChildren<Canvas>() != null) continue;
-
-            // Exclure les GOs managers
-            if (root.GetComponent<LevelManager>() != null) continue;
-
-            // Exclure le pivot lui-meme
-            if (exitPivot != null && root == exitPivot.root) continue;
-
-            // Exclure les exclusions manuelles (Inspector)
-            if (IsManuallyExcluded(root)) continue;
-
-            roots.Add(root);
+            if (reason != null)
+                Debug.Log($"[DecorExit] EXCLU : {root.name} ({reason})");
+            else
+                roots.Add(root);
         }
 
         return new List<Transform>(roots);
@@ -168,7 +161,7 @@ public class DecorExitSequencer : MonoBehaviour
         Transform current = t;
         while (current != null)
         {
-            if (current.CompareTag("Ground")) return true;
+            if (current.tag == "Ground") return true;
             if (groundLayer >= 0 && current.gameObject.layer == groundLayer) return true;
             current = current.parent;
         }
@@ -182,7 +175,7 @@ public class DecorExitSequencer : MonoBehaviour
     private Vector3 GetExitDirection(Transform target)
     {
         // Cas special : sentinel
-        if (target.CompareTag("Sentinel"))
+        if (target.tag == "Sentinel")
             return Vector3.back;
 
         if (exitPivot == null)
