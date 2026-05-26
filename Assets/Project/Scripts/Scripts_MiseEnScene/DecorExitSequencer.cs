@@ -127,7 +127,8 @@ public class DecorExitSequencer : MonoBehaviour
             string reason = null;
 
             if      (HasGroundAncestor(rend.transform))                      reason = "Ground ancestor";
-            else if (root.tag == "Player")                                    reason = "Player";
+            else if (root.tag == "Player")                                             reason = "Player";
+            else if (root.GetComponentInChildren<PlayerPhysicsMovement>() != null)    reason = "Player (component)";
             else if (root.GetComponentInChildren<EndCurtainRise>() != null)   reason = "EndCurtainRise";
             else if (root.GetComponentInChildren<Camera>() != null)           reason = "Camera";
             else if (root.GetComponentInChildren<Canvas>() != null)           reason = "Canvas";
