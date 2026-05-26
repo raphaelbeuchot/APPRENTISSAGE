@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using System.Collections;
 
 /// <summary>
@@ -21,15 +22,23 @@ public class PostVictorySequencer : MonoBehaviour
     [Tooltip("AudioSource utilisee pour les sons de la sequence (optionnel — si null, PlayOneShot ne jouera pas)")]
     [SerializeField] private AudioSource audioSource;
 
-    [Header("5b — Lights Out (placeholder : lerp continu, sera remplace par flashs)")]
-    [Tooltip("Le Global Volume de la scene (profil post-process post-victoire)")]
+    [Header("5b — Lights Out")]
+    [Tooltip("Le Global Volume de la scene (profil avec ColorAdjustments)")]
     [SerializeField] private Volume globalVolume;
 
-    [Tooltip("Valeur cible du weight (1 = profil plein)")]
-    [SerializeField] private float dimTargetWeight = 1f;
+    [Tooltip("Intervalle en secondes entre chaque flash")]
+    [SerializeField] private float lightsOutInterval = 1f;
 
-    [Tooltip("Duree du fondu en secondes")]
-    [SerializeField] private float dimDuration = 1.5f;
+    [Tooltip("3 couleurs successives vers la teinte finale (la 3e = etat definitif)")]
+    [SerializeField] private Color[] lightsOutColors = new Color[]
+    {
+        new Color(0.807f, 0.876f, 1f),   // flash 1 — (206, 223, 255)
+        new Color(0.613f, 0.751f, 1f),   // flash 2 — (156, 191, 255)
+        new Color(0.420f, 0.627f, 1f),   // flash 3 — (107, 160, 255) final
+    };
+
+    [Tooltip("Son joue a chaque palier (doit avoir la meme longueur que lightsOutColors, ou laisser vide)")]
+    [SerializeField] private AudioClip[] lightsOutSounds;
 
     // ============================================
     // UNITY LIFECYCLE
@@ -113,7 +122,7 @@ public class PostVictorySequencer : MonoBehaviour
     }
 
     // ============================================
-    // ETAPE 5b — LIGHTS OUT (placeholder)
+    // ETAPE 5b — LIGHTS OUT (flashs saccades)
     // ============================================
 
     private IEnumerator Step5b_LightsOut()
@@ -124,17 +133,26 @@ public class PostVictorySequencer : MonoBehaviour
             yield break;
         }
 
-        float startWeight = globalVolume.weight;
-        float elapsed = 0f;
-
-        while (elapsed < dimDuration)
+        if (!globalVolume.profile.TryGet<ColorAdjustments>(out var colorAdj))
         {
-            elapsed += Time.deltaTime;
-            globalVolume.weight = Mathf.Lerp(startWeight, dimTargetWeight, elapsed / dimDuration);
-            yield return null;
+            Debug.LogWarning("[PostVictory] Pas de ColorAdjustments dans le profil — lights out skippee.");
+            yield break;
         }
 
-        globalVolume.weight = dimTargetWeight;
+        // Active le volume au premier flash
+        globalVolume.weight = 1f;
+
+        for (int i = 0; i < lightsOutColors.Length; i++)
+        {
+            colorAdj.colorFilter.Override(lightsOutColors[i]);
+
+            if (audioSource != null && lightsOutSounds != null && i < lightsOutSounds.Length && lightsOutSounds[i] != null)
+                audioSource.PlayOneShot(lightsOutSounds[i]);
+
+            Debug.Log($"[PostVictory] Flash {i + 1}/{lightsOutColors.Length} — {lightsOutColors[i]}");
+            yield return new WaitForSeconds(lightsOutInterval);
+        }
+
         Debug.Log("[PostVictory] Lights out OK.");
     }
 }
