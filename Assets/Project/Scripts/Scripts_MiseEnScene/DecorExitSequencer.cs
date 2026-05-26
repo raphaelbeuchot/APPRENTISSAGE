@@ -111,18 +111,12 @@ public class DecorExitSequencer : MonoBehaviour
 
         foreach (Renderer rend in FindObjectsOfType<Renderer>())
         {
-            // Exclure UI (CanvasRenderer est different, mais par securite)
             if (rend is ParticleSystemRenderer) continue;
 
             Transform root = rend.transform.root;
 
-            // Exclure Ground (layer ou tag)
-            if (rend.gameObject.layer == LayerMask.NameToLayer("Ground")) continue;
-            if (rend.CompareTag("Ground")) continue;
-
-            // Exclure le root si layer ou tag Ground
-            if (root.gameObject.layer == LayerMask.NameToLayer("Ground")) continue;
-            if (root.CompareTag("Ground")) continue;
+            // Exclure si n'importe quel ancetre est Ground (tag ou layer)
+            if (HasGroundAncestor(rend.transform)) continue;
 
             // Exclure le player
             if (root.CompareTag("Player")) continue;
@@ -130,7 +124,7 @@ public class DecorExitSequencer : MonoBehaviour
             // Exclure l'EndCurtain (il a son propre script de montee)
             if (root.GetComponentInChildren<EndCurtainRise>() != null) continue;
 
-            // Exclure les GOs managers (pas de Renderer direct dessus)
+            // Exclure les GOs managers
             if (root.GetComponent<LevelManager>() != null) continue;
             if (root.GetComponent<Camera>() != null) continue;
 
@@ -138,6 +132,22 @@ public class DecorExitSequencer : MonoBehaviour
         }
 
         return new List<Transform>(roots);
+    }
+
+    /// <summary>
+    /// Retourne true si le GO ou l'un de ses ancetres est tague "Ground" ou sur le layer Ground.
+    /// </summary>
+    private bool HasGroundAncestor(Transform t)
+    {
+        int groundLayer = LayerMask.NameToLayer("Ground");
+        Transform current = t;
+        while (current != null)
+        {
+            if (current.CompareTag("Ground")) return true;
+            if (groundLayer >= 0 && current.gameObject.layer == groundLayer) return true;
+            current = current.parent;
+        }
+        return false;
     }
 
     // ============================================
