@@ -3,75 +3,138 @@ using UnityEngine.Rendering;
 using System.Collections;
 
 /// <summary>
-/// Orchestre la sequence post-victoire une fois le wipe termine :
-///   1. Lights dim via Global Volume (ambiance bleutee)
-///   2. [Etape 5] Sol qui s'enfonce -> TransitionRoom
-///
+/// Orchestre la sequence post-victoire une fois le wipe termine.
 /// Setup : ajouter sur le meme GO que LevelManager.
-/// Assigner le Global Volume de la scene dans l'Inspector.
 /// </summary>
 public class PostVictorySequencer : MonoBehaviour
 {
     public static PostVictorySequencer Instance { get; private set; }
 
-    [Header("Lights Dim")]
-    [Tooltip("Le Global Volume de la scene (celui qui contient le profil post-process)")]
+    // ============================================
+    // INSPECTOR
+    // ============================================
+
+    [Header("5a — GoalDoor")]
+    [Tooltip("Son joue quand la GoalDoor disparait (optionnel)")]
+    [SerializeField] private AudioClip goalDoorDisappearSound;
+
+    [Tooltip("AudioSource utilisee pour les sons de la sequence (optionnel — si null, PlayOneShot ne jouera pas)")]
+    [SerializeField] private AudioSource audioSource;
+
+    [Header("5b — Lights Out (placeholder : lerp continu, sera remplace par flashs)")]
+    [Tooltip("Le Global Volume de la scene (profil post-process post-victoire)")]
     [SerializeField] private Volume globalVolume;
 
-    [Tooltip("Valeur cible du weight du volume apres dim (0 = normal, 1 = profil plein)")]
+    [Tooltip("Valeur cible du weight (1 = profil plein)")]
     [SerializeField] private float dimTargetWeight = 1f;
 
-    [Tooltip("Duree du fondu des lumieres en secondes")]
+    [Tooltip("Duree du fondu en secondes")]
     [SerializeField] private float dimDuration = 1.5f;
 
-    private float dimStartWeight = 0f;
+    // ============================================
+    // UNITY LIFECYCLE
+    // ============================================
 
-    void Awake()
+    private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(this); return; }
         Instance = this;
     }
 
-    /// <summary>
-    /// Point d'entree : appele par LevelManager quand le wipe est termine.
-    /// </summary>
+    // ============================================
+    // API PUBLIQUE
+    // ============================================
+
+    /// <summary>Point d'entree : appele par LevelManager quand le wipe est termine.</summary>
     public void StartPostVictorySequence()
     {
         Debug.Log("[PostVictory] Sequence demarre.");
         StartCoroutine(SequenceCoroutine());
     }
 
+    // ============================================
+    // SEQUENCE
+    // ============================================
+
     private IEnumerator SequenceCoroutine()
     {
-        // --- Etape 4 : lights dim ---
-        yield return StartCoroutine(DimLights());
+        // --- 5a : GoalDoor disparait + reprise controle joueur ---
+        yield return StartCoroutine(Step5a_GoalDoorDisappears());
 
-        // --- Etape 5 (TODO) : sol qui s'enfonce + TransitionRoom ---
-        // Joueur freeze ici en attendant l'implementation de TransitionRoom
-        Debug.Log("[PostVictory] Lights dim OK. En attente de TransitionRoom (Etape 5).");
+        // --- 5b : lights out (placeholder lerp — sera remplace par flashs) ---
+        yield return StartCoroutine(Step5b_LightsOut());
+
+        // --- 5c (TODO) : vidage decor ---
+        // --- 5d (TODO) : EndCurtain se leve ---
+        // --- 6a (TODO) : TransitionRoomDoor activee ---
+        Debug.Log("[PostVictory] 5a+5b OK. Suite a implementer.");
     }
 
-    private IEnumerator DimLights()
+    // ============================================
+    // ETAPE 5a — GOALDOOR DISPARAIT
+    // ============================================
+
+    private IEnumerator Step5a_GoalDoorDisappears()
+    {
+        LevelManager lm = GetComponent<LevelManager>();
+
+        // Detruire la GoalDoor
+        GameObject doorGO = null;
+        if (lm != null && lm.goalDoor != null)
+            doorGO = lm.goalDoor.gameObject;
+        else if (lm != null && lm.goalDoorNew != null)
+            doorGO = lm.goalDoorNew.gameObject;
+
+        if (doorGO != null)
+        {
+            if (audioSource != null && goalDoorDisappearSound != null)
+                audioSource.PlayOneShot(goalDoorDisappearSound);
+
+            Destroy(doorGO);
+            Debug.Log("[PostVictory] GoalDoor detruite.");
+        }
+        else
+        {
+            Debug.LogWarning("[PostVictory] GoalDoor introuvable — etape 5a skippee.");
+        }
+
+        // Re-afficher le mesh joueur (cache depuis VictoryScale)
+        if (lm != null && lm.player != null)
+        {
+            PlayerVictoryScale pvs = lm.player.GetComponent<PlayerVictoryScale>();
+            if (pvs != null) pvs.ShowPlayerMesh();
+
+            // Reprise du controle immédiate
+            lm.player.enabled = true;
+            Debug.Log("[PostVictory] Joueur visible + controle rendu.");
+        }
+
+        yield break;
+    }
+
+    // ============================================
+    // ETAPE 5b — LIGHTS OUT (placeholder)
+    // ============================================
+
+    private IEnumerator Step5b_LightsOut()
     {
         if (globalVolume == null)
         {
-            Debug.LogWarning("[PostVictory] Pas de Global Volume assigne — lights dim skippee.");
+            Debug.LogWarning("[PostVictory] Pas de Global Volume assigne — lights out skippee.");
             yield break;
         }
 
-        dimStartWeight = globalVolume.weight;
+        float startWeight = globalVolume.weight;
         float elapsed = 0f;
-
-        Debug.Log($"[PostVictory] Dim lights : {dimStartWeight:F2} -> {dimTargetWeight:F2} sur {dimDuration}s");
 
         while (elapsed < dimDuration)
         {
             elapsed += Time.deltaTime;
-            globalVolume.weight = Mathf.Lerp(dimStartWeight, dimTargetWeight, elapsed / dimDuration);
+            globalVolume.weight = Mathf.Lerp(startWeight, dimTargetWeight, elapsed / dimDuration);
             yield return null;
         }
 
         globalVolume.weight = dimTargetWeight;
-        Debug.Log("[PostVictory] Lights dim termine.");
+        Debug.Log("[PostVictory] Lights out OK.");
     }
 }
