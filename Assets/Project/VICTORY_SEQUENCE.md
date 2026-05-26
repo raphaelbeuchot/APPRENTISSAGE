@@ -17,10 +17,13 @@ GoalDoor → VictoryScale → VictoryUI → Wipe → PostVictorySequencer
 | `LevelManager.cs` | LevelManager | Orchestre toute la séquence |
 | `PlayerVictoryScale.cs` | Player | Anime les ghost meshes + fire event OnVictoryScaleComplete |
 | `VictoryUI.cs` | Canvas | Overlay victoire (fond + textes) |
-| `PostVictorySequencer.cs` | LevelManager | Séquence post-wipe (lights dim, futur TransitionRoom) |
+| `PostVictorySequencer.cs` | LevelManager | Séquence post-wipe (vidage décor + TransitionRoom) |
 | `LevelStatsTracker.cs` | LevelManager | Suivi des stats (tentatives, kills, détections…) |
 | `SentinelCycleManager.cs` | SentinelCycleManager | Cycle 1-2-3 soleil + stop visuel victoire |
 | `CycleReactiveRenderer.cs` | Bulbes de la sentinelle | Réagit aux états du cycle (matériaux + pulse) |
+| `DecorExitSequencer.cs` | LevelManager (ou dédié) | Expulse les props du décor selon position relative au pivot |
+| `EndCurtainRise.cs` | EndCurtain | Lève le rideau de fin une fois le décor vidé |
+| `TransitionRoomDoor.cs` | Porte TransitionRoom | Interaction joueur → niveau suivant avec fade |
 
 ---
 
@@ -58,15 +61,42 @@ GoalDoor → VictoryScale → VictoryUI → Wipe → PostVictorySequencer
 - Fire `OnWipeComplete`
 
 ### 5. Post-victoire (`PostVictorySequencer.StartPostVictorySequence`)
-- **Étape 4** : Lights dim via Global Volume weight lerp (`dimDuration` = 1.5s)
-- **Étape 5** : TransitionRoom
-  1. Téléport player vers `transitionRoomSpawnPoint` (via `rb.position` si Rigidbody)
-  2. `PlayerVictoryScale.ShowPlayerMesh()` — re-affiche le mesh caché depuis VictoryScale
-  3. Lever `CM_TransitionRoom.Priority` → Cinemachine blend
-  4. Attendre `cameraBlendWait` (0.8s)
-  5. `DalleVictory.StartDescent(player.transform)` — player parenté, isKinematic=true, descent, unparent, restore
-  6. `OnDescentComplete` → `player.enabled = true`
-- **Étape 6** : Portes activées via `TransitionRoomDoor.Enable()`
+
+**5a — GoalDoor disparaît**
+- Suppression instantanée du GO GoalDoor + son associé
+- `PlayerVictoryScale.ShowPlayerMesh()` — mesh joueur restauré
+- `player.enabled = true` — reprise du contrôle immédiate
+
+**5b — Lights out en à-coups**
+- 3 flashs successifs espacés de 1s
+- Chaque flash modifie la couleur/intensité du Global Volume Victory
+- Effet saccadé (pas un lerp continu) — simule des lumières qui s'éteignent une par une
+
+**5c — Vidage du décor (`DecorExitSequencer`)**
+- Collecte tous les GOs avec Renderer, sauf layer/tag Ground
+- Un GO repère `DecorExitPivot` est placé dans la scène — position de référence pour les directions
+- Règle d'expulsion par position relative au pivot :
+  - X < pivot.X → translate en **-X**
+  - X > pivot.X → translate en **+X**
+  - Autour du centre (X ≈ pivot.X) et Y > pivot.Y → translate en **+Y**
+- Cas spécial : la sentinel (tag `Sentinel`) part en **-Z**
+- Tous les props disparaissent en translation (pas de destroy immédiat — ils sortent du champ)
+
+**5d — EndCurtain se lève (`EndCurtainRise`)**
+- Déclenché une fois le décor vidé (ou après un délai fixe)
+- L'EndCurtain est un prop pur (pas de script actuellement) — script `EndCurtainRise` à créer
+- Mouvement : translation vers le haut jusqu'à une position haute définie dans l'Inspector
+
+**6 — TransitionRoom révélée**
+- La TransitionRoom était présente dans la scène depuis le début, cachée derrière l'EndCurtain
+- Aucun chargement — elle apparaît simplement une fois le rideau levé
+
+**6a — Porte niveau N+1 (`TransitionRoomDoor`)**
+- Une seule porte pour l'instant (NextLevel)
+- À portée (`interactRange`) : InteractBubble apparaît
+- Press X / Submit → porte s'ouvre + affichage UI "Continue"
+- Si le joueur recule au-delà de `interactRange` → porte se referme
+- Si le joueur franchit le seuil → fade out → loading screen → Level N+1
 
 ---
 
@@ -145,58 +175,85 @@ Canvas                          ← VictoryUI.cs est ici
 
 ---
 
-## PostVictorySequencer — Setup
-
-- Ajouter sur le GO LevelManager
-- Assigner le `Global Volume` de la scène (weight=0 au départ)
-- Le profil du volume doit contenir l'ambiance post-victoire (ex: désaturation, teinte bleue)
-- Assigner `transitionRoomSpawnPoint`, `dalle`, `cm_transitionRoom`, et les `doors`
-
----
-
-## DalleVictory — Setup
-
-- Ajouter sur le GO de la dalle physique (plateforme visible dans la scène)
-- Créer un GO vide `DalleEndPoint` en bas du puits → assigner à `endPoint`
-- `descDuration` : 2.5s conseillé, ajuster selon la hauteur du puits
-- La dalle reste à sa position initiale au restart (pas de reset nécessaire, la scène se recharge)
-
----
-
-## TransitionRoomDoor — Setup
-
-| Champ | Valeur |
-|---|---|
-| `action` | `NextLevel` ou `Restart` |
-| `interactRange` | 2.5 (ajuster selon la géométrie) |
-| `interactBubble` | `InteractBubble` sur ce GO ou un enfant |
-
-**Boutons d'interaction** : Submit (gamepad) / E / F
-
-**Règle** : les portes sont inactives jusqu'à `Enable()` → impossible d'interagir pendant la descente.
-
-**Porte Restart** : appelle `LevelManager.RestartLevel()` qui set `AutoStartCountdown=1` → la StartRoom au reload passera en mode porte-fermée (PupitreStartRoomFX, InteractBubble avec hideOnRestart).
-
----
-
 ## Visibilité joueur — Note technique
 
 `PlayerVictoryScale.TriggerScale()` désactive `SkinnedMeshRenderer` (jamais re-activé automatiquement).
 Pendant les étapes 2-4, la camera est sur CM_Victory → le joueur invisible est hors-cadre.
-`PostVictorySequencer` appelle `ShowPlayerMesh()` avant de lever CM_TransitionRoom → le joueur est visible quand la camera arrive sur la TransitionRoom.
+`PostVictorySequencer` appelle `ShowPlayerMesh()` en 5a → le joueur est visible dès la reprise du contrôle.
 
 ---
+
+## PostVictorySequencer — Setup
+
+- Ajouter sur le GO LevelManager
+- Assigner le `Global Volume` de la scène (weight=0 au départ)
+- Le profil du volume doit contenir l'ambiance post-victoire (teinte, désaturation…)
+- Assigner `goalDoor`, `decorExitSequencer`, `endCurtain`, `transitionRoomDoor`
 
 ## Inspector PostVictorySequencer
 
 | Champ | Valeur conseillée |
 |---|---|
 | `globalVolume` | Global Volume de la scène |
-| `dimTargetWeight` | 1 |
-| `dimDuration` | 1.5 |
-| `transitionRoomSpawnPoint` | Transform au sommet de la dalle |
-| `dalle` | GO avec DalleVictory.cs |
-| `cm_transitionRoom` | CinemachineCamera CM_TransitionRoom (Priority=0 au repos) |
-| `cm_transitionRoomPriority` | 25 |
-| `cameraBlendWait` | 0.8 |
-| `doors` | [DoorNextLevel, DoorRestart] |
+| `lightsOutFlashes` | 3 |
+| `lightsOutInterval` | 1s |
+| `goalDoor` | GO GoalDoor |
+| `goalDoorSound` | Son de disparition GoalDoor |
+| `decorExitSequencer` | Composant DecorExitSequencer |
+| `endCurtain` | Composant EndCurtainRise |
+| `transitionRoomDoor` | Composant TransitionRoomDoor |
+
+---
+
+## DecorExitSequencer — Setup
+
+- Ajouter sur n'importe quel GO (LevelManager conseillé)
+- Créer un GO vide `DecorExitPivot` et le centrer dans la zone de jeu → assigner à `exitPivot`
+- Les props avec Renderer sont collectés automatiquement au runtime (sauf layer/tag Ground)
+- La sentinel doit avoir le tag `Sentinel` pour partir en -Z
+
+## Inspector DecorExitSequencer
+
+| Champ | Valeur conseillée |
+|---|---|
+| `exitPivot` | Transform du GO repère |
+| `exitDuration` | 0.6s (durée de la translation de chaque prop) |
+| `exitDistance` | 20 (distance de déplacement avant destruction) |
+| `staggerDelay` | 0.05s (décalage entre chaque prop pour éviter que tout parte d'un coup) |
+
+---
+
+## EndCurtainRise — Setup
+
+- Ajouter sur le GO EndCurtain (prop pur, metalshutter de fin)
+- Créer un GO vide `EndCurtainTopPoint` à la position haute finale → assigner à `riseTarget`
+- `riseDuration` : 1.2s conseillé, ajuster selon la hauteur
+
+## Inspector EndCurtainRise
+
+| Champ | Valeur conseillée |
+|---|---|
+| `riseTarget` | Transform position haute finale |
+| `riseDuration` | 1.2 |
+| `riseSound` | Son de montée (optionnel) |
+
+---
+
+## TransitionRoomDoor — Setup
+
+- Ajouter sur le GO de la porte dans la TransitionRoom
+- La TransitionRoom est présente dans la scène depuis le début, cachée derrière l'EndCurtain
+- La porte est inactive jusqu'à `Enable()` (appelé par PostVictorySequencer après EndCurtainRise)
+
+## Inspector TransitionRoomDoor
+
+| Champ | Valeur conseillée |
+|---|---|
+| `interactRange` | 2.5 |
+| `interactBubble` | InteractBubble sur ce GO ou un enfant |
+| `doorOpenAnim` | Animation ou translate d'ouverture |
+| `continueUI` | Canvas/GO "Continue" à afficher au press X |
+| `enterTrigger` | Trigger de franchissement de seuil |
+| `fadeDuration` | 0.5s |
+
+**Boutons d'interaction** : Submit (gamepad) / E / F
