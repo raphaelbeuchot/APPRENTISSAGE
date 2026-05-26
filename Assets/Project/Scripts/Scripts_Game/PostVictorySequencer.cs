@@ -22,6 +22,10 @@ public class PostVictorySequencer : MonoBehaviour
     [Tooltip("AudioSource utilisee pour les sons de la sequence (optionnel — si null, PlayOneShot ne jouera pas)")]
     [SerializeField] private AudioSource audioSource;
 
+    [Header("5d — EndCurtain")]
+    [Tooltip("Le rideau de fin a lever une fois le decor vide")]
+    [SerializeField] private EndCurtainRise endCurtain;
+
     [Header("5b — Lights Out")]
     [Tooltip("Le Global Volume de la scene (profil avec ColorAdjustments)")]
     [SerializeField] private Volume globalVolume;
@@ -74,9 +78,14 @@ public class PostVictorySequencer : MonoBehaviour
         yield return StartCoroutine(Step5b_LightsOut());
 
         // --- 5c (TODO) : vidage decor ---
-        // --- 5d (TODO) : EndCurtain se leve ---
+
+        // --- 5d : EndCurtain se leve ---
+        // TODO: remplacer le WaitForSeconds par le callback OnDecorExitComplete de 5c
+        yield return new WaitForSeconds(3f);
+        yield return StartCoroutine(Step5d_EndCurtainRise());
+
         // --- 6a (TODO) : TransitionRoomDoor activee ---
-        Debug.Log("[PostVictory] 5a+5b OK. Suite a implementer.");
+        Debug.Log("[PostVictory] 5a+5b+5d OK. 5c et 6a a implementer.");
     }
 
     // ============================================
@@ -119,6 +128,24 @@ public class PostVictorySequencer : MonoBehaviour
         }
 
         yield break;
+    }
+
+    // ============================================
+    // ETAPE 5d — ENDCURTAIN RISE
+    // ============================================
+
+    private IEnumerator Step5d_EndCurtainRise()
+    {
+        if (endCurtain == null)
+        {
+            Debug.LogWarning("[PostVictory] Pas d'EndCurtain assigne — etape 5d skippee.");
+            yield break;
+        }
+
+        bool riseDone = false;
+        endCurtain.OnRiseComplete += () => riseDone = true;
+        endCurtain.Rise();
+        yield return new WaitUntil(() => riseDone);
     }
 
     // ============================================
