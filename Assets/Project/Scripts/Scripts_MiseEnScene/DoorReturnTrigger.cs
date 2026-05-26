@@ -10,21 +10,49 @@ public class DoorReturnTrigger : MonoBehaviour
     [SerializeField] private AudioClip sonDescente;
     [SerializeField] private PupitreStartRoomFX sphereFX;
 
+    [Header("Condition caméra")]
+    [Tooltip("Objet dont le X world sert de seuil : la porte descend quand la caméra le dépasse")]
+    [SerializeField] private Transform cameraXThreshold;
+    [Tooltip("Laisser vide pour utiliser Camera.main")]
+    [SerializeField] private Camera targetCamera;
+
     private Vector3 initialDoorPosition;
-    private bool triggered = false;
+    private bool triggerActivated = false;
+    private bool descentStarted = false;
 
     private void Start()
     {
         if (door != null)
             initialDoorPosition = door.position;
+
+        if (targetCamera == null)
+            targetCamera = Camera.main;
+    }
+
+    private void Update()
+    {
+        if (!triggerActivated || descentStarted) return;
+        if (cameraXThreshold == null || targetCamera == null) return;
+
+        if (targetCamera.transform.position.x > cameraXThreshold.position.x)
+        {
+            descentStarted = true;
+            StartCoroutine(DescendreDoor());
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (triggered || !other.CompareTag("Player")) return;
+        if (triggerActivated || !other.CompareTag("Player")) return;
 
-        triggered = true;
-        StartCoroutine(DescendreDoor());
+        triggerActivated = true;
+
+        // Si pas de seuil caméra assigné, on déclenche directement (fallback)
+        if (cameraXThreshold == null)
+        {
+            descentStarted = true;
+            StartCoroutine(DescendreDoor());
+        }
     }
 
     private IEnumerator DescendreDoor()

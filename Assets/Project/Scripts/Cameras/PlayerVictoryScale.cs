@@ -56,6 +56,13 @@ public class PlayerVictoryScale : MonoBehaviour
     // API PUBLIQUE
     // ============================================
 
+    /// <summary>Re-affiche le mesh du joueur (appele par PostVictorySequencer avant la TransitionRoom).</summary>
+    public void ShowPlayerMesh()
+    {
+        if (playerMeshRenderer != null)
+            playerMeshRenderer.enabled = true;
+    }
+
     public void TriggerScale()
     {
         if (gameUIManager != null) gameUIManager.HideGameplayBars();

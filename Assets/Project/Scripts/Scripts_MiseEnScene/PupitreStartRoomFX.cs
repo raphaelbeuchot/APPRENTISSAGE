@@ -16,6 +16,11 @@ public class PupitreStartRoomFX : MonoBehaviour
     [SerializeField] private AudioClip sonBip;
     [SerializeField] private bool pulseAuDemarrage = true;
 
+    [Header("Lumiere")]
+    [SerializeField] private Light pointLight;
+    [SerializeField] private float intensiteLumiereMax = 1.5f;
+    [SerializeField] private float intensiteLumiereMin = 0.1f;
+
     [Header("Materials")]
     [SerializeField] private Material materialApresClick;
     [SerializeField] private Material materialPorteFermee;
@@ -33,6 +38,7 @@ public class PupitreStartRoomFX : MonoBehaviour
     {
         if (isRestart)
         {
+            if (pointLight != null) pointLight.intensity = 0f;
             ApplyMaterial(materialPorteFermee);
             return;
         }
@@ -79,6 +85,12 @@ public class PupitreStartRoomFX : MonoBehaviour
     {
         if (mat != null)
             mat.SetColor("_EmissionColor", couleurEmission * intensite);
+
+        if (pointLight != null)
+        {
+            float t = (intensite - intensiteMin) / Mathf.Max(intensiteMax - intensiteMin, 0.001f);
+            pointLight.intensity = Mathf.Lerp(intensiteLumiereMin, intensiteLumiereMax, t);
+        }
     }
 
     private void ApplyMaterial(Material m)
@@ -92,6 +104,7 @@ public class PupitreStartRoomFX : MonoBehaviour
     {
         if (fxCoroutine != null) StopCoroutine(fxCoroutine);
         if (audioSource != null) audioSource.Stop();
+        if (pointLight != null) pointLight.intensity = 0f;
         ApplyMaterial(materialApresClick);
     }
 

@@ -7,18 +7,12 @@ using System.Collections;
 public class VictoryUI : MonoBehaviour
 {
     [Header("Containers")]
-    [Tooltip("Parent qui slide pendant le wipe (contient le panel textes)")]
+    [Tooltip("Container des textes — apparait apres le fade du fond")]
     [SerializeField] private RectTransform slideContainer;
-    [Tooltip("Panel textes — slide depuis la droite pendant le Show")]
-    [SerializeField] private RectTransform victoryPanel;
-    [Tooltip("CanvasGroup du panel textes")]
+    [Tooltip("CanvasGroup du fond colore — fade in sur les ghosts")]
+    [SerializeField] private CanvasGroup colorBackground;
+    [Tooltip("CanvasGroup du panel textes (interactabilite)")]
     [SerializeField] private CanvasGroup victoryCanvasGroup;
-
-    [Header("Background 3D")]
-    [Tooltip("Material unlit solide pour le fond (ex: Unlit/Color). ZTest=Always et ZWrite=Off seront forces en code.")]
-    [SerializeField] private Material bgQuadMaterial;
-    [Tooltip("Distance devant la camera pour le quad de fond (doit etre < distance camera-ghosts)")]
-    [SerializeField] private float bgQuadDistance = 5f;
 
     [Header("Textes")]
     [SerializeField] private TextMeshProUGUI levelCompleteText;
@@ -26,34 +20,33 @@ public class VictoryUI : MonoBehaviour
     [SerializeField] private string levelCompleteMessage = "LEVEL COMPLETE";
     [SerializeField] private string attemptsPrefix = "Essais : ";
 
-    [Header("Timings Show")]
-    [Tooltip("Duree du slide du texte et des ghosts")]
-    [SerializeField] private float slideDuration = 0.55f;
-    [Tooltip("Duree du pop-in de Essais")]
-    [SerializeField] private float essaisPopDuration = 0.25f;
-    [SerializeField] private AnimationCurve slideCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [Header("Timings")]
+    [Tooltip("Duree du fade-in du fond sur les ghosts")]
+    [SerializeField] private float bgFadeDuration = 0.4f;
+    [Tooltip("Duree du slide des textes (titre depuis gauche, essais depuis droite)")]
+    [SerializeField] private float textSlideDuration = 0.35f;
+    [SerializeField] private AnimationCurve textSlideCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-    [Header("Ghost Slide")]
-    [Tooltip("Distance en unites monde vers laquelle les ghosts glissent (gauche = negatif)")]
-    [SerializeField] private float ghostSlideDistance = 80f;
+    [Header("Sons")]
+    [Tooltip("Son joue au debut du slide du titre")]
+    [SerializeField] private AudioClip titleSlideSound;
+    [Tooltip("Son joue au debut du slide de Essais")]
+    [SerializeField] private AudioClip essaisSlideSound;
+    private AudioSource audioSource;
 
     [Header("Wipe")]
     [SerializeField] private float wipeDuration = 0.6f;
     [SerializeField] private AnimationCurve wipeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Camera Victory")]
-    [Tooltip("CinemachineCamera a activer pendant le wipe (a creer dans la scene)")]
     [SerializeField] private CinemachineCamera cm_victory;
-    [Tooltip("Priorite donnee a CM_Victory au moment du wipe")]
     [SerializeField] private int cm_victoryPriority = 20;
 
-    /// <summary>Fire quand le wipe est termine et que le niveau est revele.</summary>
     public event Action OnWipeComplete;
 
     private bool isActive = false;
     private bool isTransitioning = false;
     private Canvas parentCanvas;
-    private GameObject bgQuad;
 
     // ============================================
     // UNITY LIFECYCLE
@@ -64,6 +57,11 @@ public class VictoryUI : MonoBehaviour
         parentCanvas = GetComponentInParent<Canvas>();
         if (parentCanvas == null)
             parentCanvas = FindObjectOfType<Canvas>();
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 0f;
 
         Hide();
     }
@@ -81,7 +79,7 @@ public class VictoryUI : MonoBehaviour
     }
 
     // ============================================
-    // SHOW — appele par LevelManager apres VictoryScale
+    // SHOW
     // ============================================
 
     public void Show(PlayerHealth playerHealth = null)
@@ -89,13 +87,13 @@ public class VictoryUI : MonoBehaviour
         isActive = false;
         isTransitioning = false;
 
-        // Reset container canvas
+        // Container invisible au depart
         if (slideContainer != null)
-            slideContainer.anchoredPosition = Vector2.zero;
+            slideContainer.localScale = Vector3.zero;
 
-        // Panel part hors-ecran a droite
-        if (victoryPanel != null)
-            victoryPanel.anchoredPosition = new Vector2(CanvasWidth(), 0f);
+        // Fond invisible au depart
+        if (colorBackground != null)
+            colorBackground.alpha = 0f;
 
         if (victoryCanvasGroup != null)
         {
@@ -104,7 +102,7 @@ public class VictoryUI : MonoBehaviour
             victoryCanvasGroup.blocksRaycasts = false;
         }
 
-        // Peupler les textes
+        // Peupler textes
         if (levelCompleteText != null)
             levelCompleteText.text = levelCompleteMessage;
 
@@ -115,59 +113,76 @@ public class VictoryUI : MonoBehaviour
             attemptsText.text = attemptsPrefix + attempts;
         }
 
-        // "Essais" commence a scale 0 (pop-in plus tard)
-        if (attemptsText != null)
-            attemptsText.transform.localScale = Vector3.zero;
-
-        // Background 3D : spawn instantane, sous les ghosts (renderQueue 2990 < ghosts 3000+)
-        SpawnBackgroundQuad();
-
         StartCoroutine(ShowCoroutine());
     }
 
     private IEnumerator ShowCoroutine()
     {
-        // 1. Stop sentinel blinking + reset visuel -> GreenLight
+        // 1. Stop sentinel
         SentinelCycleManager cycle = FindObjectOfType<SentinelCycleManager>();
         if (cycle != null) cycle.StopCycleForVictory();
 
-        // 2. Collecte des ghosts pour slide
-        VictoryGhostBillboard[] ghosts = FindObjectsByType<VictoryGhostBillboard>(FindObjectsSortMode.None);
-        Vector3[] ghostStarts = new Vector3[ghosts.Length];
-        Vector3 slideDir = Camera.main != null ? -Camera.main.transform.right : Vector3.left;
-        for (int i = 0; i < ghosts.Length; i++)
-            ghostStarts[i] = ghosts[i].transform.position;
-
-        // 3. Slide panel (droite->centre) + ghosts (gauche) simultanement
-        //    Background quad 3D est deja en place, ghosts (renderQueue 3000+) s'affichent devant.
-        float canvasW = CanvasWidth();
-        Vector2 panelStart = new Vector2(canvasW, 0f);
-        Vector2 panelEnd = Vector2.zero;
-
-        float elapsed = 0f;
-        while (elapsed < slideDuration)
+        // 2. Fond fade in sur les ghosts
+        if (colorBackground != null)
         {
-            elapsed += Time.unscaledDeltaTime;
-            float t = slideCurve.Evaluate(Mathf.Clamp01(elapsed / slideDuration));
-
-            if (victoryPanel != null)
-                victoryPanel.anchoredPosition = Vector2.Lerp(panelStart, panelEnd, t);
-
-            for (int i = 0; i < ghosts.Length; i++)
-                if (ghosts[i] != null)
-                    ghosts[i].transform.position = ghostStarts[i] + slideDir * (ghostSlideDistance * t);
-
-            yield return null;
+            float e = 0f;
+            while (e < bgFadeDuration)
+            {
+                e += Time.unscaledDeltaTime;
+                colorBackground.alpha = Mathf.Clamp01(e / bgFadeDuration);
+                yield return null;
+            }
+            colorBackground.alpha = 1f;
         }
-        if (victoryPanel != null) victoryPanel.anchoredPosition = panelEnd;
 
-        // 4. Detruire les ghosts (hors-ecran)
+        // 3. Kill ghosts (couverts par le fond)
+        VictoryGhostBillboard[] ghosts = FindObjectsByType<VictoryGhostBillboard>(FindObjectsSortMode.None);
         foreach (var ghost in ghosts)
             if (ghost != null) Destroy(ghost.gameObject);
 
-        // 5. Pop-in "Essais"
-        if (attemptsText != null)
-            yield return StartCoroutine(PopIn(attemptsText.transform));
+        // 4. Rendre le container visible (scale 1), textes hors-ecran
+        if (slideContainer != null)
+            slideContainer.localScale = Vector3.one;
+
+        RectTransform titleRT  = levelCompleteText != null ? levelCompleteText.GetComponent<RectTransform>() : null;
+        RectTransform essaisRT = attemptsText      != null ? attemptsText.GetComponent<RectTransform>()      : null;
+
+        // Positions normales (definies dans le layout)
+        Vector2 titleNormal  = titleRT  != null ? titleRT.anchoredPosition  : Vector2.zero;
+        Vector2 essaisNormal = essaisRT != null ? essaisRT.anchoredPosition : Vector2.zero;
+
+        float w = CanvasWidth();
+
+        // Positions de depart : titre depuis gauche, essais depuis droite
+        Vector2 titleStart  = new Vector2(titleNormal.x  - w, titleNormal.y);
+        Vector2 essaisStart = new Vector2(essaisNormal.x + w, essaisNormal.y);
+
+        if (titleRT  != null) titleRT.anchoredPosition  = titleStart;
+        if (essaisRT != null) essaisRT.anchoredPosition = essaisStart;
+
+        // 5a. Titre slide depuis la gauche
+        if (titleSlideSound != null) audioSource.PlayOneShot(titleSlideSound);
+        float elapsed = 0f;
+        while (elapsed < textSlideDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = textSlideCurve.Evaluate(Mathf.Clamp01(elapsed / textSlideDuration));
+            if (titleRT != null) titleRT.anchoredPosition = Vector2.Lerp(titleStart, titleNormal, t);
+            yield return null;
+        }
+        if (titleRT != null) titleRT.anchoredPosition = titleNormal;
+
+        // 5b. Essais slide depuis la droite (declenche quand titre est arrive)
+        if (essaisSlideSound != null) audioSource.PlayOneShot(essaisSlideSound);
+        elapsed = 0f;
+        while (elapsed < textSlideDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = textSlideCurve.Evaluate(Mathf.Clamp01(elapsed / textSlideDuration));
+            if (essaisRT != null) essaisRT.anchoredPosition = Vector2.Lerp(essaisStart, essaisNormal, t);
+            yield return null;
+        }
+        if (essaisRT != null) essaisRT.anchoredPosition = essaisNormal;
 
         // 6. Activer input
         if (victoryCanvasGroup != null)
@@ -181,27 +196,20 @@ public class VictoryUI : MonoBehaviour
     }
 
     // ============================================
-    // WIPE — declenche par input
+    // WIPE
     // ============================================
 
     private IEnumerator WipeCoroutine()
     {
         Time.timeScale = 1f;
 
-        // Activer CM_Victory
         if (cm_victory != null)
             cm_victory.Priority = cm_victoryPriority;
 
-        // Positions de depart pour le slide
-        Vector2 canvasStart = slideContainer != null ? slideContainer.anchoredPosition : Vector2.zero;
-        Vector2 canvasEnd = new Vector2(canvasStart.x + CanvasWidth(), canvasStart.y);
+        Vector2 startPos = slideContainer != null ? slideContainer.anchoredPosition : Vector2.zero;
+        Vector2 endPos   = new Vector2(startPos.x + CanvasWidth(), startPos.y);
+        float   bgStart  = colorBackground != null ? colorBackground.alpha : 0f;
 
-        Vector3 bgStart = bgQuad != null ? bgQuad.transform.position : Vector3.zero;
-        Vector3 bgSlide = Camera.main != null
-            ? Camera.main.transform.right * BgQuadWorldWidth()
-            : Vector3.right * 10f;
-
-        // Slide canvas + quad ensemble vers la droite
         float elapsed = 0f;
         while (elapsed < wipeDuration)
         {
@@ -209,18 +217,16 @@ public class VictoryUI : MonoBehaviour
             float t = wipeCurve.Evaluate(Mathf.Clamp01(elapsed / wipeDuration));
 
             if (slideContainer != null)
-                slideContainer.anchoredPosition = Vector2.Lerp(canvasStart, canvasEnd, t);
+                slideContainer.anchoredPosition = Vector2.Lerp(startPos, endPos, t);
 
-            if (bgQuad != null)
-                bgQuad.transform.position = bgStart + bgSlide * t;
+            if (colorBackground != null)
+                colorBackground.alpha = Mathf.Lerp(bgStart, 0f, t);
 
             yield return null;
         }
 
-        if (slideContainer != null) slideContainer.anchoredPosition = canvasEnd;
-
         Hide();
-        Debug.Log("[VictoryUI] Wipe termine — niveau revele.");
+        Debug.Log("[VictoryUI] Wipe termine.");
         OnWipeComplete?.Invoke();
     }
 
@@ -232,96 +238,33 @@ public class VictoryUI : MonoBehaviour
     {
         isActive = false;
 
+        if (colorBackground != null)
+            colorBackground.alpha = 0f;
+
         if (victoryCanvasGroup != null)
         {
-            victoryCanvasGroup.alpha = 0f;
             victoryCanvasGroup.interactable = false;
             victoryCanvasGroup.blocksRaycasts = false;
         }
 
-        // Reset victoryPanel au centre pour le prochain Show
-        if (victoryPanel != null)
-            victoryPanel.anchoredPosition = Vector2.zero;
-
-        // Detruire le quad de fond
-        if (bgQuad != null)
+        if (slideContainer != null)
         {
-            Destroy(bgQuad);
-            bgQuad = null;
+            slideContainer.anchoredPosition = Vector2.zero;
+            slideContainer.localScale = Vector3.zero;
         }
-    }
-
-    // ============================================
-    // BACKGROUND QUAD 3D
-    // ============================================
-
-    private void SpawnBackgroundQuad()
-    {
-        // Detruire l'ancien si existant
-        if (bgQuad != null) { Destroy(bgQuad); bgQuad = null; }
-        if (bgQuadMaterial == null || Camera.main == null) return;
-
-        Camera cam = Camera.main;
-
-        // Taille pour couvrir exactement l'ecran a bgQuadDistance
-        float h = 2f * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) * bgQuadDistance;
-        float w = h * cam.aspect;
-
-        bgQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        bgQuad.name = "VictoryBgQuad";
-
-        // Pas de physique, pas d'ombres
-        Destroy(bgQuad.GetComponent<Collider>());
-        MeshRenderer mr = bgQuad.GetComponent<MeshRenderer>();
-        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        mr.receiveShadows = false;
-
-        // Position et orientation (face camera)
-        bgQuad.transform.position = cam.transform.position + cam.transform.forward * bgQuadDistance;
-        bgQuad.transform.rotation = cam.transform.rotation;
-        bgQuad.transform.localScale = new Vector3(w, h, 1f);
-
-        // Material : instance pour ne pas modifier l'original
-        // renderQueue 2990 < ghosts (3000+) -> les ghosts s'affichent devant
-        // ZTest=Always : couvre la scene de jeu sans etre occulte par elle
-        // ZWrite=Off  : ne bloque pas le depth test des ghosts
-        Material mat = new Material(bgQuadMaterial);
-        mat.renderQueue = 2990;
-        mat.SetFloat("_ZTest", (float)UnityEngine.Rendering.CompareFunction.Always);
-        mat.SetFloat("_ZWrite", 0f);
-        mr.material = mat;
-    }
-
-    /// <summary>Largeur monde du quad de fond (pour le wipe).</summary>
-    private float BgQuadWorldWidth()
-    {
-        if (Camera.main == null) return 10f;
-        Camera cam = Camera.main;
-        return 2f * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) * bgQuadDistance * cam.aspect;
     }
 
     // ============================================
     // HELPERS
     // ============================================
 
-    private IEnumerator PopIn(Transform target)
-    {
-        if (target == null) yield break;
-        float elapsed = 0f;
-        while (elapsed < essaisPopDuration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / essaisPopDuration));
-            target.localScale = Vector3.one * t;
-            yield return null;
-        }
-        target.localScale = Vector3.one;
-    }
-
     private float CanvasWidth()
     {
         if (parentCanvas != null)
-            return parentCanvas.GetComponent<RectTransform>().rect.width;
+        {
+            float w = parentCanvas.GetComponent<RectTransform>().rect.width;
+            if (w > 0f) return w;
+        }
         return Screen.width;
     }
 }
