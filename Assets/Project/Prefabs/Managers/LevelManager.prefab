@@ -60,6 +60,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7992699378462311789}
   - component: {fileID: 4660017790960198809}
+  - component: {fileID: 5619787359560682840}
+  - component: {fileID: 7490104327049344920}
   m_Layer: 0
   m_Name: LevelManager
   m_TagString: Untagged
@@ -107,3 +109,31 @@ MonoBehaviour:
   skipVictoryUI: 0
   requireAllEnemiesKilled: 0
   isTutorialLevel: 0
+--- !u!114 &5619787359560682840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7881171583933020488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7981fcacf4c2c5b4f926446b07bc2729, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelStatsTracker
+--- !u!114 &7490104327049344920
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7881171583933020488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 941f2ac7f90a01a419d3bfbd4ae59009, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PostVictorySequencer
+  globalVolume: {fileID: 0}
+  dimTargetWeight: 1
+  dimDuration: 1.5
+  fallbackDelay: 3

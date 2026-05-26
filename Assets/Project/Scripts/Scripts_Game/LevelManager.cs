@@ -172,6 +172,7 @@ public class LevelManager : MonoBehaviour
         }
 
         levelCompleted = true;
+        LevelStatsTracker.Instance?.OnLevelCompleted();
         Debug.Log("=== NIVEAU COMPLETE! ===");
 
         if (CollectibleManager.Instance != null)
@@ -190,25 +191,59 @@ public class LevelManager : MonoBehaviour
 
         if (player != null)
             player.enabled = false;
-        if (playerVictoryScale != null)
-            playerVictoryScale.TriggerScale();
 
+        // Lancer VictoryScale et attendre sa completion avant de continuer
+        if (playerVictoryScale != null)
+        {
+            playerVictoryScale.OnVictoryScaleComplete += OnVictoryScaleComplete;
+            playerVictoryScale.TriggerScale();
+        }
+        else
+        {
+            // Pas de VictoryScale dans la scene : continuer directement
+            OnVictoryScaleComplete();
+        }
+    }
+
+    // Appele quand VictoryScale a fini (naturellement ou par skip)
+    private void OnVictoryScaleComplete()
+    {
+        if (playerVictoryScale != null)
+            playerVictoryScale.OnVictoryScaleComplete -= OnVictoryScaleComplete;
 
         if (skipVictoryUI)
         {
-            if (isTutorialLevel)
-                LoadLevelSelect();
-            else
-                LoadWheelOrLevelSelect();
+            // Pas d'overlay : lancer directement la suite
+            OnVictoryWipeComplete();
         }
         else
         {
             if (victoryUI != null)
+            {
+                victoryUI.OnWipeComplete += OnVictoryWipeComplete;
                 victoryUI.Show(playerHealth);
+            }
             else
             {
-                Invoke(isTutorialLevel ? nameof(LoadLevelSelect) : nameof(LoadWheelOrLevelSelect), delayBeforeNextLevel);
+                // Pas de VictoryUI dans la scene : continuer directement
+                OnVictoryWipeComplete();
             }
+        }
+    }
+
+    // Appele quand le wipe est termine (ou directement si skipVictoryUI)
+    private void OnVictoryWipeComplete()
+    {
+        if (victoryUI != null)
+            victoryUI.OnWipeComplete -= OnVictoryWipeComplete;
+
+        if (PostVictorySequencer.Instance != null)
+            PostVictorySequencer.Instance.StartPostVictorySequence();
+        else
+        {
+            // Fallback si le sequencer n'est pas dans la scene
+            Debug.LogWarning("[LevelManager] PostVictorySequencer absent — fallback LoadWheelOrLevelSelect.");
+            LoadWheelOrLevelSelect();
         }
     }
     public void LoadWheelOrLevelSelect()
@@ -333,6 +368,12 @@ public class LevelManager : MonoBehaviour
 
         if (playerHealth != null)
             playerHealth.OnDeath -= OnPlayerDeath;
+
+        if (playerVictoryScale != null)
+            playerVictoryScale.OnVictoryScaleComplete -= OnVictoryScaleComplete;
+
+        if (victoryUI != null)
+            victoryUI.OnWipeComplete -= OnVictoryWipeComplete;
 
         //if (CleaningBonusManager.Instance != null)
           //  CleaningBonusManager.Instance.OnAllCorpsesCleaned -= OnAllCorpsesCleaned;

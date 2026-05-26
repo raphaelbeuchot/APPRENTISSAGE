@@ -688,6 +688,18 @@ public class SentinelCycleManager : MonoBehaviour
         Debug.Log("[CYCLE] Cycle arrete - Sons coupes");
     }
 
+    /// <summary>
+    /// Arrete le cycle ET remet tous les CycleReactiveRenderer en etat GreenLight (neutre/victoire).
+    /// Appeler depuis VictoryUI a la place de StopCycle().
+    /// </summary>
+    public void StopCycleForVictory()
+    {
+        StopCycle();
+        // Reset visuel de tous les CycleReactiveRenderer (stop pulse + material GreenLight)
+        OnCycleChanged?.Invoke(GameState.GreenLight);
+        Debug.Log("[CYCLE] Visuel reset -> GreenLight (victoire)");
+    }
+
     public void PauseMusic()
     {
         if (musicAudioSource != null && musicAudioSource.isPlaying)

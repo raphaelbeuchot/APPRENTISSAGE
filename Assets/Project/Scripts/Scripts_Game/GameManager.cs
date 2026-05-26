@@ -94,6 +94,7 @@ public class GameManager : MonoBehaviour
     public void OnEnemyKilled()
     {
         enemiesKilled++;
+        LevelStatsTracker.Instance?.RegisterKill();
     }
 
     // ============================================

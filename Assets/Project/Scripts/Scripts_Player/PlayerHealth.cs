@@ -78,6 +78,8 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeSentinelShot(Vector3 sentinelPosition)
     {
+        LevelStatsTracker.Instance?.RegisterSentinelShot();
+
         TestClimbDetection climbDetection = GetComponent<TestClimbDetection>();
         if (climbDetection != null)
             climbDetection.CancelClimb();

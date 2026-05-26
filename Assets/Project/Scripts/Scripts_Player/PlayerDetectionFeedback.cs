@@ -69,6 +69,7 @@ public class PlayerDetectionFeedback : MonoBehaviour
     {
         if (isCurrentlyDetected) return;
         isCurrentlyDetected = true;
+        LevelStatsTracker.Instance?.RegisterDetection();
         if (audioSource != null && detectionSound != null)
             audioSource.PlayOneShot(detectionSound);
         RefreshSilhouette();
