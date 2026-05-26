@@ -39,6 +39,10 @@ public class DecorExitSequencer : MonoBehaviour
 
     [SerializeField] private AnimationCurve exitCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Exclusions manuelles")]
+    [Tooltip("GOs a exclure explicitement (LevelEssentiels, StartRoom, triggers, etc.)")]
+    [SerializeField] private Transform[] manualExclusions;
+
     /// <summary>Fire quand tous les props ont quitte le decor.</summary>
     public event Action OnDecorExitComplete;
 
@@ -59,6 +63,8 @@ public class DecorExitSequencer : MonoBehaviour
     {
         List<Transform> targets = CollectTargets();
         Debug.Log($"[DecorExit] {targets.Count} props a expulser.");
+        foreach (Transform t in targets)
+            Debug.Log($"[DecorExit]   -> {t.name} (tag:{t.tag} layer:{LayerMask.LayerToName(t.gameObject.layer)}) dir:{GetExitDirection(t)}");
 
         int completed = 0;
 
@@ -124,14 +130,33 @@ public class DecorExitSequencer : MonoBehaviour
             // Exclure l'EndCurtain (il a son propre script de montee)
             if (root.GetComponentInChildren<EndCurtainRise>() != null) continue;
 
+            // Exclure tout GO contenant une Camera (evite de casser Cinemachine)
+            if (root.GetComponentInChildren<Camera>() != null) continue;
+
+            // Exclure les Canvas / UI
+            if (root.GetComponentInChildren<Canvas>() != null) continue;
+
             // Exclure les GOs managers
             if (root.GetComponent<LevelManager>() != null) continue;
-            if (root.GetComponent<Camera>() != null) continue;
+
+            // Exclure le pivot lui-meme
+            if (exitPivot != null && root == exitPivot.root) continue;
+
+            // Exclure les exclusions manuelles (Inspector)
+            if (IsManuallyExcluded(root)) continue;
 
             roots.Add(root);
         }
 
         return new List<Transform>(roots);
+    }
+
+    private bool IsManuallyExcluded(Transform root)
+    {
+        if (manualExclusions == null) return false;
+        foreach (Transform excl in manualExclusions)
+            if (excl != null && excl.root == root) return true;
+        return false;
     }
 
     /// <summary>
