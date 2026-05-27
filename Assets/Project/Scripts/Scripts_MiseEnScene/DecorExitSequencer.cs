@@ -86,8 +86,9 @@ public class DecorExitSequencer : MonoBehaviour
     // API PUBLIQUE
     // ============================================
 
-    public void StartExit()
+    public void StartExit(float pivotX)
     {
+        _pivotX = pivotX;
         StartCoroutine(ExitCoroutine());
     }
 
