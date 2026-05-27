@@ -60,7 +60,7 @@ public class GoalDoorNew : MonoBehaviour
 
         if (!isActive)
         {
-            // feedback porte verrouillée
+            // feedback porte verrouillï¿½e
             if (audioSource != null && doorLockedSound != null)
                 audioSource.PlayOneShot(doorLockedSound);
             Debug.Log("[GoalDoorNew] Porte verrouillee - ramassez la cle!");
@@ -92,6 +92,10 @@ public class GoalDoorNew : MonoBehaviour
             sentinelCycle.StopCycle();
         else
             Debug.LogWarning("[GoalDoorNew] SentinelCycleManager introuvable!");
+
+        PlayerDetectionFeedback pdf = player.GetComponent<PlayerDetectionFeedback>();
+        if (pdf != null)
+            pdf.ResetForVictory();
 
         foreach (BombSpawner b in FindObjectsOfType<BombSpawner>())
             b.StopChargeAudio();

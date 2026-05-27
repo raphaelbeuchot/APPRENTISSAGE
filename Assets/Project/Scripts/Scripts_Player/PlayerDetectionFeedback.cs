@@ -96,6 +96,14 @@ public class PlayerDetectionFeedback : MonoBehaviour
         RefreshSilhouette();
     }
 
+    public void ResetForVictory()
+    {
+        StopAllCoroutines();
+        isCurrentlyDetected = false;
+        isDetectedByBrightEyes = false;
+        RestoreOriginalMaterials();
+    }
+
     void RefreshSilhouette()
     {
         if (isCurrentlyDetected)

@@ -36,6 +36,9 @@ public class PostVictorySequencer : MonoBehaviour
     [Header("5d — EndCurtain")]
     [HideInInspector] [SerializeField] private EndCurtainRise endCurtain;
 
+    // X world de la GoalDoor, capturé avant sa destruction pour DecorExit
+    private float _goalDoorWorldX;
+
     [Header("5d+ — Apres rideau leve")]
     [Tooltip("GOs supplementaires a cacher en plus du layer Ground (murs, lumieres specifiques au niveau...)")]
     [SerializeField] private GameObject[] objectsToHide;
@@ -176,6 +179,9 @@ public class PostVictorySequencer : MonoBehaviour
 
     private IEnumerator Step5a_GoalDoorDisappears()
     {
+        // Capturer le X avant destruction (reference pour DecorExit)
+        _goalDoorWorldX = goalDoor != null ? goalDoor.transform.position.x : 0f;
+
         // Detruire la GoalDoor
         if (goalDoor != null)
         {
@@ -183,7 +189,7 @@ public class PostVictorySequencer : MonoBehaviour
                 audioSource.PlayOneShot(goalDoorDisappearSound);
 
             Destroy(goalDoor);
-            Debug.Log("[PostVictory] GoalDoor detruite.");
+            Debug.Log($"[PostVictory] GoalDoor detruite (pivotX capture : {_goalDoorWorldX}).");
         }
         else
         {
@@ -221,7 +227,7 @@ public class PostVictorySequencer : MonoBehaviour
         if (decorExit != null)
         {
             decorExit.OnDecorExitComplete += () => decorDone = true;
-            decorExit.StartExit();
+            decorExit.StartExit(_goalDoorWorldX);
         }
         else Debug.LogWarning("[PostVictory] Pas de DecorExitSequencer assigne — etape 5c skippee.");
 

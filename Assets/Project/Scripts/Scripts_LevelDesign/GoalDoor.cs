@@ -100,6 +100,11 @@ public class GoalDoor : MonoBehaviour
         {
             Debug.LogWarning("[GoalDoor] SentinelCycleManager introuvable !");
         }
+
+        // Reset detection feedback (cas detection quasi-simultanee avec goal touch)
+        PlayerDetectionFeedback pdf = player.GetComponent<PlayerDetectionFeedback>();
+        if (pdf != null)
+            pdf.ResetForVictory();
         foreach (BombSpawner b in FindObjectsOfType<BombSpawner>())
             b.StopChargeAudio();
         // Option: detruire le joueur
