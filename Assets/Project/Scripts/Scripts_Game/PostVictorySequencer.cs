@@ -40,6 +40,9 @@ public class PostVictorySequencer : MonoBehaviour
     [Tooltip("GOs supplementaires a cacher en plus du layer Ground (murs, lumieres specifiques au niveau...)")]
     [SerializeField] private GameObject[] objectsToHide;
 
+    [Tooltip("Duree du fade-out du volume PostVictory apres le lever du rideau (0 = coupure immediate)")]
+    [SerializeField] private float volumeFadeOutDuration = 1.5f;
+
     [Tooltip("Son joue quand le volume postvictory est desactive (optionnel)")]
     [InspectorName("Allumage lumiere transition room")]
     [SerializeField] private AudioClip lightsOffSound;
@@ -241,10 +244,15 @@ public class PostVictorySequencer : MonoBehaviour
         // Volume post-processing off
         if (globalVolume != null)
         {
-            globalVolume.gameObject.SetActive(false);
             if (audioSource != null && lightsOffSound != null)
                 audioSource.PlayOneShot(lightsOffSound);
-            Debug.Log("[PostVictory] Global Volume desactive.");
+
+            if (volumeFadeOutDuration > 0f)
+                StartCoroutine(FadeOutVolume(globalVolume, volumeFadeOutDuration));
+            else
+                globalVolume.gameObject.SetActive(false);
+
+            Debug.Log("[PostVictory] Global Volume : debut fade-out.");
         }
 
         int count = 0;
@@ -314,5 +322,26 @@ public class PostVictorySequencer : MonoBehaviour
         }
 
         Debug.Log("[PostVictory] Lights out OK.");
+    }
+
+    // ============================================
+    // UTILITAIRES — VOLUME FADE
+    // ============================================
+
+    private IEnumerator FadeOutVolume(Volume volume, float duration)
+    {
+        float startWeight = volume.weight;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            volume.weight = Mathf.Lerp(startWeight, 0f, elapsed / duration);
+            yield return null;
+        }
+
+        volume.weight = 0f;
+        volume.gameObject.SetActive(false);
+        Debug.Log("[PostVictory] Volume fade-out termine.");
     }
 }
