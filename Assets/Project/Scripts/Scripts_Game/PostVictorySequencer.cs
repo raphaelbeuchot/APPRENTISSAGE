@@ -6,7 +6,8 @@ using System.Collections;
 
 /// <summary>
 /// Orchestre la sequence post-victoire une fois le wipe termine.
-/// Setup : ajouter sur le meme GO que LevelManager.
+/// Setup : GO dedie VictoryManager (ou sur LevelManager, compatible).
+/// Appele via PostVictorySequencer.Instance.StartPostVictorySequence().
 /// </summary>
 public class PostVictorySequencer : MonoBehaviour
 {
@@ -17,6 +18,12 @@ public class PostVictorySequencer : MonoBehaviour
     // ============================================
 
     [Header("5a — GoalDoor")]
+    [Tooltip("GO de la GoalDoor a detruire (GoalDoor ou GoalDoorNew selon le niveau)")]
+    [SerializeField] private GameObject goalDoor;
+
+    [Tooltip("Joueur — pour ShowPlayerMesh et re-activer le controle")]
+    [SerializeField] private PlayerPhysicsMovement player;
+
     [Tooltip("Son joue quand la GoalDoor disparait (optionnel)")]
     [SerializeField] private AudioClip goalDoorDisappearSound;
 
@@ -129,37 +136,33 @@ public class PostVictorySequencer : MonoBehaviour
 
     private IEnumerator Step5a_GoalDoorDisappears()
     {
-        LevelManager lm = GetComponent<LevelManager>();
-
         // Detruire la GoalDoor
-        GameObject doorGO = null;
-        if (lm != null && lm.goalDoor != null)
-            doorGO = lm.goalDoor.gameObject;
-        else if (lm != null && lm.goalDoorNew != null)
-            doorGO = lm.goalDoorNew.gameObject;
-
-        if (doorGO != null)
+        if (goalDoor != null)
         {
             if (audioSource != null && goalDoorDisappearSound != null)
                 audioSource.PlayOneShot(goalDoorDisappearSound);
 
-            Destroy(doorGO);
+            Destroy(goalDoor);
             Debug.Log("[PostVictory] GoalDoor detruite.");
         }
         else
         {
-            Debug.LogWarning("[PostVictory] GoalDoor introuvable — etape 5a skippee.");
+            Debug.LogWarning("[PostVictory] GoalDoor non assignee — etape 5a skippee.");
         }
 
         // Re-afficher le mesh joueur (cache depuis VictoryScale)
-        if (lm != null && lm.player != null)
+        if (player != null)
         {
-            PlayerVictoryScale pvs = lm.player.GetComponent<PlayerVictoryScale>();
+            PlayerVictoryScale pvs = player.GetComponent<PlayerVictoryScale>();
             if (pvs != null) pvs.ShowPlayerMesh();
 
-            // Reprise du controle immédiate
-            lm.player.enabled = true;
+            // Reprise du controle immediate
+            player.enabled = true;
             Debug.Log("[PostVictory] Joueur visible + controle rendu.");
+        }
+        else
+        {
+            Debug.LogWarning("[PostVictory] Player non assigne — reprise controle skippee.");
         }
 
         yield break;

@@ -282,8 +282,6 @@ Scene
 
 ## Refacto — Déploiement sur les 23 niveaux
 
-> À faire en session dédiée.
-
 ### Plan
 
 Créer deux prefabs réutilisables :
@@ -291,18 +289,48 @@ Créer deux prefabs réutilisables :
 **`VictoryManager` prefab**
 - GO dédié (hors LevelManager)
 - Porte : `PostVictorySequencer` + `DecorExitSequencer`
-- Prérequis : rompre `GetComponent<LevelManager>()` dans `PostVictorySequencer.Step5a` → passer en référence sérialisée
 
 **`TransitionRoom` prefab**
 - GO autonome placé derrière l'EndCurtain
 - Contient : `Bouton` + `Door` (DoorBasic + TransitionRoomDoor) + `EnterTrigger` + `EndCurtain`
 
 **Overrides par niveau** (prefab overrides Unity) :
-- `VictoryManager` : `exitPivot`, `manualExclusions`, `objectsToHide`, `cm_transitionRoom`, sons
+- `VictoryManager` : `goalDoor`, `player`, `exitPivot`, `manualExclusions`, `objectsToHide`, `cm_transitionRoom`, sons
 - `TransitionRoom` : position/échelle, matériaux bouton, sons porte
 
-### Étapes
-1. [ ] Adapter `PostVictorySequencer` — référence `LevelManager` sérialisée
-2. [ ] Créer le prefab `VictoryManager`
+---
+
+### Journal de session — 2026-05-27
+
+#### Ce qui a été fait
+
+**1. `PostVictorySequencer.cs` — Step 1 ✅**
+- Supprimé le `GetComponent<LevelManager>()` dans `Step5a_GoalDoorDisappears()`
+- Ajouté deux champs sérialisés dans le header "5a — GoalDoor" :
+  - `[SerializeField] private GameObject goalDoor` — le GO GoalDoor à détruire
+  - `[SerializeField] private PlayerPhysicsMovement player` — pour ShowPlayerMesh + re-enable
+- Le composant peut maintenant vivre sur n'importe quel GO (plus besoin d'être colocalisé avec LevelManager)
+
+**2. VictoryManager GO — Step 2 ✅ (en scène, pas encore prefab)**
+- Créé un GO "VictoryManager" dans le niveau "It's Show Time"
+- Déplacé `PostVictorySequencer` + `DecorExitSequencer` du GO LevelManager vers VictoryManager
+- Tous les champs réassignés dans l'Inspector
+- Séquence testée et fonctionnelle
+
+**Bug rencontré et corrigé**
+- `TransitionRoom` était expulsée par `DecorExitSequencer` (log : `[DecorExit] -> TRANSITIONROOM dir:(-1,0,0)`)
+- Cause : `manualExclusions` vidée lors du déménagement du composant
+- Fix : ajouter `TransitionRoom` dans `Manual Exclusions` du `DecorExitSequencer`
+- ⚠️ À retenir pour le déploiement : **toujours vérifier manualExclusions** quand on installe VictoryManager dans un nouveau niveau
+
+---
+
+### Étapes restantes
+
+1. [x] Adapter `PostVictorySequencer` — référence `LevelManager` sérialisée
+2. [ ] **Créer le prefab `VictoryManager`** ← PROCHAINE ÉTAPE
+   - Dans Unity : drag du GO VictoryManager → `Prefabs/Victory/`
 3. [ ] Créer le prefab `TransitionRoom`
+   - Optionnel : faire de EndCurtain un enfant de TransitionRoom avant de prefabifier
+   - Dans Unity : drag du GO TransitionRoom → `Prefabs/Victory/`
 4. [ ] Déployer sur les 23 niveaux
