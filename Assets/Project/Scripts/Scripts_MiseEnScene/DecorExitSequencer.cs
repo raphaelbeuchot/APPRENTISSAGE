@@ -45,6 +45,9 @@ public class DecorExitSequencer : MonoBehaviour
     /// <summary>Fire quand tous les props ont quitte le decor.</summary>
     public event Action OnDecorExitComplete;
 
+    // X de reference pour la direction (position joueur au moment du lancement)
+    private float _pivotX;
+
     // ============================================
     // UNITY LIFECYCLE
     // ============================================
@@ -94,6 +97,10 @@ public class DecorExitSequencer : MonoBehaviour
 
     private IEnumerator ExitCoroutine()
     {
+        // Capturer le X joueur une fois pour toutes (reference stable pendant la sequence)
+        PlayerPhysicsMovement player = FindObjectOfType<PlayerPhysicsMovement>();
+        _pivotX = player != null ? player.transform.position.x : 0f;
+
         List<Transform> targets = CollectTargets();
         Debug.Log($"[DecorExit] {targets.Count} props a expulser.");
         foreach (Transform t in targets)
@@ -212,17 +219,11 @@ public class DecorExitSequencer : MonoBehaviour
         if (target.tag == "Sentinel")
             return Vector3.back;
 
-        if (exitPivot == null)
-        {
-            Debug.LogWarning("[DecorExit] Pas d'exitPivot assigne — direction +X par defaut.");
-            return Vector3.right;
-        }
-
         // Aleatoire : upChance de probabilite de monter, sinon cote X habituel
         if (UnityEngine.Random.value < upChance)
             return Vector3.up;
 
-        float dx = target.position.x - exitPivot.position.x;
+        float dx = target.position.x - _pivotX;
         return dx < 0f ? Vector3.left : Vector3.right;
     }
 }
