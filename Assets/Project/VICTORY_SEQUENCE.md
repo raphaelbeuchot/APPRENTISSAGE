@@ -86,11 +86,12 @@ GoalDoor → VictoryScale → VictoryUI → Wipe → PostVictorySequencer
   - composant `Canvas` dans la hiérarchie
   - composant `LevelManager` à la racine
   - GOs dans `Manual Exclusions` (TransitionRoom, StartRoom, triggers…)
-- Un GO repère `DecorExitPivot` définit les directions d'expulsion :
-  - X < pivot.X → **-X**
-  - X > pivot.X → **+X**
+- La position X du joueur **au moment du lancement** (= position à la GoalDoor) définit les directions :
+  - X < player.X → **-X**
+  - X > player.X → **+X**
   - `upChance` (0-1) : probabilité aléatoire par GO de partir vers **+Y** plutôt que sur le côté
   - tag `Sentinel` → **-Z**
+- `DecorExitPivot` GO conservé uniquement pour s'auto-exclure de la liste des props à expulser
 
 **5c+5d — Vidage décor + EndCurtain (parallèle)**
 - Les deux se déclenchent simultanément — on attend que les deux soient terminés
@@ -98,7 +99,7 @@ GoalDoor → VictoryScale → VictoryUI → Wipe → PostVictorySequencer
 
 **5d+ — Après le rideau levé**
 - `CM_TransitionRoom.Priority = cm_transitionRoomPriority` — Cinemachine blend vers la caméra TransitionRoom
-- Global Volume lights-out désactivé (`globalVolume.SetActive(false)`) + son "allumage lumiere transition room"
+- Global Volume lights-out : **fade-out progressif** sur `volumeFadeOutDuration` (1.5s par défaut, 0 = coupure immédiate) + son "allumage lumiere transition room"
 - `objectsToHide` : Renderers désactivés (Ground, murs, props du niveau…) — la TransitionRoom reste visible
 
 **6 — TransitionRoom révélée**
@@ -224,12 +225,12 @@ Scene
 
 ## Étape 4 — DecorExitSequencer
 
-- [ ] Ajouter `DecorExitSequencer.cs` sur le GO LevelManager
-- [ ] Créer un GO vide `DecorExitPivot`, le placer au centre horizontal + mi-hauteur de la zone de jeu
-- [ ] Assigner `Exit Pivot` → DecorExitPivot
+- [ ] Ajouter `DecorExitSequencer.cs` sur le GO LevelManager (ou VictoryManager)
 - [ ] Tagger le bloc Sentinel avec le tag `Sentinel`
 - [ ] Ajouter dans `Manual Exclusions` : `TransitionRoom`, `StartRoom`, triggers, tout GO qui ne doit pas bouger
 - [ ] Vérifier que les props de sol/murs fixes ont bien le layer ou tag `Ground`
+- [ ] *(Optionnel)* Créer un GO vide `DecorExitPivot` et lui donner le tag `DecorExitPivot` — sert uniquement à s'auto-exclure des props expulsés (la direction gauche/droite est calculée sur le X du joueur, pas du pivot)
+- [ ] Debug : clic droit sur le composant → **"Debug — Lister les targets DecorExit"** pour vérifier les inclusions/exclusions avant de tester en Play
 
 ## Étape 5 — EndCurtain
 
@@ -288,7 +289,7 @@ Certains champs de `PostVictorySequencer` sont auto-assignés à l'`Awake` si la
 | `globalVolume` | `GameObject.FindWithTag("VolumePostVictory")` | Tag à créer dans Project Settings |
 | `cm_transitionRoom` | `GameObject.FindWithTag("CameraTransitionRoom")` | Tag à créer — GO dans TRANSITIONROOM prefab |
 | `cm_victory` (VictoryUI) | `GameObject.FindWithTag("CameraVictory")` | Tag à créer — GO dans TRANSITIONROOM prefab, HardLookAt player |
-| `exitPivot` (DecorExitSequencer) | `GameObject.FindWithTag("DecorExitPivot")` | Tag à créer — GO dans TRANSITIONROOM prefab, centré en X |
+| `exitPivot` (DecorExitSequencer) | `GameObject.FindWithTag("DecorExitPivot")` | Tag à créer — sert uniquement à s'auto-exclure (direction = player X) |
 | Follow/LookAt caméras | `CinemachineCameraAutoTarget.cs` sur chaque CM | Script à poser sur CM_Victory et CM_TransitionRoom |
 | layer Ground | `LayerMask.NameToLayer("Ground")` dans `DisableLevelLights` | Tous les renderers Ground cachés automatiquement |
 | `audioSource` | `GetComponent` + `AddComponent` si absent | Même GO |
@@ -353,12 +354,59 @@ Créer deux prefabs réutilisables :
 
 ---
 
+---
+
+### Journal de session — 2026-05-27 (suite)
+
+#### Auto-assign — Implémentation complète ✅
+
+**`PostVictorySequencer.cs`**
+- Ajout méthode `AutoAssign()` appelée depuis `Awake()`
+- Champs auto-assignés : `player`, `goalDoor`, `targetGroupProxy`, `decorExit`, `endCurtain`, `transitionRoomDoor`, `cm_transitionRoom`, `globalVolume` (via tag `VolumePostVictory`), `audioSource`
+- `[HideInInspector]` appliqué à tous les champs auto-assignés pour alléger l'Inspector
+- Champs toujours visibles : `goalDoor`, `globalVolume`, `objectsToHide`, sons, timings
+
+**`VictoryUI.cs`**
+- Auto-assign `cm_victory` via tag `CameraVictory`
+- `[HideInInspector]` appliqué à `cm_victory`
+
+**`DecorExitSequencer.cs`**
+- Auto-assign `exitPivot` via tag `DecorExitPivot` dans `Awake()`
+- `[HideInInspector]` appliqué à `exitPivot`
+- Nouvelles valeurs par défaut : `exitDuration = 2f`, `exitDistance = 15f`
+- Ajout `[ContextMenu("Debug — Lister les targets DecorExit")]` — debug en Edit Mode sans Play
+
+**`CinemachineCameraAutoTarget.cs`** — nouveau script
+- À poser sur `CM_Victory` et `CM_TransitionRoom` dans le prefab
+- Auto-assigne `Follow` et `LookAt` vers le joueur au `Awake`
+
+**Tags créés** : `VolumePostVictory`, `CameraTransitionRoom`, `CameraVictory`, `DecorExitPivot`
+
+#### Volume fade-out ✅
+
+**`PostVictorySequencer.cs`**
+- Nouveau champ `volumeFadeOutDuration` (1.5s par défaut, 0 = coupure immédiate)
+- Coroutine `FadeOutVolume` : lerp `weight` 1→0 sur la durée, puis `SetActive(false)`
+- `DisableLevelLights()` appelle la coroutine si durée > 0
+
+#### Direction décor — fix murs ✅
+
+**`DecorExitSequencer.cs`**
+- Direction L/R basée sur le **X du joueur** au moment du lancement (position à la GoalDoor)
+- Capture `player.transform.position.x` une fois au début de `ExitCoroutine` → `_pivotX`
+- Suppression de la dépendance à `exitPivot` pour la direction
+
+---
+
 ### Étapes restantes
 
 1. [x] Adapter `PostVictorySequencer` — référence `LevelManager` sérialisée
-2. [ ] **Créer le prefab `VictoryManager`** ← PROCHAINE ÉTAPE
+2. [x] Auto-assign — champs sûrs implémentés
+3. [x] Volume fade-out progressif
+4. [x] Direction décor — fix murs (player X)
+5. [ ] **Fix détection GoalDoor** — `StopCycleForVictory()` dans `LevelManager.OnPlayerReachedGoal` ← À FAIRE
+6. [ ] **Créer le prefab `VictoryManager`** ← PROCHAINE ÉTAPE PRINCIPALE
    - Dans Unity : drag du GO VictoryManager → `Prefabs/Victory/`
-3. [ ] Créer le prefab `TransitionRoom`
-   - Optionnel : faire de EndCurtain un enfant de TransitionRoom avant de prefabifier
+7. [ ] Créer le prefab `TransitionRoom`
    - Dans Unity : drag du GO TransitionRoom → `Prefabs/Victory/`
-4. [ ] Déployer sur les 23 niveaux
+8. [ ] Déployer sur les 23 niveaux
