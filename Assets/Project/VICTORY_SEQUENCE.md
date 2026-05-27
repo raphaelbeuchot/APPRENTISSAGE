@@ -272,6 +272,31 @@ Scene
 
 ---
 
+## Auto-assign — Principe
+
+Certains champs de `PostVictorySequencer` sont auto-assignés à l'`Awake` si laissés vides dans l'Inspector.
+**Règle** : on n'auto-assigne que ce qui est **garanti unique en scène** et **null-safe** en cas d'absence.
+
+| Champ | Méthode | Condition |
+|---|---|---|
+| `player` | `FindObjectOfType<PlayerPhysicsMovement>()` | 1 par niveau |
+| `goalDoor` | `FindObjectOfType<GoalDoor>().gameObject` | 1 par niveau (à vérifier) |
+| `targetGroupProxy` | `FindObjectOfType<TargetGroupProxy>()` | Null-safe si absent |
+| `decorExit` | `GetComponent<DecorExitSequencer>()` | Même GO, garanti |
+| `endCurtain` | `FindObjectOfType<EndCurtainRise>()` | 1 par niveau |
+| `transitionRoomDoor` | `FindObjectOfType<TransitionRoomDoor>()` | 1 par niveau (enfant de TransitionDoorPrefab) |
+| `globalVolume` | `GameObject.FindWithTag("VolumePostVictory")` | Tag à créer dans Project Settings |
+| `cm_transitionRoom` | `transitionRoomDoor.transform.root.GetComponentInChildren<CinemachineCamera>()` | Doit être dans le même GO racine que TransitionRoomDoor (ex: TRANSITIONROOM) |
+| layer Ground | `LayerMask.NameToLayer("Ground")` dans `DisableLevelLights` | Tous les renderers Ground cachés automatiquement |
+| `audioSource` | `GetComponent` + `AddComponent` si absent | Même GO |
+
+Les champs **non auto-assignés** (à remplir manuellement par niveau) :
+`objectsToHide` (extras en plus du Ground), `manualExclusions`
+
+> **Méthode** : on valide d'abord les petites étapes sûres. Les auto-assigns supplémentaires seront ajoutés au fur et à mesure, une fois leur unicité vérifiée niveau par niveau.
+
+---
+
 ## À venir (Phase 2)
 
 - [ ] Animation perso qui entre dans la porte avant le fade

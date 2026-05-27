@@ -42,7 +42,7 @@ public class PostVictorySequencer : MonoBehaviour
     [SerializeField] private EndCurtainRise endCurtain;
 
     [Header("5d+ — Apres rideau leve")]
-    [Tooltip("GOs dont le Renderer est desactive apres le lever du rideau (ground, murs, lumieres...)")]
+    [Tooltip("GOs supplementaires a cacher en plus du layer Ground (murs, lumieres specifiques au niveau...)")]
     [SerializeField] private GameObject[] objectsToHide;
 
     [Tooltip("Son joue quand le volume postvictory est desactive (optionnel)")]
@@ -84,6 +84,48 @@ public class PostVictorySequencer : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(this); return; }
         Instance = this;
+        AutoAssign();
+    }
+
+    private void AutoAssign()
+    {
+        if (player == null)
+            player = FindObjectOfType<PlayerPhysicsMovement>();
+
+        if (goalDoor == null)
+        {
+            GoalDoor gd = FindObjectOfType<GoalDoor>();
+            if (gd != null) goalDoor = gd.gameObject;
+        }
+
+        if (targetGroupProxy == null)
+            targetGroupProxy = FindObjectOfType<TargetGroupProxy>();
+
+        if (decorExit == null)
+            decorExit = GetComponent<DecorExitSequencer>();
+
+        if (endCurtain == null)
+            endCurtain = FindObjectOfType<EndCurtainRise>();
+
+        if (transitionRoomDoor == null)
+            transitionRoomDoor = FindObjectOfType<TransitionRoomDoor>();
+
+        if (cm_transitionRoom == null && transitionRoomDoor != null)
+            cm_transitionRoom = transitionRoomDoor.transform.root
+                                    .GetComponentInChildren<CinemachineCamera>();
+
+        if (globalVolume == null)
+        {
+            GameObject go = GameObject.FindWithTag("VolumePostVictory");
+            if (go != null) globalVolume = go.GetComponent<Volume>();
+        }
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+                audioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
 
     // ============================================
@@ -210,18 +252,38 @@ public class PostVictorySequencer : MonoBehaviour
             Debug.Log("[PostVictory] Global Volume desactive.");
         }
 
-        // Renderers des GOs du niveau a cacher
+        int count = 0;
+
+        // Auto : tous les renderers sur le layer Ground
+        int groundLayer = LayerMask.NameToLayer("Ground");
+        if (groundLayer != -1)
+        {
+            foreach (Renderer rend in FindObjectsOfType<Renderer>())
+            {
+                if (rend.gameObject.layer == groundLayer)
+                {
+                    rend.enabled = false;
+                    count++;
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[PostVictory] Layer 'Ground' introuvable — auto-hide Ground skippee.");
+        }
+
+        // Manuel : objectsToHide (extras niveau-specifiques)
         if (objectsToHide != null)
         {
-            int count = 0;
             foreach (GameObject go in objectsToHide)
             {
                 if (go == null) continue;
                 Renderer rend = go.GetComponent<Renderer>();
                 if (rend != null) { rend.enabled = false; count++; }
             }
-            Debug.Log($"[PostVictory] {count} renderers desactives.");
         }
+
+        Debug.Log($"[PostVictory] {count} renderers desactives (Ground auto + manuel).");
     }
 
     // ============================================
