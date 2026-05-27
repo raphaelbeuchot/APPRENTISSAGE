@@ -17,13 +17,13 @@ GoalDoor → VictoryScale → VictoryUI → Wipe → PostVictorySequencer
 | `LevelManager.cs` | LevelManager | Orchestre toute la séquence |
 | `PlayerVictoryScale.cs` | Player | Anime les ghost meshes + fire event OnVictoryScaleComplete |
 | `VictoryUI.cs` | Canvas | Overlay victoire (fond + textes) |
-| `PostVictorySequencer.cs` | LevelManager | Séquence post-wipe (vidage décor + TransitionRoom) |
+| `PostVictorySequencer.cs` | LevelManager | Orchestre la séquence post-wipe (5a→5b→5c→5d→6a) |
 | `LevelStatsTracker.cs` | LevelManager | Suivi des stats (tentatives, kills, détections…) |
 | `SentinelCycleManager.cs` | SentinelCycleManager | Cycle 1-2-3 soleil + stop visuel victoire |
 | `CycleReactiveRenderer.cs` | Bulbes de la sentinelle | Réagit aux états du cycle (matériaux + pulse) |
-| `DecorExitSequencer.cs` | LevelManager (ou dédié) | Expulse les props du décor selon position relative au pivot |
-| `EndCurtainRise.cs` | EndCurtain | Lève le rideau de fin une fois le décor vidé |
-| `TransitionRoomDoor.cs` | Porte TransitionRoom | Interaction joueur → niveau suivant avec fade |
+| `DecorExitSequencer.cs` | LevelManager | Expulse les props du décor selon position relative au pivot |
+| `EndCurtainRise.cs` | EndCurtain | Lève le rideau de fin de sa propre hauteur |
+| `TransitionRoomDoor.cs` | TransitionRoom | Orchestre bouton + porte + chargement niveau suivant |
 
 ---
 
@@ -68,35 +68,43 @@ GoalDoor → VictoryScale → VictoryUI → Wipe → PostVictorySequencer
 - `player.enabled = true` — reprise du contrôle immédiate
 
 **5b — Lights out en à-coups**
-- 3 flashs successifs espacés de 1s
-- Chaque flash modifie la couleur/intensité du Global Volume Victory
-- Effet saccadé (pas un lerp continu) — simule des lumières qui s'éteignent une par une
+- 3 flashs successifs espacés de 1s sur le `ColorAdjustments.colorFilter` du Global Volume
+- Couleurs : `(206,223,255)` → `(156,191,255)` → `(107,160,255)` (teinte finale)
+- Effet saccadé (snap, pas de lerp) — simule des lumières qui s'éteignent une par une
+- Un son optionnel par palier (`lightsOutSounds[i]`)
 
 **5c — Vidage du décor (`DecorExitSequencer`)**
-- Collecte tous les GOs avec Renderer, sauf layer/tag Ground
-- Un GO repère `DecorExitPivot` est placé dans la scène — position de référence pour les directions
-- Règle d'expulsion par position relative au pivot :
-  - X < pivot.X → translate en **-X**
-  - X > pivot.X → translate en **+X**
-  - Autour du centre (X ≈ pivot.X) et Y > pivot.Y → translate en **+Y**
-- Cas spécial : la sentinel (tag `Sentinel`) part en **-Z**
-- Tous les props disparaissent en translation (pas de destroy immédiat — ils sortent du champ)
+- Collecte tous les GOs avec Renderer, sauf :
+  - layer/tag `Ground` (vérifié sur toute la hiérarchie)
+  - tag `Player` ou composant `PlayerPhysicsMovement`
+  - composant `EndCurtainRise` (l'EndCurtain monte séparément)
+  - composant `Camera` dans la hiérarchie
+  - composant `Canvas` dans la hiérarchie
+  - composant `LevelManager` à la racine
+  - GOs dans `Manual Exclusions` (TransitionRoom, StartRoom, triggers…)
+- Un GO repère `DecorExitPivot` définit les directions d'expulsion :
+  - X < pivot.X → **-X**
+  - X > pivot.X → **+X**
+  - autour du centre ET Y > pivot.Y → **+Y**
+  - tag `Sentinel` → **-Z**
 
 **5d — EndCurtain se lève (`EndCurtainRise`)**
-- Déclenché une fois le décor vidé (ou après un délai fixe)
-- L'EndCurtain est un prop pur (pas de script actuellement) — script `EndCurtainRise` à créer
-- Mouvement : translation vers le haut jusqu'à une position haute définie dans l'Inspector
+- L'EndCurtain monte de sa propre hauteur (lue via `Renderer.bounds`)
+- Déclenché dès que `OnDecorExitComplete` est reçu
 
 **6 — TransitionRoom révélée**
-- La TransitionRoom était présente dans la scène depuis le début, cachée derrière l'EndCurtain
-- Aucun chargement — elle apparaît simplement une fois le rideau levé
+- La TransitionRoom est présente dans la scène depuis le début, cachée derrière l'EndCurtain
+- Elle apparaît sans chargement une fois le rideau levé
 
 **6a — Porte niveau N+1 (`TransitionRoomDoor`)**
-- Une seule porte pour l'instant (NextLevel)
-- À portée (`interactRange`) : InteractBubble apparaît
-- Press X / Submit → porte s'ouvre + affichage UI "Continue"
-- Si le joueur recule au-delà de `interactRange` → porte se referme
-- Si le joueur franchit le seuil → fade out → loading screen → Level N+1
+
+Flow :
+1. `PostVictorySequencer` appelle `TransitionRoomDoor.Enable()` après EndCurtainRise
+2. Joueur s'approche du **Bouton** → `InteractBubble` apparaît
+3. Press X → porte monte + `PupitreStartRoomFX.Stop()` + `CommentPanel.ShowPersistent("Continue")`
+4. Joueur recule au-delà de `closeDistance` → porte redescend + `CommentPanel.Hide()` + bouton redevient actif
+5. Press X à nouveau (porte ouverte) → `LevelManager.LoadNextLevel()`
+   *(Phase 2 : animation perso qui entre dans la porte + fade avant le chargement)*
 
 ---
 
@@ -112,54 +120,6 @@ Singleton sur le GO LevelManager. Statistiques suivies :
 | `DetectionCount` | `PlayerDetectionFeedback.OnDetected()` |
 | `KillCount` | `GameManager.OnEnemyKilled()` |
 | `ElapsedTime` | Timer interne (pause/resume via `PauseTimer`/`ResumeTimer`) |
-
----
-
-## Hiérarchie Canvas recommandée
-
-```
-Canvas                          ← VictoryUI.cs est ici
-├── ColoredBackground           ← colorBackground (Image plein écran, CanvasGroup)
-└── VictoryPanel                ← slideContainer (RectTransform)
-    ├── LevelCompleteText       ← levelCompleteText (TMP)
-    └── AttemptsText            ← attemptsText (TMP)
-```
-
-**Règles importantes :**
-- `ColoredBackground` est **frère** de `VictoryPanel` (pas enfant) — sinon il slide avec le wipe
-- `ColoredBackground` : Image alpha=255 (opaque), CanvasGroup alpha=0 au départ (géré par code)
-- `VictoryPanel` : RectTransform centré, les textes aux positions désirées dans le layout
-
----
-
-## Inspector VictoryUI
-
-| Champ | Valeur conseillée |
-|---|---|
-| `slideContainer` | VictoryPanel |
-| `colorBackground` | CanvasGroup de ColoredBackground |
-| `victoryCanvasGroup` | CanvasGroup de VictoryPanel |
-| `levelCompleteText` | TMP du titre |
-| `attemptsText` | TMP du compteur essais |
-| `bgFadeDuration` | 0.4 |
-| `textSlideDuration` | 0.35 |
-| `titleSlideSound` | Son déclenché au début du slide du titre |
-| `essaisSlideSound` | Son déclenché au début du slide de "Essais" |
-| `wipeDuration` | 0.6 |
-| `cm_victory` | CinemachineCamera CM_Victory (Priority=0 au repos) |
-| `cm_victoryPriority` | 20 |
-
----
-
-## Inspector PlayerVictoryScale
-
-| Champ | Note |
-|---|---|
-| `victoryMaterial` | Material unlit pour les ghosts (renderQueue sera forcé à 3000+) |
-| `waveCount` | Nombre de ghosts (10 par défaut) |
-| `delayBetweenWaves` | Délai entre chaque ghost (0.8s) |
-| `colors` | Tableau de couleurs par ghost |
-| `skipGracePeriod` | 0.3s avant que le skip soit actif |
 
 ---
 
@@ -183,77 +143,113 @@ Pendant les étapes 2-4, la camera est sur CM_Victory → le joueur invisible es
 
 ---
 
-## PostVictorySequencer — Setup
+## Hiérarchie Canvas recommandée
 
-- Ajouter sur le GO LevelManager
-- Assigner le `Global Volume` de la scène (weight=0 au départ)
-- Le profil du volume doit contenir l'ambiance post-victoire (teinte, désaturation…)
-- Assigner `goalDoor`, `decorExitSequencer`, `endCurtain`, `transitionRoomDoor`
+```
+Canvas                          ← VictoryUI.cs est ici
+├── ColoredBackground           ← colorBackground (Image plein écran, CanvasGroup)
+└── VictoryPanel                ← slideContainer (RectTransform)
+    ├── LevelCompleteText       ← levelCompleteText (TMP)
+    └── AttemptsText            ← attemptsText (TMP)
+```
 
-## Inspector PostVictorySequencer
-
-| Champ | Valeur conseillée |
-|---|---|
-| `globalVolume` | Global Volume de la scène |
-| `lightsOutFlashes` | 3 |
-| `lightsOutInterval` | 1s |
-| `goalDoor` | GO GoalDoor |
-| `goalDoorSound` | Son de disparition GoalDoor |
-| `decorExitSequencer` | Composant DecorExitSequencer |
-| `endCurtain` | Composant EndCurtainRise |
-| `transitionRoomDoor` | Composant TransitionRoomDoor |
+**Règles importantes :**
+- `ColoredBackground` est **frère** de `VictoryPanel` (pas enfant) — sinon il slide avec le wipe
+- `ColoredBackground` : Image alpha=255 (opaque), CanvasGroup alpha=0 au départ (géré par code)
+- `VictoryPanel` : RectTransform centré, les textes aux positions désirées dans le layout
 
 ---
 
-## DecorExitSequencer — Setup
+## Hiérarchie scène recommandée (nouveaux GOs)
 
-- Ajouter sur n'importe quel GO (LevelManager conseillé)
-- Créer un GO vide `DecorExitPivot` et le centrer dans la zone de jeu → assigner à `exitPivot`
-- Les props avec Renderer sont collectés automatiquement au runtime (sauf layer/tag Ground)
-- La sentinel doit avoir le tag `Sentinel` pour partir en -Z
-
-## Inspector DecorExitSequencer
-
-| Champ | Valeur conseillée |
-|---|---|
-| `exitPivot` | Transform du GO repère |
-| `exitDuration` | 0.6s (durée de la translation de chaque prop) |
-| `exitDistance` | 20 (distance de déplacement avant destruction) |
-| `staggerDelay` | 0.05s (décalage entre chaque prop pour éviter que tout parte d'un coup) |
+```
+Scene
+├── LevelManager                ← PostVictorySequencer + DecorExitSequencer ici
+├── DecorExitPivot              ← GO vide, centré dans la zone de jeu
+├── EndCurtain                  ← prop metalshutter de fin + EndCurtainRise.cs
+└── TransitionRoom              ← caché derrière EndCurtain, dans Manual Exclusions
+    ├── Bouton                  ← InteractBubble + PupitreStartRoomFX (même esthétique StartRoom)
+    ├── Door                    ← mesh porte + TransitionRoomDoor.cs
+    └── ...                     ← reste du décor TransitionRoom
+```
 
 ---
 
-## EndCurtainRise — Setup
+# Guide de Setup — Nouveau Niveau
 
-- Ajouter sur le GO EndCurtain (prop pur, metalshutter de fin)
-- Créer un GO vide `EndCurtainTopPoint` à la position haute finale → assigner à `riseTarget`
-- `riseDuration` : 1.2s conseillé, ajuster selon la hauteur
+> Checklist complète pour reproduire la Victory Sequence dans un nouveau niveau.
 
-## Inspector EndCurtainRise
+## Étape 1 — VictoryUI (Canvas)
 
-| Champ | Valeur conseillée |
-|---|---|
-| `riseTarget` | Transform position haute finale |
-| `riseDuration` | 1.2 |
-| `riseSound` | Son de montée (optionnel) |
+- [ ] Créer un Canvas avec `VictoryUI.cs`
+- [ ] Enfants : `ColoredBackground` (Image + CanvasGroup) + `VictoryPanel` (RectTransform)
+  - `VictoryPanel` contient `LevelCompleteText` (TMP) et `AttemptsText` (TMP)
+- [ ] Assigner tous les champs dans l'Inspector (voir tableau Inspector VictoryUI ci-dessus)
+- [ ] `CM_Victory` : CinemachineCamera dédiée, Priority=0 au repos
+
+## Étape 2 — LevelManager
+
+- [ ] Vérifier que `LevelManager.cs` est présent sur le GO LevelManager
+- [ ] Assigner `goalDoor` / `goalDoorNew`, `player`, `victoryUI`
+- [ ] Ajouter `LevelStatsTracker.cs` sur le même GO
+
+## Étape 3 — PostVictorySequencer
+
+- [ ] Ajouter `PostVictorySequencer.cs` sur le GO LevelManager
+- [ ] Créer un Global Volume dédié `PostVictory Volume` (weight=0 au départ)
+  - Profil : `ColorAdjustments` avec `colorFilter` overridé sur `(107,160,255)`
+- [ ] Assigner dans l'Inspector :
+  - `Global Volume` → le PostVictory Volume
+  - `Lights Out Colors` → 3 couleurs (valeurs par défaut conseillées)
+  - `Lights Out Sounds` → 3 sons (optionnel)
+  - `Goal Door Sound` → son de disparition (optionnel)
+  - `Decor Exit` → composant DecorExitSequencer (étape 4)
+  - `End Curtain` → composant EndCurtainRise (étape 5)
+  - `Transition Room Door` → composant TransitionRoomDoor (étape 6)
+
+## Étape 4 — DecorExitSequencer
+
+- [ ] Ajouter `DecorExitSequencer.cs` sur le GO LevelManager
+- [ ] Créer un GO vide `DecorExitPivot`, le placer au centre horizontal + mi-hauteur de la zone de jeu
+- [ ] Assigner `Exit Pivot` → DecorExitPivot
+- [ ] Tagger le bloc Sentinel avec le tag `Sentinel`
+- [ ] Ajouter dans `Manual Exclusions` : `TransitionRoom`, `StartRoom`, triggers, tout GO qui ne doit pas bouger
+- [ ] Vérifier que les props de sol/murs fixes ont bien le layer ou tag `Ground`
+
+## Étape 5 — EndCurtain
+
+- [ ] Placer le prop EndCurtain (metalshutter) devant la TransitionRoom
+- [ ] Ajouter `EndCurtainRise.cs` sur ce GO
+- [ ] Assigner `Rise Sound` (optionnel)
+- [ ] Ajuster `Rise Duration` selon la hauteur du rideau (1.2s par défaut)
+- [ ] **Note** : la hauteur est calculée automatiquement via `Renderer.bounds` — pas de point cible à assigner
+
+## Étape 6 — TransitionRoom
+
+- [ ] Construire la TransitionRoom derrière l'EndCurtain (cachée au départ)
+- [ ] L'ajouter dans `Manual Exclusions` du `DecorExitSequencer`
+
+### Bouton (enfant de TransitionRoom)
+- [ ] GO avec mesh bouton + `InteractBubble.cs` + `PupitreStartRoomFX.cs`
+  - Même esthétique que le bouton de la StartRoom
+- [ ] `InteractBubble` : `detectionRange` = 2.5, `oneTimeOnly` = false
+
+### Porte (enfant de TransitionRoom)
+- [ ] GO avec mesh porte + `TransitionRoomDoor.cs`
+- [ ] Assigner dans `TransitionRoomDoor` :
+  - `Bouton Transform` → le GO Bouton
+  - `Door` → le Transform de la porte (mesh)
+  - `Interact Range` → 2.5
+  - `Close Distance` → 4
+  - `Open Duration` → 0.8s
+  - `Open Sound` / `Close Sound` (optionnel)
+- [ ] La porte est inactive jusqu'à `Enable()` — ne pas activer manuellement
 
 ---
 
-## TransitionRoomDoor — Setup
+## À venir (Phase 2)
 
-- Ajouter sur le GO de la porte dans la TransitionRoom
-- La TransitionRoom est présente dans la scène depuis le début, cachée derrière l'EndCurtain
-- La porte est inactive jusqu'à `Enable()` (appelé par PostVictorySequencer après EndCurtainRise)
-
-## Inspector TransitionRoomDoor
-
-| Champ | Valeur conseillée |
-|---|---|
-| `interactRange` | 2.5 |
-| `interactBubble` | InteractBubble sur ce GO ou un enfant |
-| `doorOpenAnim` | Animation ou translate d'ouverture |
-| `continueUI` | Canvas/GO "Continue" à afficher au press X |
-| `enterTrigger` | Trigger de franchissement de seuil |
-| `fadeDuration` | 0.5s |
-
-**Boutons d'interaction** : Submit (gamepad) / E / F
+- [ ] TransitionRoomCollider : quand le joueur entre → désactiver Global Volume, désactiver Ground GOs, activer `InsideTransitionRoom`
+- [ ] Animation perso qui entre dans la porte avant le fade
+- [ ] Affichage stats dans la TransitionRoom
+- [ ] Portes multiples (Restart, secrets…)
