@@ -34,8 +34,9 @@ public class DoorButtonFX : MonoBehaviour
     {
         if (door != null)
         {
-            door.OnDoorOpened += HandleDoorOpened;
-            door.OnDoorClosed += HandleDoorClosed;
+            door.OnDoorOpened      += HandleDoorOpened;
+            door.OnDoorClosed      += HandleDoorClosed;
+            door.OnDoorForceClosed += HandleDoorForceClosed;
         }
         else
         {
@@ -49,8 +50,9 @@ public class DoorButtonFX : MonoBehaviour
     {
         if (door != null)
         {
-            door.OnDoorOpened -= HandleDoorOpened;
-            door.OnDoorClosed -= HandleDoorClosed;
+            door.OnDoorOpened      -= HandleDoorOpened;
+            door.OnDoorClosed      -= HandleDoorClosed;
+            door.OnDoorForceClosed -= HandleDoorForceClosed;
         }
     }
 
@@ -65,6 +67,13 @@ public class DoorButtonFX : MonoBehaviour
 
     private void HandleDoorClosed()
     {
+        // Joueur a recule : porte encore utilisable -> retour idle
+        ApplyMaterial(materialIdle);
+    }
+
+    private void HandleDoorForceClosed()
+    {
+        // Joueur est passe : porte definitivement fermee -> materialClosed
         ApplyMaterial(materialClosed);
     }
 

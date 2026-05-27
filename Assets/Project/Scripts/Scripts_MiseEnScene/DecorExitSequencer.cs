@@ -34,8 +34,8 @@ public class DecorExitSequencer : MonoBehaviour
     [Tooltip("Decalage entre le lancement de chaque prop (secondes)")]
     [SerializeField] private float staggerDelay = 0.05f;
 
-    [Tooltip("Seuil en X pour considerer un GO 'central' et l'envoyer vers le haut")]
-    [SerializeField] private float centerThreshold = 1f;
+    [Tooltip("Probabilite (0-1) qu'un GO parte vers le haut plutot que sur le cote")]
+    [SerializeField] [Range(0f, 1f)] private float upChance = 0.3f;
 
     [SerializeField] private AnimationCurve exitCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
@@ -185,12 +185,11 @@ public class DecorExitSequencer : MonoBehaviour
             return Vector3.right;
         }
 
-        float dx = target.position.x - exitPivot.position.x;
-
-        // Autour du centre et au-dessus du pivot -> monte
-        if (Mathf.Abs(dx) <= centerThreshold && target.position.y > exitPivot.position.y)
+        // Aleatoire : upChance de probabilite de monter, sinon cote X habituel
+        if (UnityEngine.Random.value < upChance)
             return Vector3.up;
 
+        float dx = target.position.x - exitPivot.position.x;
         return dx < 0f ? Vector3.left : Vector3.right;
     }
 }

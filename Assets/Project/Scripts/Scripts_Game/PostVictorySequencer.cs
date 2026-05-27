@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using Unity.Cinemachine;
 using System.Collections;
 
 /// <summary>
@@ -22,6 +23,9 @@ public class PostVictorySequencer : MonoBehaviour
     [Tooltip("AudioSource utilisee pour les sons de la sequence (optionnel — si null, PlayOneShot ne jouera pas)")]
     [SerializeField] private AudioSource audioSource;
 
+    [Tooltip("TargetGroupProxy a desactiver des le debut de la sequence (evite les erreurs Infinity quand le sentinel est expulse)")]
+    [SerializeField] private TargetGroupProxy targetGroupProxy;
+
     [Header("5c — Decor Exit")]
     [Tooltip("Sequenceur d'expulsion du decor")]
     [SerializeField] private DecorExitSequencer decorExit;
@@ -29,6 +33,19 @@ public class PostVictorySequencer : MonoBehaviour
     [Header("5d — EndCurtain")]
     [Tooltip("Le rideau de fin a lever une fois le decor vide")]
     [SerializeField] private EndCurtainRise endCurtain;
+
+    [Header("5d+ — Apres rideau leve")]
+    [Tooltip("GOs dont le Renderer est desactive apres le lever du rideau (ground, murs, lumieres...)")]
+    [SerializeField] private GameObject[] objectsToHide;
+
+    [Tooltip("Son joue quand le volume postvictory est desactive (optionnel)")]
+    [InspectorName("Allumage lumiere transition room")]
+    [SerializeField] private AudioClip lightsOffSound;
+
+    [Header("5d+ — Camera TransitionRoom")]
+    [Tooltip("CinemachineCamera a activer une fois le rideau leve")]
+    [SerializeField] private CinemachineCamera cm_transitionRoom;
+    [SerializeField] private int cm_transitionRoomPriority = 20;
 
     [Header("6a — Porte TransitionRoom")]
     [Tooltip("La porte a activer une fois le rideau leve")]
@@ -79,17 +96,25 @@ public class PostVictorySequencer : MonoBehaviour
 
     private IEnumerator SequenceCoroutine()
     {
+        // Desactiver le TargetGroupProxy immediatement -- evite les erreurs Infinity quand le sentinel est expulse
+        if (targetGroupProxy != null)
+            targetGroupProxy.enabled = false;
+
         // --- 5a : GoalDoor disparait + reprise controle joueur ---
         yield return StartCoroutine(Step5a_GoalDoorDisappears());
 
         // --- 5b : lights out (placeholder lerp — sera remplace par flashs) ---
         yield return StartCoroutine(Step5b_LightsOut());
 
-        // --- 5c : vidage decor ---
-        yield return StartCoroutine(Step5c_DecorExit());
+        // --- 5c + 5d en parallele : vidage decor + lever du rideau ---
+        yield return StartCoroutine(Step5c5d_DecorExitAndCurtainRise());
 
-        // --- 5d : EndCurtain se leve ---
-        yield return StartCoroutine(Step5d_EndCurtainRise());
+        // --- 5d+ : Camera TransitionRoom ---
+        if (cm_transitionRoom != null)
+            cm_transitionRoom.Priority = cm_transitionRoomPriority;
+
+        // --- 5d+ : Volume off + objets du niveau caches ---
+        DisableLevelLights();
 
         // --- 6a : TransitionRoomDoor activee ---
         if (transitionRoomDoor != null)
@@ -141,39 +166,59 @@ public class PostVictorySequencer : MonoBehaviour
     }
 
     // ============================================
-    // ETAPE 5c — DECOR EXIT
+    // ETAPE 5c + 5d — DECOR EXIT + CURTAIN RISE (parallele)
     // ============================================
 
-    private IEnumerator Step5c_DecorExit()
+    private IEnumerator Step5c5d_DecorExitAndCurtainRise()
     {
-        if (decorExit == null)
-        {
-            Debug.LogWarning("[PostVictory] Pas de DecorExitSequencer assigne — etape 5c skippee.");
-            yield break;
-        }
+        // Flags initiaux : true si le composant est absent (pas besoin d'attendre)
+        bool decorDone  = decorExit  == null;
+        bool curtainDone = endCurtain == null;
 
-        bool exitDone = false;
-        decorExit.OnDecorExitComplete += () => exitDone = true;
-        decorExit.StartExit();
-        yield return new WaitUntil(() => exitDone);
+        if (decorExit != null)
+        {
+            decorExit.OnDecorExitComplete += () => decorDone = true;
+            decorExit.StartExit();
+        }
+        else Debug.LogWarning("[PostVictory] Pas de DecorExitSequencer assigne — etape 5c skippee.");
+
+        if (endCurtain != null)
+        {
+            endCurtain.OnRiseComplete += () => curtainDone = true;
+            endCurtain.Rise();
+        }
+        else Debug.LogWarning("[PostVictory] Pas d'EndCurtain assigne — etape 5d skippee.");
+
+        yield return new WaitUntil(() => decorDone && curtainDone);
     }
 
     // ============================================
-    // ETAPE 5d — ENDCURTAIN RISE
+    // ETAPE 5d+ — LUMIERES NIVEAU ETEINTES
     // ============================================
 
-    private IEnumerator Step5d_EndCurtainRise()
+    private void DisableLevelLights()
     {
-        if (endCurtain == null)
+        // Volume post-processing off
+        if (globalVolume != null)
         {
-            Debug.LogWarning("[PostVictory] Pas d'EndCurtain assigne — etape 5d skippee.");
-            yield break;
+            globalVolume.gameObject.SetActive(false);
+            if (audioSource != null && lightsOffSound != null)
+                audioSource.PlayOneShot(lightsOffSound);
+            Debug.Log("[PostVictory] Global Volume desactive.");
         }
 
-        bool riseDone = false;
-        endCurtain.OnRiseComplete += () => riseDone = true;
-        endCurtain.Rise();
-        yield return new WaitUntil(() => riseDone);
+        // Renderers des GOs du niveau a cacher
+        if (objectsToHide != null)
+        {
+            int count = 0;
+            foreach (GameObject go in objectsToHide)
+            {
+                if (go == null) continue;
+                Renderer rend = go.GetComponent<Renderer>();
+                if (rend != null) { rend.enabled = false; count++; }
+            }
+            Debug.Log($"[PostVictory] {count} renderers desactives.");
+        }
     }
 
     // ============================================

@@ -17,16 +17,16 @@ GoalDoor → VictoryScale → VictoryUI → Wipe → PostVictorySequencer
 | `LevelManager.cs` | LevelManager | Orchestre toute la séquence |
 | `PlayerVictoryScale.cs` | Player | Anime les ghost meshes + fire event OnVictoryScaleComplete |
 | `VictoryUI.cs` | Canvas | Overlay victoire (fond + textes) |
-| `PostVictorySequencer.cs` | LevelManager | Orchestre la séquence post-wipe (5a→5b→5c→5d→6a) |
+| `PostVictorySequencer.cs` | LevelManager | Orchestre la séquence post-wipe (5a→5b→5c+5d→CM→lights→6a) |
 | `LevelStatsTracker.cs` | LevelManager | Suivi des stats (tentatives, kills, détections…) |
 | `SentinelCycleManager.cs` | SentinelCycleManager | Cycle 1-2-3 soleil + stop visuel victoire |
 | `CycleReactiveRenderer.cs` | Bulbes de la sentinelle | Réagit aux états du cycle (matériaux + pulse) |
 | `DecorExitSequencer.cs` | LevelManager | Expulse les props du décor selon position relative au pivot |
 | `EndCurtainRise.cs` | EndCurtain | Lève le rideau de fin de sa propre hauteur |
 | `DoorBasic.cs` | Porte TransitionRoom | Porte générique : bouton, InteractBubble, montée/descente, events |
-| `DoorButtonFX.cs` | Bouton TransitionRoom | 3 matériaux statiques selon état de la porte (idle / open / closed) |
-| `TransitionRoomDoor.cs` | Porte TransitionRoom | Spécifique TransitionRoom : Enable() + CommentPanel + LoadNextLevel |
-| `TransitionRoomEnterTrigger.cs` | Trigger TransitionRoom | Désactive le Global Volume lights-out quand le joueur entre |
+| `DoorButtonFX.cs` | Bouton TransitionRoom | 3 matériaux selon état (idle / open / closed) |
+| `TransitionRoomDoor.cs` | Porte TransitionRoom | Enable() + message CommentPanel + séquence franchissement |
+| `DoorEnterTrigger.cs` | EnterTrigger TransitionRoom | Trigger seuil de porte → déclenche la séquence de chargement |
 
 ---
 
@@ -89,12 +89,17 @@ GoalDoor → VictoryScale → VictoryUI → Wipe → PostVictorySequencer
 - Un GO repère `DecorExitPivot` définit les directions d'expulsion :
   - X < pivot.X → **-X**
   - X > pivot.X → **+X**
-  - autour du centre ET Y > pivot.Y → **+Y**
+  - `upChance` (0-1) : probabilité aléatoire par GO de partir vers **+Y** plutôt que sur le côté
   - tag `Sentinel` → **-Z**
 
-**5d — EndCurtain se lève (`EndCurtainRise`)**
-- L'EndCurtain monte de sa propre hauteur (lue via `Renderer.bounds`)
-- Déclenché dès que `OnDecorExitComplete` est reçu
+**5c+5d — Vidage décor + EndCurtain (parallèle)**
+- Les deux se déclenchent simultanément — on attend que les deux soient terminés
+- EndCurtain monte de sa propre hauteur (lue via `Renderer.bounds`)
+
+**5d+ — Après le rideau levé**
+- `CM_TransitionRoom.Priority = cm_transitionRoomPriority` — Cinemachine blend vers la caméra TransitionRoom
+- Global Volume lights-out désactivé (`globalVolume.SetActive(false)`) + son "allumage lumiere transition room"
+- `objectsToHide` : Renderers désactivés (Ground, murs, props du niveau…) — la TransitionRoom reste visible
 
 **6 — TransitionRoom révélée**
 - La TransitionRoom est présente dans la scène depuis le début, cachée derrière l'EndCurtain
@@ -104,12 +109,13 @@ GoalDoor → VictoryScale → VictoryUI → Wipe → PostVictorySequencer
 
 Flow :
 1. `PostVictorySequencer` appelle `TransitionRoomDoor.Enable()` → délègue à `DoorBasic.Enable()`
-2. Joueur s'approche du **Bouton** → `InteractBubble` apparaît (`DoorBasic`)
-3. Press X (porte fermée) → porte monte + `CommentPanel.ShowPersistent("Continue")` + `DoorButtonFX` → `materialOpen`
-4. Joueur recule au-delà de `closeDistance` → porte redescend + `CommentPanel.Hide()` + `DoorButtonFX` → `materialClosed`
-5. Press X (porte ouverte, joueur en range) → `LevelManager.LoadNextLevel()` (`TransitionRoomDoor`)
-   *(Phase 2 : animation perso qui entre dans la porte avant le fade)*
-6. Joueur entre dans la **TransitionRoom** → `TransitionRoomEnterTrigger` désactive le Global Volume lights-out
+2. Joueur s'approche du **Bouton** → `InteractBubble` apparaît (auto, géré par `InteractBubble`)
+3. Press X (porte fermée) → porte monte + `CommentPanel.ShowPersistent(doorOpenMessage)` + `DoorButtonFX` → `materialOpen`
+4. Joueur recule au-delà de `closeDistance` → porte redescend + `CommentPanel.Hide()` + `DoorButtonFX` → `materialIdle` + bulle réactivée
+5. Joueur franchit l'**`EnterTrigger`** (`DoorEnterTrigger`) → `TransitionRoomDoor.OnPlayerEntered()`
+   - `DoorBasic.ForceClose()` → porte redescend + `DoorButtonFX` → `materialClosed` + bulle reste off
+   - Attend fin animation fermeture + `delayAfterClose` (1s)
+   - `SceneFader.FadeToSceneWithLoadingScreen(nextScene)` → fade noir → LoadingScreen → Niveau N+1
 
 ---
 
@@ -175,7 +181,7 @@ Scene
 └── TransitionRoom              ← caché derrière EndCurtain, dans Manual Exclusions
     ├── Bouton                  ← InteractBubble + DoorButtonFX
     ├── Door                    ← mesh porte + DoorBasic + TransitionRoomDoor
-    ├── EnterTrigger            ← Collider trigger + TransitionRoomEnterTrigger
+    ├── EnterTrigger            ← Collider trigger + DoorEnterTrigger
     └── ...                     ← reste du décor TransitionRoom
 ```
 
@@ -211,6 +217,9 @@ Scene
   - `Goal Door Sound` → son de disparition (optionnel)
   - `Decor Exit` → composant DecorExitSequencer (étape 4)
   - `End Curtain` → composant EndCurtainRise (étape 5)
+  - `Cm Transition Room` → CinemachineCamera dédiée (Priority=0 au repos)
+  - `Objects To Hide` → GOs dont le Renderer s'éteint après le rideau (Ground, murs, props…)
+  - `Allumage Lumiere Transition Room` → son joué au moment du switch (optionnel)
   - `Transition Room Door` → composant TransitionRoomDoor (étape 6)
 
 ## Étape 4 — DecorExitSequencer
@@ -246,19 +255,20 @@ Scene
 - [ ] GO avec mesh porte + `DoorBasic.cs` + `TransitionRoomDoor.cs`
 - [ ] Assigner dans `DoorBasic` :
   - `Interact Bubble` → le composant `InteractBubble` du GO Bouton
-  - `Interact Range` → 2.5
   - `Close Distance` → 4
-  - `Open Duration` → 0.8s
-  - `Open Message` → *(laisser vide — géré par TransitionRoomDoor)*
+  - `Open Duration` → 0.8s / `Close Duration` → 0.8s
   - `Start Enabled` → **false**
   - `Open Sound` / `Close Sound` (optionnel)
 - [ ] Assigner dans `TransitionRoomDoor` :
   - `Door` → le composant `DoorBasic` (même GO)
+  - `Door Open Message` → texte affiché dans CommentPanel (ex: "Continue")
+  - `Delay After Close` → 1s
 
 ### EnterTrigger (enfant de TransitionRoom)
-- [ ] GO vide avec `Collider` trigger + `TransitionRoomEnterTrigger.cs`
-- [ ] Placer dans l'encadrement de la porte ou à l'entrée de la pièce
-- [ ] Assigner `Lights Out Volume` → le `PostVictory Volume` (créé à l'étape 3)
+- [ ] GO vide avec `Collider` trigger + `DoorEnterTrigger.cs`
+- [ ] Placer dans l'encadrement intérieur de la porte (côté TransitionRoom)
+- [ ] Assigner `Door` → le composant `TransitionRoomDoor`
+- [ ] L'ajouter dans `Manual Exclusions` du `DecorExitSequencer`
 
 ---
 
@@ -267,3 +277,32 @@ Scene
 - [ ] Animation perso qui entre dans la porte avant le fade
 - [ ] Affichage stats dans la TransitionRoom
 - [ ] Portes multiples (Restart, secrets…)
+
+---
+
+## Refacto — Déploiement sur les 23 niveaux
+
+> À faire en session dédiée.
+
+### Plan
+
+Créer deux prefabs réutilisables :
+
+**`VictoryManager` prefab**
+- GO dédié (hors LevelManager)
+- Porte : `PostVictorySequencer` + `DecorExitSequencer`
+- Prérequis : rompre `GetComponent<LevelManager>()` dans `PostVictorySequencer.Step5a` → passer en référence sérialisée
+
+**`TransitionRoom` prefab**
+- GO autonome placé derrière l'EndCurtain
+- Contient : `Bouton` + `Door` (DoorBasic + TransitionRoomDoor) + `EnterTrigger` + `EndCurtain`
+
+**Overrides par niveau** (prefab overrides Unity) :
+- `VictoryManager` : `exitPivot`, `manualExclusions`, `objectsToHide`, `cm_transitionRoom`, sons
+- `TransitionRoom` : position/échelle, matériaux bouton, sons porte
+
+### Étapes
+1. [ ] Adapter `PostVictorySequencer` — référence `LevelManager` sérialisée
+2. [ ] Créer le prefab `VictoryManager`
+3. [ ] Créer le prefab `TransitionRoom`
+4. [ ] Déployer sur les 23 niveaux

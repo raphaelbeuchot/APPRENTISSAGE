@@ -6,33 +6,29 @@ using System.Collections;
 /// Porte generique pilotee par un bouton.
 ///
 /// Comportement :
-///   - Joueur s'approche du bouton -> InteractBubble apparait
-///   - Press X (porte fermee) -> porte monte + CommentPanel.ShowPersistent(openMessage)
+///   - InteractBubble gere sa propre visibilite (detectionRange sur le composant)
+///   - Press X (porte fermee, joueur en range) -> porte monte + CommentPanel.ShowPersistent(openMessage)
 ///   - Joueur recule au-dela de closeDistance -> porte redescend + CommentPanel.Hide()
 ///   - Events OnDoorOpened / OnDoorClosed pour brancher du comportement specifique
 ///
 /// Setup :
 ///   - Ce script va sur le GO de la porte (mesh)
 ///   - Assigner interactBubble (composant sur le GO Bouton)
+///   - La detection de range pour la bulle est geree par detectionRange sur InteractBubble
 ///   - startEnabled = false si la porte doit etre activee depuis l'exterieur (ex: TransitionRoom)
 /// </summary>
 public class DoorBasic : MonoBehaviour
 {
     [Header("Bouton")]
+    [Tooltip("Composant InteractBubble sur le GO Bouton — gere sa propre visibilite")]
     [SerializeField] private InteractBubble interactBubble;
-
-    [Tooltip("Distance pour afficher l'InteractBubble et accepter le press X")]
-    [SerializeField] private float interactRange = 2.5f;
 
     [Tooltip("Distance au-dela de laquelle la porte se referme")]
     [SerializeField] private float closeDistance = 4f;
 
-    [Header("Message")]
-    [Tooltip("Texte affiche dans CommentPanel a l'ouverture (laisser vide pour ne rien afficher)")]
-    [SerializeField] private string openMessage = "Continue";
-
     [Header("Ouverture / Fermeture")]
     [SerializeField] private float openDuration = 0.8f;
+    [SerializeField] private float closeDuration = 0.8f;
     [SerializeField] private AnimationCurve openCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [SerializeField] private AudioSource audioSource;
@@ -50,8 +46,11 @@ public class DoorBasic : MonoBehaviour
     /// <summary>Fire quand la porte a fini de monter.</summary>
     public event Action OnDoorOpened;
 
-    /// <summary>Fire quand la porte a fini de redescendre.</summary>
+    /// <summary>Fire quand la porte se referme apres que le joueur a recule.</summary>
     public event Action OnDoorClosed;
+
+    /// <summary>Fire quand la porte se referme apres franchissement (ForceClose).</summary>
+    public event Action OnDoorForceClosed;
 
     // ============================================
     // ETAT
@@ -59,9 +58,13 @@ public class DoorBasic : MonoBehaviour
 
     public bool IsOpen          { get; private set; }
     public bool IsEnabled       { get; private set; }
-    public float InteractRange  => interactRange;
+    public bool IsAnimating     => isAnimating;
+
+    /// <summary>Range de la bulle, lu depuis InteractBubble.</summary>
+    public float InteractRange  => interactBubble != null ? interactBubble.DetectionRange : 0f;
 
     private bool isAnimating = false;
+    private bool isFinalClose = false;
     private Vector3 closedPos;
     private Vector3 openPos;
     private Transform playerTransform;
@@ -93,15 +96,10 @@ public class DoorBasic : MonoBehaviour
             new Vector2(closedPos.x, closedPos.z),
             new Vector2(playerTransform.position.x, playerTransform.position.z));
 
-        // Bulle : visible quand porte fermee et joueur en range
-        if (!IsOpen && interactBubble != null)
-        {
-            if (dist <= interactRange) interactBubble.Show();
-            else                       interactBubble.Hide();
-        }
+        // InteractBubble gere sa propre visibilite -- pas d'appel Show/Hide ici
 
         // Press X (porte fermee) -> ouvrir
-        if (!IsOpen && !isAnimating && dist <= interactRange
+        if (!IsOpen && !isAnimating && dist <= InteractRange
             && PlayerInputManager.Instance != null
             && PlayerInputManager.Instance.InteractPressed)
         {
@@ -128,8 +126,16 @@ public class DoorBasic : MonoBehaviour
     public void Disable()
     {
         IsEnabled = false;
-        if (interactBubble != null) interactBubble.Hide();
+        if (interactBubble != null) interactBubble.enabled = false;
         CommentPanel.Hide();
+    }
+
+    /// <summary>Ferme la porte apres franchissement — bulle desactivee, event OnDoorForceClosed.</summary>
+    public void ForceClose()
+    {
+        if (!IsOpen || isAnimating) return;
+        isFinalClose = true;
+        Close();
     }
 
     // ============================================
@@ -146,9 +152,12 @@ public class DoorBasic : MonoBehaviour
         StartCoroutine(AnimateDoor(closedPos, openPos, openDuration, () =>
         {
             IsOpen = true;
-            if (interactBubble != null) interactBubble.Hide();
-            if (!string.IsNullOrEmpty(openMessage))
-                CommentPanel.ShowPersistent(openMessage);
+            // Desactiver la bulle pendant que la porte est ouverte
+            if (interactBubble != null)
+            {
+                interactBubble.Hide();
+                interactBubble.enabled = false;
+            }
             Debug.Log("[DoorBasic] Ouverte.");
             OnDoorOpened?.Invoke();
         }));
@@ -164,10 +173,22 @@ public class DoorBasic : MonoBehaviour
         if (audioSource != null && closeSound != null)
             audioSource.PlayOneShot(closeSound);
 
-        StartCoroutine(AnimateDoor(transform.position, closedPos, openDuration, () =>
+        StartCoroutine(AnimateDoor(transform.position, closedPos, closeDuration, () =>
         {
             Debug.Log("[DoorBasic] Refermee.");
-            OnDoorClosed?.Invoke();
+            if (isFinalClose)
+            {
+                // Joueur est passe : bulle reste off, event final
+                isFinalClose = false;
+                OnDoorForceClosed?.Invoke();
+            }
+            else
+            {
+                // Joueur a recule : bulle se reactivee, porte de nouveau utilisable
+                if (interactBubble != null)
+                    interactBubble.enabled = true;
+                OnDoorClosed?.Invoke();
+            }
         }));
     }
 

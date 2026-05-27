@@ -7,6 +7,7 @@ public class InteractBubble : MonoBehaviour
     [SerializeField] private Sprite buttonSprite;
     [SerializeField] private bool oneTimeOnly = false;
     [SerializeField] private float detectionRange = 2f;
+    public float DetectionRange => detectionRange;
     public float verticalOffset = 1f;
 
     [Header("Visual")]
