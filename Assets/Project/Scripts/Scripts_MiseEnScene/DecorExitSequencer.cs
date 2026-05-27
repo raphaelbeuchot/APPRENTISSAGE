@@ -59,6 +59,27 @@ public class DecorExitSequencer : MonoBehaviour
     }
 
     // ============================================
+    // DEBUG EDITOR
+    // ============================================
+
+    [ContextMenu("Debug — Lister les targets DecorExit")]
+    private void DebugListTargets()
+    {
+        // En Edit Mode, Awake n'a pas tourne — resoudre le pivot localement
+        if (exitPivot == null)
+        {
+            GameObject go = GameObject.FindWithTag("DecorExitPivot");
+            if (go != null) exitPivot = go.transform;
+            else Debug.LogWarning("[DecorExit DEBUG] exitPivot introuvable (tag 'DecorExitPivot' absent ?).");
+        }
+
+        List<Transform> targets = CollectTargets();
+
+        Debug.Log($"[DecorExit DEBUG] ========== RESULTAT ==========");
+        Debug.Log($"[DecorExit DEBUG] {targets.Count} props seraient expulses, voir lignes EXCLU ci-dessus pour les exclusions.");
+    }
+
+    // ============================================
     // API PUBLIQUE
     // ============================================
 
