@@ -21,25 +21,20 @@ public class PostVictorySequencer : MonoBehaviour
     [Tooltip("GO de la GoalDoor a detruire (GoalDoor ou GoalDoorNew selon le niveau)")]
     [SerializeField] private GameObject goalDoor;
 
-    [Tooltip("Joueur — pour ShowPlayerMesh et re-activer le controle")]
-    [SerializeField] private PlayerPhysicsMovement player;
+    [HideInInspector] [SerializeField] private PlayerPhysicsMovement player;
 
     [Tooltip("Son joue quand la GoalDoor disparait (optionnel)")]
     [SerializeField] private AudioClip goalDoorDisappearSound;
 
-    [Tooltip("AudioSource utilisee pour les sons de la sequence (optionnel — si null, PlayOneShot ne jouera pas)")]
-    [SerializeField] private AudioSource audioSource;
+    [HideInInspector] [SerializeField] private AudioSource audioSource;
 
-    [Tooltip("TargetGroupProxy a desactiver des le debut de la sequence (evite les erreurs Infinity quand le sentinel est expulse)")]
-    [SerializeField] private TargetGroupProxy targetGroupProxy;
+    [HideInInspector] [SerializeField] private TargetGroupProxy targetGroupProxy;
 
     [Header("5c — Decor Exit")]
-    [Tooltip("Sequenceur d'expulsion du decor")]
-    [SerializeField] private DecorExitSequencer decorExit;
+    [HideInInspector] [SerializeField] private DecorExitSequencer decorExit;
 
     [Header("5d — EndCurtain")]
-    [Tooltip("Le rideau de fin a lever une fois le decor vide")]
-    [SerializeField] private EndCurtainRise endCurtain;
+    [HideInInspector] [SerializeField] private EndCurtainRise endCurtain;
 
     [Header("5d+ — Apres rideau leve")]
     [Tooltip("GOs supplementaires a cacher en plus du layer Ground (murs, lumieres specifiques au niveau...)")]
@@ -50,13 +45,11 @@ public class PostVictorySequencer : MonoBehaviour
     [SerializeField] private AudioClip lightsOffSound;
 
     [Header("5d+ — Camera TransitionRoom")]
-    [Tooltip("CinemachineCamera a activer une fois le rideau leve")]
-    [SerializeField] private CinemachineCamera cm_transitionRoom;
+    [HideInInspector] [SerializeField] private CinemachineCamera cm_transitionRoom;
     [SerializeField] private int cm_transitionRoomPriority = 20;
 
     [Header("6a — Porte TransitionRoom")]
-    [Tooltip("La porte a activer une fois le rideau leve")]
-    [SerializeField] private TransitionRoomDoor transitionRoomDoor;
+    [HideInInspector] [SerializeField] private TransitionRoomDoor transitionRoomDoor;
 
     [Header("5b — Lights Out")]
     [Tooltip("Le Global Volume de la scene (profil avec ColorAdjustments)")]
