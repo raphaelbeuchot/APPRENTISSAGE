@@ -286,7 +286,10 @@ Certains champs de `PostVictorySequencer` sont auto-assignés à l'`Awake` si la
 | `endCurtain` | `FindObjectOfType<EndCurtainRise>()` | 1 par niveau |
 | `transitionRoomDoor` | `FindObjectOfType<TransitionRoomDoor>()` | 1 par niveau (enfant de TransitionDoorPrefab) |
 | `globalVolume` | `GameObject.FindWithTag("VolumePostVictory")` | Tag à créer dans Project Settings |
-| `cm_transitionRoom` | `transitionRoomDoor.transform.root.GetComponentInChildren<CinemachineCamera>()` | Doit être dans le même GO racine que TransitionRoomDoor (ex: TRANSITIONROOM) |
+| `cm_transitionRoom` | `GameObject.FindWithTag("CameraTransitionRoom")` | Tag à créer — GO dans TRANSITIONROOM prefab |
+| `cm_victory` (VictoryUI) | `GameObject.FindWithTag("CameraVictory")` | Tag à créer — GO dans TRANSITIONROOM prefab, HardLookAt player |
+| `exitPivot` (DecorExitSequencer) | `GameObject.FindWithTag("DecorExitPivot")` | Tag à créer — GO dans TRANSITIONROOM prefab, centré en X |
+| Follow/LookAt caméras | `CinemachineCameraAutoTarget.cs` sur chaque CM | Script à poser sur CM_Victory et CM_TransitionRoom |
 | layer Ground | `LayerMask.NameToLayer("Ground")` dans `DisableLevelLights` | Tous les renderers Ground cachés automatiquement |
 | `audioSource` | `GetComponent` + `AddComponent` si absent | Même GO |
 

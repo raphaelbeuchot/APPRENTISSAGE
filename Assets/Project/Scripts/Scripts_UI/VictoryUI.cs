@@ -39,7 +39,7 @@ public class VictoryUI : MonoBehaviour
     [SerializeField] private AnimationCurve wipeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Camera Victory")]
-    [SerializeField] private CinemachineCamera cm_victory;
+    [HideInInspector] [SerializeField] private CinemachineCamera cm_victory;
     [SerializeField] private int cm_victoryPriority = 20;
 
     public event Action OnWipeComplete;
@@ -62,6 +62,12 @@ public class VictoryUI : MonoBehaviour
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.spatialBlend = 0f;
+
+        if (cm_victory == null)
+        {
+            GameObject go = GameObject.FindWithTag("CameraVictory");
+            if (go != null) cm_victory = go.GetComponent<CinemachineCamera>();
+        }
 
         Hide();
     }

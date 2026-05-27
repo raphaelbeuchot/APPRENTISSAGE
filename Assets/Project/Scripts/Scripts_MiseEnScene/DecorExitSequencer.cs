@@ -21,15 +21,14 @@ using System.Collections.Generic;
 public class DecorExitSequencer : MonoBehaviour
 {
     [Header("Reference")]
-    [Tooltip("GO vide centre dans la zone de jeu — definit les directions d'expulsion")]
-    [SerializeField] private Transform exitPivot;
+    [HideInInspector] [SerializeField] private Transform exitPivot;
 
     [Header("Mouvement")]
     [Tooltip("Duree de la translation pour chaque prop (secondes)")]
-    [SerializeField] private float exitDuration = 0.6f;
+    [SerializeField] private float exitDuration = 2f;
 
     [Tooltip("Distance de deplacement avant destruction (unites monde)")]
-    [SerializeField] private float exitDistance = 20f;
+    [SerializeField] private float exitDistance = 15f;
 
     [Tooltip("Decalage entre le lancement de chaque prop (secondes)")]
     [SerializeField] private float staggerDelay = 0.05f;
@@ -45,6 +44,19 @@ public class DecorExitSequencer : MonoBehaviour
 
     /// <summary>Fire quand tous les props ont quitte le decor.</summary>
     public event Action OnDecorExitComplete;
+
+    // ============================================
+    // UNITY LIFECYCLE
+    // ============================================
+
+    private void Awake()
+    {
+        if (exitPivot == null)
+        {
+            GameObject go = GameObject.FindWithTag("DecorExitPivot");
+            if (go != null) exitPivot = go.transform;
+        }
+    }
 
     // ============================================
     // API PUBLIQUE

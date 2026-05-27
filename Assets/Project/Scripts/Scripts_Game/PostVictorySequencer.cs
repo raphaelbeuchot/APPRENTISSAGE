@@ -103,9 +103,11 @@ public class PostVictorySequencer : MonoBehaviour
         if (transitionRoomDoor == null)
             transitionRoomDoor = FindObjectOfType<TransitionRoomDoor>();
 
-        if (cm_transitionRoom == null && transitionRoomDoor != null)
-            cm_transitionRoom = transitionRoomDoor.transform.root
-                                    .GetComponentInChildren<CinemachineCamera>();
+        if (cm_transitionRoom == null)
+        {
+            GameObject go = GameObject.FindWithTag("CameraTransitionRoom");
+            if (go != null) cm_transitionRoom = go.GetComponent<CinemachineCamera>();
+        }
 
         if (globalVolume == null)
         {
