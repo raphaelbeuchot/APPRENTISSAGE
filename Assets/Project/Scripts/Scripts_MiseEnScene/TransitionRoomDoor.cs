@@ -1,61 +1,31 @@
 using UnityEngine;
-using System.Collections;
 
 /// <summary>
 /// Porte de la TransitionRoom post-victoire.
+/// S'appuie sur DoorBasic pour toute la mecanique bouton/porte.
 ///
-/// Comportement :
-///   - Inactive jusqu'a Enable() (appele par PostVictorySequencer apres EndCurtainRise)
-///   - Joueur s'approche -> InteractBubble
-///   - Press X -> porte monte + affiche continueUI
-///   - Joueur recule au-dela de closeDistance -> porte redescend
-///   - Joueur franchit l'enterTrigger -> fade out -> niveau suivant
+/// Comportement specifique :
+///   - Inactive jusqu'a Enable() (appele par PostVictorySequencer)
+///   - A l'ouverture : CommentPanel.ShowPersistent("Continue")
+///   - Press X porte ouverte -> LevelManager.LoadNextLevel()
+///     (Phase 2 : animation joueur qui entre dans la porte avant le fade)
 ///
 /// Setup :
-///   - Placer un GO enfant vide "EnterTrigger" avec Collider trigger dans l'encadrement
-///   - Assigner sceneFadeOut (CanvasGroup noir sur Canvas world-space ou overlay)
+///   - Ce script va sur le meme GO que DoorBasic (ou un GO parent)
+///   - Assigner door -> le composant DoorBasic
+///   - Laisser openMessage vide dans DoorBasic (c'est TransitionRoomDoor qui gere le message)
+///   - startEnabled = false dans DoorBasic
 /// </summary>
 public class TransitionRoomDoor : MonoBehaviour
 {
-    [Header("Interaction")]
-    [Tooltip("Distance pour afficher l'InteractBubble et accepter le press X")]
-    [SerializeField] private float interactRange = 2.5f;
-
-    [Tooltip("Distance au-dela de laquelle la porte se referme")]
-    [SerializeField] private float closeDistance = 4f;
-
-    [SerializeField] private InteractBubble interactBubble;
-
-    [Header("Ouverture / Fermeture")]
-    [SerializeField] private float openDuration = 0.8f;
-    [SerializeField] private AnimationCurve openCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip openSound;
-    [SerializeField] private AudioClip closeSound;
-
-    [Header("Continue UI")]
-    [Tooltip("GO ou Canvas a afficher quand la porte est ouverte (ex: texte 'Continue')")]
-    [SerializeField] private GameObject continueUI;
-
-    [Header("Chargement")]
-    [Tooltip("SceneFadeOut pour le fondu avant le chargement")]
-    [SerializeField] private SceneFadeOut sceneFadeOut;
-
-    [Tooltip("Trigger a franchir pour declencher le chargement (enfant de ce GO ou GO separe)")]
-    [SerializeField] private Collider enterTrigger;
+    [Header("References")]
+    [SerializeField] private DoorBasic door;
 
     // ============================================
-    // ETAT INTERNE
+    // ETAT
     // ============================================
 
-    private bool isEnabled = false;
-    private bool isOpen = false;
-    private bool isAnimating = false;
     private bool hasTriggeredLoad = false;
-
-    private Vector3 closedPos;
-    private Vector3 openPos;
     private Transform playerTransform;
 
     // ============================================
@@ -64,161 +34,73 @@ public class TransitionRoomDoor : MonoBehaviour
 
     private void Start()
     {
-        closedPos = transform.position;
-        openPos = closedPos + Vector3.up * GetDoorHeight();
-
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
             playerTransform = playerObj.transform;
         else
-            Debug.LogWarning("[TransitionDoor] Player introuvable (tag Player manquant ?)");
+            Debug.LogWarning("[TransitionRoomDoor] Player introuvable.");
 
-        if (continueUI != null) continueUI.SetActive(false);
+        if (door != null)
+            door.OnDoorOpened += HandleDoorOpened;
+        else
+            Debug.LogWarning("[TransitionRoomDoor] DoorBasic non assigne.");
+    }
+
+    private void OnDestroy()
+    {
+        if (door != null)
+            door.OnDoorOpened -= HandleDoorOpened;
     }
 
     private void Update()
     {
-        if (!isEnabled || hasTriggeredLoad || playerTransform == null) return;
+        if (hasTriggeredLoad || playerTransform == null || door == null) return;
+        if (!door.IsOpen || !door.IsEnabled) return;
 
-        float dist = Vector3.Distance(transform.position, playerTransform.position);
+        float dist = Vector2.Distance(
+            new Vector2(door.transform.position.x, door.transform.position.z),
+            new Vector2(playerTransform.position.x, playerTransform.position.z));
 
-        // Afficher / masquer la bulle
-        if (!isOpen && interactBubble != null)
-        {
-            if (dist <= interactRange) interactBubble.Show();
-            else                       interactBubble.Hide();
-        }
-
-        // Press X -> ouvrir
-        if (!isOpen && !isAnimating && dist <= interactRange
+        if (dist <= door.InteractRange
             && PlayerInputManager.Instance != null
             && PlayerInputManager.Instance.InteractPressed)
         {
-            Open();
+            TriggerLoad();
         }
-
-        // Reculer -> refermer
-        if (isOpen && !isAnimating && dist > closeDistance)
-        {
-            Close();
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!isEnabled || hasTriggeredLoad || !isOpen) return;
-        if (!other.CompareTag("Player")) return;
-
-        hasTriggeredLoad = true;
-        StartCoroutine(LoadNextLevel());
     }
 
     // ============================================
     // API PUBLIQUE
     // ============================================
 
+    /// <summary>Appele par PostVictorySequencer une fois le rideau leve.</summary>
     public void Enable()
     {
-        isEnabled = true;
-        Debug.Log("[TransitionDoor] Activee.");
+        if (door != null) door.Enable();
     }
 
     // ============================================
-    // OUVERTURE / FERMETURE
+    // HANDLERS
     // ============================================
 
-    private void Open()
+    private void HandleDoorOpened()
     {
-        if (isAnimating || isOpen) return;
-        StartCoroutine(AnimateDoor(closedPos, openPos, openDuration, onComplete: () =>
-        {
-            isOpen = true;
-            if (interactBubble != null) interactBubble.Hide();
-            if (continueUI != null) continueUI.SetActive(true);
-            Debug.Log("[TransitionDoor] Ouverte.");
-        }));
-
-        if (audioSource != null && openSound != null)
-            audioSource.PlayOneShot(openSound);
-    }
-
-    private void Close()
-    {
-        if (isAnimating || !isOpen) return;
-        isOpen = false;
-        if (continueUI != null) continueUI.SetActive(false);
-
-        StartCoroutine(AnimateDoor(transform.position, closedPos, openDuration, onComplete: null));
-
-        if (audioSource != null && closeSound != null)
-            audioSource.PlayOneShot(closeSound);
-
-        Debug.Log("[TransitionDoor] Refermee.");
-    }
-
-    private IEnumerator AnimateDoor(Vector3 from, Vector3 to, float duration, System.Action onComplete)
-    {
-        isAnimating = true;
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = openCurve.Evaluate(Mathf.Clamp01(elapsed / duration));
-            transform.position = Vector3.Lerp(from, to, t);
-            yield return null;
-        }
-
-        transform.position = to;
-        isAnimating = false;
-        onComplete?.Invoke();
+        CommentPanel.ShowPersistent("Continue");
     }
 
     // ============================================
-    // CHARGEMENT NIVEAU SUIVANT
+    // CHARGEMENT
     // ============================================
 
-    private IEnumerator LoadNextLevel()
+    private void TriggerLoad()
     {
-        Debug.Log("[TransitionDoor] Franchissement — chargement niveau suivant.");
+        hasTriggeredLoad = true;
+        Debug.Log("[TransitionRoomDoor] Press X porte ouverte — chargement niveau suivant.");
 
-        if (sceneFadeOut != null)
-        {
-            // SceneFadeOut gere le fade ET le LoadingScreen
-            LevelManager lm = FindObjectOfType<LevelManager>();
-            if (lm != null)
-            {
-                // Recuperer l'index du niveau suivant via LevelManager
-                // puis passer par SceneFadeOut pour le fade
-                lm.LoadNextLevel();
-            }
-            else
-            {
-                sceneFadeOut.FadeToScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex + 1);
-            }
-        }
+        LevelManager lm = FindObjectOfType<LevelManager>();
+        if (lm != null)
+            lm.LoadNextLevel();
         else
-        {
-            LevelManager lm = FindObjectOfType<LevelManager>();
-            if (lm != null) lm.LoadNextLevel();
-        }
-
-        yield break;
-    }
-
-    // ============================================
-    // HELPERS
-    // ============================================
-
-    private float GetDoorHeight()
-    {
-        Renderer rend = GetComponentInChildren<Renderer>();
-        if (rend != null) return rend.bounds.size.y;
-
-        Collider col = GetComponentInChildren<Collider>();
-        if (col != null) return col.bounds.size.y;
-
-        Debug.LogWarning("[TransitionDoor] Hauteur introuvable — 3u par defaut.");
-        return 3f;
+            Debug.LogWarning("[TransitionRoomDoor] LevelManager introuvable.");
     }
 }
