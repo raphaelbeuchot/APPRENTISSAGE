@@ -31,7 +31,7 @@ public class DoorBasic : MonoBehaviour
     [SerializeField] private float closeDuration = 0.8f;
     [SerializeField] private AnimationCurve openCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-    [SerializeField] private AudioSource audioSource;
+    [HideInInspector] [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip openSound;
     [SerializeField] private AudioClip closeSound;
 
@@ -79,6 +79,12 @@ public class DoorBasic : MonoBehaviour
         openPos   = closedPos + Vector3.up * GetDoorHeight();
 
         IsEnabled = startEnabled;
+
+        if (audioSource == null)
+        {
+            GameManager gm = FindObjectOfType<GameManager>();
+            if (gm != null) audioSource = gm.GetComponent<AudioSource>();
+        }
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)

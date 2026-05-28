@@ -199,7 +199,7 @@ public class PostVictorySequencer : MonoBehaviour
         // Re-afficher le mesh joueur (cache depuis VictoryScale)
         if (player != null)
         {
-            PlayerVictoryScale pvs = player.GetComponent<PlayerVictoryScale>();
+            PlayerVictoryScale pvs = player.GetComponentInChildren<PlayerVictoryScale>();
             if (pvs != null) pvs.ShowPlayerMesh();
 
             // Reprise du controle immediate
