@@ -398,6 +398,28 @@ Créer deux prefabs réutilisables :
 
 ---
 
+---
+
+### Journal de session — 2026-05-28
+
+#### Bug : player invisible après wipe (Strange Attractor)
+
+**Symptôme** : joueur jouable mais invisible après le wipe de VictoryUI.
+
+**Cause** : `PlayerVictoryScale` était sur un GO enfant du prefab player (pas sur le root).  
+`PostVictorySequencer.Step5a` appelait `player.GetComponent<PlayerVictoryScale>()` → null → `ShowPlayerMesh()` non appelé → mesh resté désactivé depuis `TriggerScale()`.
+
+**Fix** : `GetComponent` → `GetComponentInChildren` — cherche le GO lui-même puis ses enfants, compatible avec tous les niveaux où c'est sur le root.
+
+**⚠️ Piège de log** : le log `[PostVictory] Joueur visible + controle rendu.` s'affiche même si `pvs == null`. Il est positionné *après* le null check, pas dedans. Un log qui s'affiche ne garantit pas que le code dans le `if` a tourné.
+
+#### DoorBasic — AudioSource auto-assign
+
+- Auto-assign via `GameManager.GetComponent<AudioSource>()` (même pattern que `PlayerDetectionFeedback`)
+- `[HideInInspector]` appliqué au champ `audioSource`
+
+---
+
 ### Étapes restantes
 
 1. [x] Adapter `PostVictorySequencer` — référence `LevelManager` sérialisée
