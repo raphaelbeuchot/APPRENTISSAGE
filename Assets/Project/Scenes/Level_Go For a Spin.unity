@@ -3525,6 +3525,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5591872956593619993, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: manualExclusions.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5591872956593619993, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: 'manualExclusions.Array.data[0]'
+      value: 
+      objectReference: {fileID: 415138955}
+    - target: {fileID: 5591872956593619993, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: 'manualExclusions.Array.data[1]'
+      value: 
+      objectReference: {fileID: 247130984}
+    - target: {fileID: 5591872956593619993, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: 'manualExclusions.Array.data[2]'
+      value: 
+      objectReference: {fileID: 1786872878}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: goalDoor
       value: 
@@ -3533,11 +3549,20 @@ PrefabInstance:
       propertyPath: globalVolume
       value: 
       objectReference: {fileID: 1461693711}
+    - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: 'objectsToHide.Array.data[0]'
+      value: 
+      objectReference: {fileID: 279519657}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+--- !u!4 &247130984 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3049164451857217143, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+  m_PrefabInstance: {fileID: 247130983}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &247928396
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4253,7 +4278,7 @@ GameObject:
   - component: {fileID: 279519659}
   - component: {fileID: 279519658}
   m_Layer: 8
-  m_Name: Cube
+  m_Name: GROUND
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6080,6 +6105,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
+--- !u!4 &415138955 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 506873655801851025, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
+  m_PrefabInstance: {fileID: 415138954}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &417164846 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -23631,6 +23661,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 36b948a30ad578047b9f85fadcaf269a, type: 3}
+--- !u!4 &1786872878 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2702644571020249587, guid: 36b948a30ad578047b9f85fadcaf269a, type: 3}
+  m_PrefabInstance: {fileID: 1786872877}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1790183880 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
