@@ -9,6 +9,8 @@ public class PlayerHealthUI : MonoBehaviour
     [SerializeField] private PlayerHealth playerHealth;
 
     [Header("Config")]
+    [SerializeField] private bool showHealthBar = true;
+    public bool ShouldShow => showHealthBar;
     [SerializeField] private float pipDiameter = 25f;
     [SerializeField] private float outlineExtra = 4f;
     [SerializeField] private float overlapRatio = 0.5f;
@@ -42,6 +44,7 @@ public class PlayerHealthUI : MonoBehaviour
 
     private void OnEnable()
     {
+        if (!showHealthBar) { gameObject.SetActive(false); return; }
         StartCoroutine(InitCoroutine());
     }
 

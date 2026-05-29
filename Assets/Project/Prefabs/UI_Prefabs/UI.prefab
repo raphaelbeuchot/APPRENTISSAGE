@@ -407,6 +407,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealthUI
   playerHealth: {fileID: 0}
+  showHealthBar: 0
   pipDiameter: 40
   outlineExtra: 4
   overlapRatio: 1.5
@@ -1988,7 +1989,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &83746396095164358
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2993,13 +2994,7 @@ MonoBehaviour:
   textAnimDuration: 1
   textAnimStartScaleX: 8
   deathMessages:
-  - DEAD MAN WALKING
-  - ONE MOVE TOO FAR
-  - DEATH IS NOT THE END
-  - DEAD AGAIN
-  - SORRY, YOU MOVED
-  - THE URGE TO BUDGE
-  - RED MEANS DEAD
+  - You moved
   gameOverSound: {fileID: 8300000, guid: b0753557c4969994e86dc3f00971fd79, type: 3}
   delayBeforeRestart: 2.3
 --- !u!225 &7544618979531371940

@@ -30,6 +30,11 @@ public class MainMenuUI : MonoBehaviour
     private float cooldownDuration = 0.2f;
     private bool hasSave = false;
 
+    void Awake()
+    {
+        if (uiAudio == null) uiAudio = FindObjectOfType<UIAudioPlayer>();
+    }
+
     void Start()
     {
         Time.timeScale = 1f;

@@ -45,7 +45,11 @@ public class GameUIManager : MonoBehaviour
 
     public void ShowGameplayBars()
     {
-        if (healthBar != null) healthBar.SetActive(true);
+        if (healthBar != null)
+        {
+            PlayerHealthUI phui = healthBar.GetComponent<PlayerHealthUI>();
+            if (phui == null || phui.ShouldShow) healthBar.SetActive(true);
+        }
         if (staminaBar != null) staminaBar.SetActive(true);
         if (pressureGauge != null) pressureGauge.SetActive(true);
         if (enemyIconsContainer != null) enemyIconsContainer.SetActive(true);

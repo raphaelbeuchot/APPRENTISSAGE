@@ -36,6 +36,11 @@ public class PauseMenuUI : MonoBehaviour
     private float navigationCooldown = 0f;
     private float cooldownDuration = 0.2f;
 
+    void Awake()
+    {
+        if (uiAudio == null) uiAudio = FindObjectOfType<UIAudioPlayer>();
+    }
+
     void Start()
     {
         // Setup liste textes menu

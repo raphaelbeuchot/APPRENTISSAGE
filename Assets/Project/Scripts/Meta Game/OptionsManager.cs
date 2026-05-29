@@ -10,7 +10,7 @@ public class OptionsManager : MonoBehaviour
     private const string KEY_DIFFICULTY = "Difficulty";
 
     public bool gaugeVisible { get; private set; } = true;
-    public Difficulty difficulty { get; private set; } = Difficulty.Banco;
+    public Difficulty difficulty { get; private set; } = Difficulty.Superbanco;
 
     void Awake()
     {
@@ -50,6 +50,6 @@ public class OptionsManager : MonoBehaviour
     void Load()
     {
         gaugeVisible = PlayerPrefs.GetInt(KEY_GAUGE, 1) == 1;
-        difficulty = (Difficulty)PlayerPrefs.GetInt(KEY_DIFFICULTY, 0);
+        difficulty = (Difficulty)PlayerPrefs.GetInt(KEY_DIFFICULTY, (int)Difficulty.Superbanco);
     }
 }

@@ -29,6 +29,8 @@ public class OptionsPanelUI : MonoBehaviour
 
     void Awake()
     {
+        if (uiAudio == null) uiAudio = FindObjectOfType<UIAudioPlayer>();
+
         optionTexts.Add(gaugeText);
         optionTexts.Add(difficultyText);
         optionTexts.Add(audioText);
@@ -128,7 +130,7 @@ public class OptionsPanelUI : MonoBehaviour
         gaugeText.text = "Timer display     " + (gaugeOn ? "On" : "Off");
 
         bool isBanco = OptionsManager.Instance.difficulty == OptionsManager.Difficulty.Banco;
-        difficultyText.text = "Difficulty     " + (isBanco ? "Easy" : "Hard");
+        difficultyText.text = "Difficulty     " + (isBanco ? "Easy" : "Normal");
 
         audioText.text = "Audio";
     }

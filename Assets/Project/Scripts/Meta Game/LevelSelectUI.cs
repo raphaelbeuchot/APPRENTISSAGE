@@ -37,6 +37,11 @@ public class LevelSelectUI : MonoBehaviour
 
     private int totalItems => levels != null ? levels.Count + 1 : 1;
 
+    void Awake()
+    {
+        if (uiAudio == null) uiAudio = FindObjectOfType<UIAudioPlayer>();
+    }
+
     void Start()
     {
         Time.timeScale = 1f;
