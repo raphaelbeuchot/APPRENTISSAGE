@@ -31282,6 +31282,7 @@ MonoBehaviour:
   - {r: 0.67071766, g: 0.6981132, b: 0.07573871, a: 1}
   - {r: 0.30867165, g: 0.21137415, b: 0.4716981, a: 1}
   - {r: 1, g: 0.96871734, b: 0.740566, a: 1}
+  skipGracePeriod: 0.3
 --- !u!1001 &1873295191
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -34365,17 +34366,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!114 &2064839567 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3111822479116291425, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-  m_PrefabInstance: {fileID: 115993669638194592}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c12391bb4c5e5d84880004088e9248c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VictoryUI
 --- !u!1001 &2068752960
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -36364,7 +36354,7 @@ PrefabInstance:
     - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: victoryUI
       value: 
-      objectReference: {fileID: 2064839567}
+      objectReference: {fileID: 0}
     - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: gameOverUI
       value: 
