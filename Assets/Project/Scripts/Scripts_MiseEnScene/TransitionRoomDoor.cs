@@ -102,11 +102,11 @@ public class TransitionRoomDoor : MonoBehaviour
         // Delai avant fade
         yield return new WaitForSeconds(delayAfterClose);
 
-        // Fade + niveau suivant via SceneFader + LoadingScreen
+        // Fade + niveau suivant via SceneFader (loading cache par la porte d'entree)
         int nextScene = GetNextSceneIndex();
         if (nextScene != -1 && SceneFader.Instance != null)
         {
-            SceneFader.Instance.FadeToSceneWithLoadingScreen(nextScene);
+            SceneFader.Instance.FadeToSceneAsync(nextScene);
         }
         else
         {

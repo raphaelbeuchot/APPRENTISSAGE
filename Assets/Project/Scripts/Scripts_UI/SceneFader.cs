@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System;
 using System.Collections;
 
 public class SceneFader : MonoBehaviour
@@ -8,6 +9,10 @@ public class SceneFader : MonoBehaviour
     public static SceneFader Instance { get; private set; }
 
     [SerializeField] private float fadeDuration = 0.4f;
+
+    public event Action OnFadeOutComplete;
+
+    public bool IsFading => isFading;
 
     private Image fadeImage;
     private bool isFading = false;
@@ -50,6 +55,41 @@ public class SceneFader : MonoBehaviour
     {
         if (isFading) return;
         StartCoroutine(FadeToSceneCoroutine(sceneIndex));
+    }
+
+    /// <summary>
+    /// Charge la scene en async (allowSceneActivation=false), l'active quand prete,
+    /// puis fade out. Fire OnFadeOutComplete quand la transition est terminee.
+    /// </summary>
+    public void FadeToSceneAsync(int sceneIndex)
+    {
+        if (isFading) return;
+        StartCoroutine(FadeToSceneAsyncCoroutine(sceneIndex));
+    }
+
+    private IEnumerator FadeToSceneAsyncCoroutine(int sceneIndex)
+    {
+        isFading = true;
+
+        yield return StartCoroutine(Fade(0f, 1f));
+
+        AsyncOperation op = SceneManager.LoadSceneAsync(sceneIndex);
+        op.allowSceneActivation = false;
+
+        while (op.progress < 0.9f)
+            yield return null;
+
+        op.allowSceneActivation = true;
+
+        while (!op.isDone)
+            yield return null;
+
+        yield return null; // frame pour que Start() s'execute
+
+        yield return StartCoroutine(Fade(1f, 0f));
+
+        isFading = false;
+        OnFadeOutComplete?.Invoke();
     }
 
     public void FadeToSceneWithLoadingScreen(int sceneIndex)

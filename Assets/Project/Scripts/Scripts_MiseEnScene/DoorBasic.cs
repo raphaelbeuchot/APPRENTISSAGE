@@ -129,6 +129,12 @@ public class DoorBasic : MonoBehaviour
         Debug.Log("[DoorBasic] Activee.");
     }
 
+    /// <summary>Ouvre la porte automatiquement sans interaction joueur (sequence d'intro).</summary>
+    public void AutoOpen()
+    {
+        Open();
+    }
+
     public void Disable()
     {
         IsEnabled = false;
