@@ -3,6 +3,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using Unity.Cinemachine;
 using System.Collections;
+using System;
 
 /// <summary>
 /// Orchestre la sequence post-victoire une fois le wipe termine.
@@ -31,7 +32,16 @@ public class PostVictorySequencer : MonoBehaviour
     [HideInInspector] [SerializeField] private TargetGroupProxy targetGroupProxy;
 
     [Header("5c — Decor Exit")]
+    [Tooltip("Cocher pour skipper le demantelage du decor (lumieres et rideau restent actifs)")]
+    [SerializeField] private bool skipDecorExit = false;
     [HideInInspector] [SerializeField] private DecorExitSequencer decorExit;
+
+    [Tooltip("Transform racine de la sentinelle (auto via tag Sentinel)")]
+    [HideInInspector] [SerializeField] private Transform sentinelRoot;
+    [Tooltip("Duree de la montee de la sentinelle (si skipDecorExit)")]
+    [SerializeField] private float sentinelRiseDuration = 2f;
+    [Tooltip("Distance de montee en Y (si skipDecorExit)")]
+    [SerializeField] private float sentinelRiseDistance = 12f;
 
     [Header("5d — EndCurtain")]
     [HideInInspector] [SerializeField] private EndCurtainRise endCurtain;
@@ -108,6 +118,12 @@ public class PostVictorySequencer : MonoBehaviour
 
         if (transitionRoomDoor == null)
             transitionRoomDoor = FindObjectOfType<TransitionRoomDoor>();
+
+        if (sentinelRoot == null)
+        {
+            GameObject go = GameObject.FindWithTag("Sentinel");
+            if (go != null) sentinelRoot = go.transform.root;
+        }
 
         if (cm_transitionRoom == null)
         {
@@ -220,16 +236,26 @@ public class PostVictorySequencer : MonoBehaviour
 
     private IEnumerator Step5c5d_DecorExitAndCurtainRise()
     {
-        // Flags initiaux : true si le composant est absent (pas besoin d'attendre)
-        bool decorDone  = decorExit  == null;
-        bool curtainDone = endCurtain == null;
+        // Flags initiaux : true si le composant est absent ou l'etape skippee (pas besoin d'attendre)
+        bool decorDone    = decorExit   == null || skipDecorExit;
+        bool curtainDone  = endCurtain  == null;
+        bool sentinelDone = !skipDecorExit || sentinelRoot == null;
 
-        if (decorExit != null)
+        if (!skipDecorExit && decorExit != null)
         {
             decorExit.OnDecorExitComplete += () => decorDone = true;
             decorExit.StartExit(_goalDoorWorldX);
         }
-        else Debug.LogWarning("[PostVictory] Pas de DecorExitSequencer assigne — etape 5c skippee.");
+        else
+        {
+            if (skipDecorExit) Debug.Log("[PostVictory] Decor exit skippee (skipDecorExit = true).");
+            else Debug.LogWarning("[PostVictory] Pas de DecorExitSequencer assigne — etape 5c skippee.");
+        }
+
+        if (skipDecorExit && sentinelRoot != null)
+            StartCoroutine(SentinelRise(() => sentinelDone = true));
+        else if (skipDecorExit)
+            Debug.LogWarning("[PostVictory] skipDecorExit=true mais sentinelRoot non trouve — sentinel rise skippee.");
 
         if (endCurtain != null)
         {
@@ -238,7 +264,31 @@ public class PostVictorySequencer : MonoBehaviour
         }
         else Debug.LogWarning("[PostVictory] Pas d'EndCurtain assigne — etape 5d skippee.");
 
-        yield return new WaitUntil(() => decorDone && curtainDone);
+        yield return new WaitUntil(() => decorDone && curtainDone && sentinelDone);
+    }
+
+    // ============================================
+    // ETAPE 5c — SENTINEL RISE (si skipDecorExit)
+    // ============================================
+
+    private IEnumerator SentinelRise(Action onDone)
+    {
+        Vector3 startPos = sentinelRoot.position;
+        Vector3 endPos   = startPos + Vector3.up * sentinelRiseDistance;
+        float elapsed    = 0f;
+
+        while (elapsed < sentinelRiseDuration && sentinelRoot != null)
+        {
+            elapsed += Time.deltaTime;
+            sentinelRoot.position = Vector3.Lerp(startPos, endPos, Mathf.Clamp01(elapsed / sentinelRiseDuration));
+            yield return null;
+        }
+
+        if (sentinelRoot != null)
+            sentinelRoot.gameObject.SetActive(false);
+
+        onDone?.Invoke();
+        Debug.Log("[PostVictory] Sentinel montee et cachee.");
     }
 
     // ============================================

@@ -34,6 +34,10 @@ public class VictoryUI : MonoBehaviour
     [SerializeField] private AudioClip essaisSlideSound;
     private AudioSource audioSource;
 
+    [Header("Options")]
+    [Tooltip("Cocher pour afficher uniquement le fond colore sans les textes (titre + essais)")]
+    [SerializeField] private bool skipTexts = false;
+
     [Header("Wipe")]
     [SerializeField] private float wipeDuration = 0.6f;
     [SerializeField] private AnimationCurve wipeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -145,6 +149,20 @@ public class VictoryUI : MonoBehaviour
         VictoryGhostBillboard[] ghosts = FindObjectsByType<VictoryGhostBillboard>(FindObjectsSortMode.None);
         foreach (var ghost in ghosts)
             if (ghost != null) Destroy(ghost.gameObject);
+
+        // 3b. Si skipTexts : pas de slide, on active l'input directement
+        if (skipTexts)
+        {
+            if (victoryCanvasGroup != null)
+            {
+                victoryCanvasGroup.interactable = true;
+                victoryCanvasGroup.blocksRaycasts = true;
+            }
+            Time.timeScale = 0f;
+            isActive = true;
+            Debug.Log("[VictoryUI] Textes skipped — pret immediatement.");
+            yield break;
+        }
 
         // 4. Rendre le container visible (scale 1), textes hors-ecran
         if (slideContainer != null)
