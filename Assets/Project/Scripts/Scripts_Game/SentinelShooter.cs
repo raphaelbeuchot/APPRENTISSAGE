@@ -104,21 +104,22 @@ public class SentinelShooter : MonoBehaviour
         if (gm.laserManager != null)
             gm.laserManager.TriggerShotAnimation(sentinelPos, currentTargetPos);
 
-        if (gm.playerDetectionFeedback != null)
-            gm.playerDetectionFeedback.OnShotBySentinel();
+        PlayerDetectionFeedback humanFeedback = human.GetComponent<PlayerDetectionFeedback>();
+        if (humanFeedback != null)
+            humanFeedback.OnShotBySentinel();
 
-        if (gm.playerDetectionFeedback != null)
-            gm.playerDetectionFeedback.OnNoLongerDetected();
+        if (humanFeedback != null)
+            humanFeedback.OnNoLongerDetected();
 
-        StartCoroutine(PlayerStunBySentinel());
+        StartCoroutine(PlayerStunBySentinel(human.GetComponent<PlayerPhysicsMovement>()));
         humanHealth.TakeSentinelShot(sentinelPos);
     }
 
-    IEnumerator PlayerStunBySentinel()
+    IEnumerator PlayerStunBySentinel(PlayerPhysicsMovement playerMovement)
     {
-        gm.stunBySentinel = true;
+        if (playerMovement != null) playerMovement.stunBySentinel = true;
         yield return new WaitForSeconds(gm.sentinel.stunDuration);
-        gm.stunBySentinel = false;
+        if (playerMovement != null) playerMovement.stunBySentinel = false;
 
         if (gm.player != null)
         {
@@ -142,7 +143,7 @@ public class SentinelShooter : MonoBehaviour
             SentinelTarget sentinelTarget = playerObject.GetComponent<SentinelTarget>();
             if (sentinelTarget != null) sentinelTarget.FlashWhite();
 
-            StartCoroutine(PlayerStunBySentinel());
+            StartCoroutine(PlayerStunBySentinel(playerObject.GetComponent<PlayerPhysicsMovement>()));
             humanHealth.TakeSentinelShot(sentinelPos);
         }
 

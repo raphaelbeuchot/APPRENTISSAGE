@@ -475,7 +475,7 @@ public class SentinelDetector : MonoBehaviour
             {
                 bool isInDanger = (shouldBeShot && hasLOS) || trackData.crouchStateChangeInProgress;
 
-                if (gm.stunBySentinel)
+                if (gm.player.stunBySentinel)
                     isInDanger = false;
 
                 if (isInDanger)

@@ -29,7 +29,6 @@ public class GameManager : MonoBehaviour
 
     [Header("Start System")]
     public bool waitForStart = true;
-    public bool stunBySentinel = false;
     public bool zombieStunBySentinel = false;
 
     [Header("Enemy Tracking")]

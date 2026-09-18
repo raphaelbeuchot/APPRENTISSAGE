@@ -378,7 +378,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         player.grabState = PlayerPhysicsMovement.GrabState.Grabbed;
         player.ForceStop();
 
-        // APRÈS
+        // APRï¿½S
         playerRb.constraints = RigidbodyConstraints.FreezeAll;
         enemyRb.constraints = RigidbodyConstraints.FreezeRotation;
         Vector3 grabOffset = enemyTransform.position - player.transform.position;
@@ -407,8 +407,8 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                     EndGrab(false);
                     yield break;
                 }
-                // Annuler grab si player touché par sentinelle
-                if (gameManager != null && gameManager.stunBySentinel)
+                // Annuler grab si player touchï¿½ par sentinelle
+                if (player != null && player.stunBySentinel)
                 {
                     Debug.Log($"{gameObject.name} grab cancelled - player shot by sentinel");
                     EndGrab(false);
@@ -438,7 +438,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                     nextDamageIndex++;
                 }
                 // COLLAGE AU PLAYER
-                // Si une plateforme (ou autre) déplace le player, l'enemy maintient
+                // Si une plateforme (ou autre) dï¿½place le player, l'enemy maintient
                 // sa position relative en utilisant MovePosition (respecte la physique).
                 Vector3 desiredEnemyPos = player.transform.position + grabOffset;
                 if (Vector3.Distance(enemyRb.position, desiredEnemyPos) > 0.01f)

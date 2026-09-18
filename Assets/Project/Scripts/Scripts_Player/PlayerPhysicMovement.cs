@@ -121,10 +121,16 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     [HideInInspector] public bool isInContactWithEnemy = false;
     private int enemyContactCount = 0;
+
+    // Etat sentinelle propre a ce joueur (pas partage via GameManager, pour supporter plusieurs joueurs)
+    [HideInInspector] public bool stunBySentinel = false;
+    private PlayerDetectionFeedback detectionFeedback;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         pitInteractable = GetComponent<PlayerPitInteractable>();
+        detectionFeedback = GetComponent<PlayerDetectionFeedback>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
         // Camera
@@ -149,7 +155,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
         
 
-        // Renderer auto si non assigné
+        // Renderer auto si non assignï¿½
         if (playerRenderer == null)
             playerRenderer = GetComponentInChildren<Renderer>();
 
@@ -203,7 +209,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         HandleInput();
         HandleStamina();
 
-        if (!canMove && grabState == GrabState.None && !gameManager.stunBySentinel && !isGroggy && !isSweeping && !isGroggyStunned)
+        if (!canMove && grabState == GrabState.None && !stunBySentinel && !isGroggy && !isSweeping && !isGroggyStunned)
             canMove = true;
 
         if (isGroggy && isGroggyReached && !isSweeping && !isGroggyStunned && PlayerInputManager.Instance.SprintPressed && standUpCoroutine == null)
@@ -306,7 +312,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             return;
         }
 
-        if (grabState != GrabState.None || gameManager.stunBySentinel || !canMove || isClimbing || isGroggy || isSweeping)
+        if (grabState != GrabState.None || stunBySentinel || !canMove || isClimbing || isGroggy || isSweeping)
         {
             moveInput = Vector3.zero;
             return;
@@ -327,7 +333,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         // Normaliser juste pour la direction
         Vector3 direction = new Vector3(inputVector.x, 0f, inputVector.y).normalized;
 
-        // Multiplier par la magnitude originale pour garder l'intensité du stick
+        // Multiplier par la magnitude originale pour garder l'intensitï¿½ du stick
         moveInput = direction * Mathf.Clamp01(inputMagnitude);
 
         // Dash
@@ -794,7 +800,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         // SUPPRIME TOUTE LA PARTIE MESH (lignes playerMesh.localScale)
 
-        // GARDE ET CORRIGE le collider (détection sentinelle)
+        // GARDE ET CORRIGE le collider (dï¿½tection sentinelle)
         if (capsuleCollider != null)
         {
             float newHeight = originalColliderHeight * 0.5f; //  CORRIGE ICI
@@ -859,7 +865,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         return transform.TransformDirection(input3D);
     }
     // === FREEZE FUNCTIONS ===
-    private Color originalColor; // <--- ajoute cette ligne dans tes variables privées
+    private Color originalColor; // <--- ajoute cette ligne dans tes variables privï¿½es
 
     void StartFreeze()
     {
@@ -869,7 +875,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         if (playerRenderer != null)
         {
-            // On sauvegarde la couleur du matériau (pas le matériau lui-même)
+            // On sauvegarde la couleur du matï¿½riau (pas le matï¿½riau lui-mï¿½me)
             originalColor = playerRenderer.material.color;
 
             // Et on le rend bleu
@@ -886,7 +892,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         if (playerRenderer != null)
         {
-            // On restaure simplement la couleur sauvegardée
+            // On restaure simplement la couleur sauvegardï¿½e
             playerRenderer.material.color = originalColor;
         }
 
@@ -896,7 +902,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private bool IsGrounded()
     {
         float rayLength = 0.3f;
-        Vector3 rayStart = transform.position + Vector3.up * 0.1f; // Légèrement au-dessus des pieds
+        Vector3 rayStart = transform.position + Vector3.up * 0.1f; // Lï¿½gï¿½rement au-dessus des pieds
         return Physics.Raycast(rayStart, Vector3.down, rayLength, LayerMask.GetMask("Ground", "LavaTrain"));
     }
 
@@ -942,7 +948,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (isClimbing) return false;
         if (isCrouching) return false;
         if (grabState != GrabState.None) return false;
-        if (gameManager.stunBySentinel) return false;
+        if (stunBySentinel) return false;
         if (moveInput.magnitude < 0.1f) return false; // Pas de dash sur place
         if (currentStamina < stats.dashStaminaCost) return false;
         if (Time.time < lastDashTime + stats.dashCooldown) return false;
@@ -980,7 +986,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         {
             // Forcer velocity dans dashDirection
             Vector3 dashVelocity = dashDirection * dashSpeed;
-            dashVelocity.y = rb.linearVelocity.y; // Garder gravité
+            dashVelocity.y = rb.linearVelocity.y; // Garder gravitï¿½
             rb.linearVelocity = dashVelocity;
 
             elapsed += Time.fixedDeltaTime;
@@ -1007,9 +1013,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     IEnumerator SweepFeedbackCoroutine()
     {
-        gameManager.playerDetectionFeedback.OnDetected();
+        if (detectionFeedback != null) detectionFeedback.OnDetected();
         yield return new WaitForSeconds(0.5f);
-        gameManager.playerDetectionFeedback.OnNoLongerDetected();
+        if (detectionFeedback != null) detectionFeedback.OnNoLongerDetected();
     }
 
     public void TriggerSweepFromObstacle()
