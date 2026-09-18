@@ -25,6 +25,7 @@
 - [ ] 🟡 **Victory sequence — ennemis survivants** — que faire des ennemis visibles mais non tués au moment de la victoire ? (les freezer ? les faire fuir ? les ignorer ? les faire disparaître ?)
 - [ ] 🟡 **Ramassage du balai (narratif)** — InteractBubble sur le balai en StartRoom → appel `EquipBroom()` à ajouter dans `PlayerLoadout` (faisable à la volée : `SetLoadout` est déjà publique, il suffit d'activer le GO + notifier `PlayerInputManager`)
 - [ ] ⚪ **EnemyAI_Astar** — revoir le comportement après hit raté : garder l'ennemi en Chase plutôt que retomber en Idle
+- [ ] 🔴 **Boss final** — ajouter un boss de fin de jeu : à définir (arène, pattern d'attaques, phases, mise en scène d'intro/mort, musique dédiée)
 
 ---
 
@@ -60,4 +61,5 @@
 
 *(pas encore décidé, "un jour peut-être")*
 
+- [ ] 🟡 **Multijoueur local** — décisions actées, voir `MULTIJOUEUR_LOCAL.md` (mode séparé du solo, coop + versus, split-screen vertical, 2 manettes, IA à adapter)
 - [ ] ...
