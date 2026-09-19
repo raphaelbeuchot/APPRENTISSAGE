@@ -296,8 +296,8 @@ public class SentinelDetector : MonoBehaviour
                 if (humanMovement.GetCurrentPlatform() != null && !(humanMovement.GetCurrentPlatform() is PlatformTrainCar))
                     isMoving = true;
 
-                if (PlayerInputManager.Instance.BroomLowActive
-                    && PlayerInputManager.Instance.MoveInput.magnitude < 0.1f
+                if (humanMovement.InputBroomLowActive
+                    && humanMovement.InputMove.magnitude < 0.1f
                     && humanMovement.isInContactWithEnemy)
                     isMoving = false;
             }

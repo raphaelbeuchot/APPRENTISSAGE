@@ -127,11 +127,23 @@ public class PlayerPhysicsMovement : MonoBehaviour
     [HideInInspector] public bool playerAlarmTriggered = false;
     private PlayerDetectionFeedback detectionFeedback;
 
+    // Input : composant local si present (multi), sinon singleton (solo). Pas de balai bas en multi.
+    private PlayerLocalInput localInput;
+    public Vector2 InputMove => localInput != null ? localInput.MoveInput : PlayerInputManager.Instance.MoveInput;
+    private bool InputSprintPressed => localInput != null ? localInput.SprintPressed : PlayerInputManager.Instance.SprintPressed;
+    private bool InputCrouchPressed => localInput != null ? localInput.CrouchPressed : PlayerInputManager.Instance.CrouchPressed;
+    public bool InputBroomLowActive => localInput == null && PlayerInputManager.Instance.BroomLowActive;
+    private void InputForceBroomLowOff()
+    {
+        if (localInput == null) PlayerInputManager.Instance.ForceBroomLowOff();
+    }
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         pitInteractable = GetComponent<PlayerPitInteractable>();
         detectionFeedback = GetComponent<PlayerDetectionFeedback>();
+        localInput = GetComponent<PlayerLocalInput>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
         // Camera
@@ -213,28 +225,28 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (!canMove && grabState == GrabState.None && !stunBySentinel && !isGroggy && !isSweeping && !isGroggyStunned)
             canMove = true;
 
-        if (isGroggy && isGroggyReached && !isSweeping && !isGroggyStunned && PlayerInputManager.Instance.SprintPressed && standUpCoroutine == null)
+        if (isGroggy && isGroggyReached && !isSweeping && !isGroggyStunned && InputSprintPressed && standUpCoroutine == null)
         {
             standUpCoroutine = StartCoroutine(StandUpCoroutine());
         }
 
-        if (PlayerInputManager.Instance.CrouchPressed && (pauseMenuUI == null || !pauseMenuUI.IsPaused()))
+        if (InputCrouchPressed && (pauseMenuUI == null || !pauseMenuUI.IsPaused()))
         {
             if (isCrouching)
             {
-                PlayerInputManager.Instance.ForceBroomLowOff();
+                InputForceBroomLowOff();
                 ExitCrouch();
             }
             else if (pitInteractable == null || !pitInteractable.IsInAnyWater())
             {
-                PlayerInputManager.Instance.ForceBroomLowOff();
+                InputForceBroomLowOff();
                 EnterCrouch();
             }
         }
 
-        if (PlayerInputManager.Instance.SprintPressed && isCrouching)
+        if (InputSprintPressed && isCrouching)
         {
-            PlayerInputManager.Instance.ForceBroomLowOff();
+            InputForceBroomLowOff();
             ExitCrouch();
         }
 
@@ -262,8 +274,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
             animator.SetFloat("SpeedZ", animVelocity.z);
 
             animator.SetBool("IsCrouching", isCrouching);
-            bool broomLowIdle = PlayerInputManager.Instance.BroomLowActive && moveInput.magnitude < 0.1f;
-            bool broomLowMoving = PlayerInputManager.Instance.BroomLowActive && moveInput.magnitude >= 0.1f;
+            bool broomLowIdle = InputBroomLowActive && moveInput.magnitude < 0.1f;
+            bool broomLowMoving = InputBroomLowActive && moveInput.magnitude >= 0.1f;
             animator.SetBool("BroomLowIdle", broomLowIdle);
             animator.SetBool("BroomLowMoving", broomLowMoving);
             int broomLowLayerIndex = animator.GetLayerIndex("BroomLow");
@@ -272,7 +284,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             animator.SetLayerWeight(broomLowLayerIndex, Mathf.Lerp(currentBroomLowWeight, targetBroomLowWeight, 10f * Time.deltaTime));
         }
 
-        bool broomLowNow = PlayerInputManager.Instance.BroomLowActive;
+        bool broomLowNow = InputBroomLowActive;
         if (broomLowNow && !wasBroomLowActive)
         {
             BroomLowFeedback feedback = GetComponent<BroomLowFeedback>();
@@ -326,7 +338,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             return;
         }
 
-        Vector2 inputVector = PlayerInputManager.Instance.MoveInput;
+        Vector2 inputVector = InputMove;
 
         // NOUVEAU : Garder la magnitude AVANT de normaliser
         float inputMagnitude = inputVector.magnitude;
@@ -338,7 +350,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         moveInput = direction * Mathf.Clamp01(inputMagnitude);
 
         // Dash
-        if (PlayerInputManager.Instance.SprintPressed && CanDash())
+        if (InputSprintPressed && CanDash())
         {
             Vector3 dashDir = GetCameraRelativeMovement(moveInput);
             StartCoroutine(DashCoroutine(dashDir));
@@ -861,7 +873,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     
     public Vector3 GetMoveInput()
     {
-        Vector2 input = PlayerInputManager.Instance.MoveInput;
+        Vector2 input = InputMove;
         Vector3 input3D = new Vector3(input.x, 0f, input.y);
         return transform.TransformDirection(input3D);
     }
@@ -1045,7 +1057,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     }
     void OnCollisionEnter(Collision collision)
     {
-        if (!PlayerInputManager.Instance.BroomLowActive) return;
+        if (!InputBroomLowActive) return;
         EnemyHealth eh = collision.gameObject.GetComponent<EnemyHealth>();
         CorpseProjectile corpse = collision.gameObject.GetComponent<CorpseProjectile>();
         if (eh == null && corpse == null) return;
