@@ -5,10 +5,8 @@ using UnityEngine;
 public class SentinelLaserManager : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private GameManager gameManager;
     [SerializeField] private Transform sentinelEye;
     [SerializeField] private SentinelSettings sentinelSettings;
-    [SerializeField] private PlayerPhysicsMovement player;
 
     [Header("Laser Permanent - Player")]
     [SerializeField] private Material laserPlayerMaterialNormal;
@@ -114,13 +112,13 @@ public class SentinelLaserManager : MonoBehaviour
                 continue;
             }
 
-            bool isPlayer = (target == player.gameObject);
+            PlayerDetectionFeedback playerFeedback = target.GetComponent<PlayerDetectionFeedback>();
+            bool isPlayer = playerFeedback != null;
             bool isDetected = false;
 
             if (isPlayer)
             {
-                isDetected = gameManager.playerDetectionFeedback != null
-                          && gameManager.playerDetectionFeedback.isCurrentlyDetected;
+                isDetected = playerFeedback.isCurrentlyDetected;
             }
             else
             {

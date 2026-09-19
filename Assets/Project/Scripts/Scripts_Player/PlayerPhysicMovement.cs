@@ -124,6 +124,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     // Etat sentinelle propre a ce joueur (pas partage via GameManager, pour supporter plusieurs joueurs)
     [HideInInspector] public bool stunBySentinel = false;
+    [HideInInspector] public bool playerAlarmTriggered = false;
     private PlayerDetectionFeedback detectionFeedback;
 
     void Awake()
@@ -503,7 +504,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (gameManager != null && gameManager.IsInRedLight())
         {
             isGroggyStunned = true;
-            gameManager.ExecutePlayerShotOnGroggy();
+            gameManager.ExecutePlayerShotOnGroggy(this);
             StartCoroutine(GroggyStunCoroutine());
         }
         else

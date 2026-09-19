@@ -32,7 +32,6 @@ public class SentinelDetector : MonoBehaviour
         public float lastCheckTime;
     }
 
-    public bool playerAlarmTriggered = false;
     public HashSet<GameObject> alreadyShot = new HashSet<GameObject>();
     public Dictionary<GameObject, TargetTrackingData> trackedTargets = new Dictionary<GameObject, TargetTrackingData>();
 
@@ -104,16 +103,18 @@ public class SentinelDetector : MonoBehaviour
                 trackedTargets[col.gameObject] = new TargetTrackingData();
 
             TargetTrackingData trackData = trackedTargets[col.gameObject];
+            PlayerPhysicsMovement humanMovement = col.GetComponent<PlayerPhysicsMovement>();
+            PlayerDetectionFeedback humanFeedback = col.GetComponent<PlayerDetectionFeedback>();
 
-            if (col.gameObject == gm.player.gameObject && !trackData.hasBeenTrackedBefore)
+            if (humanMovement != null && !trackData.hasBeenTrackedBefore)
             {
-                trackData.wasPlayerCrouched = gm.player.IsCrouching();
+                trackData.wasPlayerCrouched = humanMovement.IsCrouching();
             }
 
             EnemyHealth enemyHealth = col.GetComponent<EnemyHealth>();
             if (enemyHealth != null && enemyHealth.IsRecovering()) continue;
 
-            if (col.gameObject == gm.player.gameObject && (gm.player.IsSweeping() || gm.player.IsGroggy() || gm.player.IsGroggyStunned()))
+            if (humanMovement != null && (humanMovement.IsSweeping() || humanMovement.IsGroggy() || humanMovement.IsGroggyStunned()))
                 continue;
 
             EnemyAI_AStar stunnedCheck = col.GetComponent<EnemyAI_AStar>();
@@ -162,13 +163,13 @@ public class SentinelDetector : MonoBehaviour
             trackData.lastKnownPosition = finalTargetPos;
 
             bool isPlayerCrouched = false;
-            if (col.gameObject == gm.player.gameObject)
+            if (humanMovement != null)
             {
-                isPlayerCrouched = gm.player.IsCrouching();
+                isPlayerCrouched = humanMovement.IsCrouching();
             }
 
             bool hasCrouchStateChanged = false;
-            if (col.gameObject == gm.player.gameObject && trackData.hasBeenTrackedBefore)
+            if (humanMovement != null && trackData.hasBeenTrackedBefore)
             {
                 hasCrouchStateChanged = (trackData.wasPlayerCrouched != isPlayerCrouched);
             }
@@ -189,9 +190,9 @@ public class SentinelDetector : MonoBehaviour
                 else if (humanHealth != null && !humanHealth.IsDead())
                 {
                     alreadyShot.Add(col.gameObject);
-                    if (col.gameObject == gm.player.gameObject)
+                    if (humanMovement != null)
                     {
-                        playerAlarmTriggered = true;
+                        humanMovement.playerAlarmTriggered = true;
                     }
                 }
             }
@@ -205,8 +206,8 @@ public class SentinelDetector : MonoBehaviour
                 trackData.wasInLOS = false;
                 trackData.wasPlayerCrouched = isPlayerCrouched;
                 alreadyShot.Remove(col.gameObject);
-                if (col.gameObject == gm.player.gameObject) playerAlarmTriggered = false;
-                if (gm.playerDetectionFeedback != null) gm.playerDetectionFeedback.OnNoLongerDetected();
+                if (humanMovement != null) humanMovement.playerAlarmTriggered = false;
+                if (humanFeedback != null) humanFeedback.OnNoLongerDetected();
                 continue;
             }
 
@@ -228,8 +229,8 @@ public class SentinelDetector : MonoBehaviour
                 trackData.lastShotTime = Time.time;
                 trackData.wasPlayerCrouched = isPlayerCrouched;
 
-                if (gm.playerDetectionFeedback != null)
-                    gm.playerDetectionFeedback.OnNoLongerDetected();
+                if (humanFeedback != null)
+                    humanFeedback.OnNoLongerDetected();
 
                 continue;
             }
@@ -242,7 +243,7 @@ public class SentinelDetector : MonoBehaviour
                 trackData.consecutiveLOSScans = 0;
                 trackData.wasInLOS = false;
                 alreadyShot.Remove(col.gameObject);
-                if (col.gameObject == gm.player.gameObject) playerAlarmTriggered = false;
+                if (humanMovement != null) humanMovement.playerAlarmTriggered = false;
                 continue;
             }
 
@@ -269,7 +270,7 @@ public class SentinelDetector : MonoBehaviour
 
             bool isMoving = false;
 
-            if (col.gameObject == gm.player.gameObject && rb != null)
+            if (humanMovement != null && rb != null)
             {
                 if (trackData.lastCheckTime == 0f)
                 {
@@ -292,12 +293,12 @@ public class SentinelDetector : MonoBehaviour
                     trackData.lastCheckTime = Time.time;
                 }
 
-                if (gm.player.GetCurrentPlatform() != null && !(gm.player.GetCurrentPlatform() is PlatformTrainCar))
+                if (humanMovement.GetCurrentPlatform() != null && !(humanMovement.GetCurrentPlatform() is PlatformTrainCar))
                     isMoving = true;
 
                 if (PlayerInputManager.Instance.BroomLowActive
                     && PlayerInputManager.Instance.MoveInput.magnitude < 0.1f
-                    && gm.player.isInContactWithEnemy)
+                    && humanMovement.isInContactWithEnemy)
                     isMoving = false;
             }
             else if (rb != null)
@@ -364,8 +365,8 @@ public class SentinelDetector : MonoBehaviour
                 }
             }
 
-            bool playerImmune = (col.gameObject == gm.player.gameObject
-                             && gm.player.grabState == PlayerPhysicsMovement.GrabState.Grabbed
+            bool playerImmune = (humanMovement != null
+                             && humanMovement.grabState == PlayerPhysicsMovement.GrabState.Grabbed
                              && !isMoving);
             if (isWindingUp || isHitterWindingUp || isHitterAttacking) isMoving = true;
 
@@ -434,8 +435,8 @@ public class SentinelDetector : MonoBehaviour
                         else if (humanHealth != null && !humanHealth.IsDead())
                         {
                             alreadyShot.Add(col.gameObject);
-                            if (col.gameObject == gm.player.gameObject && !playerAlarmTriggered)
-                                playerAlarmTriggered = true;
+                            if (humanMovement != null && !humanMovement.playerAlarmTriggered)
+                                humanMovement.playerAlarmTriggered = true;
                         }
                     }
                 }
@@ -461,8 +462,8 @@ public class SentinelDetector : MonoBehaviour
                     else if (humanHealth != null && !humanHealth.IsDead())
                     {
                         alreadyShot.Add(col.gameObject);
-                        if (col.gameObject == gm.player.gameObject && !playerAlarmTriggered)
-                            playerAlarmTriggered = true;
+                        if (humanMovement != null && !humanMovement.playerAlarmTriggered)
+                            humanMovement.playerAlarmTriggered = true;
                     }
                 }
             }
@@ -471,11 +472,11 @@ public class SentinelDetector : MonoBehaviour
                 trackData.consecutiveLOSScans = 0;
             }
 
-            if (col.gameObject == gm.player.gameObject)
+            if (humanMovement != null)
             {
                 bool isInDanger = (shouldBeShot && hasLOS) || trackData.crouchStateChangeInProgress;
 
-                if (gm.player.stunBySentinel)
+                if (humanMovement.stunBySentinel)
                     isInDanger = false;
 
                 if (isInDanger)
@@ -486,17 +487,17 @@ public class SentinelDetector : MonoBehaviour
                         float randomOffset = GetSafeShootTime(Random.Range(0.1f, 0.4f));
                         trackData.shootScheduledTime = Time.time + gm.sentinelSettings.shootDelay + randomOffset;
                         trackData.lastShotTime = Time.time;
-                        playerAlarmTriggered = true;
+                        humanMovement.playerAlarmTriggered = true;
                         alreadyShot.Add(col.gameObject);
                     }
 
-                    if (gm.playerDetectionFeedback != null && !gm.playerDetectionFeedback.isCurrentlyDetected)
-                        gm.playerDetectionFeedback.OnDetected();
+                    if (humanFeedback != null && !humanFeedback.isCurrentlyDetected)
+                        humanFeedback.OnDetected();
                 }
                 else
                 {
-                    if (gm.playerDetectionFeedback != null && gm.playerDetectionFeedback.isCurrentlyDetected)
-                        gm.playerDetectionFeedback.OnNoLongerDetected();
+                    if (humanFeedback != null && humanFeedback.isCurrentlyDetected)
+                        humanFeedback.OnNoLongerDetected();
                 }
             }
 
@@ -527,10 +528,11 @@ public class SentinelDetector : MonoBehaviour
             kvp.Value.hasBeenTrackedBefore = false;
             kvp.Value.lastCheckPosition = Vector3.zero;
             kvp.Value.lastCheckTime = 0f;
-        }
 
-        if (gm.playerDetectionFeedback != null)
-            gm.playerDetectionFeedback.OnNoLongerDetected();
+            PlayerDetectionFeedback feedback = kvp.Key != null ? kvp.Key.GetComponent<PlayerDetectionFeedback>() : null;
+            if (feedback != null)
+                feedback.OnNoLongerDetected();
+        }
     }
 
     public void ForceScheduleShot(GameObject enemy)

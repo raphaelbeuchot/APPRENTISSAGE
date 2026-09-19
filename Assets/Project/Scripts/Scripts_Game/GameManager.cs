@@ -111,7 +111,7 @@ public class GameManager : MonoBehaviour
     // FORWARDING VERS SENTINELSHOOTER
     // ============================================
 
-    public void ExecutePlayerShotOnGroggy() => shooter.ExecutePlayerShotOnGroggy();
+    public void ExecutePlayerShotOnGroggy(PlayerPhysicsMovement playerMovement) => shooter.ExecutePlayerShotOnGroggy(playerMovement);
     public void ExecuteSequenceShot(GameObject enemy) => shooter.ExecuteSequenceShot(enemy);
     public IEnumerator ShootPlayerAtEndOfRecoil(GameObject playerObject, PlayerHealth humanHealth, Vector3 sentinelPos, Vector3 targetPos)
         => shooter.ShootPlayerAtEndOfRecoil(playerObject, humanHealth, sentinelPos, targetPos);

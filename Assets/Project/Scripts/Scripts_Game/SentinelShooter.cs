@@ -121,10 +121,10 @@ public class SentinelShooter : MonoBehaviour
         yield return new WaitForSeconds(gm.sentinel.stunDuration);
         if (playerMovement != null) playerMovement.stunBySentinel = false;
 
-        if (gm.player != null)
+        if (playerMovement != null)
         {
-            detector.alreadyShot.Remove(gm.player.gameObject);
-            detector.playerAlarmTriggered = false;
+            detector.alreadyShot.Remove(playerMovement.gameObject);
+            playerMovement.playerAlarmTriggered = false;
         }
     }
 
@@ -188,13 +188,15 @@ public class SentinelShooter : MonoBehaviour
     // TIRS SPECIAUX
     // ============================================
 
-    public void ExecutePlayerShotOnGroggy()
+    public void ExecutePlayerShotOnGroggy(PlayerPhysicsMovement playerMovement)
     {
-        if (gm.player == null || gm.playerHealth == null || gm.playerHealth.IsDead()) return;
+        if (playerMovement == null) return;
+        PlayerHealth playerHealth = playerMovement.GetComponent<PlayerHealth>();
+        if (playerHealth == null || playerHealth.IsDead()) return;
 
         Vector3 eyePosition = (gm.sentinelEye != null) ? gm.sentinelEye.position : transform.position;
         Vector3 sentinelPos = eyePosition + gm.sentinelSettings.raycastOffset;
-        Vector3 targetPos = SentinelTargetGeometry.GetTargetCenter(gm.player.gameObject);
+        Vector3 targetPos = SentinelTargetGeometry.GetTargetCenter(playerMovement.gameObject);
 
         if (audioSource != null && gm.sentinelSettings.shootSound != null)
             audioSource.PlayOneShot(gm.sentinelSettings.shootSound);
@@ -202,10 +204,11 @@ public class SentinelShooter : MonoBehaviour
         if (gm.laserManager != null)
             gm.laserManager.TriggerShotAnimation(sentinelPos, targetPos);
 
-        if (gm.playerDetectionFeedback != null)
-            gm.playerDetectionFeedback.OnShotBySentinelGroggy();
+        PlayerDetectionFeedback feedback = playerMovement.GetComponent<PlayerDetectionFeedback>();
+        if (feedback != null)
+            feedback.OnShotBySentinelGroggy();
 
-        gm.playerHealth.TakeDamage(gm.sentinelSettings.playerDamage);
+        playerHealth.TakeDamage(gm.sentinelSettings.playerDamage);
     }
 
     public void ExecuteSequenceShot(GameObject enemy)
