@@ -146,11 +146,36 @@
 - **Setup de scène (`Level_TestCameraMulti`)** : `Is Active` coché sur `GoalDoorNew`, clé retirée, `multiRaceMode` coché sur le `LevelManager`, un `MultiRaceManager` dans la scène (piège rencontré : sans ce GameObject, la porte se déclenche mais personne n'écoute, aucun log de gagnant).
 - **✅ Validé (2026-09-19)** : la course de bout en bout fonctionne avec les vrais joueurs : porte ouverte, premier arrivé retenu comme gagnant, flux solo non déclenché, perdant jouable, cycle sentinelle arrêté. Solo (victoire, niveau suivant) inchangé.
 
-## Questions ouvertes / à creuser en prochaine session
+## Pistes pour la prochaine session (état au 2026-09-19)
 
-- Écran d'assignation manette → joueur : comment chaque joueur "réclame" son slot (appui sur un bouton) ? *(en partie répondu par le join-by-device testé, mais l'UI/feedback visuel de cet écran reste à faire)*
-- Que se passe-t-il si une manette se déconnecte en cours de partie ? *(testé de façon minimale sur le solo — ne plante pas — mais pas testé en contexte multi avec deux joueurs actifs)*
-- Comment fonctionne le menu de sélection de niveau pour le mode multi (liste, structure façon "course") ?
-- Spawn points distincts pour les deux joueurs (actuellement superposés au même point).
-- Dupliquer par joueur les raffinements de détection sentinelle (`playerDetectionFeedback`, `stunBySentinel`, immunité crouch/grab) et revoir le calcul de durée des cycles (moyenne des deux joueurs plutôt qu'un seul).
-- Chantier ultérieur (pas V1) : combat joueur-joueur (pousser, frapper, tomates).
+**État en une phrase** : course de vitesse jouable de bout en bout avec deux vrais joueurs dans `Level_TestCameraMulti` (input indépendant, split-screen, sentinelle, victoire), solo testé sans régression. La liste ci-dessous sert à décider sur quoi travailler ensuite ; ordre suggéré : petits chantiers concrets, puis décisions de design, puis structure, puis cosmétique (en dernier, comme convenu).
+
+### Petits chantiers concrets
+- **Spawn points distincts** : les deux joueurs sont posés à la main dans la scène de test, sans vrai spawn.
+- **Test à deux manettes** : un seul pad était disponible (clavier pour l'un, pad pour l'autre). À refaire avec deux pads, et tester la déconnexion d'une manette en cours de partie en contexte multi (testé seulement en solo : ne plante pas).
+- **`IsPlayerInSentinelLOS()` et `IsPlayerMoving()`** (`GameManager`) restent sur `gm.player` : la foule (`CrowdReactionManager`) ne réagit qu'au joueur 1.
+- **`TestClimbDetection`** utilise `Camera.main` : l'escalade du joueur 2 se calcule par rapport à la caméra du joueur 1.
+- **Interactions et attaques par joueur** : le singleton `PlayerInputManager` lit toujours tous les devices. Attaques, escalade, panning caméra, pause et interactions (les pupitres `PupitreInteraction` / `PupitreTuto` / `PupitreShutterOnly` ne marchent qu'avec un joueur) agissent sur le joueur 1 quelle que soit la manette. À traiter en étendant `PlayerLocalInput` (ou en le fusionnant avec le singleton, voir « Input par joueur »). L'état « bouclier » viendra s'y ajouter.
+
+### Décisions de design à trancher (bloquantes pour du code)
+- **Mort d'un joueur en Versus** : élimination, respawn, victoire de l'autre ? Bloque le fix de `DeathSequence` (target groups, barre de crédits) et le comportement de `LevelManager.OnPlayerDeath`.
+- **Durée du cycle vert/rouge** (`SentinelCycleManager`, calculée sur un seul `playerTransform`) : moyenne des positions, joueur le plus avancé, le plus en retard ? Laissé de côté volontairement.
+- **Autres modes de jeu** : la course pure est retenue. Ramasser des pièces, ramasser la clé en premier, clé par joueur… à venir, attention au scope creep. Limite du split-screen à garder en tête : la porte est un objet unique filmé par les deux caméras (voir « Victoire et règle de course »).
+- **Ennemis en multi** : `targetHuman` fixé en scène, raccourcis `FindObjectOfType` dans `EnemyAI_AStar` et `GrabAttack`. Niveaux multi V1 sans ennemis ; à rendre multi-aware si on les réintroduit.
+- **Combat joueur-joueur** (pousser, frapper, tomates) : ambition à terme, pas V1.
+
+### Structure et flux de jeu
+- **Écran d'assignation manette → joueur** et vrai flux de join : `PlayerLocalInput.SetDevices` est le point d'entrée prévu ; le join par device du `PlayerInputManager` natif est validé (Étape 1a), mais seulement pour des joueurs créés à l'exécution.
+- **Menu de sélection de niveau multi** (liste, structure « course ») et **point d'entrée dans le menu** (non tranché). **Débuts de niveau** différents du solo (séquence d'ouverture, porte d'entrée).
+- **`GameManager`** : remplacer `player` / `playerHealth` / `playerDetectionFeedback` par une liste de joueurs si on passe à 3-4 joueurs (durée de cycle, condition de victoire).
+- **Joueurs posés à la main** : passer à un prefab/variant avec vrai spawn ; noms `Player_1` / `Player_2`.
+- **Fin de course** : aujourd'hui un simple log, le perdant reste jouable.
+
+### Cosmétique et polish (en dernier)
+- **Caméra du joueur 2** sans `CameraPanningExtension` ni target groups (montée de départ, vue basse, masquage d'obstacles) ; `CM_LowView`, `CM_StartZone`, `CM_FinalZone` côté joueur 1 seulement.
+- **HUD par joueur** (moitié d'écran) : barres de vie, crédits, UI liée à `MainCamera`.
+- **Audio** : un seul `Audio Listener` (sur `MainCamera`), donc les sons 3D sont entendus depuis le point de vue du joueur 1.
+- **Feedback visuel par joueur** (porte, clé) si une règle de clé revient.
+
+### Hygiène (hors multi)
+- `KeeponTruckin SDF.asset` (font TMP en atlas **Dynamic**) est réécrit par l'éditeur en permanence : à discarder avant chaque commit, ou à figer en Static une fois les caractères nécessaires générés.
