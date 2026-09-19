@@ -29,6 +29,10 @@ public class LevelManager : MonoBehaviour
     [Tooltip("Si coche, la porte reste fermee jusqu'a ce que tous les ennemis soient tues")]
     public bool requireAllEnemiesKilled = false;
 
+    [Header("Multi")]
+    [Tooltip("Course multi : l'arrivee a la porte ne lance pas le flux de victoire solo (voir MultiRaceManager)")]
+    public bool multiRaceMode = false;
+
     [Header("Level End (Legacy)")]
     [SerializeField] private bool isTutorialLevel = false;
 
@@ -159,6 +163,8 @@ public class LevelManager : MonoBehaviour
     }
     void OnPlayerReachedGoal(GameObject playerObject)
     {
+        if (multiRaceMode) return;
+
         CleaningBonusManager.Instance?.Shutdown();
         GetComponent<GoalDoorDebug>()?.TriggerDebug();
         if (levelCompleted || gameOver) return;
