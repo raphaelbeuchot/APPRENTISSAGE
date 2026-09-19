@@ -1,28 +1,64 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// Input propre a un joueur en multi local : lit les actions de SON PlayerInput (device apparie),
-// pas le singleton global. Volontairement minimal : deplacement, sprint, accroupi.
+// Input propre a un joueur en multi local. Autonome : cree sa propre copie des actions et la restreint
+// aux devices choisis (pas de PlayerInput ni de pairing), donc utilisable sur un joueur pose dans la scene.
+// Volontairement minimal : deplacement, sprint, accroupi.
 // Les valeurs "Pressed" suivent la meme semantique que le singleton (vraies uniquement la frame de l'appui).
-[RequireComponent(typeof(PlayerInput))]
 public class PlayerLocalInput : MonoBehaviour
 {
-    private PlayerInput playerInput;
-    private InputAction moveAction;
-    private InputAction sprintAction;
-    private InputAction crouchAction;
+    public enum DeviceKind { KeyboardMouse, Gamepad }
 
-    public int PlayerIndex => playerInput.playerIndex;
+    [SerializeField] private DeviceKind deviceKind = DeviceKind.KeyboardMouse;
+    [SerializeField] private int gamepadIndex = 0;
 
-    public Vector2 MoveInput => moveAction.ReadValue<Vector2>();
-    public bool SprintPressed => sprintAction.WasPressedThisFrame();
-    public bool CrouchPressed => crouchAction.WasPressedThisFrame();
+    private PlayerInputActions actions;
+
+    public Vector2 MoveInput => actions.Player.Movement.ReadValue<Vector2>();
+    public bool SprintPressed => actions.Player.Sprint.WasPressedThisFrame();
+    public bool CrouchPressed => actions.Player.Crouch.WasPressedThisFrame();
 
     private void Awake()
     {
-        playerInput = GetComponent<PlayerInput>();
-        moveAction = playerInput.actions.FindAction("Movement", true);
-        sprintAction = playerInput.actions.FindAction("Sprint", true);
-        crouchAction = playerInput.actions.FindAction("Crouch", true);
+        actions = new PlayerInputActions();
+    }
+
+    private void OnEnable()
+    {
+        SetDevices(ResolveDevices());
+        actions.Player.Enable();
+    }
+
+    private void OnDisable()
+    {
+        actions.Player.Disable();
+    }
+
+    private void OnDestroy()
+    {
+        actions.Dispose();
+    }
+
+    // Point d'entree pour un futur ecran d'assignation manette -> joueur.
+    public void SetDevices(InputDevice[] devices)
+    {
+        actions.devices = devices;
+    }
+
+    private InputDevice[] ResolveDevices()
+    {
+        if (deviceKind == DeviceKind.KeyboardMouse)
+        {
+            var devices = new System.Collections.Generic.List<InputDevice>();
+            if (Keyboard.current != null) devices.Add(Keyboard.current);
+            if (Mouse.current != null) devices.Add(Mouse.current);
+            return devices.ToArray();
+        }
+
+        if (gamepadIndex < Gamepad.all.Count)
+            return new InputDevice[] { Gamepad.all[gamepadIndex] };
+
+        Debug.LogWarning($"[PlayerLocalInput] {name} : pas de manette a l'index {gamepadIndex}, aucun device assigne", this);
+        return new InputDevice[0];
     }
 }
