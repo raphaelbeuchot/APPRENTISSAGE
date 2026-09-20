@@ -490,6 +490,61 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
+--- !u!1 &44099336
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 44099337}
+  - component: {fileID: 44099338}
+  m_Layer: 0
+  m_Name: Target Group NormalView Player 2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &44099337
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 44099336}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.52573115, z: -0, w: 0.8506508}
+  m_LocalPosition: {x: 5.1142645, y: -0.9011217, z: -10.451396}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1059525786952335156}
+  m_LocalEulerAnglesHint: {x: 0, y: -10, z: 0}
+--- !u!114 &44099338
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 44099336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5eb80d8e62d9d145bb50fb783c0f731, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineTargetGroup
+  PositionMode: 1
+  RotationMode: 1
+  UpdateMethod: 0
+  Targets:
+  - Object: {fileID: 12905868}
+    Weight: 1.5
+    Radius: 1.5
+  - Object: {fileID: 8518124557315507928}
+    Weight: 0.75
+    Radius: 0.5
+  m_LegacyTargets: []
 --- !u!1001 &45948020
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8741,6 +8796,7 @@ GameObject:
   - component: {fileID: 569162224}
   - component: {fileID: 569162223}
   - component: {fileID: 569162222}
+  - component: {fileID: 569162228}
   m_Layer: 0
   m_Name: CM_Player2
   m_TagString: Untagged
@@ -8756,8 +8812,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 569162220}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3826834, y: 0, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: 4.4, y: 3.05, z: -5.6000004}
+  m_LocalRotation: {x: 0.23425692, y: -0.003979751, z: 0.00095897634, w: 0.9721661}
+  m_LocalPosition: {x: 4.4, y: 3.05, z: -3.6000001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8844,7 +8900,7 @@ MonoBehaviour:
     AngularDampingMode: 0
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
-  FollowOffset: {x: 0, y: 3, z: -3}
+  FollowOffset: {x: 0, y: 3, z: -1}
 --- !u!114 &569162227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8866,8 +8922,8 @@ MonoBehaviour:
   m_LegacyPriority: 0
   Target:
     TrackingTarget: {fileID: 12905868}
-    LookAtTarget: {fileID: 12905868}
-    CustomLookAtTarget: 0
+    LookAtTarget: {fileID: 44099337}
+    CustomLookAtTarget: 1
   Lens:
     FieldOfView: 75
     OrthographicSize: 5
@@ -8888,6 +8944,39 @@ MonoBehaviour:
       BarrelClipping: 0.25
       Anamorphism: 0
   BlendHint: 0
+--- !u!114 &569162228
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 569162220}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7795896a60b7f74c91dec122302123e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraPanningExtension
+  trackedPlayer: {fileID: 12905868}
+  playerCamera: {fileID: 1183220320}
+  localInput: {fileID: 12905845}
+  startWithFreeCameraEnabled: 0
+  verticalOffset: 4
+  verticalPanSpeed: 5
+  initialRiseDuration: 1.5
+  normalCamera: {fileID: 569162227}
+  lowViewCamera: {fileID: 0}
+  activePriority: 20
+  inactivePriority: 0
+  countdownManager: {fileID: 510246361}
+  playerHeightOffset: 0.5
+  obstacleHidingLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  transparentMaterial: {fileID: 0}
+  targetGroup: {fileID: 44099338}
+  maxRadius: 3
+  radiusGrowSpeed: 3
+  isLowView: 0
 --- !u!4 &571038806 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -12250,7 +12339,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -14385,7 +14474,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -17526,8 +17615,8 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
-  m_Antialiasing: 0
+  m_RenderPostProcessing: 1
+  m_Antialiasing: 3
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0
@@ -17540,12 +17629,12 @@ MonoBehaviour:
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_TaaSettings:
-    m_Quality: 3
+    m_Quality: 4
     m_FrameInfluence: 0.1
     m_JitterScale: 1
     m_MipBias: 0
     m_VarianceClampScale: 0.9
-    m_ContrastAdaptiveSharpening: 0
+    m_ContrastAdaptiveSharpening: 1
   m_Version: 2
 --- !u!20 &1183220320
 Camera:
@@ -17556,8 +17645,8 @@ Camera:
   m_GameObject: {fileID: 1183220317}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -17580,7 +17669,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 75
+  field of view: 69.449844
   orthographic: 0
   orthographic size: 5
   m_Depth: 0
@@ -17606,8 +17695,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1183220317}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3826834, y: 0, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: 4.4, y: 3.05, z: -5.6000004}
+  m_LocalRotation: {x: 0.23425692, y: -0.003979751, z: 0.00095897634, w: 0.9721661}
+  m_LocalPosition: {x: 4.426672, y: 2.546255, z: -5.8576083}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -17826,6 +17915,10 @@ PrefabInstance:
     - target: {fileID: 5742306782079411465, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: coinPrefab
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5742306782079411465, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
+      propertyPath: onlyOwnTargetGroups
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5794444067654349612, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_Name
@@ -18883,6 +18976,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7795896a60b7f74c91dec122302123e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraPanningController
+  trackedPlayer: {fileID: 1871075799}
+  playerCamera: {fileID: 1361275056}
+  localInput: {fileID: 1871075846}
   startWithFreeCameraEnabled: 0
   verticalOffset: 4
   verticalPanSpeed: 5
@@ -22173,6 +22269,10 @@ PrefabInstance:
     - target: {fileID: 5742306782079411465, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: coinPrefab
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5742306782079411465, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
+      propertyPath: onlyOwnTargetGroups
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5794444067654349612, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_Name
@@ -31026,6 +31126,7 @@ Transform:
   m_Children:
   - {fileID: 8518124557315507928}
   - {fileID: 7952960615093084141}
+  - {fileID: 44099337}
   - {fileID: 7197655680498651251}
   - {fileID: 6206311881673991919}
   m_Father: {fileID: 0}
