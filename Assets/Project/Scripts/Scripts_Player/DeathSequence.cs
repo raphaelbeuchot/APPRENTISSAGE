@@ -26,6 +26,8 @@ public class DeathSequence : MonoBehaviour
 
     [Header("Camera")]
     [SerializeField] private Transform hipBone;
+    [Tooltip("Multi : ne remplacer que les target groups dont la cible 0 est ce joueur (ou un de ses enfants). Decoche : tous les groupes de la scene (solo).")]
+    [SerializeField] private bool onlyOwnTargetGroups = false;
 
     private CinemachineTargetGroup[] allTargetGroups;
     private readonly System.Collections.Generic.Dictionary<CinemachineTargetGroup, Transform> replacedTargets
@@ -54,7 +56,7 @@ public class DeathSequence : MonoBehaviour
 
         foreach (CinemachineTargetGroup tg in allTargetGroups)
         {
-            if (tg.Targets.Count > 0)
+            if (tg.Targets.Count > 0 && (!onlyOwnTargetGroups || IsOwnTarget(tg.Targets[0].Object)))
             {
                 replacedTargets[tg] = tg.Targets[0].Object;
                 tg.Targets[0] = new CinemachineTargetGroup.Target
@@ -90,6 +92,11 @@ public class DeathSequence : MonoBehaviour
 
         Debug.Log("DeathRoutine FIN - invocation OnDeath");
         playerHealth.TriggerOnDeath();
+    }
+
+    private bool IsOwnTarget(Transform target)
+    {
+        return target != null && target.IsChildOf(transform);
     }
 
     // Multi : annule les effets de DeathRoutine sur le joueur et les target groups (respawn).
