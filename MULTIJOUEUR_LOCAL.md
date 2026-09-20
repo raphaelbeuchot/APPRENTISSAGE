@@ -160,7 +160,8 @@
 - **Immunité de respawn** : un joueur qui respawne dans le **même Red Light que celui de son kill** est ignoré de la sentinelle jusqu'à la fin de ce Red Light (`respawnImmune`). Jamais sur un cycle suivant, jamais si tué hors Red Light. `MultiRespawn` retient l'état du cycle à l'instant exact de la mort ; tout changement d'état du cycle efface l'immunité.
 - **Vignette rouge de dégâts** (`GameUIManager.damageVignette`) : overlay plein écran, écoute un seul `PlayerHealth` (`FindObjectOfType` si champ vide, donc arbitraire avec deux joueurs : c'était le joueur 2, et `Revive()` la déclenchait). **Décision : désactivée en multi** (GameObject de l'image décoché dans la scène, pas de code). Un feedback de dégâts par joueur reste dans la partie HUD par joueur.
 - **✅ Validé (2026-09-20)** : respawn des deux joueurs, ragdoll, caméra, immunité, glace et accroupi. Solo testé sans anomalie.
-- **Reste** : la caméra du joueur 1 bascule sur le cadavre du joueur 2 pendant la durée du ragdoll (`DeathSequence` remplace la cible 0 de tous les target groups) ; correctif possible : ne remplacer que dans les groupes où la cible 0 est ce joueur, à vérifier dans la scène. `LevelStatsTracker` et `PlayerHealthUI` (barre de vie, trouvée par `FindObjectOfType`) suivent un seul joueur.
+- **Caméra de mort (corrigé, commit `20167676`)** : `DeathSequence` remplaçait la cible 0 de tous les target groups de la scène par les hanches du mort, donc chaque moitié d'écran basculait sur le cadavre de l'autre joueur. Option `onlyOwnTargetGroups` (décochée par défaut = solo inchangé, à cocher sur les deux joueurs en multi) : seuls les groupes dont la cible 0 est ce joueur ou un de ses enfants sont touchés. Validé.
+- **Reste** : `LevelStatsTracker` et `PlayerHealthUI` (barre de vie, trouvée par `FindObjectOfType`) suivent un seul joueur.
 
 ## Caméras et début de niveau en multi — décisions (2026-09-20)
 
@@ -175,9 +176,15 @@
 - **Masquage d'obstacles** : ne tourne qu'en `isHighPosition && isLowView` (`LateUpdate`), donc **sans vue basse, pas de masquage** (à condition de la garde ci-dessus). Si on le réintroduit un jour : il échange les `sharedMaterials` du renderer, donc un obstacle transparent pour une caméra l'est pour l'autre (monde partagé en split-screen), et deux instances se marchent dessus (la seconde retient comme « original » un matériau déjà transparent : obstacles transparents définitivement). Il faudrait alors un mécanisme par caméra (culling / shader).
 - **Ordre proposé** : (1) extension configurable (joueur, caméra, input, garde sur la vue basse) + instance sur `CM_Player2` ; (2) composant de départ multi + `CM_StartZone_Player2` ; (3) décision sur la vue basse.
 
-## Pistes pour la prochaine session (état au 2026-09-19)
+## Pistes pour la prochaine session (état au 2026-09-20, fin de session)
 
-**État en une phrase** : course de vitesse jouable de bout en bout avec deux vrais joueurs dans `Level_TestCameraMulti` (input indépendant, split-screen, sentinelle, victoire), solo testé sans régression. La liste ci-dessous sert à décider sur quoi travailler ensuite ; ordre suggéré : petits chantiers concrets, puis décisions de design, puis structure, puis cosmétique (en dernier, comme convenu).
+**État en une phrase** : course de vitesse jouable de bout en bout avec deux vrais joueurs dans `Level_TestCameraMulti` (input indépendant, split-screen, sentinelle, victoire, **mort et respawn, caméras identiques pour les deux joueurs, caméra de mort par joueur**), solo testé sans régression à chaque étape ; ordre de revert complet dans « Commits a revert ». La liste ci-dessous sert à décider sur quoi travailler ensuite ; ordre suggéré : reprendre l'étape 2 des caméras, puis petits chantiers concrets, décisions de design, structure, cosmétique (en dernier, comme convenu).
+
+### Point de reprise : étape 2 des caméras (départ de niveau sans pupitre)
+*Voir « Caméras et début de niveau en multi » pour les décisions ; rien n'est codé pour cette étape.*
+- **Composant de départ multi**, à la place de `PupitreInteraction` : compte à rebours pendant lequel chaque joueur voit sa vcam de départ (`CM_StartZone` joueur 1, `CM_StartZone_Player2` sur le canal du joueur 2, **à créer**), rideau, lancement du cycle de la sentinelle, bascule des vcams, `OnPlayerExitStartZone()` sur toutes les extensions (`FindObjectsByType`, comme `PupitreInteraction` le fait maintenant). Pas de gel des joueurs (le rideau les bloque). Au respawn on ne relance rien.
+- **En attendant** : le pupitre de la scène lance toujours la partie ; il ne réagit qu'au premier joueur tagué `Player` (défaut connu, disparaît avec lui).
+- **Question ouverte** : garder ou non une vue basse en multi (pour l'instant `lowViewCamera` non assignée, et la bascule est bloquée sur les instances configurées). Si elle disparaît, il n'y a pas de masquage d'obstacles non plus.
 
 ### Petits chantiers concrets
 - **Spawn points distincts** : les deux joueurs sont posés à la main dans la scène de test, sans vrai spawn. *(Depuis le 2026-09-20 il existe des points de respawn par joueur devant le pupitre, utilisés à la mort ; le placement initial n'en dépend pas encore.)*
@@ -187,21 +194,25 @@
 - **Interactions et attaques par joueur** : le singleton `PlayerInputManager` lit toujours tous les devices. Attaques, escalade, panning caméra, pause et interactions (les pupitres `PupitreInteraction` / `PupitreTuto` / `PupitreShutterOnly` ne marchent qu'avec un joueur) agissent sur le joueur 1 quelle que soit la manette. À traiter en étendant `PlayerLocalInput` (ou en le fusionnant avec le singleton, voir « Input par joueur »). L'état « bouclier » viendra s'y ajouter.
 
 ### Décisions de design à trancher (bloquantes pour du code)
-- ~~**Mort d'un joueur en Versus**~~ **Tranché le 2026-09-20 : respawn au point de respawn, sans pénalité** (voir « Mort et respawn »). Reste le correctif des target groups (caméra du joueur 1 sur le cadavre du joueur 2).
+- ~~**Mort d'un joueur en Versus**~~ **Tranché le 2026-09-20 : respawn au point de respawn, sans pénalité** (voir « Mort et respawn »). Correctif des target groups fait (`onlyOwnTargetGroups`, à cocher sur chaque joueur).
 - **Durée du cycle vert/rouge** (`SentinelCycleManager`, calculée sur un seul `playerTransform`) : moyenne des positions, joueur le plus avancé, le plus en retard ? Laissé de côté volontairement.
 - **Autres modes de jeu** : la course pure est retenue. Ramasser des pièces, ramasser la clé en premier, clé par joueur… à venir, attention au scope creep. Limite du split-screen à garder en tête : la porte est un objet unique filmé par les deux caméras (voir « Victoire et règle de course »).
 - **Ennemis en multi** : `targetHuman` fixé en scène, raccourcis `FindObjectOfType` dans `EnemyAI_AStar` et `GrabAttack`. Niveaux multi V1 sans ennemis ; à rendre multi-aware si on les réintroduit.
 - **Combat joueur-joueur** (pousser, frapper, tomates) : ambition à terme, pas V1.
 
+### Respawn : à surveiller
+- Le solo recharge la scène, donc tout état que la mort n'annule pas survit au respawn multi (déjà corrigés : glace, accroupi). **Restent à vérifier en test** : dash, balayage, poussée, groggy / groggy-stun, escalade, grab, gel, ralentissements d'eau / essaim / Bright Eyes, contact ennemi. **Si la liste grossit vite, passer à la recréation du joueur depuis le prefab (spawner).**
+- Suivent encore un seul joueur : `PlayerHealthUI` (barre de vie, `FindObjectOfType`), `LevelStatsTracker`, `GameUIManager` (vignette rouge, désactivée en multi).
+
 ### Structure et flux de jeu
 - **Écran d'assignation manette → joueur** et vrai flux de join : `PlayerLocalInput.SetDevices` est le point d'entrée prévu ; le join par device du `PlayerInputManager` natif est validé (Étape 1a), mais seulement pour des joueurs créés à l'exécution.
-- **Menu de sélection de niveau multi** (liste, structure « course ») et **point d'entrée dans le menu** (non tranché). **Débuts de niveau** différents du solo (séquence d'ouverture, porte d'entrée).
+- **Menu de sélection de niveau multi** (liste, structure « course ») et **point d'entrée dans le menu** (non tranché). **Débuts de niveau** différents du solo : voir « Point de reprise » (compte à rebours sans pupitre) ; séquence d'ouverture et porte d'entrée restent à voir.
 - **`GameManager`** : remplacer `player` / `playerHealth` / `playerDetectionFeedback` par une liste de joueurs si on passe à 3-4 joueurs (durée de cycle, condition de victoire).
 - **Joueurs posés à la main** : passer à un prefab/variant avec vrai spawn ; noms `Player_1` / `Player_2`.
 - **Fin de course** : aujourd'hui un simple log, le perdant reste jouable.
 
 ### Cosmétique et polish (en dernier)
-- **Caméra du joueur 2** sans `CameraPanningExtension` ni target groups (montée de départ, vue basse, masquage d'obstacles) ; `CM_LowView`, `CM_StartZone`, `CM_FinalZone` côté joueur 1 seulement.
+- **Caméras** : l'extension de panning est posée sur les deux vcams (joueur, caméra et input assignés). Restent côté joueur 1 seulement : `CM_LowView`, `CM_StartZone`, `CM_FinalZone` (équivalents joueur 2 à créer si on les garde). Masquage d'obstacles non prévu pour du split-screen (échange de matériau partagé par les deux caméras).
 - **HUD par joueur** (moitié d'écran) : barres de vie, crédits, UI liée à `MainCamera`.
 - **Audio** : un seul `Audio Listener` (sur `MainCamera`), donc les sons 3D sont entendus depuis le point de vue du joueur 1.
 - **Feedback visuel par joueur** (porte, clé) si une règle de clé revient.
