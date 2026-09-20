@@ -203,12 +203,11 @@ public class PupitreInteraction : MonoBehaviour
             startZoneCamera.Priority.Value = inactivePriority;
 
 
-        CameraPanningExtension panningExt = FindAnyObjectByType<CameraPanningExtension>();
-        if (panningExt != null)
-        {
+        CameraPanningExtension[] panningExts = FindObjectsByType<CameraPanningExtension>(FindObjectsSortMode.None);
+        foreach (CameraPanningExtension panningExt in panningExts)
             panningExt.OnPlayerExitStartZone();
+        if (panningExts.Length > 0)
             Debug.Log("[Pupitre] CameraPanning notifie");
-        }
     }
 
     private void LaunchCountdownAndShutter()

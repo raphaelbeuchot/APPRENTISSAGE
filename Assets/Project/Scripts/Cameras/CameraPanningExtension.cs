@@ -4,6 +4,14 @@ using UnityEngine;
 
 public class CameraPanningExtension : CinemachineExtension
 {
+    [Header("Multi (optionnel : vide = comportement solo)")]
+    [Tooltip("Joueur suivi par cette instance. Vide : premier objet tague Player.")]
+    [SerializeField] private Transform trackedPlayer;
+    [Tooltip("Camera de ce joueur. Vide : Camera.main.")]
+    [SerializeField] private Camera playerCamera;
+    [Tooltip("Input de ce joueur pour la bascule de vue. Vide : singleton PlayerInputManager.")]
+    [SerializeField] private PlayerLocalInput localInput;
+
     [Header("Camera active sans pupitre")]
     [SerializeField] private bool startWithFreeCameraEnabled = false;
 
@@ -44,11 +52,18 @@ public class CameraPanningExtension : CinemachineExtension
 
     private void Start()
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-            playerTransform = player.transform;
+        if (trackedPlayer != null)
+        {
+            playerTransform = trackedPlayer;
+        }
+        else
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+                playerTransform = player.transform;
+        }
 
-        mainCamera = Camera.main;
+        mainCamera = playerCamera != null ? playerCamera : Camera.main;
         if (mainCamera == null)
             mainCamera = FindObjectOfType<Camera>();
 
@@ -82,6 +97,13 @@ public class CameraPanningExtension : CinemachineExtension
         Debug.Log($"[CameraPanning] START - isHighPosition: {isHighPosition}, isLowView: {isLowView}");
     }
 
+    private bool IsToggleViewPressed()
+    {
+        return localInput != null
+            ? localInput.ToggleCameraViewPressed
+            : PlayerInputManager.Instance.ToggleCameraViewPressed;
+    }
+
     public void OnPlayerExitStartZone()
     {
         Debug.Log("[CameraPanning] Player sorti de startzone - Montee camera !");
@@ -108,7 +130,11 @@ public class CameraPanningExtension : CinemachineExtension
 
     private void Update()
     {
-        if (isHighPosition && PlayerInputManager.Instance.ToggleCameraViewPressed)
+        // Multi (instance configuree pour un joueur) : pas de bascule sans camera de vue basse,
+        // sinon isLowView passerait a vrai et le masquage d'obstacles se lancerait sans vue basse.
+        bool canToggleView = isHighPosition && (trackedPlayer == null || lowViewCamera != null);
+
+        if (canToggleView && IsToggleViewPressed())
         {
             isLowView = !isLowView;
 

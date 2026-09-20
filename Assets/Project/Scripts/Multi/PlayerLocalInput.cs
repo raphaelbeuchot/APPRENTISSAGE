@@ -17,6 +17,7 @@ public class PlayerLocalInput : MonoBehaviour
     public Vector2 MoveInput => actions.Player.Movement.ReadValue<Vector2>();
     public bool SprintPressed => actions.Player.Sprint.WasPressedThisFrame();
     public bool CrouchPressed => actions.Player.Crouch.WasPressedThisFrame();
+    public bool ToggleCameraViewPressed => actions.Player.ToggleCameraView.WasPressedThisFrame();
 
     private void Awake()
     {
