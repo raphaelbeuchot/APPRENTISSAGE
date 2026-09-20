@@ -13,13 +13,59 @@ public class PlayerRagdoll : MonoBehaviour
     private Rigidbody[] boneRigidbodies;
     private Collider[] boneColliders;
 
+    // Etat d'origine, pour Deactivate() (multi : respawn)
+    private int[] boneOriginalLayers;
+    private bool mainWasKinematic;
+    private bool mainColliderWasEnabled;
+
     void Awake()
     {
         // GetComponentsInChildren inclut le root, on filtrera mainRigidbody
         boneRigidbodies = GetComponentsInChildren<Rigidbody>();
         boneColliders = GetComponentsInChildren<Collider>();
 
+        boneOriginalLayers = new int[boneRigidbodies.Length];
+        for (int i = 0; i < boneRigidbodies.Length; i++)
+            boneOriginalLayers[i] = boneRigidbodies[i].gameObject.layer;
+        if (mainRigidbody != null)
+            mainWasKinematic = mainRigidbody.isKinematic;
+        Collider root = GetComponent<Collider>();
+        mainColliderWasEnabled = root != null && root.enabled;
+
         SetRagdollActive(false);
+    }
+
+    // Multi : inverse de Activate(), pour le respawn. Jamais appele en solo.
+    public void Deactivate()
+    {
+        foreach (Rigidbody rb in boneRigidbodies)
+        {
+            if (rb == mainRigidbody || rb.isKinematic) continue;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        SetRagdollActive(false);
+
+        for (int i = 0; i < boneRigidbodies.Length; i++)
+        {
+            if (boneRigidbodies[i] == mainRigidbody) continue;
+            boneRigidbodies[i].gameObject.layer = boneOriginalLayers[i];
+        }
+
+        if (mainRigidbody != null)
+            mainRigidbody.isKinematic = mainWasKinematic;
+
+        Collider mainCollider = GetComponent<Collider>();
+        if (mainCollider != null)
+            mainCollider.enabled = mainColliderWasEnabled;
+
+        if (animator != null)
+        {
+            animator.enabled = true;
+            animator.Rebind();
+            animator.Update(0f);
+        }
     }
 
     public Rigidbody GetHipRigidbody()

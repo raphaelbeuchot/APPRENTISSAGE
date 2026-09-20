@@ -28,6 +28,8 @@ public class DeathSequence : MonoBehaviour
     [SerializeField] private Transform hipBone;
 
     private CinemachineTargetGroup[] allTargetGroups;
+    private readonly System.Collections.Generic.Dictionary<CinemachineTargetGroup, Transform> replacedTargets
+        = new System.Collections.Generic.Dictionary<CinemachineTargetGroup, Transform>();
 
     void Awake()
     {
@@ -54,6 +56,7 @@ public class DeathSequence : MonoBehaviour
         {
             if (tg.Targets.Count > 0)
             {
+                replacedTargets[tg] = tg.Targets[0].Object;
                 tg.Targets[0] = new CinemachineTargetGroup.Target
                 {
                     Object = hipBone,
@@ -87,6 +90,28 @@ public class DeathSequence : MonoBehaviour
 
         Debug.Log("DeathRoutine FIN - invocation OnDeath");
         playerHealth.TriggerOnDeath();
+    }
+
+    // Multi : annule les effets de DeathRoutine sur le joueur et les target groups (respawn).
+    // Jamais appele en solo.
+    public void Restore()
+    {
+        foreach (var pair in replacedTargets)
+        {
+            CinemachineTargetGroup tg = pair.Key;
+            if (tg == null || tg.Targets.Count == 0) continue;
+            if (tg.Targets[0].Object != hipBone) continue;
+
+            CinemachineTargetGroup.Target target = tg.Targets[0];
+            target.Object = pair.Value;
+            tg.Targets[0] = target;
+        }
+        replacedTargets.Clear();
+
+        PlayerPhysicsMovement movement = GetComponent<PlayerPhysicsMovement>();
+        if (movement != null) movement.enabled = true;
+        MeleeAttackSystem melee = GetComponent<MeleeAttackSystem>();
+        if (melee != null) melee.enabled = true;
     }
 
     private void SpawnCoins()

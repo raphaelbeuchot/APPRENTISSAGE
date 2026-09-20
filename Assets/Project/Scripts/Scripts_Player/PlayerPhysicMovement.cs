@@ -80,6 +80,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private bool isPushing = false;
     private bool isSweeping = false;
     [HideInInspector] public bool isSweepImmune = false;
+    // Multi : ignore par la sentinelle pendant le Red Light du kill apres un respawn (voir MultiRespawn)
+    [HideInInspector] public bool respawnImmune = false;
     private bool wasBroomLowActive = false;
 
 

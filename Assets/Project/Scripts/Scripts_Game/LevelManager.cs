@@ -270,6 +270,7 @@ public class LevelManager : MonoBehaviour
 
     void OnPlayerDeath()
     {
+        if (multiRaceMode) return; // multi : respawn gere par MultiRespawn
         if (gameOver || levelCompleted) return;
         gameOver = true;
         if (player != null) player.enabled = false;

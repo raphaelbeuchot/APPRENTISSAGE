@@ -177,6 +177,17 @@ public class PlayerHealth : MonoBehaviour
         OnDeath?.Invoke();
     }
 
+    // Multi : remet le joueur en vie (respawn). Jamais appele en solo.
+    public void Revive()
+    {
+        isDead = false;
+        currentHealth = GetMaxHealth();
+        ResetKnockbackGrace();
+        if (movement != null)
+            movement.UpdateHealth(currentHealth);
+        OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
+    }
+
     public float GetCurrentHealth() => currentHealth;
     public float GetHealthPercentage() => currentHealth / GetMaxHealth();
     public bool IsDead() => isDead;
