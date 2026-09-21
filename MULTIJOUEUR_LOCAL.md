@@ -165,7 +165,7 @@
 
 ## Caméras et début de niveau en multi — décisions (2026-09-20)
 
-**État** : l'**étape 1 est faite et validée** (extension configurable, une instance par vcam avec joueur/caméra/input assignés dans la scène ; commit `0a8ad8f7`). **Caméra de mort** corrigée par `DeathSequence.onlyOwnTargetGroups` (à cocher sur les deux joueurs en multi ; commit `20167676`) : chaque moitié d'écran ne bascule que sur la mort de son propre joueur. **Reste : étape 2** (composant de départ multi + `CM_StartZone_Player2`) ; en attendant, le pupitre de la scène lance toujours la partie (il ne réagit qu'au premier joueur tagué `Player`, via le singleton d'input, défaut connu qui disparaîtra avec lui).
+**État** : l'**étape 1 est faite et validée** (extension configurable, une instance par vcam avec joueur/caméra/input assignés dans la scène ; commit `0a8ad8f7`). **Caméra de mort** corrigée par `DeathSequence.onlyOwnTargetGroups` (à cocher sur les deux joueurs en multi ; commit `20167676`) : chaque moitié d'écran ne bascule que sur la mort de son propre joueur. **Étape 2 : composant de départ `MultiLevelStart` fait et validé (2026-09-21)**, voir « Départ de niveau sans pupitre » ; reste `CM_StartZone_Player2`.
 
 
 - **Principe : les deux caméras réagissent pareil, joueur 1 ou 2** (équité en Versus : même champ de vision).
@@ -180,10 +180,10 @@
 
 **État en une phrase** : course de vitesse jouable de bout en bout avec deux vrais joueurs dans `Level_TestCameraMulti` (input indépendant, split-screen, sentinelle, victoire, **mort et respawn, caméras identiques pour les deux joueurs, caméra de mort par joueur**), solo testé sans régression à chaque étape ; ordre de revert complet dans « Commits a revert ». La liste ci-dessous sert à décider sur quoi travailler ensuite ; ordre suggéré : reprendre l'étape 2 des caméras, puis petits chantiers concrets, décisions de design, structure, cosmétique (en dernier, comme convenu).
 
-### Point de reprise : étape 2 des caméras (départ de niveau sans pupitre)
-*Voir « Caméras et début de niveau en multi » pour les décisions ; rien n'est codé pour cette étape.*
-- **Composant de départ multi**, à la place de `PupitreInteraction` : compte à rebours pendant lequel chaque joueur voit sa vcam de départ (`CM_StartZone` joueur 1, `CM_StartZone_Player2` sur le canal du joueur 2, **à créer**), rideau, lancement du cycle de la sentinelle, bascule des vcams, `OnPlayerExitStartZone()` sur toutes les extensions (`FindObjectsByType`, comme `PupitreInteraction` le fait maintenant). Pas de gel des joueurs (le rideau les bloque). Au respawn on ne relance rien.
-- **En attendant** : le pupitre de la scène lance toujours la partie ; il ne réagit qu'au premier joueur tagué `Player` (défaut connu, disparaît avec lui).
+### Départ de niveau sans pupitre : ✅ fait (2026-09-21), reste `CM_StartZone_Player2`
+*Voir « Caméras et début de niveau en multi » pour les décisions.*
+- **`MultiLevelStart`** (`Scripts/Multi/`), à la place de `PupitreInteraction` (à désactiver dans la scène) : lancement automatique, sans interaction. Enchaînement : vcams de départ actives → après `startDelay` (1 s) texte **« Get ready »** de 3 s (canvas overlay créé en code, message/durée/police réglables) → barres de jeu, bascule vers les vcams normales, `OnPlayerExitStartZone()` sur toutes les `CameraPanningExtension` (`FindObjectsByType`) → compte à rebours + rideau → `StartGameCycle()` après `gameStartDelay` (4,5 s, comme le pupitre) + icônes ennemis/corps. Pas de gel des joueurs (le rideau les bloque), rien de relancé au respawn. Tableaux `startZoneCameras` / `normalCameras` dans l'Inspector (vide = ignoré). **Validé en test.**
+- **Reste** : `CM_StartZone_Player2` (canal du joueur 2) à créer : en attendant, le joueur 2 voit directement sa vcam normale pendant « Get ready ». Le titre du solo (« Super Panopticon! », `CountdownManager` → `GameUIManager.CountdownSequence`) s'affiche toujours au moment du rideau ; le sauter demanderait un paramètre optionnel sur `StartCountdown` (fichier partagé avec le solo), pas fait.
 - **Question ouverte** : garder ou non une vue basse en multi (pour l'instant `lowViewCamera` non assignée, et la bascule est bloquée sur les instances configurées). Si elle disparaît, il n'y a pas de masquage d'obstacles non plus.
 
 ### Petits chantiers concrets
@@ -219,3 +219,45 @@
 
 ### Hygiène (hors multi)
 - `KeeponTruckin SDF.asset` (font TMP en atlas **Dynamic**) est réécrit par l'éditeur en permanence : à discarder avant chaque commit, ou à figer en Static une fois les caractères nécessaires générés.
+
+## Grands chantiers à venir (réflexion du 2026-09-21, **rien n'est tranché**)
+
+*Liste pour mémoire : les questions ci-dessous sont ouvertes, aucun choix n'a été fait. Les pistes viennent d'un audit rapide du code, sans rien modifier.*
+
+### A. Interactions entre joueurs (tomates, coups de balai, collisions)
+- **Constat** : les attaques ne voient pas l'autre joueur. Elles détectent par `OverlapSphere` sur des layers (`BroomAttackSystem` : `Zombie`, `Bomb`, `Corpse`, `Prop` ; `MeleeAttackSystem` : `Zombie`, `Swarm`, `BrightEye`) ; le joueur est sur `Human`. Toutes lisent `PlayerInputManager.Instance` (singleton) ; `TomatoProjectile` et `MeleeAttackSystem` font aussi un `FindObjectOfType<PlayerPhysicsMovement>()`. **Prérequis** : input d'attaque par joueur (étendre `PlayerLocalInput`, déjà listé dans « Interactions et attaques par joueur »).
+- **Piste : commencer par les simples collisions/poussées** (aucun code d'attaque). **Hypothèse non testée** : le mouvement est physique et la sentinelle détecte via `worldSpaceVelocity`, donc pousser un adversaire pendant un Red Light le ferait repérer et tirer, interaction de course qui colle au cœur du jeu. À vérifier : matrice de collision des layers dans `Level_TestCameraMulti`.
+- **Questions ouvertes** :
+  - Qu'est-ce qu'un coup fait ? Piste : pas de dégâts (la mort n'a pas de pénalité) mais un effet qui gêne la course (trébuchement, étourdissement, ralentissement, knockback).
+  - Quelle première attaque, tomate ou balai ?
+  - Tir ami : drapeau par mode (coop sans PvP, versus avec).
+- **Points techniques à prévoir** : ajouter `Human` aux masques oblige à s'exclure soi-même de la détection ; le lock-on (`TargetLockSystem`, layers) devra pouvoir viser un joueur.
+
+### B. Extension à 3-4 joueurs en local
+- **Constat** : presque tout est déjà par instance (sentinelle par composant, respawn, `MultiRaceManager`, `MultiLevelStart` à tableaux) : généraliser plutôt que réécrire.
+- **Le verrou : le câblage à la main.** Chaque joueur demande une caméra, un `CinemachineBrain` avec son canal, une vcam, une extension configurée, `onlyOwnTargetGroups`, un point de respawn. **Piste : un spawner / rig par joueur à partir d'un index** (déjà listé sous « Joueurs posés à la main » ; sert aussi au futur écran de join). À construire pour N dès le départ (N=2 en premier cas).
+- **Autres points** : layout (3 joueurs = 2+1 avec un quart vide, 4 = 2×2 ; les quarts gardent le 16:9 du level design, contrairement aux demi-colonnes) ; `GameManager` à passer à une liste de joueurs ; durée du cycle vert/rouge (décision de design déjà ouverte) et condition de victoire coop à N ; HUD par quart d'écran ; coût de rendu de 4 caméras à mesurer au profiler.
+- **Limite de test** : une seule manette disponible, donc 3-4 joueurs non validables sur de vrais devices (layout et caméras testables avec de faux joueurs ; isolation des devices vérifiée seulement clavier + 1 pad).
+- **Discipline en attendant** : ne pas coder en dur « P1/P2 » (canaux, noms `Cam_Player2` / `CM_Player2`) dans le nouveau code.
+
+### C. Character select (personnages aux animations, skins, vitesses et propriétés différents)
+- **Constat** : `PlayerStats` (ScriptableObject, `Scripts/Scriptable Objects/`) est déjà conçu pour ça (commentaire « Marteaux, Golfeur, Doc », `HammerGirl.asset` existe). D'après un grep, rien n'y écrit à l'exécution : partageable entre joueurs. Vitesses et propriétés différentes = surtout de la donnée. **Non vérifié** : que tous les champs soient lus (`stealthLevel`, `canHeal`...) ; `characterModel` n'est utilisé nulle part.
+- **Coût réel** : skin (matériaux) facile (`PlayerDetectionFeedback` récupère ses `SkinnedMeshRenderer` au démarrage : teinte posée avant ou renderers récupérés à nouveau) ; animations via `AnimatorOverrideController` (mêmes paramètres, code inchangé) ; **autre modèle = le vrai coût** : ragdoll câblé sur le squelette (`hipBone` sérialisé dans `PlayerRagdoll` et `DeathSequence`, cible 0 des target groups), donc ragdoll/colliders/références à refaire par modèle.
+- **Piste d'architecture** : **un variant de prefab par personnage** (modèle, ragdoll, animator override, son `PlayerStats`), pas de changement de modèle à l'exécution. Le character select ne fait que choisir quel prefab le **spawner** (chantier B) instancie, avec une définition de personnage par joueur (prefab, nom, portrait). Capacités spéciales : de la donnée dans `PlayerStats` d'abord, un composant sur le variant seulement pour une capacité vraiment nouvelle, pas de `if (personnage == X)` dans les scripts partagés.
+- **Questions ouvertes** :
+  - Équilibrage : en course, plus rapide = meilleur ; il faut des compromis (stamina/sprint, dash, vitesse accroupi, durée de stun, masse pour les poussées du chantier A).
+  - `ModifierApplier` (singleton du méta-jeu, endurance) s'appliquerait aux deux joueurs : à garder neutre en multi ?
+  - Autoriser le même personnage deux fois (teinte différente au minimum) ?
+  - Fusionner avec l'écran d'assignation manette → joueur en un seul lobby (rejoindre, choisir, valider) ?
+  - Solo inchangé, comme décidé pour le multi.
+- **Premier pas peu coûteux** : deux `PlayerStats` différents + un changement de matériau sur le modèle actuel, instanciés par le spawner, pour valider le pipeline avant tout contenu. Un vrai second modèle avec son ragdoll ensuite.
+
+### D. Multi en ligne (loin, seulement si la démo publique donne envie)
+- Rien à faire maintenant. Garder le principe déjà en place : l'input passe par un composant par joueur (un joueur distant serait une autre source d'input). Mouvement physique + détection sentinelle par vélocité : la synchronisation serait un chantier à part entière ; le split-screen disparaîtrait (un joueur par écran).
+
+### Dépendances et ordre suggéré (non décidé)
+1. Test des collisions/poussées, puis input d'attaque par joueur (A).
+2. Spawner / rig générique à N joueurs, avec une définition de personnage par joueur (B + C : c'est la charnière).
+3. Une première attaque avec drapeau coop/versus (A).
+4. Lobby : join par device + choix du personnage (B + C).
+5. Layout 3-4 joueurs (B), puis contenu des personnages (C).
