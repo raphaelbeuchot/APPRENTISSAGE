@@ -46,10 +46,13 @@ public class DeathSequence : MonoBehaviour
     private IEnumerator DeathRoutine(Vector3 deathDirection)
     {
         Debug.Log("DeathRoutine START");
-        PlayerPhysicsMovement movement = GetComponent<PlayerPhysicsMovement>();
-        if (movement != null) movement.enabled = false;
+        // Ordre important : MeleeAttackSystem.OnDisable() reactive movement s'il le trouve desactive
+        // (filet de securite pour une attaque interrompue). Desactiver movement en dernier garantit
+        // que son etat final reste bien "desactive", quoi que fasse ce filet de securite.
         MeleeAttackSystem melee = GetComponent<MeleeAttackSystem>();
         if (melee != null) melee.enabled = false;
+        PlayerPhysicsMovement movement = GetComponent<PlayerPhysicsMovement>();
+        if (movement != null) movement.enabled = false;
 
         if (ragdoll != null)
             ragdoll.Activate(deathDirection);
