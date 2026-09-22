@@ -188,9 +188,16 @@
 - **Masquage d'obstacles** : ne tourne qu'en `isHighPosition && isLowView` (`LateUpdate`), donc **sans vue basse, pas de masquage** (à condition de la garde ci-dessus). Si on le réintroduit un jour : il échange les `sharedMaterials` du renderer, donc un obstacle transparent pour une caméra l'est pour l'autre (monde partagé en split-screen), et deux instances se marchent dessus (la seconde retient comme « original » un matériau déjà transparent : obstacles transparents définitivement). Il faudrait alors un mécanisme par caméra (culling / shader).
 - **Ordre proposé** : (1) extension configurable (joueur, caméra, input, garde sur la vue basse) + instance sur `CM_Player2` ; (2) composant de départ multi + `CM_StartZone_Player2` ; (3) décision sur la vue basse.
 
-## Pistes pour la prochaine session (état au 2026-09-20, fin de session)
+## Pistes pour la prochaine session (état au 2026-09-22, fin de session)
 
-**État en une phrase** : course de vitesse jouable de bout en bout avec deux vrais joueurs dans `Level_TestCameraMulti` (input indépendant, split-screen, sentinelle, victoire, **mort et respawn, caméras identiques pour les deux joueurs, caméra de mort par joueur**), solo testé sans régression à chaque étape ; ordre de revert complet dans « Commits a revert ». La liste ci-dessous sert à décider sur quoi travailler ensuite ; ordre suggéré : reprendre l'étape 2 des caméras, puis petits chantiers concrets, décisions de design, structure, cosmétique (en dernier, comme convenu).
+**État en une phrase** : course de vitesse jouable de bout en bout avec deux vrais joueurs dans `Level_TestCameraMulti` (input indépendant, split-screen, sentinelle, victoire, mort et respawn, caméras identiques pour les deux joueurs, caméra de mort par joueur), **+ bousculade joueur-joueur codée et testée en jeu**, **+ polish fin de course (pose figée réelle, compte à rebours perdant, écran YOU LOSE) codé mais pas encore testé**. Solo testé sans régression à chaque étape ; ordre de revert complet dans « Commits a revert ».
+
+### À tester en priorité à la prochaine session (rien testé depuis leur écriture)
+- **Fin de course polish** (commit `52dc26e4`) : poser `PlayerScreenSide` (Left/Right) sur les deux joueurs de `Level_TestCameraMulti` (pas fait — sans ça l'écran "YOU LOSE" tombe à gauche par défaut), puis tester le compte à rebours de 5s, l'élimination forcée, l'écran de fin, et que le gagnant reste bien figé (anim comprise) pendant ce temps.
+- **Bousculade** (commit `2a722e08`) : déjà testée et fonctionnelle, mais le flag `isShoving` pour la détection sentinelle en Red Light n'est pas fait (cf. section A).
+- **Deux bugs en observation** (section Bugs) : lave sans dégâts (possiblement déjà réglé par le fix `activeCoroutines`, à confirmer), laser blanc au respawn (non reproduit).
+
+La liste ci-dessous (état au 2026-09-20) sert toujours à décider sur quoi travailler ensuite une fois ce qui précède validé ; ordre suggéré : reprendre l'étape 2 des caméras, puis petits chantiers concrets, décisions de design, structure, cosmétique (en dernier, comme convenu).
 
 ### Départ de niveau sans pupitre : ✅ fait (2026-09-21), reste `CM_StartZone_Player2`
 *Voir « Caméras et début de niveau en multi » pour les décisions.*
