@@ -205,11 +205,17 @@
 - Suivent encore un seul joueur : `PlayerHealthUI` (barre de vie, `FindObjectOfType`), `LevelStatsTracker`, `GameUIManager` (vignette rouge, désactivée en multi).
 
 ### Structure et flux de jeu
-- **Écran d'assignation manette → joueur** et vrai flux de join : `PlayerLocalInput.SetDevices` est le point d'entrée prévu ; le join par device du `PlayerInputManager` natif est validé (Étape 1a), mais seulement pour des joueurs créés à l'exécution.
-- **Menu de sélection de niveau multi** (liste, structure « course ») et **point d'entrée dans le menu** (non tranché). **Débuts de niveau** différents du solo : voir « Point de reprise » (compte à rebours sans pupitre) ; séquence d'ouverture et porte d'entrée restent à voir.
+
+#### Point d'entrée : écran de lancement solo/multi — **décidé le 2026-09-22, pas codé**
+- **Décision** : un écran de lancement, avant les menus actuels, avec deux choix : **Solo** → mène au main menu actuel (inchangé) ; **Multi** → mène à un nouvel écran, propre au multi.
+- **Contenu de l'écran multi : volontairement minimal pour l'instant (garde-fou anti scope creep)**. Un seul mode retenu en V1, **« Random »** : lance un niveau tiré au hasard dans le pool de niveaux multi, puis enchaîne automatiquement sur un autre niveau au hasard à chaque victoire (course sans fin, pas de sélection manuelle de niveau). Pas d'autre mode/option pour l'instant — à ouvrir plus tard une fois que « Random » tourne.
+- **Sortie du mode multi** : deux chemins. (1) **Pause en jeu** (à étendre côté multi, voir chantier ci-dessous) avec une option retour menu. (2) Sur l'écran « Random » lui-même, ajouter une ligne **« Retour au menu »** pour sortir sans lancer de partie.
+- **Reste à faire** : le pool de niveaux multi (lequel ? un seul niveau vitrine existe pour l'instant, `Level_TestCameraMulti`/dérivés) ; l'écran de lancement lui-même (UI) ; l'écran « Random » (UI + logique de tirage + enchaînement) ; la pause en multi (aujourd'hui la pause solo est câblée sur `PlayerInputManager`/un seul joueur, à vérifier/étendre) ; le retour au menu depuis une partie multi en cours (état à nettoyer : joueurs, cycle sentinelle, etc.). **Rien de codé.**
+
+- **Écran d'assignation manette → joueur** et vrai flux de join : `PlayerLocalInput.SetDevices` est le point d'entrée prévu ; le join par device du `PlayerInputManager` natif est validé (Étape 1a), mais seulement pour des joueurs créés à l'exécution. Se branchera probablement sur l'écran « Random » ou juste avant.
 - **`GameManager`** : remplacer `player` / `playerHealth` / `playerDetectionFeedback` par une liste de joueurs si on passe à 3-4 joueurs (durée de cycle, condition de victoire).
 - **Joueurs posés à la main** : passer à un prefab/variant avec vrai spawn ; noms `Player_1` / `Player_2`.
-- **Fin de course** : aujourd'hui un simple log, le perdant reste jouable.
+- **Fin de course** : aujourd'hui un simple log, le perdant reste jouable. À relier à l'enchaînement automatique du mode Random (victoire → niveau suivant tiré au hasard, pas juste un log).
 
 ### Cosmétique et polish (en dernier)
 - **Caméras** : l'extension de panning est posée sur les deux vcams (joueur, caméra et input assignés). Restent côté joueur 1 seulement : `CM_LowView`, `CM_StartZone`, `CM_FinalZone` (équivalents joueur 2 à créer si on les garde). Masquage d'obstacles non prévu pour du split-screen (échange de matériau partagé par les deux caméras).
@@ -282,6 +288,7 @@
   - Quelle première attaque, tomate ou balai ?
   - Tir ami : drapeau par mode (coop sans PvP, versus avec).
 - **Points techniques à prévoir** : ajouter `Human` aux masques oblige à s'exclure soi-même de la détection ; le lock-on (`TargetLockSystem`, layers) devra pouvoir viser un joueur.
+- **Piste pour l'interaction « à mains nues » (2026-09-22, pas évaluée)** : avant les vraies armes (tomate, balai), il faut dégrossir ce que fait un contact sans arme. Aujourd'hui la poussée existe déjà gratuitement par la simple physique de collision (cf. constat ci-dessus). **Idée à évaluer** : si le joueur est dans la bonne portée et la bonne direction (vers l'autre joueur) au moment du **dash** (`PlayerPhysicsMovement.DashCoroutine`, déclenché par sprint+A), celui-ci se transforme en **bousculade** (poussée plus forte/dédiée) au lieu d'un simple déplacement rapide. **Intérêt** : le dash coûte déjà de la stamina et a un cooldown (`stats.dashStaminaCost`, `stats.dashCooldown`, `CanDash()`), donc la bousculade hérite gratuitement d'un cooldown/d'une ressource limitée, sans nouvel input ni nouveau système à inventer. **Pas encore évalué** : est-ce que ça reste lisible (le joueur qui dash ne sait pas s'il va bousculer ou juste se déplacer vite avant de voir l'autre joueur dans la portée) ; est-ce qu'il faut un feedback dédié (anim, son) pour distinguer dash normal et bousculade ; interaction avec l'immunité au grab pendant le dash (`isImmuneToGrab = !IsGrounded() || isDashing`, à vérifier si ça doit aussi s'appliquer à une bousculade reçue).
 
 ### B. Extension à 3-4 joueurs en local
 - **Constat** : presque tout est déjà par instance (sentinelle par composant, respawn, `MultiRaceManager`, `MultiLevelStart` à tableaux) : généraliser plutôt que réécrire.
