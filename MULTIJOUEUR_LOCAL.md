@@ -217,6 +217,13 @@
 - **Audio** : un seul `Audio Listener` (sur `MainCamera`), donc les sons 3D sont entendus depuis le point de vue du joueur 1.
 - **Feedback visuel par joueur** (porte, clé) si une règle de clé revient.
 
+### Vignette rouge de dégâts par joueur (2026-09-22, pas commencé)
+- **Constat (lecture du code, `GameUIManager.cs`)** : la vignette solo est une seule `Image` plein écran (`damageVignette`), pilotée par un seul `GameUIManager` (pas un singleton mais une instance unique dans la scène) abonné à un seul `PlayerHealth.OnHealthChanged` (`OnPlayerDamaged` → coroutine `DamageFlash`, montée/descente d'alpha sur `damageColor`). Actuellement **désactivée en multi** (GameObject décoché, cf. « Mort et respawn ») car elle ne peut cibler qu'un seul joueur (`FindObjectOfType` arbitraire, `Revive()` d'un joueur quelconque la déclenchait).
+- **Objectif** : une vignette par joueur, visible uniquement dans sa moitié d'écran (split-screen), déclenchée sur dégâts lave et tirs sentinelle comme en solo.
+- **Piste d'architecture (cohérente avec le reste du multi)** : ne pas toucher `GameUIManager.cs` (fichier solo partagé) ; un petit composant `Scripts/Multi/` type `PlayerDamageVignette` posé sur chaque joueur, avec sa propre référence d'`Image` (une par moitié d'écran, dans le Canvas/HUD de ce joueur) et son propre `PlayerHealth` local (`GetComponent`, pas de recherche globale) — même pattern que `MultiRespawn`/`PlayerLocalInput` : composant par joueur, solo inchangé.
+- **Dépend de** : un HUD par joueur (Canvas séparé ou zone découpée par joueur) — pas encore fait, cf. « HUD par joueur » ci-dessous. Sans ça, pas d'endroit où poser l'Image de la vignette côté joueur 2.
+- **Pas commencé.**
+
 ### Hygiène (hors multi)
 - `KeeponTruckin SDF.asset` (font TMP en atlas **Dynamic**) est réécrit par l'éditeur en permanence : à discarder avant chaque commit, ou à figer en Static une fois les caractères nécessaires générés.
 
