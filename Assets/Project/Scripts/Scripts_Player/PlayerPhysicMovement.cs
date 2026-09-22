@@ -355,6 +355,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (InputSprintPressed && CanDash())
         {
             Vector3 dashDir = GetCameraRelativeMovement(moveInput);
+            TryShove(dashDir);
             StartCoroutine(DashCoroutine(dashDir));
         }
     }
@@ -970,6 +971,40 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (pitInteractable != null && pitInteractable.IsInAnyWater()) return false;
 
         return true;
+    }
+
+    // Multi : au moment de l'input dash, si un autre joueur est dans la portee/l'angle de la bousculade,
+    // lui applique un knockback (ApplyKnockback, deja utilise par les attaques ennemies). Inerte en solo
+    // (aucun autre PlayerPhysicsMovement sur le layer Human). Le dash de celui qui pousse n'est pas modifie.
+    void TryShove(Vector3 dashDir)
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position + Vector3.up * 1f, stats.shoveRange, LayerMask.GetMask("Human"));
+
+        foreach (Collider hit in hits)
+        {
+            if (hit.gameObject == gameObject) continue;
+
+            PlayerPhysicsMovement target = hit.GetComponent<PlayerPhysicsMovement>();
+            if (target == null) continue;
+
+            PlayerHealth targetHealth = hit.GetComponent<PlayerHealth>();
+            if (targetHealth != null && targetHealth.IsDead()) continue;
+
+            Vector3 toTarget = hit.transform.position - transform.position;
+            toTarget.y = 0f;
+            if (toTarget.sqrMagnitude < 0.0001f) continue;
+            toTarget.Normalize();
+
+            if (Vector3.Angle(dashDir, toTarget) > stats.shoveAngle / 2f) continue;
+
+            target.ApplyKnockback(toTarget * stats.shoveKnockbackForce, stats.shoveStunDuration);
+
+            // Placeholder feedback en attendant une vraie anim de bousculade : reutilise l'anim/flash "Shot".
+            PlayerDetectionFeedback targetFeedback = hit.GetComponent<PlayerDetectionFeedback>();
+            if (targetFeedback != null)
+                targetFeedback.OnShotBySentinel();
+            break;
+        }
     }
 
     IEnumerator DashCoroutine(Vector3 direction)

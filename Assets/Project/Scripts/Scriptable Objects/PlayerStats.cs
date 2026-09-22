@@ -57,7 +57,7 @@ public class PlayerStats : ScriptableObject
     [Header("ATTAQUE MELEE")]
     [Header("Melee Attack")]
     public float meleeStaminaCost = 15f;
-    [Tooltip("Angle du cône de l'attaque melee (en degrés)")]
+    [Tooltip("Angle du cï¿½ne de l'attaque melee (en degrï¿½s)")]
     [Range(0f, 360f)]
     public float meleeConeAngle = 140f;
     [Tooltip("Portee de l'attaque")]
@@ -128,6 +128,17 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Force de la bourrade")]
     public float bourradeForce = 12f;
 
+    [Header("BOUSCULADE (multi, joueur vs joueur)")]
+    [Tooltip("Portee de detection de l'autre joueur au moment de l'input dash")]
+    public float shoveRange = 1.5f;
+    [Tooltip("Angle total du cone de detection (degres), centre sur la direction du dash")]
+    [Range(0f, 360f)]
+    public float shoveAngle = 90f;
+    [Tooltip("Force du knockback applique a l'autre joueur")]
+    public float shoveKnockbackForce = 6.5f;
+    [Tooltip("Duree pendant laquelle l'autre joueur subit le knockback (mouvement coupe)")]
+    public float shoveStunDuration = 0.4f;
+
     [Header("FORCE")]
     [Tooltip("Force globale du personnage (influe damage)")]
     [Range(0.5f, 2f)]
@@ -161,7 +172,7 @@ public class PlayerStats : ScriptableObject
     [Header("SONS")]
     [Tooltip("Son des pas")]
     public AudioClip footstepSound;
-    public AudioClip attackSound;        // Swing à vide (existant)
+    public AudioClip attackSound;        // Swing ï¿½ vide (existant)
     public AudioClip attackHitSound;     // Impact sur ennemi (nouveau)
     public AudioClip sprayEmptySound;
     [Tooltip("Son de douleur")]
