@@ -29,6 +29,9 @@ public class GoalDoorNew : MonoBehaviour
     public event Action<GameObject> OnPlayerReached;
 
     private bool hasBeenReached = false;
+    // Multi : plusieurs joueurs distincts peuvent atteindre la porte (le second dans le delai de fin de course).
+    // hasBeenReached continue de proteger les effets "une seule fois" (son, arret sentinelle...).
+    private readonly System.Collections.Generic.HashSet<GameObject> playersReached = new System.Collections.Generic.HashSet<GameObject>();
 
     void Start()
     {
@@ -53,7 +56,7 @@ public class GoalDoorNew : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (hasBeenReached) return;
+        if (playersReached.Contains(other.gameObject)) return;
 
         PlayerPhysicsMovement player = other.GetComponent<PlayerPhysicsMovement>();
         if (player == null) return;
@@ -72,33 +75,45 @@ public class GoalDoorNew : MonoBehaviour
 
     void ReachGoal(GameObject player)
     {
+        bool isFirstReach = !hasBeenReached;
         hasBeenReached = true;
+        playersReached.Add(player);
         Debug.Log("[GoalDoorNew] VICTOIRE!");
 
-        if (audioSource != null && doorReachedSound != null)
-            audioSource.PlayOneShot(doorReachedSound);
-
-        //if (victoryEffectPrefab != null)
-          //  Instantiate(victoryEffectPrefab, transform.position, Quaternion.identity);
-
-        OnPlayerReached?.Invoke(player);
-
+        // Fige la pose (transform ET animation, pas seulement le mouvement) : sans ca l'animator continue
+        // de jouer la derniere intention (ex: course) meme si le personnage ne bouge plus physiquement.
         PlayerPhysicsMovement playerMovement = player.GetComponent<PlayerPhysicsMovement>();
         if (playerMovement != null)
             playerMovement.enabled = false;
 
-        SentinelCycleManager sentinelCycle = FindObjectOfType<SentinelCycleManager>();
-        if (sentinelCycle != null)
-            sentinelCycle.StopCycle();
-        else
-            Debug.LogWarning("[GoalDoorNew] SentinelCycleManager introuvable!");
+        Animator playerAnimator = player.GetComponentInChildren<Animator>();
+        if (playerAnimator != null)
+            playerAnimator.speed = 0f;
 
         PlayerDetectionFeedback pdf = player.GetComponent<PlayerDetectionFeedback>();
         if (pdf != null)
             pdf.ResetForVictory();
 
-        foreach (BombSpawner b in FindObjectsOfType<BombSpawner>())
-            b.StopChargeAudio();
+        OnPlayerReached?.Invoke(player);
+
+        // Effets "une seule fois", au premier joueur qui atteint la porte seulement.
+        if (isFirstReach)
+        {
+            if (audioSource != null && doorReachedSound != null)
+                audioSource.PlayOneShot(doorReachedSound);
+
+            //if (victoryEffectPrefab != null)
+              //  Instantiate(victoryEffectPrefab, transform.position, Quaternion.identity);
+
+            SentinelCycleManager sentinelCycle = FindObjectOfType<SentinelCycleManager>();
+            if (sentinelCycle != null)
+                sentinelCycle.StopCycle();
+            else
+                Debug.LogWarning("[GoalDoorNew] SentinelCycleManager introuvable!");
+
+            foreach (BombSpawner b in FindObjectsOfType<BombSpawner>())
+                b.StopChargeAudio();
+        }
 
         //if (destroyPlayerOnReach)
             //Destroy(player, 2f);
