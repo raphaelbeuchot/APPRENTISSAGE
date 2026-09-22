@@ -583,6 +583,14 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         return gameObject;
     }
 
+    // Multi : au respawn, le collider est coupe pendant le ragdoll donc OnTriggerExit ne part pas forcement.
+    // Remet a zero l'etat pit/eau (comme une sortie normale) plutot que de le laisser perimer sur l'objet reutilise.
+    public void ResetPitState()
+    {
+        if (isClimbingOut) return;
+        ExitPit();
+    }
+
     public bool IsClimbingOut() { return isClimbingOut; }
     public bool IsInPit() { return isInPit; }
     public bool IsInWater() { return isInWater; }

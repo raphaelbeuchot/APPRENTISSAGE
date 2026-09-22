@@ -79,6 +79,7 @@ public class SplinePitFillController : MonoBehaviour
             if (!interactable.CanTakePitDamage())
             {
                 CheckAndCleanup(go);
+                activeCoroutines.Remove(go);
                 yield break;
             }
 
@@ -90,6 +91,7 @@ public class SplinePitFillController : MonoBehaviour
             if (!interactable.CanTakePitDamage())
             {
                 CheckAndCleanup(go);
+                activeCoroutines.Remove(go);
                 yield break;
             }
 

@@ -4,6 +4,8 @@ using UnityEngine;
 // Multi : a la mort du joueur, le remet debout au point de respawn (devant le pupitre, comme le restart solo).
 // A poser sur chaque joueur. Pas de penalite : revenir au debut est deja la sanction.
 // Les pieces / la barre de credits de DeathSequence sont a laisser vides dans l'Inspector en multi.
+// Immunite : un joueur qui respawne pendant un Red Light est immunise jusqu'a la fin de ce Red Light,
+// quelle que soit la cause de sa mort (glace, pit, sentinelle...). Jamais sur le cycle suivant.
 public class MultiRespawn : MonoBehaviour
 {
     [Tooltip("Point de respawn (position + orientation). Un vide place devant le pupitre, tourne vers lui.")]
@@ -16,10 +18,7 @@ public class MultiRespawn : MonoBehaviour
     private PlayerPhysicsMovement movement;
     private Rigidbody body;
     private SentinelCycleManager cycle;
-
-    // Immunite : uniquement si le respawn a lieu pendant le Red Light du kill, pas sur les cycles suivants.
-    private bool wasDead;
-    private bool diedInRedLight;
+    private PlayerPitInteractable pitInteractable;
 
     private void Awake()
     {
@@ -29,6 +28,7 @@ public class MultiRespawn : MonoBehaviour
         movement = GetComponent<PlayerPhysicsMovement>();
         body = GetComponent<Rigidbody>();
         cycle = FindFirstObjectByType<SentinelCycleManager>();
+        pitInteractable = GetComponent<PlayerPitInteractable>();
     }
 
     private void OnEnable()
@@ -47,19 +47,9 @@ public class MultiRespawn : MonoBehaviour
             movement.respawnImmune = false;
     }
 
-    // Releve le moment exact du kill (OnDeath n'arrive qu'apres le ragdoll)
-    private void Update()
-    {
-        bool dead = health != null && health.IsDead();
-        if (dead && !wasDead)
-            diedInRedLight = cycle != null && cycle.IsInRedLight();
-        wasDead = dead;
-    }
-
-    // Tout changement d'etat du cycle : le Red Light du kill est termine
+    // Tout changement d'etat du cycle : l'immunite de respawn tombe toujours
     private void HandleCycleChanged(SentinelCycleManager.GameState state)
     {
-        diedInRedLight = false;
         if (movement != null)
             movement.respawnImmune = false;
     }
@@ -100,6 +90,7 @@ public class MultiRespawn : MonoBehaviour
 
         if (deathSequence != null) deathSequence.Restore();
         if (health != null) health.Revive();
+        if (pitInteractable != null) pitInteractable.ResetPitState();
 
         if (movement != null)
         {
@@ -110,9 +101,8 @@ public class MultiRespawn : MonoBehaviour
             movement.ResetAllInputs();
             movement.enabled = true;
             movement.canMove = true;
-            movement.respawnImmune = diedInRedLight && cycle != null && cycle.IsInRedLight();
+            movement.respawnImmune = cycle != null && cycle.IsInRedLight();
         }
-        diedInRedLight = false;
 
         Debug.Log($"[MultiRespawn] {name} respawn");
     }
