@@ -6,21 +6,29 @@ using UnityEngine.UI;
 
 // Course multi (Versus) : enregistre le premier joueur qui atteint la porte.
 // Le verrou "premiere arrivee" est deja dans GoalDoorNew (hasBeenReached), ici on ne fait que retenir le gagnant.
-// Au premier arrivant : lance un compte a rebours pour l'autre joueur (loseCountdownDuration). S'il atteint
-// la porte a temps, rien de plus (deja fige par GoalDoorNew, comme le gagnant). Sinon : mort forcee sans
-// respawn (MultiRespawn desactive juste avant) + ecran "YOU LOSE" sur sa moitie d'ecran.
+// Au premier arrivant : lance un compte a rebours pour l'autre joueur (loseCountdownDuration). Dans les deux
+// cas c'est une defaite, ecran "YOU LOSE" sur sa moitie d'ecran : s'il atteint la porte a temps, deja fige
+// par GoalDoorNew (comme le gagnant), juste l'ecran en plus. Sinon : elimination forcee, mort sans respawn
+// (MultiRespawn desactive juste avant), feedback "tir" (son + flash + anim), puis l'ecran.
 public class MultiRaceManager : MonoBehaviour
 {
     [SerializeField] private GoalDoorNew goalDoor;
     [SerializeField] private float loseCountdownDuration = 5f;
+    [SerializeField] private AudioClip eliminationSound;
 
     public GameObject Winner { get; private set; }
     public event Action<GameObject> OnRaceWon;
 
     private GameObject pendingLoser;
+    private AudioSource audioSource;
 
     private void Start()
     {
+        // Son en 2D (pas PlayClipAtPoint) : signal "meta" comme l'ecran YOU LOSE, doit s'entendre
+        // pareil quelle que soit la position du perdant par rapport a l'unique Audio Listener de la scene.
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 0f;
+
         if (goalDoor == null)
             goalDoor = FindFirstObjectByType<GoalDoorNew>();
 
@@ -53,9 +61,13 @@ public class MultiRaceManager : MonoBehaviour
             return;
         }
 
-        // Le joueur qui restait a fini a temps : rien de plus (deja fige par GoalDoorNew).
+        // Le joueur qui restait a fini a temps : deja fige par GoalDoorNew, mais reste une defaite
+        // (arrive 2e) donc meme ecran YOU LOSE que l'elimination forcee.
         if (player == pendingLoser)
+        {
             pendingLoser = null;
+            ShowLoseScreen(player);
+        }
     }
 
     private GameObject FindTheOtherPlayer(GameObject winner)
@@ -85,6 +97,14 @@ public class MultiRaceManager : MonoBehaviour
         MultiRespawn respawn = loser.GetComponent<MultiRespawn>();
         if (respawn != null)
             respawn.enabled = false;
+
+        // Feedback "tir" (son + flash rouge + anim "Shot"), sans laser : la sentinelle est deja arretee
+        // a ce stade (un joueur a deja gagne), donc pas de position de tir credible a montrer.
+        PlayerDetectionFeedback feedback = loser.GetComponent<PlayerDetectionFeedback>();
+        if (feedback != null)
+            feedback.OnShotBySentinel();
+        if (eliminationSound != null)
+            audioSource.PlayOneShot(eliminationSound);
 
         loserHealth.TakeHeadshot();
 
