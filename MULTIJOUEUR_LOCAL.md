@@ -224,6 +224,18 @@
 
 *Tout ce qui se passe de bizarre ou de non souhaité en multi, à noter au fil des tests. Une entrée par bug : symptôme, cause (vérifiée ou supposée), statut, correctif envisagé. Quand un bug est corrigé, le garder ici avec le commit, plutôt que de l'effacer.*
 
+### Lave traversée sans dégâts — **ouvert, non confirmé (2026-09-22)**
+- **Symptôme** : lors du test du fix ci-dessous (« Mort dans un pit »), une fois, en se déplaçant dans un lavapit, aucun dégât pris. Une seule occurrence, pas reproduit à volonté.
+- **Piste** : le symptôme colle exactement au bug de fuite d'`activeCoroutines` corrigé le même jour dans `SplinePitFillController` (commit `65e08ade`) — une entrée périmée dans le dictionnaire empêche `OnTriggerEnter` de relancer une coroutine de dégâts. Peut être un résidu observé avant que le fix ne s'applique (build/scène pas rechargée), un cas non couvert par ce fix, ou une coïncidence.
+- **À vérifier au prochain test** : le pattern est-il « mort dans cette même lave, respawn, retour dedans » (couvert par le fix), ou ça arrive aussi sans mort préalable / dans une autre zone (non couvert) ?
+- **Statut** : à surveiller, pas de correctif supplémentaire tant que non confirmé.
+
+### Laser sentinelle bloqué en mode détection (blanc) après un respawn — **ouvert, non reproduit (2026-09-22)**
+- **Symptôme** : après un respawn, le laser de la sentinelle observé une fois en mode blanc (détection) sur un joueur. Non reproduit malgré tentative ; pas confirmé qu'il s'agissait d'une vraie détection.
+- **Piste (non vérifiée)** : un état de détection/alarme qui ne se réinitialise pas au respawn multi — `MultiRespawn.RespawnRoutine()` ne retire le joueur que de `trackedTargets`/`alreadyShot` sur chaque `SentinelDetector`, rien côté `SentinelLaserManager` ni `playerAlarmTriggered` (`PlayerPhysicsMovement`, mis par joueur depuis la généralisation du 2026-09-19).
+- **À relever si ça se reproduit** : état du cycle (vert/rouge) et du joueur au moment exact du bug, et si ça suit toujours une mort/respawn ou peut arriver autrement.
+- **Statut** : ouvert, non diagnostiqué, priorité basse tant que non reproductible.
+
 ### Mort dans un pit : respawn pas identique à une autre mort — **ouvert, non diagnostiqué**
 - **Symptôme (2026-09-21)** : après une mort dans un pit, respawn dans un Red Light : le joueur se fait tirer dessus ; et le « feeling » du respawn semble différent d'une mort par la sentinelle, sans savoir dire pourquoi. La vignette rouge manque (normal, désactivée en multi).
 - **Ce qui est sûr (lecture du code)** : la mort en pit passe par `PlayerHealth.TakeDamage`, donc `Die()`, `DeathSequence`, `OnDeath`, `MultiRespawn` : même chemin que toute autre mort.
