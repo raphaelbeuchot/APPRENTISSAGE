@@ -24,11 +24,14 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private GrabAttack[] zombies;
     [SerializeField] private GameObject pressureGauge;
+    [Tooltip("Multi seulement : 2e jauge de pression (meme donnee, cote joueur 2). Vide = comportement solo inchange.")]
+    [SerializeField] private GameObject pressureGauge2;
     [SerializeField] private GameObject creditBar;
     [SerializeField] private GameObject enemyIconsContainer;
 
     private GameObject healthBar;
     private GameObject staminaBar;
+    private GameObject staminaBar2;
     private GameObject sprayBar;
 
     private bool isGrabbed = false;
@@ -37,8 +40,10 @@ public class GameUIManager : MonoBehaviour
     {
         if (healthBar != null) healthBar.SetActive(false);
         if (staminaBar != null) staminaBar.SetActive(false);
+        if (staminaBar2 != null) staminaBar2.SetActive(false);
         if (sprayBar != null) sprayBar.SetActive(false);
         if (pressureGauge != null) pressureGauge.SetActive(false);
+        if (pressureGauge2 != null) pressureGauge2.SetActive(false);
         if (creditBar != null) creditBar.SetActive(false);
         if (enemyIconsContainer != null) enemyIconsContainer.SetActive(false);
     }
@@ -51,7 +56,9 @@ public class GameUIManager : MonoBehaviour
             if (phui == null || phui.ShouldShow) healthBar.SetActive(true);
         }
         if (staminaBar != null) staminaBar.SetActive(true);
+        if (staminaBar2 != null) staminaBar2.SetActive(true);
         if (pressureGauge != null) pressureGauge.SetActive(true);
+        if (pressureGauge2 != null) pressureGauge2.SetActive(true);
         if (enemyIconsContainer != null) enemyIconsContainer.SetActive(true);
     }
 
@@ -61,8 +68,9 @@ public class GameUIManager : MonoBehaviour
         SprayAmmoUI sprayAmmoUI = FindObjectOfType<SprayAmmoUI>(true);
         if (sprayAmmoUI != null) sprayBar = sprayAmmoUI.gameObject;
 
-        StaminaBarFollower staminaBarFollower = FindObjectOfType<StaminaBarFollower>(true);
-        if (staminaBarFollower != null) staminaBar = staminaBarFollower.gameObject;
+        StaminaBarFollower[] staminaBarFollowers = FindObjectsOfType<StaminaBarFollower>(true);
+        if (staminaBarFollowers.Length > 0) staminaBar = staminaBarFollowers[0].gameObject;
+        if (staminaBarFollowers.Length > 1) staminaBar2 = staminaBarFollowers[1].gameObject;
 
         PlayerHealthUI playerHealthUI = FindObjectOfType<PlayerHealthUI>(true);
         if (playerHealthUI != null) healthBar = playerHealthUI.gameObject;

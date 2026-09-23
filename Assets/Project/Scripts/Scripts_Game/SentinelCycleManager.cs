@@ -18,6 +18,8 @@ public class SentinelCycleManager : MonoBehaviour
 
     [Header("References")]
     public Transform playerTransform;
+    [Tooltip("Multi seulement : 2e joueur. Vide = comportement solo inchange (moyenne des deux si renseigne).")]
+    public Transform playerTransform2;
     public Transform sentinelTransform;
     [SerializeField] private Transform startZoneTransform;
     public GameManager gameManager;
@@ -208,6 +210,26 @@ public class SentinelCycleManager : MonoBehaviour
         Debug.Log("[TUTORIAL] Premier RedLight declenche par trigger !");
     }
 
+    private float GetAverageDistanceToTarget()
+    {
+        Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
+        float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
+
+        if (playerTransform2 != null)
+        {
+            float distance2 = Mathf.Abs(playerTransform2.position.z - distanceTarget.position.z);
+            distance = (distance + distance2) * 0.5f;
+        }
+
+        return distance;
+    }
+
+    private float GetDistanceFactor()
+    {
+        float distance = GetAverageDistanceToTarget();
+        return Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
+    }
+
     private float GetDynamicGreenLightDuration()
     {
         if (gameManager == null)
@@ -216,9 +238,7 @@ public class SentinelCycleManager : MonoBehaviour
             return sentinelSettings.GetRandomGreenlightDuration();
         }
 
-        Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
-        float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
-        float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
+        float distanceFactor = GetDistanceFactor();
 
         int totalEnemies = gameManager.GetTotalEnemies();
         int enemiesKilled = gameManager.GetEnemiesKilled();
@@ -249,9 +269,7 @@ public class SentinelCycleManager : MonoBehaviour
             return sentinelSettings.GetRandomRedlightDuration();
         }
 
-        Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
-        float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
-        float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
+        float distanceFactor = GetDistanceFactor();
 
         int totalEnemies = gameManager.GetTotalEnemies();
         int enemiesKilled = gameManager.GetEnemiesKilled();
@@ -319,9 +337,7 @@ public class SentinelCycleManager : MonoBehaviour
 
             if (musicAudioSource != null && greenLightMusicLoop != null)
             {
-                Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
-                float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
-                float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
+                float distanceFactor = GetDistanceFactor();
 
                 int totalEnemies = 0;
                 int enemiesKilled = 0;
@@ -372,9 +388,7 @@ public class SentinelCycleManager : MonoBehaviour
             if (alertCoroutine != null)
                 StopCoroutine(alertCoroutine);
 
-            Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
-            float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
-            float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
+            float distanceFactor = GetDistanceFactor();
 
             int totalEnemies = 0;
             int enemiesKilled = 0;
@@ -434,9 +448,7 @@ public class SentinelCycleManager : MonoBehaviour
             }
             if (musicAudioSource != null && redLightMusicLoop != null)
             {
-                Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
-                float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
-                float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
+                float distanceFactor = GetDistanceFactor();
 
                 int totalEnemies = 0;
                 int enemiesKilled = 0;
@@ -550,9 +562,7 @@ public class SentinelCycleManager : MonoBehaviour
             yield break;
         }
 
-        Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
-        float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
-        float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
+        float distanceFactor = GetDistanceFactor();
 
         int totalEnemies = 0;
         int enemiesKilled = 0;
@@ -613,8 +623,7 @@ public class SentinelCycleManager : MonoBehaviour
 
         if (playerTransform != null)
         {
-            Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
-            initialPlayerSentinelDistance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z) - 3f;
+            initialPlayerSentinelDistance = GetAverageDistanceToTarget() - 3f;
             Debug.Log($"[CYCLE] Distance initiale player-goal: {initialPlayerSentinelDistance:F1}m");
         }
         else
@@ -717,9 +726,7 @@ public class SentinelCycleManager : MonoBehaviour
         if (gameManager == null || playerTransform == null || sentinelTransform == null)
             return 0f;
 
-        Transform distanceTarget = goalDoorTransform != null ? goalDoorTransform : sentinelTransform;
-        float distance = Mathf.Abs(playerTransform.position.z - distanceTarget.position.z);
-        float distanceFactor = Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
+        float distanceFactor = GetDistanceFactor();
 
         int totalEnemies = gameManager.GetTotalEnemies();
         int enemiesKilled = gameManager.GetEnemiesKilled();
