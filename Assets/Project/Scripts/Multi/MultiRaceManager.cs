@@ -15,6 +15,7 @@ public class MultiRaceManager : MonoBehaviour
     [SerializeField] private GoalDoorNew goalDoor;
     [SerializeField] private float loseCountdownDuration = 5f;
     [SerializeField] private AudioClip eliminationSound;
+    [SerializeField] private TMP_FontAsset loseFont;
 
     public GameObject Winner { get; private set; }
     public event Action<GameObject> OnRaceWon;
@@ -143,6 +144,7 @@ public class MultiRaceManager : MonoBehaviour
         textRect.offsetMax = Vector2.zero;
 
         TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
+        if (loseFont != null) text.font = loseFont;
         text.text = "YOU LOSE";
         text.fontSize = 80f;
         text.alignment = TextAlignmentOptions.Center;
