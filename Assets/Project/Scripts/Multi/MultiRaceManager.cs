@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 // Course multi (Versus) : enregistre le premier joueur qui atteint la porte.
@@ -16,6 +18,8 @@ public class MultiRaceManager : MonoBehaviour
     [SerializeField] private float loseCountdownDuration = 5f;
     [SerializeField] private AudioClip eliminationSound;
     [SerializeField] private TMP_FontAsset loseFont;
+    [Tooltip("Delai avant que A (ou Entree au clavier) relance le niveau depuis l'ecran YOU LOSE.")]
+    [SerializeField] private float restartPromptDelay = 2f;
 
     public GameObject Winner { get; private set; }
     public event Action<GameObject> OnRaceWon;
@@ -150,5 +154,44 @@ public class MultiRaceManager : MonoBehaviour
         text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;
         text.raycastTarget = false;
+
+        StartCoroutine(RestartOnButtonCoroutine());
+    }
+
+    // A (croix Sud manette) relance le niveau depuis l'ecran YOU LOSE, apres un delai (evite un
+    // appui accidentel juste apres l'affichage). A est aussi le bouton Sprint : on attend qu'il
+    // soit relache avant de recharger la scene, sinon Sprint pourrait se redeclencher tout seul
+    // des l'activation des inputs dans la scene rechargee (bouton toujours physiquement enfonce).
+    private IEnumerator RestartOnButtonCoroutine()
+    {
+        yield return new WaitForSeconds(restartPromptDelay);
+
+        while (!RestartButtonPressed())
+            yield return null;
+
+        while (RestartButtonHeld())
+            yield return null;
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    private bool RestartButtonPressed()
+    {
+        foreach (Gamepad gamepad in Gamepad.all)
+        {
+            if (gamepad.buttonSouth.wasPressedThisFrame)
+                return true;
+        }
+        return Keyboard.current != null && Keyboard.current.enterKey.wasPressedThisFrame;
+    }
+
+    private bool RestartButtonHeld()
+    {
+        foreach (Gamepad gamepad in Gamepad.all)
+        {
+            if (gamepad.buttonSouth.isPressed)
+                return true;
+        }
+        return Keyboard.current != null && Keyboard.current.enterKey.isPressed;
     }
 }
