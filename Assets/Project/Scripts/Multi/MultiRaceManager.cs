@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 // Course multi (Versus) : enregistre le premier joueur qui atteint la porte.
@@ -17,7 +18,8 @@ public class MultiRaceManager : MonoBehaviour
     [SerializeField] private GoalDoorNew goalDoor;
     [SerializeField] private float loseCountdownDuration = 5f;
     [SerializeField] private AudioClip eliminationSound;
-    [SerializeField] private TMP_FontAsset loseFont;
+    [FormerlySerializedAs("loseFont")]
+    [SerializeField] private TMP_FontAsset endScreenFont;
     [Tooltip("Delai avant que A (ou Entree au clavier) relance le niveau depuis l'ecran YOU LOSE.")]
     [SerializeField] private float restartPromptDelay = 2f;
 
@@ -62,6 +64,8 @@ public class MultiRaceManager : MonoBehaviour
             PlayerScreenSide winnerScreenSide = player.GetComponent<PlayerScreenSide>();
             PlayerScreenSide.Side winnerSide = winnerScreenSide != null ? winnerScreenSide.side : PlayerScreenSide.Side.Left;
             MultiMatchScore.AddPoint(winnerSide);
+
+            ShowHalfScreenMessage(player, "VictoryScreenCanvas", "VictoryText", "VICTORY");
 
             OnRaceWon?.Invoke(player);
 
@@ -123,10 +127,18 @@ public class MultiRaceManager : MonoBehaviour
 
     private void ShowLoseScreen(GameObject loser)
     {
-        PlayerScreenSide screenSide = loser.GetComponent<PlayerScreenSide>();
+        ShowHalfScreenMessage(loser, "LoseScreenCanvas", "LoseText", "YOU LOSE");
+        StartCoroutine(RestartOnButtonCoroutine());
+    }
+
+    // Overlay noir alpha 0.5 + texte, sur la moitie d'ecran du joueur concerne (PlayerScreenSide,
+    // defaut Left si absent). Partage entre l'ecran VICTORY (gagnant) et YOU LOSE (perdant).
+    private void ShowHalfScreenMessage(GameObject player, string canvasName, string textName, string message)
+    {
+        PlayerScreenSide screenSide = player.GetComponent<PlayerScreenSide>();
         bool isRight = screenSide != null && screenSide.side == PlayerScreenSide.Side.Right;
 
-        GameObject canvasObj = new GameObject("LoseScreenCanvas");
+        GameObject canvasObj = new GameObject(canvasName);
         Canvas canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 100;
@@ -144,7 +156,7 @@ public class MultiRaceManager : MonoBehaviour
         Image bg = bgObj.AddComponent<Image>();
         bg.color = new Color(0f, 0f, 0f, 0.5f);
 
-        GameObject textObj = new GameObject("LoseText");
+        GameObject textObj = new GameObject(textName);
         textObj.transform.SetParent(bgObj.transform, false);
         RectTransform textRect = textObj.AddComponent<RectTransform>();
         textRect.anchorMin = Vector2.zero;
@@ -153,14 +165,12 @@ public class MultiRaceManager : MonoBehaviour
         textRect.offsetMax = Vector2.zero;
 
         TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
-        if (loseFont != null) text.font = loseFont;
-        text.text = "YOU LOSE";
+        if (endScreenFont != null) text.font = endScreenFont;
+        text.text = message;
         text.fontSize = 80f;
         text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;
         text.raycastTarget = false;
-
-        StartCoroutine(RestartOnButtonCoroutine());
     }
 
     // A (croix Sud manette) relance le niveau depuis l'ecran YOU LOSE, apres un delai (evite un
