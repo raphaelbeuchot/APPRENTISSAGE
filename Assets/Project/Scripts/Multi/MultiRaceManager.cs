@@ -58,6 +58,11 @@ public class MultiRaceManager : MonoBehaviour
         {
             Winner = player;
             Debug.Log($"[MultiRace] {player.name} gagne la course");
+
+            PlayerScreenSide winnerScreenSide = player.GetComponent<PlayerScreenSide>();
+            PlayerScreenSide.Side winnerSide = winnerScreenSide != null ? winnerScreenSide.side : PlayerScreenSide.Side.Left;
+            MultiMatchScore.AddPoint(winnerSide);
+
             OnRaceWon?.Invoke(player);
 
             pendingLoser = FindTheOtherPlayer(player);
