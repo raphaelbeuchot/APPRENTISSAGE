@@ -40,6 +40,8 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     private float currentProgress = 0f;
     private AudioSource audioSource;
     private float currentDirection = 1f;
+    private Material material;
+    private float scrollTime = 0f;
 
     // Pour calculer la velocite
     private Vector3 lastPosition;
@@ -62,6 +64,11 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
             enabled = false;
             return;
         }
+
+        // Instance du material (propre a cet obstacle)
+        Renderer rend = GetComponentInChildren<Renderer>();
+        if (rend != null)
+            material = rend.material;
 
         // Initialiser la position de depart
         currentProgress = startingProgress;
@@ -126,6 +133,14 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
         // Avancer
         currentProgress += progressIncrement;
+
+        // Temps de defilement du shader : suit le sens reel du mouvement (continu, pas de saut)
+        if (material != null)
+        {
+            float shaderDirection = reverseDirection ? -currentDirection : currentDirection;
+            scrollTime += shaderDirection * Time.deltaTime;
+            material.SetFloat("_ScrollTime", scrollTime);
+        }
 
         // Gestion boucle ou ping-pong
         if (usePingPong)
