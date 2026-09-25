@@ -1,18 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-2973664331249818833
-MonoBehaviour:
-  m_ObjectHideFlags: 11
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Editor::UnityEditor.Rendering.Universal.AssetVersion
-  version: 10
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -20,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ice2_Mat
-  m_Shader: {fileID: -6465566751694194690, guid: c47ec0020c92d13459f2d9499386b55a, type: 3}
+  m_Name: Rail_Mat
+  m_Shader: {fileID: -6465566751694194690, guid: 6441676d3684982468136f454a05cac3, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -51,20 +38,23 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Fresnel: 2.09
-    - _Fresnel_Power: 2
-    - _GlowSpeed: 0.75
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Step: 0.025
-    - _Step_Voronoi: 0.025
-    - _TailleParticules: 27.59
-    - _Vitesse: 0
-    - _Voronoi_Cell_Density: 60
-    - _scale: 2.84
     m_Colors:
-    - _Couleur: {r: 0.6509434, g: 0.555891, b: 0.3039783, a: 1}
-    - _GlowColor: {r: 0.91936946, g: 4.237096, b: 3.3093247, a: 1}
-    - _Vector2: {r: 1, g: 1, b: 0, a: 0}
+    - _ColorBOTTOM: {r: 0.8632076, g: 0.43210316, b: 0.08957813, a: 1}
+    - _ColorTOP: {r: 0.6792453, g: 0.90245926, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
+--- !u!114 &7096762281989612030
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Editor::UnityEditor.Rendering.Universal.AssetVersion
+  version: 10
