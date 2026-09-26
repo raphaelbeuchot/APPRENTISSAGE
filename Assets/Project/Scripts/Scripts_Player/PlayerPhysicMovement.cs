@@ -134,6 +134,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     public Vector2 InputMove => localInput != null ? localInput.MoveInput : PlayerInputManager.Instance.MoveInput;
     private bool InputSprintPressed => localInput != null ? localInput.SprintPressed : PlayerInputManager.Instance.SprintPressed;
     private bool InputCrouchPressed => localInput != null ? localInput.CrouchPressed : PlayerInputManager.Instance.CrouchPressed;
+    public bool InputMashEscapePressed => localInput != null ? localInput.MashEscapePressed : PlayerInputManager.Instance.MashEscapePressed;
     public bool InputBroomLowActive => localInput == null && PlayerInputManager.Instance.BroomLowActive;
     private void InputForceBroomLowOff()
     {

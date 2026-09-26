@@ -18,6 +18,7 @@ public class PlayerLocalInput : MonoBehaviour
     public bool SprintPressed => actions.Player.Sprint.WasPressedThisFrame();
     public bool CrouchPressed => actions.Player.Crouch.WasPressedThisFrame();
     public bool ToggleCameraViewPressed => actions.Player.ToggleCameraView.WasPressedThisFrame();
+    public bool MashEscapePressed => actions.Player.MashEscape.WasPressedThisFrame();
 
     private void Awake()
     {

@@ -57,10 +57,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         this.enemyRb = enemyRigidbody;
         enemy = GetComponent<EnemyAI_AStar>();
         enemyHealth = GetComponent<EnemyHealth>();
-        player = FindFirstObjectByType<PlayerPhysicsMovement>();
-        if (player) playerRb = player.GetComponent<Rigidbody>();
         gameManager = FindFirstObjectByType<GameManager>();
-        if (player) playerMelee = player.GetComponent<MeleeAttackSystem>();
 
         isGrabbing = false;
         isInBourradeDuration = false;
@@ -152,9 +149,28 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     public bool IsInSpecialState() => isInBourradeDuration || isInBourradeCooldown || isInWindup;
     public bool IsGrabbing() => isGrabbing;
 
+    // Fige la victime (le joueur poursuivi par cet ennemi) : en multi ce n'est pas
+    // forcement le premier joueur de la scene. Ne re-latch pas en plein grab.
+    bool LatchTarget()
+    {
+        if (isGrabbing && player != null) return true;
+
+        Transform target = enemy != null ? enemy.targetHuman : null;
+        if (target == null) return false;
+
+        PlayerPhysicsMovement p = target.GetComponentInParent<PlayerPhysicsMovement>();
+        if (p == null) return false;
+
+        player = p;
+        playerRb = p.GetComponent<Rigidbody>();
+        playerMelee = p.GetComponent<MeleeAttackSystem>();
+        return true;
+    }
+
     public void AttemptAttack(GameObject target)
     {
-        if (!player || IsInBourrade() || isGrabbing) return;
+        if (IsInBourrade() || isGrabbing) return;
+        if (!LatchTarget()) return;
 
         EnemyAI_AStar ai = GetComponent<EnemyAI_AStar>();
 
@@ -213,6 +229,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     public void StartWindup()
     {
         if (isInWindup || isGrabbing || IsInBourrade()) return;
+        if (!LatchTarget()) return;
         if (animator != null)
         windupCoroutine = StartCoroutine(WindupCoroutine());
     }
@@ -400,7 +417,9 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
 
         try
         {
-            while (elapsed < stats.grabDuration && mashCount < required)
+            // Plus de sortie automatique : le joueur doit mash pour se liberer
+            // while (elapsed < stats.grabDuration && mashCount < required)
+            while (mashCount < required)
             {
                 if (enemyHealth == null || enemyHealth.IsDead())
                 {
@@ -422,7 +441,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 }
                 UpdateFakeGrabbers();
 
-                if (PlayerInputManager.Instance.MashEscapePressed)
+                if (player.InputMashEscapePressed)
                 {
                     mashCount++;
                 }
@@ -430,13 +449,13 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 player.grabProgress = (float)mashCount / required;
                 elapsed += Time.deltaTime;
 
-                // Degats intermediaires
-                if (nextDamageIndex < damageTimes.Length && elapsed >= damageTimes[nextDamageIndex])
-                {
-                    PlayerHealth ph = player.GetComponent<PlayerHealth>();
-                    if (ph != null) ph.TakeDamage((int)stats.biteTickDamage);
-                    nextDamageIndex++;
-                }
+                // Degats intermediaires (desactives : le grab ne fait plus de degats)
+                // if (nextDamageIndex < damageTimes.Length && elapsed >= damageTimes[nextDamageIndex])
+                // {
+                //     PlayerHealth ph = player.GetComponent<PlayerHealth>();
+                //     if (ph != null) ph.TakeDamage((int)stats.biteTickDamage);
+                //     nextDamageIndex++;
+                // }
                 // COLLAGE AU PLAYER
                 // Si une plateforme (ou autre) d�place le player, l'enemy maintient
                 // sa position relative en utilisant MovePosition (respecte la physique).
@@ -450,17 +469,17 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
                 yield return null;
             }
 
-            // Morsure finale a la fin du grab si le joueur n'a pas echappe
-            if (mashCount < required)
-            {
-                PlayerHealth ph = player.GetComponent<PlayerHealth>();
-                if (ph != null) ph.TakeDamage((int)stats.biteDamage);
-
-                if (stats.attackSound != null)
-                {
-                    AudioSource.PlayClipAtPoint(stats.attackSound, transform.position);
-                }
-            }
+            // Morsure finale (desactivee : plus de fin de grab automatique ni de degats)
+            // if (mashCount < required)
+            // {
+            //     PlayerHealth ph = player.GetComponent<PlayerHealth>();
+            //     if (ph != null) ph.TakeDamage((int)stats.biteDamage);
+            //
+            //     if (stats.attackSound != null)
+            //     {
+            //         AudioSource.PlayClipAtPoint(stats.attackSound, transform.position);
+            //     }
+            // }
 
             EndGrab(mashCount >= required);
         }
