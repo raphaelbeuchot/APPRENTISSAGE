@@ -16,12 +16,12 @@ MonoBehaviour:
   enemyModel: {fileID: 7400521557073780375, guid: 3a6a8b5726837eb469b903aff6110606, type: 3}
   skinVariants: []
   attackType: 0
-  maxHealth: 400
+  maxHealth: 50
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 0
-  walkSpeed: 0.2
-  chaseSpeed: 0.5
+    m_Bits: 8
+  walkSpeed: 0.5
+  chaseSpeed: 0.8
   rotationSpeed: 1
   crawlSpeed: 0.2
   detectionRadius: 4
@@ -32,11 +32,11 @@ MonoBehaviour:
     m_Bits: 128
   stealthDetectionMultiplier: 1
   blinderHealthBarRange: 5
-  chasePersistenceDuration: 2
+  chasePersistenceDuration: 7
   attackRange: 0.75
   attackCooldown: 2
-  windupMaterial: {fileID: 0}
-  grabDuration: 5
+  windupMaterial: {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
+  grabDuration: 0
   biteDamage: 10
   oneArmMashReduction: 0.5
   fakeGrabRange: 3

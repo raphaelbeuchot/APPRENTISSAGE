@@ -39,10 +39,6 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
 
-        player = FindFirstObjectByType<PlayerPhysicsMovement>();
-        if (player != null)
-            playerRb = player.GetComponent<Rigidbody>();
-
         enemyRenderer = GetComponentInChildren<Renderer>();
         if (enemyRenderer != null)
         {
@@ -62,9 +58,26 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         // Pas utilise directement, on passe par StartWindup
     }
 
+    // Fige la cible au debut du windup : targetHuman peut passer a null en plein
+    // windup si l'ennemi perd le joueur de vue, et en multi c'est le joueur poursuivi
+    // (pas forcement le premier de la scene) qui doit encaisser le coup.
+    bool LatchTarget()
+    {
+        Transform target = enemy != null ? enemy.targetHuman : null;
+        if (target == null) return false;
+
+        PlayerPhysicsMovement p = target.GetComponentInParent<PlayerPhysicsMovement>();
+        if (p == null) return false;
+
+        player = p;
+        playerRb = p.GetComponent<Rigidbody>();
+        return true;
+    }
+
     public void StartWindup()
     {
         if (isInWindup || isAttacking || isLockedInIdle) return;
+        if (!LatchTarget()) return;
         isCancelled = false;
         willHit = false;
         windupCoroutine = StartCoroutine(WindupCoroutine());
@@ -110,6 +123,12 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
         }
 
         isInWindup = false;
+
+        if (player == null)
+        {
+            FailHit();
+            yield break;
+        }
 
         float dist = Vector3.Distance(transform.position, player.transform.position);
         Vector3 dirToPlayer = (player.transform.position - transform.position).normalized;

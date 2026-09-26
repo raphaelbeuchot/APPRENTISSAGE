@@ -29,6 +29,7 @@ public class EnemyAI_AStar : MonoBehaviour
     [Header("References")]
     protected Rigidbody rb;
     public Transform targetHuman;
+    private Rigidbody lastSeenTargetRb;
     protected GameManager gameManager;
     protected EnemyHealth health;
     protected IAttackBehavior attackBehavior;
@@ -409,12 +410,6 @@ public class EnemyAI_AStar : MonoBehaviour
         if (currentState == State.OnRotatingPlatform)
             return;
 
-        PlayerHealth player = FindObjectOfType<PlayerHealth>();
-        if (player == null || player.IsDead())
-            return;
-
-        float distToPlayer = Vector3.Distance(transform.position, player.transform.position);
-
         if (isBlinder)
         {
             targetHuman = null;
@@ -475,6 +470,7 @@ public class EnemyAI_AStar : MonoBehaviour
         if (closestHuman != null)
         {
             targetHuman = closestHuman;
+            lastSeenTargetRb = closestHuman.GetComponent<Rigidbody>();
             lastKnownPlayerPosition = closestHuman.position;
             isGoingToLastKnownPosition = false;
             wasChasing = true;
@@ -500,7 +496,7 @@ public class EnemyAI_AStar : MonoBehaviour
                     Vector3 directionToLastPos = (lastKnownPlayerPosition - transform.position).normalized;
                     lastKnownPlayerPosition = lastKnownPlayerPosition + directionToLastPos * 0.75f;
 
-                    Rigidbody playerRb = player.GetComponent<Rigidbody>();
+                    Rigidbody playerRb = lastSeenTargetRb;
                     if (playerRb != null)
                     {
                         Vector3 playerVelocity = playerRb.linearVelocity;
