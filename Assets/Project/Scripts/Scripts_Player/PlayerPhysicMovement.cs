@@ -135,6 +135,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private bool InputSprintPressed => localInput != null ? localInput.SprintPressed : PlayerInputManager.Instance.SprintPressed;
     private bool InputCrouchPressed => localInput != null ? localInput.CrouchPressed : PlayerInputManager.Instance.CrouchPressed;
     public bool InputMashEscapePressed => localInput != null ? localInput.MashEscapePressed : PlayerInputManager.Instance.MashEscapePressed;
+    public bool InputBroomAttackPressed => localInput != null ? localInput.BroomAttackPressed : PlayerInputManager.Instance.BroomAttackPressed;
     public bool InputBroomLowActive => localInput == null && PlayerInputManager.Instance.BroomLowActive;
     private void InputForceBroomLowOff()
     {

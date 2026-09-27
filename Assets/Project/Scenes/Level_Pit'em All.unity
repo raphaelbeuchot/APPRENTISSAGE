@@ -118287,7 +118287,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 158569115125722414, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: hasBroom
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2390640153932763705, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: waveCount
@@ -118403,6 +118403,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7795896a60b7f74c91dec122302123e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraPanningController
+  trackedPlayer: {fileID: 0}
+  playerCamera: {fileID: 0}
+  localInput: {fileID: 0}
   startWithFreeCameraEnabled: 0
   verticalOffset: 4
   verticalPanSpeed: 5

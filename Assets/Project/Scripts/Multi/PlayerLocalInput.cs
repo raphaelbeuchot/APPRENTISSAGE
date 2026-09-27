@@ -19,6 +19,8 @@ public class PlayerLocalInput : MonoBehaviour
     public bool CrouchPressed => actions.Player.Crouch.WasPressedThisFrame();
     public bool ToggleCameraViewPressed => actions.Player.ToggleCameraView.WasPressedThisFrame();
     public bool MashEscapePressed => actions.Player.MashEscape.WasPressedThisFrame();
+    // Tap seul : pas de balai bas (BroomLow) en multi, comme le reste du mouvement local.
+    public bool BroomAttackPressed => actions.Player.BroomAttack.WasPressedThisFrame();
 
     private void Awake()
     {

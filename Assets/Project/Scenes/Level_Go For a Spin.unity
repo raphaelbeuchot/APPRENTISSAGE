@@ -16315,11 +16315,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
   m_PrefabInstance: {fileID: 1172908648}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1179767869 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1191817633621186349, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
-  m_PrefabInstance: {fileID: 1454380196}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1182000316
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -17521,6 +17516,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7795896a60b7f74c91dec122302123e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraPanningController
+  trackedPlayer: {fileID: 0}
+  playerCamera: {fileID: 0}
+  localInput: {fileID: 0}
   startWithFreeCameraEnabled: 0
   verticalOffset: 4
   verticalPanSpeed: 5
@@ -20863,6 +20861,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 158569115125722414, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
+      propertyPath: hasBroom
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1191817633621186349, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -20955,9 +20957,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5794444067654349612, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       insertIndex: 18
       addedObject: {fileID: 1871075812}
-    - targetCorrespondingSourceObject: {fileID: 5794444067654349612, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1871075828}
   m_SourcePrefab: {fileID: 100100000, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
 --- !u!114 &1454380197 stripped
 MonoBehaviour:
@@ -25659,22 +25658,6 @@ MonoBehaviour:
   - {r: 0.30867165, g: 0.21137415, b: 0.4716981, a: 1}
   - {r: 1, g: 0.96871734, b: 0.740566, a: 1}
   skipGracePeriod: 0.3
---- !u!114 &1871075828
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1195708142}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 234995a75ee58a542b3279239437948a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerLoadout
-  hasBroom: 0
-  hasSpray: 0
-  broomObject: {fileID: 1179767869}
-  sprayObject: {fileID: 2110807840}
 --- !u!1001 &1873295191
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28450,11 +28433,6 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
   m_PrefabInstance: {fileID: 1218101473}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &2110807840 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2141512017560207537, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
-  m_PrefabInstance: {fileID: 1454380196}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2114346796
 PrefabInstance:

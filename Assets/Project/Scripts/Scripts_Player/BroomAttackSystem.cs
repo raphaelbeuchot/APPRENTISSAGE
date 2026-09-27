@@ -45,7 +45,8 @@ public class BroomAttackSystem : MonoBehaviour
         if (stats == null) return;
 
 
-        if (PlayerInputManager.Instance.BroomAttackPressed && CanAttack())
+        bool broomPressed = movement != null ? movement.InputBroomAttackPressed : PlayerInputManager.Instance.BroomAttackPressed;
+        if (broomPressed && CanAttack())
         {
             StartCoroutine(PerformBroomAttack());
         }
@@ -63,7 +64,8 @@ public class BroomAttackSystem : MonoBehaviour
         {
             return false;
         }
-        if (PlayerInputManager.Instance.BroomLowActive)
+        // Pas de balai bas en multi (InputBroomLowActive vaut false hors singleton) : voir PlayerPhysicsMovement.
+        if (movement != null && movement.InputBroomLowActive)
         {
             return false;
         }
@@ -123,10 +125,10 @@ public class BroomAttackSystem : MonoBehaviour
         // ATTENDRE TOUTE LA DUREE DE L'ANIMATION
         yield return new WaitForSeconds(stats.broomAttackDuration);
 
-        // Plus de lerp forcé, laisser l'Animator gérer la transition
+        // Plus de lerp forcï¿½, laisser l'Animator gï¿½rer la transition
         isAttacking = false;
 
-        // Reset SEULEMENT si nécessaire pour éviter conflits spray
+        // Reset SEULEMENT si nï¿½cessaire pour ï¿½viter conflits spray
         if (animator != null)
         {
             animator.Rebind();
@@ -259,6 +261,40 @@ public class BroomAttackSystem : MonoBehaviour
             }
 
 
+        }
+
+        // JOUEURS (multi) - meme cone que les zombies, knockback separe (equilibrage independant)
+        Collider[] humanHits = Physics.OverlapSphere(
+            transform.position + Vector3.up * 1f,
+            stats.broomRange,
+            LayerMask.GetMask("Human")
+        );
+
+        foreach (Collider hit in humanHits)
+        {
+            if (hit.gameObject == gameObject) continue;
+
+            PlayerPhysicsMovement targetMovement = hit.GetComponent<PlayerPhysicsMovement>();
+            if (targetMovement == null) continue;
+
+            PlayerHealth targetHealth = hit.GetComponent<PlayerHealth>();
+            if (targetHealth != null && targetHealth.IsDead()) continue;
+
+            Vector3 dirToTarget = (hit.transform.position - transform.position).normalized;
+            dirToTarget.y = 0f;
+
+            if (Vector3.Angle(transform.forward, dirToTarget) > stats.broomConeAngle / 2f)
+                continue;
+
+            Vector3 rayOriginHuman = transform.position + Vector3.up * 0.5f;
+            Vector3 targetPointHuman = hit.bounds.center;
+            float distanceHuman = Vector3.Distance(rayOriginHuman, targetPointHuman);
+
+            if (Physics.Raycast(rayOriginHuman, (targetPointHuman - rayOriginHuman).normalized, distanceHuman, LayerMask.GetMask("Obstacle")))
+                continue;
+
+            targetMovement.ApplyKnockback(dirToTarget * stats.broomPlayerKnockbackForce, stats.broomPlayerStunDuration);
+            hitSomething = true;
         }
 
         // BLINDERS - seulement si le broom a touche quelque chose

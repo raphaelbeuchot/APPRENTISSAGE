@@ -128,6 +128,12 @@ public class PlayerStats : ScriptableObject
     [Tooltip("Force de la bourrade")]
     public float bourradeForce = 12f;
 
+    [Header("BROOM vs JOUEUR (multi)")]
+    [Tooltip("Force du knockback applique a l'autre joueur touche par le balai (separe du knockback ennemi pour pouvoir l'equilibrer independamment)")]
+    public float broomPlayerKnockbackForce = 6.5f;
+    [Tooltip("Duree pendant laquelle l'autre joueur subit le knockback du balai (mouvement coupe)")]
+    public float broomPlayerStunDuration = 0.4f;
+
     [Header("BOUSCULADE (multi, joueur vs joueur)")]
     [Tooltip("Portee de detection de l'autre joueur au moment de l'input dash")]
     public float shoveRange = 1.5f;
