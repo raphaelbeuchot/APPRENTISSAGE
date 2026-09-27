@@ -22,10 +22,14 @@ public class MultiRaceManager : MonoBehaviour
     [SerializeField] private TMP_FontAsset endScreenFont;
     [Tooltip("Delai avant que A (ou Entree au clavier) relance le niveau depuis l'ecran YOU LOSE.")]
     [SerializeField] private float restartPromptDelay = 2f;
+    [Tooltip("Si le 2e joueur atteint la porte moins de X secondes apres le 1er, c'est un ex aequo : aucun point, ecran different pour les deux.")]
+    [SerializeField] private float tieWindow = 0.5f;
 
     public GameObject Winner { get; private set; }
     public event Action<GameObject> OnRaceWon;
 
+    private GameObject firstReacher;
+    private bool decided;
     private GameObject pendingLoser;
     private AudioSource audioSource;
 
@@ -56,32 +60,68 @@ public class MultiRaceManager : MonoBehaviour
 
     private void HandlePlayerReached(GameObject player)
     {
-        if (Winner == null)
+        // Premier arrivant : pas de decision immediate, on laisse une fenetre au 2e joueur
+        // pour un ex aequo avant de declarer la victoire (voir DecideWinnerAfterWindow).
+        if (firstReacher == null)
         {
-            Winner = player;
-            Debug.Log($"[MultiRace] {player.name} gagne la course");
-
-            PlayerScreenSide winnerScreenSide = player.GetComponent<PlayerScreenSide>();
-            PlayerScreenSide.Side winnerSide = winnerScreenSide != null ? winnerScreenSide.side : PlayerScreenSide.Side.Left;
-            MultiMatchScore.AddPoint(winnerSide);
-
-            ShowHalfScreenMessage(player, "VictoryScreenCanvas", "VictoryText", "VICTORY");
-
-            OnRaceWon?.Invoke(player);
-
-            pendingLoser = FindTheOtherPlayer(player);
-            if (pendingLoser != null)
-                StartCoroutine(LoseCountdownCoroutine(pendingLoser));
+            firstReacher = player;
+            StartCoroutine(DecideWinnerAfterWindow(player));
             return;
         }
 
-        // Le joueur qui restait a fini a temps : deja fige par GoalDoorNew, mais reste une defaite
-        // (arrive 2e) donc meme ecran YOU LOSE que l'elimination forcee.
+        // 2e joueur, dans la fenetre d'ex aequo : la coroutine ci-dessous n'a pas encore tranche.
+        if (!decided)
+        {
+            decided = true;
+            HandleTie(firstReacher, player);
+            return;
+        }
+
+        // Decision deja prise (victoire declaree) : le joueur qui restait a fini a temps,
+        // deja fige par GoalDoorNew, mais reste une defaite (arrive 2e apres la fenetre)
+        // donc meme ecran YOU LOSE que l'elimination forcee.
         if (player == pendingLoser)
         {
             pendingLoser = null;
             ShowLoseScreen(player);
         }
+    }
+
+    private IEnumerator DecideWinnerAfterWindow(GameObject player)
+    {
+        yield return new WaitForSeconds(tieWindow);
+
+        // L'autre joueur est arrive entre-temps (dans la fenetre) : deja tranche en ex aequo.
+        if (decided) yield break;
+
+        decided = true;
+        Winner = player;
+        Debug.Log($"[MultiRace] {player.name} gagne la course");
+
+        PlayerScreenSide winnerScreenSide = player.GetComponent<PlayerScreenSide>();
+        PlayerScreenSide.Side winnerSide = winnerScreenSide != null ? winnerScreenSide.side : PlayerScreenSide.Side.Left;
+        MultiMatchScore.AddPoint(winnerSide);
+
+        ShowHalfScreenMessage(player, "VictoryScreenCanvas", "VictoryText", "VICTORY");
+
+        OnRaceWon?.Invoke(player);
+
+        pendingLoser = FindTheOtherPlayer(player);
+        if (pendingLoser != null)
+            StartCoroutine(LoseCountdownCoroutine(pendingLoser));
+    }
+
+    // Ex aequo : les deux joueurs ont touche la porte a moins de tieWindow d'intervalle.
+    // Aucun point au score (ni AddPoint, ni Winner), meme ecran "EX AEQUO" des deux cotes.
+    private void HandleTie(GameObject playerA, GameObject playerB)
+    {
+        Debug.Log($"[MultiRace] Ex aequo entre {playerA.name} et {playerB.name}");
+
+        ShowHalfScreenMessage(playerA, "TieScreenCanvas", "TieText", "EX AEQUO");
+        ShowHalfScreenMessage(playerB, "TieScreenCanvas", "TieText", "EX AEQUO");
+
+        // Un seul redemarrage possible pour toute la course : un seul appel suffit.
+        StartCoroutine(RestartOnButtonCoroutine());
     }
 
     private GameObject FindTheOtherPlayer(GameObject winner)
