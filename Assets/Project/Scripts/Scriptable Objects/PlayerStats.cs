@@ -144,6 +144,10 @@ public class PlayerStats : ScriptableObject
     public float shoveKnockbackForce = 6.5f;
     [Tooltip("Duree pendant laquelle l'autre joueur subit le knockback (mouvement coupe)")]
     public float shoveStunDuration = 0.4f;
+    [Tooltip("Cout en stamina de la bousculade (bouton d'attaque sans balai equipe)")]
+    public float shoveStaminaCost = 15f;
+    [Tooltip("Duree d'immobilisation de celui qui bousculade (empeche le spam)")]
+    public float shoveActionDuration = 0.5f;
 
     [Header("FORCE")]
     [Tooltip("Force globale du personnage (influe damage)")]

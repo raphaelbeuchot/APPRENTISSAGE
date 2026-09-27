@@ -11,6 +11,7 @@ public class BroomAttackSystem : MonoBehaviour
     private PlayerHealth health;
     private PlayerPhysicsMovement movement;
     private AudioSource audioSource;
+    private PlayerLoadout loadout;
 
     [Header("Impact Effects")]
     [SerializeField] private GameObject[] broomImpactEffects;
@@ -33,6 +34,7 @@ public class BroomAttackSystem : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         health = GetComponent<PlayerHealth>();
         movement = GetComponent<PlayerPhysicsMovement>();
+        loadout = GetComponent<PlayerLoadout>();
         animator = GetComponentInChildren<Animator>();
 
         audioSource = GetComponent<AudioSource>();
@@ -46,17 +48,31 @@ public class BroomAttackSystem : MonoBehaviour
 
 
         bool broomPressed = movement != null ? movement.InputBroomAttackPressed : PlayerInputManager.Instance.BroomAttackPressed;
-        if (broomPressed && CanAttack())
+        if (!broomPressed) return;
+
+        // Meme bouton, deux effets : balai si equipe, bousculade sinon (pas deux actions
+        // differentes sur deux boutons pour un effet similaire, cf. discussion bousculade/balai).
+        bool hasBroom = loadout == null || loadout.hasBroom;
+
+        if (hasBroom)
         {
-            StartCoroutine(PerformBroomAttack());
+            if (CanAttack())
+                StartCoroutine(PerformBroomAttack());
+        }
+        else
+        {
+            if (CanShove())
+                StartCoroutine(PerformShove());
         }
     }
 
-    bool CanAttack()
+    // Gardes communes au balai et a la bousculade (le joueur ne peut faire ni l'un ni l'autre
+    // dans ces etats), independamment du cout en stamina propre a chaque action.
+    bool CanAct()
     {
         if (isGrabbed)
         {
-            Debug.Log("Cannot broom attack: player is grabbed!");
+            Debug.Log("Cannot attack: player is grabbed!");
             return false;
         }
 
@@ -64,39 +80,77 @@ public class BroomAttackSystem : MonoBehaviour
         {
             return false;
         }
+
+        if (isAttacking)
+        {
+            Debug.Log("Cannot attack: already attacking");
+            return false;
+        }
+
+        if (health != null && health.IsDead())
+        {
+            Debug.Log("Cannot attack: player is dead");
+            return false;
+        }
+
+        if (movement != null && !movement.enabled)
+        {
+            Debug.Log("Cannot attack: movement disabled");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool CanAttack()
+    {
+        if (!CanAct()) return false;
+
         // Pas de balai bas en multi (InputBroomLowActive vaut false hors singleton) : voir PlayerPhysicsMovement.
         if (movement != null && movement.InputBroomLowActive)
         {
             return false;
         }
-        // CHECK STAMINA
+
         if (movement != null && movement.GetCurrentStamina() < stats.broomStaminaCost)
         {
             Debug.Log("Cannot broom attack: not enough stamina!");
             return false;
         }
 
-        
+        return true;
+    }
 
-        if (isAttacking)
-        {
-            Debug.Log("Cannot broom attack: already attacking");
-            return false;
-        }
+    bool CanShove()
+    {
+        if (!CanAct()) return false;
 
-        if (health != null && health.IsDead())
+        if (movement != null && movement.GetCurrentStamina() < stats.shoveStaminaCost)
         {
-            Debug.Log("Cannot broom attack: player is dead");
-            return false;
-        }
-
-        if (movement != null && !movement.enabled)
-        {
-            Debug.Log("Cannot broom attack: movement disabled");
+            Debug.Log("Cannot shove: not enough stamina!");
             return false;
         }
 
         return true;
+    }
+
+    IEnumerator PerformShove()
+    {
+        isAttacking = true;
+
+        if (movement != null)
+        {
+            movement.ExitCrouch();
+
+            float currentStamina = movement.GetCurrentStamina();
+            movement.UpdateStamina(currentStamina - stats.shoveStaminaCost);
+
+            movement.TryShove(transform.forward);
+        }
+
+        yield return new WaitForSeconds(stats.shoveActionDuration);
+
+        isAttacking = false;
     }
 
     IEnumerator PerformBroomAttack()
@@ -294,6 +348,21 @@ public class BroomAttackSystem : MonoBehaviour
                 continue;
 
             targetMovement.ApplyKnockback(dirToTarget * stats.broomPlayerKnockbackForce, stats.broomPlayerStunDuration);
+
+            if (broomImpactEffects != null && broomImpactEffects.Length > 0)
+            {
+                int randomIndex = Random.Range(0, broomImpactEffects.Length);
+                Instantiate(broomImpactEffects[randomIndex], hit.bounds.center, Quaternion.identity);
+            }
+
+            if (audioSource != null && stats.broomHitSound != null)
+                audioSource.PlayOneShot(stats.broomHitSound);
+
+            // Meme placeholder feedback que la bousculade (TryShove), en attendant une vraie anim d'impact.
+            PlayerDetectionFeedback targetFeedback = hit.GetComponent<PlayerDetectionFeedback>();
+            if (targetFeedback != null)
+                targetFeedback.OnShotBySentinel();
+
             hitSomething = true;
         }
 

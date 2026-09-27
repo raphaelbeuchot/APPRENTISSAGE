@@ -357,7 +357,6 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (InputSprintPressed && CanDash())
         {
             Vector3 dashDir = GetCameraRelativeMovement(moveInput);
-            TryShove(dashDir);
             StartCoroutine(DashCoroutine(dashDir));
         }
     }
@@ -975,10 +974,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
         return true;
     }
 
-    // Multi : au moment de l'input dash, si un autre joueur est dans la portee/l'angle de la bousculade,
-    // lui applique un knockback (ApplyKnockback, deja utilise par les attaques ennemies). Inerte en solo
-    // (aucun autre PlayerPhysicsMovement sur le layer Human). Le dash de celui qui pousse n'est pas modifie.
-    void TryShove(Vector3 dashDir)
+    // Multi : declenchee par BroomAttackSystem quand ce joueur n'a pas de balai (bouton d'attaque
+    // -> bousculade). Si un autre joueur est dans la portee/l'angle de la direction donnee, lui
+    // applique un knockback (ApplyKnockback, deja utilise par les attaques ennemies). Inerte en solo
+    // (aucun autre PlayerPhysicsMovement sur le layer Human).
+    public void TryShove(Vector3 facingDir)
     {
         Collider[] hits = Physics.OverlapSphere(transform.position + Vector3.up * 1f, stats.shoveRange, LayerMask.GetMask("Human"));
 
@@ -997,7 +997,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             if (toTarget.sqrMagnitude < 0.0001f) continue;
             toTarget.Normalize();
 
-            if (Vector3.Angle(dashDir, toTarget) > stats.shoveAngle / 2f) continue;
+            if (Vector3.Angle(facingDir, toTarget) > stats.shoveAngle / 2f) continue;
 
             target.ApplyKnockback(toTarget * stats.shoveKnockbackForce, stats.shoveStunDuration);
 
