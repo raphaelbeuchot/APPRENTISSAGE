@@ -151,6 +151,11 @@
 - **Setup de scène (`Level_TestCameraMulti`)** : `Is Active` coché sur `GoalDoorNew`, clé retirée, `multiRaceMode` coché sur le `LevelManager`, un `MultiRaceManager` dans la scène (piège rencontré : sans ce GameObject, la porte se déclenche mais personne n'écoute, aucun log de gagnant).
 - **✅ Validé (2026-09-19)** : la course de bout en bout fonctionne avec les vrais joueurs : porte ouverte, premier arrivé retenu comme gagnant, flux solo non déclenché, perdant jouable, cycle sentinelle arrêté. Solo (victoire, niveau suivant) inchangé.
 
+### Ex æquo — ✅ fait et testé (2026-09-27)
+- **Règle** : si le 2e joueur atteint la porte moins de `tieWindow` (0.5s, réglable sur `MultiRaceManager`) après le 1er, c'est un ex æquo — écran **« EX AEQUO »** sur les deux moitiés d'écran, aucun point ajouté au score (`MultiMatchScore.AddPoint` non appelé), pas de `Winner` déclaré, pas d'élimination forcée pour personne (les deux ont déjà touché la porte à temps).
+- **Implémentation** (`MultiRaceManager.cs`) : le premier arrivant ne déclare plus la victoire tout de suite — une coroutine (`DecideWinnerAfterWindow`) attend `tieWindow` avant de la confirmer. Si le 2e joueur arrive dans ce délai (flag `decided` pas encore posé), bascule sur `HandleTie` à la place. Couvre aussi le cas simultané (les deux `OnTriggerEnter` dans la même frame physique) via le même flag, peu importe l'ordre d'appel.
+- Si personne d'autre n'arrive dans la fenêtre : comportement inchangé, juste retardé de `tieWindow` (imperceptible).
+
 ### Fin de course polish : pose figée, compte à rebours perdant, écran "YOU LOSE" (2026-09-22, commit `52dc26e4`, ✅ testé en jeu le 2026-09-22)
 *Complète/corrige les deux points ci-dessus : `hasBeenReached` ne bloquait qu'un seul passage total (même le 2e joueur ne pouvait plus déclencher la porte), et « pas d'écran de fin » n'est plus vrai.*
 
