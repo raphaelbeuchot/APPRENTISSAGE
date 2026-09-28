@@ -81,6 +81,12 @@ public class BroomAttackSystem : MonoBehaviour
             return false;
         }
 
+        if (movement != null && (movement.IsGroggy() || movement.IsSweeping()))
+        {
+            Debug.Log("Cannot attack: player is swept/groggy");
+            return false;
+        }
+
         if (isAttacking)
         {
             Debug.Log("Cannot attack: already attacking");
@@ -233,6 +239,17 @@ public class BroomAttackSystem : MonoBehaviour
             EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
             if (enemyHealth != null && !enemyHealth.IsDead())
             {
+                GrabAttack grab = enemyHealth.GetComponent<GrabAttack>();
+
+                // Zombie en train de tenir un joueur : on libere l'allie, puis on laisse le
+                // traitement normal du coup de balai continuer ci-dessous (knockback, cooldown
+                // via KnockdownTarget, etc.) - c'est litteralement un coup de balai sur ce
+                // zombie, pas de raison d'avoir un traitement different.
+                if (grab != null && grab.isGrabbing)
+                {
+                    grab.ReleaseByAlly();
+                }
+
                 hitSomething = true;
 
                 if (broomImpactEffects != null && broomImpactEffects.Length > 0)
@@ -254,7 +271,6 @@ public class BroomAttackSystem : MonoBehaviour
 
                 enemyHealth.TakeMeleeDamage(EnemyHealth.AttackType.Broom);
 
-                GrabAttack grab = enemyHealth.GetComponent<GrabAttack>();
                 if (grab != null && grab.isInWindup)
                 {
                     grab.CancelWindup();
@@ -346,6 +362,37 @@ public class BroomAttackSystem : MonoBehaviour
 
             if (Physics.Raycast(rayOriginHuman, (targetPointHuman - rayOriginHuman).normalized, distanceHuman, LayerMask.GetMask("Obstacle")))
                 continue;
+
+            // Joueur touche = le membre "victime" du couple grabbeur+grabbe : on libere,
+            // et le zombie recoit le meme traitement "coup de balai" que s'il avait ete
+            // touche directement (le collider vise ici est celui du joueur, pas du zombie,
+            // donc on ne peut pas laisser tomber dans le traitement normal comme pour l'autre cas).
+            if (targetMovement.grabState == PlayerPhysicsMovement.GrabState.Grabbed)
+            {
+                GrabAttack[] allGrabs = FindObjectsByType<GrabAttack>(FindObjectsSortMode.None);
+                foreach (GrabAttack g in allGrabs)
+                {
+                    if (g.IsHolding(targetMovement))
+                    {
+                        EnemyHealth grabberHealth = g.GetComponent<EnemyHealth>();
+                        Vector3 awayFromPlayer = (g.transform.position - hit.transform.position).normalized;
+                        awayFromPlayer.y = 0f;
+
+                        g.ReleaseByAlly();
+
+                        if (grabberHealth != null)
+                            ApplyBroomKnockdown(grabberHealth, awayFromPlayer);
+
+                        break;
+                    }
+                }
+
+                if (audioSource != null && stats.broomHitSound != null)
+                    audioSource.PlayOneShot(stats.broomHitSound);
+
+                hitSomething = true;
+                continue;
+            }
 
             targetMovement.ApplyKnockback(dirToTarget * stats.broomPlayerKnockbackForce, stats.broomPlayerStunDuration);
 
@@ -471,6 +518,23 @@ public class BroomAttackSystem : MonoBehaviour
         }
 
     }
+    // Meme knockback + cooldown qu'un coup de balai normal sur un zombie (extrait de
+    // OnBroomHit), pour le cas ou le collider touche par le balai est celui du joueur
+    // grabbe et pas celui du zombie (donc pas de fallthrough possible dans le traitement
+    // normal de la boucle zombies).
+    void ApplyBroomKnockdown(EnemyHealth enemyHealth, Vector3 knockbackDir)
+    {
+        Rigidbody targetRb = enemyHealth.GetComponent<Rigidbody>();
+        if (targetRb != null)
+        {
+            float knockbackMult = ModifierApplier.Instance != null ? ModifierApplier.Instance.broomKnockbackMultiplier : 1f;
+            targetRb.AddForce(knockbackDir * stats.broomKnockbackForce * knockbackMult, ForceMode.VelocityChange);
+            enemyHealth.SetKnockbackState(0.8f);
+        }
+
+        StartCoroutine(KnockdownTarget(enemyHealth.gameObject, knockbackDir));
+    }
+
     IEnumerator KnockdownTarget(GameObject target, Vector3 knockbackDirection)
     {
         EnemyAI_AStar zombieAI_AStar = target.GetComponent<EnemyAI_AStar>();

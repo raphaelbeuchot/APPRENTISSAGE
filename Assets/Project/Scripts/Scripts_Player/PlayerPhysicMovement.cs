@@ -90,6 +90,10 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     private bool isGroggyReached = false;
     private bool isGroggyStunned = false;
+    // Se relever en Red Light est puni comme tomber groggy en Red Light (meme regle),
+    // sauf si deja shot pour cette raison durant ce Red Light precis (pas de double peine).
+    // Remis a false a chaque changement d'etat du cycle.
+    private bool wasShotThisRedLight = false;
 
     // Stamina runtime
     private float currentStamina;
@@ -140,6 +144,21 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private void InputForceBroomLowOff()
     {
         if (localInput == null) PlayerInputManager.Instance.ForceBroomLowOff();
+    }
+
+    void OnEnable()
+    {
+        SentinelCycleManager.OnCycleChanged += HandleCycleChangedForRedLightPunish;
+    }
+
+    void OnDisable()
+    {
+        SentinelCycleManager.OnCycleChanged -= HandleCycleChangedForRedLightPunish;
+    }
+
+    void HandleCycleChangedForRedLightPunish(SentinelCycleManager.GameState state)
+    {
+        wasShotThisRedLight = false;
     }
 
     void Awake()
@@ -232,6 +251,16 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (isGroggy && isGroggyReached && !isSweeping && !isGroggyStunned && InputSprintPressed && standUpCoroutine == null)
         {
             standUpCoroutine = StartCoroutine(StandUpCoroutine());
+
+            // Se relever en Red Light = puni comme tomber groggy en Red Light, sauf si deja
+            // shot pour cette raison durant ce meme Red Light (pas de double peine). Delai
+            // volontaire (pas instantane au press) : sinon pas le temps de voir le joueur
+            // amorcer sa relevee avant d'etre repris.
+            if (gameManager != null && gameManager.IsInRedLight() && !wasShotThisRedLight)
+            {
+                wasShotThisRedLight = true;
+                StartCoroutine(DelayedRedLightStandUpPunish());
+            }
         }
 
         if (InputCrouchPressed && (pauseMenuUI == null || !pauseMenuUI.IsPaused()))
@@ -520,6 +549,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         if (gameManager != null && gameManager.IsInRedLight())
         {
             isGroggyStunned = true;
+            wasShotThisRedLight = true;
             gameManager.ExecutePlayerShotOnGroggy(this);
             StartCoroutine(GroggyStunCoroutine());
         }
@@ -536,6 +566,21 @@ public class PlayerPhysicsMovement : MonoBehaviour
         isGroggyStunned = false;
         isGroggyReached = true;
         EnterGroggyState();
+    }
+
+    IEnumerator DelayedRedLightStandUpPunish()
+    {
+        yield return new WaitForSeconds(1f);
+
+        if (!isGroggy) yield break; // deja debout (relevee terminee avant le delai) ou mort entre-temps
+        if (gameManager == null || !gameManager.IsInRedLight()) yield break; // plus en Red Light, pas puni
+
+        // Ne touche pas a StandUpCoroutine ni a l'animator : l'interrompre ici (EnterGroggyState)
+        // desynchronise l'animator (reste a mi-chemin de l'anim StandUp, plus jamais capable de
+        // retransitionner correctement) et bloque le joueur debout pour de bon. Les degats/feedback
+        // suffisent comme punition ; si ca tue, DeathSequence + MultiRespawn gerent deja la suite
+        // (ResetSweepGroggyState stoppe la coroutine fantome au respawn).
+        gameManager.ExecutePlayerShotOnGroggy(this);
     }
 
     
@@ -870,6 +915,24 @@ public class PlayerPhysicsMovement : MonoBehaviour
     public bool IsGroggyStunned()
     {
         return isGroggyStunned;
+    }
+
+    // Multi : si le joueur meurt pendant Sweep/Groggy/StandUp/GroggyStun, la coroutine en
+    // cours continue de tourner en arriere-plan - desactiver le composant (DeathSequence)
+    // n'arrete pas ses coroutines deja lancees. Sans ca, elle finit par ecrire un etat perime
+    // (canMove=false, isGroggy=true...) par-dessus le joueur deja respawn, qui reste alors
+    // bloque (l'animator n'est plus dans le bon etat pour rejouer StandUp). A appeler au respawn.
+    public void ResetSweepGroggyState()
+    {
+        StopAllCoroutines();
+
+        isSweeping = false;
+        isSweepImmune = false;
+        isGroggy = false;
+        isGroggyReached = false;
+        isGroggyStunned = false;
+        wasShotThisRedLight = false;
+        standUpCoroutine = null;
     }
 
    

@@ -95,7 +95,11 @@ public class MultiRespawn : MonoBehaviour
         if (movement != null)
         {
             // Un solo recharge la scene (etat neuf) ; ici on reutilise l'objet, donc on remet a zero
-            // ce que la mort n'a pas annule : la glace (pas de OnCollisionExit quand le collider est coupe) et l'accroupi.
+            // ce que la mort n'a pas annule : la glace (pas de OnCollisionExit quand le collider est coupe),
+            // l'accroupi, et une coroutine sweep/groggy/standup qui aurait continue de tourner en fond
+            // pendant le ragdoll (cf. ResetSweepGroggyState) - sinon elle ecrase l'etat fraichement pose
+            // ci-dessous quand elle se termine, et le joueur reste bloque.
+            movement.ResetSweepGroggyState();
             movement.SetSlippery(false, 0f, 0f, 0f);
             movement.ExitCrouch();
             movement.ResetAllInputs();

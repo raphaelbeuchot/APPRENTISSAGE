@@ -148,6 +148,34 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     public bool IsAttacking() => isGrabbing;
     public bool IsInSpecialState() => isInBourradeDuration || isInBourradeCooldown || isInWindup;
     public bool IsGrabbing() => isGrabbing;
+    public bool IsHolding(PlayerPhysicsMovement p) => isGrabbing && player == p;
+
+    // Liberation par un allie (balai sur le zombie OU sur le joueur tenu, cf. discussion :
+    // le couple grabbeur+grabbe compte comme une seule cible). Sortie franche, pas de
+    // bourrade ni de recoil - EndGrab() ne convient pas ici : appele depuis l'exterieur,
+    // GrabCoroutine continuerait de tourner (et recolle le zombie sur le joueur chaque frame).
+    // ForceStop() coupe reellement la coroutine.
+    // Ne gere que la fin d'etat : le knockback/cooldown "impact de balai" est applique par
+    // l'appelant (BroomAttackSystem), qui possede deja le traitement d'un coup de balai normal
+    // sur un zombie - pas de bourrade ici, on reste dans le vocabulaire du balai.
+    public void ReleaseByAlly()
+    {
+        if (!isGrabbing) return;
+
+        PlayerPhysicsMovement freedPlayer = player;
+
+        ForceStop();
+
+        // Le zombie reagit deja (knockback + KnockdownTarget, cote appelant). Sans ca le
+        // joueur libere ne montre rien du tout - meme feedback placeholder que la bousculade
+        // et le coup de balai joueur-joueur (pas d'anim dediee pour l'instant).
+        if (freedPlayer != null)
+        {
+            PlayerDetectionFeedback feedback = freedPlayer.GetComponent<PlayerDetectionFeedback>();
+            if (feedback != null)
+                feedback.OnShotBySentinel();
+        }
+    }
 
     // Fige la victime (le joueur poursuivi par cet ennemi) : en multi ce n'est pas
     // forcement le premier joueur de la scene. Ne re-latch pas en plein grab.
@@ -686,6 +714,9 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         isInBourradeDuration = false;
         isInBourradeCooldown = false;
 
+        if (playerRb != null)
+            playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
         if (enemyRb != null)
         {
             enemyRb.linearVelocity = Vector3.zero;
@@ -696,6 +727,12 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             player.grabState = PlayerPhysicsMovement.GrabState.None;
 
         if (playerMelee) playerMelee.OnGrabEnd();
+
+        if (player != null)
+        {
+            BroomAttackSystem playerBroom = player.GetComponent<BroomAttackSystem>();
+            if (playerBroom) playerBroom.OnGrabEnd();
+        }
 
         Debug.Log(gameObject.name + " > ForceStop executed, back to normal");
     }
