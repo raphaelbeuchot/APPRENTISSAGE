@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-4031376221919268796
+--- !u!114 &-1813104569315607838
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20,8 +20,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Lamp_Mat 1
-  m_Shader: {fileID: -6465566751694194690, guid: b74be011fc16bfc4f82f9faa9fb55796, type: 3}
+  m_Name: Lava_Temp
+  m_Shader: {fileID: -6465566751694194690, guid: 36371e3f412b0634892308ad57683e15, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -51,15 +51,24 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Alpha: 0.85
-    - _CellDensity: 5
-    - _FresnelPower: 4.3
+    - _Alpha: 0.115
+    - _CellDensity: 2.58
+    - _FresnelPower: -0.73
+    - _GlowSize: -0.8
+    - _Lava_Size: 0.6
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _SpeedSine: 0.25
-    - _VoronoiSpeed: 2
+    - _SpeedSine: 2.41
+    - _Thickness: -0.95
+    - _Tourbillon: 6
+    - _VitesseTourbillon: 0.35
+    - _Vitesse_Details: 0.5
+    - _VoronoiAngleOffsetSpeed: 1
+    - _VoronoiSpeed: 0.1
     m_Colors:
-    - _Color: {r: 2.1185472, g: 0.83240217, b: 0, a: 1}
-    - _OffsetSpeed: {r: 0.25, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 0.66852045, b: 0.08018869, a: 1}
+    - _Details_Range: {r: 1, g: 3.5, b: 0, a: 0}
+    - _Glow: {r: 33.89676, g: 16.594748, b: 0, a: 1}
+    - _Noise_Size: {r: 14.52, g: 15, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
