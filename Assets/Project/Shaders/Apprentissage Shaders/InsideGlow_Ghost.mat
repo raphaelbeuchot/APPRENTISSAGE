@@ -7,13 +7,13 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: InsideGlow
-  m_Shader: {fileID: -6465566751694194690, guid: c97cd5fbe9354c540ae4f9d817839a1b, type: 3}
+  m_Name: InsideGlow_Ghost
+  m_Shader: {fileID: -6465566751694194690, guid: acd4b06ab127ce54ebbee1e6c63c3b6d, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
-  m_LightmapFlags: 2
+  m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
@@ -38,14 +38,18 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _GlowRadius: 0.53
+    - _Effet_de_Bord: 0.54
+    - _GlowRadius: 0.94
+    - _Offset_Vertical_Glow: 0
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _SpeedSine: 2.2
     m_Colors:
-    - _Color: {r: 0.65157473, g: 4.630545, b: 5.6568537, a: 1}
+    - _Color: {r: 102.75575, g: 58.6049, b: 11.83574, a: 1}
+    - _InsideGlowColor: {r: 0, g: 1.9766746, b: 0.9345369, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &4521823688889334512
+--- !u!114 &5782108241518095527
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
