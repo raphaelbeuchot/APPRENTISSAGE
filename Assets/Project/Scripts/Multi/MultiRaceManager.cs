@@ -24,6 +24,8 @@ public class MultiRaceManager : MonoBehaviour
     [SerializeField] private float restartPromptDelay = 2f;
     [Tooltip("Si le 2e joueur atteint la porte moins de X secondes apres le 1er, c'est un ex aequo : aucun point, ecran different pour les deux.")]
     [SerializeField] private float tieWindow = 0.5f;
+    [Tooltip("Nombre de manches a gagner pour remporter le match (First to X). En attendant un menu d'options, se regle ici.")]
+    [SerializeField] private int targetScore = 10;
 
     public GameObject Winner { get; private set; }
     public event Action<GameObject> OnRaceWon;
@@ -32,6 +34,10 @@ public class MultiRaceManager : MonoBehaviour
     private bool decided;
     private GameObject pendingLoser;
     private AudioSource audioSource;
+    private bool matchOver;
+    private PlayerScreenSide.Side lastWinnerSide;
+    private GameObject victoryCanvas;
+    private GameObject loseCanvas;
 
     private void Start()
     {
@@ -101,8 +107,10 @@ public class MultiRaceManager : MonoBehaviour
         PlayerScreenSide winnerScreenSide = player.GetComponent<PlayerScreenSide>();
         PlayerScreenSide.Side winnerSide = winnerScreenSide != null ? winnerScreenSide.side : PlayerScreenSide.Side.Left;
         MultiMatchScore.AddPoint(winnerSide);
+        matchOver = MultiMatchScore.GetScore(winnerSide) >= targetScore;
+        lastWinnerSide = winnerSide;
 
-        ShowHalfScreenMessage(player, "VictoryScreenCanvas", "VictoryText", "VICTORY");
+        victoryCanvas = ShowHalfScreenMessage(player, "VictoryScreenCanvas", "VictoryText", "VICTORY");
 
         OnRaceWon?.Invoke(player);
 
@@ -167,13 +175,14 @@ public class MultiRaceManager : MonoBehaviour
 
     private void ShowLoseScreen(GameObject loser)
     {
-        ShowHalfScreenMessage(loser, "LoseScreenCanvas", "LoseText", "YOU LOSE");
+        loseCanvas = ShowHalfScreenMessage(loser, "LoseScreenCanvas", "LoseText", "YOU LOSE");
         StartCoroutine(RestartOnButtonCoroutine());
     }
 
     // Overlay noir alpha 0.5 + texte, sur la moitie d'ecran du joueur concerne (PlayerScreenSide,
     // defaut Left si absent). Partage entre l'ecran VICTORY (gagnant) et YOU LOSE (perdant).
-    private void ShowHalfScreenMessage(GameObject player, string canvasName, string textName, string message)
+    // Retourne le canvas cree pour que l'appelant puisse le detruire plus tard (ecran MATCH WON).
+    private GameObject ShowHalfScreenMessage(GameObject player, string canvasName, string textName, string message)
     {
         PlayerScreenSide screenSide = player.GetComponent<PlayerScreenSide>();
         bool isRight = screenSide != null && screenSide.side == PlayerScreenSide.Side.Right;
@@ -211,14 +220,21 @@ public class MultiRaceManager : MonoBehaviour
         text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;
         text.raycastTarget = false;
+
+        return canvasObj;
     }
 
     // A (croix Sud manette) relance le niveau depuis l'ecran YOU LOSE, apres un delai (evite un
     // appui accidentel juste apres l'affichage). A est aussi le bouton Sprint : on attend qu'il
     // soit relache avant de recharger la scene, sinon Sprint pourrait se redeclencher tout seul
     // des l'activation des inputs dans la scene rechargee (bouton toujours physiquement enfonce).
+    // Si le match est fini (targetScore atteint), un ecran MATCH WON s'ajoute par-dessus et le
+    // score repart a zero avant le rechargement (sinon le match suivant serait deja gagne d'avance).
     private IEnumerator RestartOnButtonCoroutine()
     {
+        if (matchOver)
+            ShowMatchWonScreen();
+
         yield return new WaitForSeconds(restartPromptDelay);
 
         while (!RestartButtonPressed())
@@ -227,7 +243,56 @@ public class MultiRaceManager : MonoBehaviour
         while (RestartButtonHeld())
             yield return null;
 
+        if (matchOver)
+            MultiMatchScore.ResetMatch();
+
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    // Ecran plein ecran quand le match est gagne, pas juste la manche. Remplace les ecrans
+    // VICTORY/YOU LOSE de la manche qui vient de sceller le match (detruits ici) plutot que de
+    // s'afficher par-dessus, et annonce le camp gagnant (lastWinnerSide, fixe au moment ou
+    // matchOver passe a true dans DecideWinnerAfterWindow).
+    private void ShowMatchWonScreen()
+    {
+        if (victoryCanvas != null) Destroy(victoryCanvas);
+        if (loseCanvas != null) Destroy(loseCanvas);
+
+        string winnerLabel = lastWinnerSide == PlayerScreenSide.Side.Left ? "LEFT" : "RIGHT";
+
+        GameObject canvasObj = new GameObject("MatchWonCanvas");
+        Canvas canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 200;
+        CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+
+        GameObject bgObj = new GameObject("Background");
+        bgObj.transform.SetParent(canvasObj.transform, false);
+        RectTransform bgRect = bgObj.AddComponent<RectTransform>();
+        bgRect.anchorMin = Vector2.zero;
+        bgRect.anchorMax = Vector2.one;
+        bgRect.offsetMin = Vector2.zero;
+        bgRect.offsetMax = Vector2.zero;
+        Image bg = bgObj.AddComponent<Image>();
+        bg.color = new Color(0f, 0f, 0f, 0.5f);
+
+        GameObject textObj = new GameObject("MatchWonText");
+        textObj.transform.SetParent(bgObj.transform, false);
+        RectTransform textRect = textObj.AddComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+
+        TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
+        if (endScreenFont != null) text.font = endScreenFont;
+        text.text = winnerLabel + " WINS THE MATCH";
+        text.fontSize = 120f;
+        text.alignment = TextAlignmentOptions.Center;
+        text.color = Color.white;
+        text.raycastTarget = false;
     }
 
     private bool RestartButtonPressed()
