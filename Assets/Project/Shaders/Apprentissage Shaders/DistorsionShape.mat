@@ -24,6 +24,14 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _DefautSprite:
+        m_Texture: {fileID: 10300, guid: 0000000000000000f000000000000000, type: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Texture2D:
+        m_Texture: {fileID: 2800000, guid: b533d4d474ee0f54db68f941853b42f8, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -38,9 +46,18 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _Distorsion_Strength: 1
     - _QueueControl: 0
     - _QueueOffset: 0
-    m_Colors: []
+    - _Speed: 1
+    - _TwirlSpeed: 1
+    - _Twirl_Strength: 2.64
+    m_Colors:
+    - _Color: {r: 0.7735849, g: 0.4964962, b: 0.16420436, a: 1}
+    - _GlowColor: {r: 1.8491722, g: 3.517606, b: 0.4314045, a: 1}
+    - _Speed: {r: 0, g: -0.1, b: 0, a: 0}
+    - _Twirl_Speed: {r: 0.1, g: -0.2, b: 0, a: 0}
+    - _speed: {r: 0.1, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &1722452724749715721
