@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1000000002}
+  - component: {fileID: 1000000003}
+  m_Layer: 0
+  m_Name: EnemyHealthBarWorld
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b3e9f1a4d2c4f6e8b0a5c3d7e9f1b24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealthBarPipsWorldUI
+  healthFill: {fileID: 0}
+  damagePreviewFill: {fileID: 0}
+  background: {fileID: 0}
+  bonusBarFill: {fileID: 0}
+  bonusBarDamage: {fileID: 0}
+  bonusBarContainer: {fileID: 0}
+  mainBarContainer: {fileID: 0}
+  baseContainerWidth: 200
+  baseContainerHeight: 10
+  outline: {fileID: 0}
+  damagePreviewDelay: 0.2
+  damagePreviewSpeed: 0.8
+  pipDiameter: 0.3
+  outlineExtra: 0.05
+  lockOutlineExtra: 0.12
+  overlapRatio: 0.5
+  healthPerPip: 50
+  pipSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  lockOutlineSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  pipColorActive: {r: 1, g: 0.5, b: 0, a: 1}
+  pipColorChase: {r: 1, g: 0.2, b: 0, a: 1}
+  outlineColorChase: {r: 1, g: 0, b: 0, a: 1}
+  bonusColorActive: {r: 0.5, g: 0, b: 1, a: 1}
+  outlineColorDefault: {r: 0, g: 0, b: 0, a: 1}
+  lockOutlineColor: {r: 1, g: 1, b: 1, a: 1}
+  damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
+  damageFlashDuration: 0.15
+  damageFadeDuration: 0.4
+  targetCamera: {fileID: 0}
+  minScaleDistance: 15
+  minScaleFloor: 0.1

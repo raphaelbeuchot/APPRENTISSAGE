@@ -44,12 +44,13 @@ public class BrightEyesController : MonoBehaviour
             EnemyHealthBarManager manager = FindFirstObjectByType<EnemyHealthBarManager>();
             if (manager != null && manager.healthBarPrefab != null)
             {
-                GameObject barObj = Instantiate(manager.healthBarPrefab, manager.canvas.transform);
-                healthBarUI = barObj.GetComponent<EnemyHealthBarUI>();
-
-                if (healthBarUI != null)
+                // Une seule copie prise ici (bars[0]) : BrightEyesController reste sur un seul
+                // joueur pour l'instant (cf. MULTIJOUEUR_LOCAL.md, "a adapter seulement si un
+                // niveau multi l'utilise"), pas encore adapte comme EnemyHealth.
+                System.Collections.Generic.List<EnemyHealthBarUI> bars = manager.RegisterEnemy(transform, stats.maxHealth, stats.maxHealth);
+                if (bars.Count > 0)
                 {
-                    manager.RegisterEnemy(transform, healthBarUI);
+                    healthBarUI = bars[0];
                     healthBarUI.UpdateHealth(stats.maxHealth, stats.maxHealth, stats.maxHealth);
                     healthBarUI.gameObject.SetActive(false);
                 }

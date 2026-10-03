@@ -229,4 +229,31 @@ public class EnemyHealthBarUI : MonoBehaviour
         if (outline != null)
             outline.gameObject.SetActive(locked);
     }
+
+    // Comportement legacy : Canvas Screen Space Overlay, converti via la camera/canvas fournis
+    // par EnemyHealthBarManager (une seule camera de reference, limite connue en split-screen).
+    // Les variantes world-space (EnemyHealthBarPipsWorldUI) ignorent camera/canvas et se
+    // positionnent directement dans le monde.
+    public virtual void UpdateWorldPosition(Vector3 worldPosition, Camera screenCamera, Canvas screenCanvas)
+    {
+        if (screenCamera == null || screenCanvas == null) return;
+
+        Vector3 screenPos = screenCamera.WorldToScreenPoint(worldPosition);
+        RectTransform barRect = GetComponent<RectTransform>();
+        if (barRect == null) return;
+
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            screenCanvas.transform as RectTransform,
+            screenPos,
+            null,
+            out localPoint);
+        barRect.localPosition = localPoint;
+    }
+
+    // No-op par defaut : seule EnemyHealthBarPipsUI (et ses variantes) ont un etat "chasse".
+    public virtual void SetChaseOutline(bool isChasing) { }
+
+    // No-op par defaut : seules les variantes world-space (billboard par camera) en ont besoin.
+    public virtual void SetTargetCamera(Camera camera) { }
 }

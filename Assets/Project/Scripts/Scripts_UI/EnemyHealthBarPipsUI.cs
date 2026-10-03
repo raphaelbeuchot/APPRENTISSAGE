@@ -221,7 +221,7 @@ public class EnemyHealthBarPipsUI : EnemyHealthBarUI
             gameObject.SetActive(false);
         fadeCoroutineMain = null;
     }
-    public void SetChaseOutline(bool isChasing)
+    public override void SetChaseOutline(bool isChasing)
     {
         Color targetOutline = isChasing ? outlineColorChase : outlineColorDefault;
         for (int i = 0; i < outlineImages.Count; i++)

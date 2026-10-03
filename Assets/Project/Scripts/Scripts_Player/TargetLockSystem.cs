@@ -193,7 +193,18 @@ public class TargetLockSystem : MonoBehaviour
             return;
         }
 
-        EnemyHealthBarUI healthBar = currentTarget.GetComponent<EnemyHealth>()?.healthBarUI;
+        // EnemyHealth a une copie de pip bar par joueur (multi) : on resout celle assignee a
+        // MON cote d'ecran, pas juste "une" barre au hasard. Les autres types d'ennemis
+        // (Swarm...) n'ont encore qu'une seule copie partagee, voir leurs notes respectives.
+        EnemyHealthBarUI healthBar = null;
+        EnemyHealth targetHealth = currentTarget.GetComponent<EnemyHealth>();
+        if (targetHealth != null && EnemyHealthBarManager.Instance != null)
+        {
+            PlayerScreenSide myScreenSide = GetComponent<PlayerScreenSide>();
+            PlayerScreenSide.Side mySide = myScreenSide != null ? myScreenSide.side : PlayerScreenSide.Side.Left;
+            healthBar = EnemyHealthBarManager.Instance.GetBarForSide(currentTarget, mySide);
+        }
+
         if (healthBar == null)
         {
             SwarmController_AStar swarm = currentTarget.GetComponent<SwarmController_AStar>();

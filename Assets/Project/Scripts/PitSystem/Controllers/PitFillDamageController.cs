@@ -364,7 +364,7 @@ public class PitFillDamageController : MonoBehaviour
         float ticksNeeded = duration / damageTickRate;
         float damagePercentPerTick = 100f / ticksNeeded;
 
-        // LOG AJOUTÉ
+        // LOG AJOUTï¿½
         Debug.Log($"[PitFill COROUTINE] Starting for {go.name}: duration={duration}s, ticks={ticksNeeded}, dmg/tick={damagePercentPerTick}%");
 
         if (showDebugLogs)
@@ -373,20 +373,20 @@ public class PitFillDamageController : MonoBehaviour
 
         while (elapsed < duration)
         {
-            // LOG AJOUTÉ
+            // LOG AJOUTï¿½
             Debug.Log($"[PitFill COROUTINE] {go.name} tick: elapsed={elapsed:F2}s / {duration}s");
 
             // Verifier si l'entite existe toujours
             if (go == null || data.interactable == null)
             {
-                Debug.Log("[PitFill COROUTINE] Entity destroyed, stopping"); // MODIFIÉ
+                Debug.Log("[PitFill COROUTINE] Entity destroyed, stopping"); // MODIFIï¿½
                 yield break;
             }
 
             // Verifier si l'entite peut encore prendre des degats
             if (!data.interactable.CanTakePitDamage())
             {
-                Debug.Log($"[PitFill COROUTINE] {go.name} already dead, stopping"); // MODIFIÉ
+                Debug.Log($"[PitFill COROUTINE] {go.name} already dead, stopping"); // MODIFIï¿½
                 CheckAndDestroyIfDead(data, fillType);
                 yield break;
             }
@@ -401,7 +401,7 @@ public class PitFillDamageController : MonoBehaviour
             // Verifier si mort
             if (!data.interactable.CanTakePitDamage())
             {
-                Debug.Log($"[PitFill COROUTINE] {go.name} died after damage"); // AJOUTÉ
+                Debug.Log($"[PitFill COROUTINE] {go.name} died after damage"); // AJOUTï¿½
                 CheckAndDestroyIfDead(data, fillType);
                 yield break;
             }
@@ -411,7 +411,7 @@ public class PitFillDamageController : MonoBehaviour
             elapsed += damageTickRate;
         }
 
-        // LOG AJOUTÉ
+        // LOG AJOUTï¿½
         Debug.Log($"[PitFill COROUTINE] {go.name} finished loop, force killing");
 
         // Fin de la duree : tuer si toujours vivant
@@ -429,7 +429,7 @@ public class PitFillDamageController : MonoBehaviour
             activeDeathCoroutines.Remove(go);
         }
 
-        // LOG AJOUTÉ
+        // LOG AJOUTï¿½
         Debug.Log($"[PitFill COROUTINE] {go.name} coroutine completed");
     }
     public void ForceRemoveEntity(GameObject go)
@@ -558,7 +558,7 @@ public class PitFillDamageController : MonoBehaviour
 
         Debug.Log(string.Format("[PitFill DEBUG] threshold={0}, multiplier={1}", immunityThreshold, damageMultiplier));
 
-        // Pour empty pit avec trigger à -0.3m, on ajuste le seuil
+        // Pour empty pit avec trigger ï¿½ -0.3m, on ajuste le seuil
         float effectiveThreshold = immunityThreshold - 0.3f; // 3m - 0.3m = 2.7m
 
         if (pitDepth > immunityThreshold)
@@ -566,7 +566,7 @@ public class PitFillDamageController : MonoBehaviour
             float totalDamagePercent = pitDepth * damageMultiplier;
             GameObject go = interactable.GetGameObject();
 
-            // Vérifier si les dégâts vont tuer (pour ragdoll)
+            // Vï¿½rifier si les dï¿½gï¿½ts vont tuer (pour ragdoll)
             EnemyHealth enemyHealth = go.GetComponent<EnemyHealth>();
             bool willDie = false;
 
@@ -577,7 +577,7 @@ public class PitFillDamageController : MonoBehaviour
                 Debug.Log($"[PitFill] {go.name} - Current HP: {currentHealthPercent:F1}%, Damage: {totalDamagePercent:F1}%, WillDie: {willDie}");
             }
 
-            // Activer le ragdoll SEULEMENT si ça va le tuer
+            // Activer le ragdoll SEULEMENT si ï¿½a va le tuer
             if (willDie && enemyHealth != null)
             {
                 enemyHealth.deathByPit = true;
@@ -601,7 +601,7 @@ public class PitFillDamageController : MonoBehaviour
             }
 
                        
-            // APPLIQUER LES DÉGÂTS INSTANTANÉMENT
+            // APPLIQUER LES Dï¿½Gï¿½TS INSTANTANï¿½MENT
             interactable.TakePitDamage(totalDamagePercent, PitDamageType.Fall);
             Debug.Log($"[PitFill] {go.name} took {totalDamagePercent:F1}% fall damage instantly");
 
@@ -631,13 +631,13 @@ public class PitFillDamageController : MonoBehaviour
 
         // SAUVEGARDER les references AVANT le delai (au cas ou le GameObject est detruit)
         EnemyHealth enemyHealth = go.GetComponent<EnemyHealth>();
-        EnemyHealthBarUI healthBarUI = enemyHealth != null ? enemyHealth.healthBarUI : null;
+        bool hadHealthBar = enemyHealth != null;
         Transform enemyTransform = go.transform;
 
         yield return new WaitForSeconds(delay);
 
         // Unregister la healthbar (meme si le GameObject est null maintenant)
-        if (healthBarUI != null)
+        if (hadHealthBar)
         {
             EnemyHealthBarManager manager = FindObjectOfType<EnemyHealthBarManager>();
             if (manager != null)
@@ -662,7 +662,7 @@ public class PitFillDamageController : MonoBehaviour
     }
     private IEnumerator ProgressiveFallDamageCoroutine(GameObject go, FillEntityData data, float totalDamagePercent)
     {
-        // Durée de la mort progressive (ajustable)
+        // Durï¿½e de la mort progressive (ajustable)
         float duration = 1.0f; // 1 seconde pour voir la barre descendre
         float elapsed = 0f;
         float ticksNeeded = duration / damageTickRate;
@@ -685,7 +685,7 @@ public class PitFillDamageController : MonoBehaviour
                 yield break;
             }
 
-            // Appliquer les dégâts progressifs
+            // Appliquer les dï¿½gï¿½ts progressifs
             data.interactable.TakePitDamage(damagePercentPerTick, PitDamageType.Fall);
 
             if (!data.interactable.CanTakePitDamage())

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Pathfinding;
 
 public class EnemyHealth : MonoBehaviour
@@ -57,8 +58,8 @@ public class EnemyHealth : MonoBehaviour
     public event Action<float, float> OnHealthChanged;
     public event System.Action OnTakeDamage;
 
-    // Health bar
-    public EnemyHealthBarUI healthBarUI;
+    // Health bar : une copie par joueur en multi (une seule en solo), voir EnemyHealthBarManager.
+    public List<EnemyHealthBarUI> healthBarUIs = new List<EnemyHealthBarUI>();
     private EnemyHealthBarManager healthBarManager;
 
     // SIMPLIFIE : Spray stun simple
@@ -92,20 +93,38 @@ public class EnemyHealth : MonoBehaviour
     void SetupHealthBar()
     {
         healthBarManager = FindObjectOfType<EnemyHealthBarManager>();
-        if (healthBarManager != null && healthBarManager.canvas != null && healthBarManager.healthBarPrefab != null)
+        if (healthBarManager != null && healthBarManager.healthBarPrefab != null)
         {
-            GameObject barGO = Instantiate(healthBarManager.healthBarPrefab, healthBarManager.canvas.transform);
-            healthBarUI = barGO.GetComponent<EnemyHealthBarUI>();
-            healthBarManager.RegisterEnemy(transform, healthBarUI);
-            healthBarUI.Initialize(GetBaseMaxHealth(), GetMaxHealth());
-            healthBarUI.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
-            healthBarUI.Hide();
+            healthBarUIs = healthBarManager.RegisterEnemy(transform, GetBaseMaxHealth(), GetMaxHealth());
+            UpdateAllHealthBars();
+            foreach (EnemyHealthBarUI bar in healthBarUIs)
+                bar.Hide();
         }
         else
         {
             Debug.LogWarning($"SetupHealthBar failed on {gameObject.name}");
         }
     }
+
+    private void UpdateAllHealthBars()
+    {
+        foreach (EnemyHealthBarUI bar in healthBarUIs)
+        {
+            if (bar != null)
+                bar.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
+        }
+    }
+
+    public void ShowAllHealthBars()
+    {
+        foreach (EnemyHealthBarUI bar in healthBarUIs)
+        {
+            if (bar != null)
+                bar.Show();
+        }
+    }
+
+    public bool HasHealthBars => healthBarUIs.Count > 0;
 
     void SetupDeathEffect()
     {
@@ -305,8 +324,7 @@ public class EnemyHealth : MonoBehaviour
 
 
         OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
-        if (healthBarUI != null)
-            healthBarUI.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
+        UpdateAllHealthBars();
 
         UpdateSpeed();
 
@@ -331,8 +349,7 @@ public class EnemyHealth : MonoBehaviour
 
 
         OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
-        if (healthBarUI != null)
-            healthBarUI.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
+        UpdateAllHealthBars();
 
         UpdateSpeed();
 
@@ -372,8 +389,7 @@ public class EnemyHealth : MonoBehaviour
         OnTakeDamage?.Invoke();
 
         OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
-        if (healthBarUI != null)
-            healthBarUI.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
+        UpdateAllHealthBars();
 
         if (sentinelHitDisplayCoroutine != null)
             StopCoroutine(sentinelHitDisplayCoroutine);
@@ -476,9 +492,10 @@ public class EnemyHealth : MonoBehaviour
         }
 
         EnemyPitInteractable pitInt = GetComponent<EnemyPitInteractable>();
-        if (pitInt != null && pitInt.isFallingInPit && healthBarUI != null)
+        if (pitInt != null && pitInt.isFallingInPit)
         {
-            healthBarUI.Show();
+            foreach (EnemyHealthBarUI bar in healthBarUIs)
+                if (bar != null) bar.Show();
         }
 
         bool isInDeepPit = pitInt != null && pitInt.shouldIgnoreHealthbarDistance;
@@ -680,8 +697,7 @@ public class EnemyHealth : MonoBehaviour
         OnTakeDamage?.Invoke();
 
         OnHealthChanged?.Invoke(currentHealth, GetMaxHealth());
-        if (healthBarUI != null)
-            healthBarUI.UpdateHealth(currentHealth, GetBaseMaxHealth(), GetMaxHealth());
+        UpdateAllHealthBars();
 
         if (sentinelHitDisplayCoroutine != null) StopCoroutine(sentinelHitDisplayCoroutine);
         sentinelHitDisplayCoroutine = StartCoroutine(SentinelHitDisplayCoroutine());

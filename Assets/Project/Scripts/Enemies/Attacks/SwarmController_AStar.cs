@@ -143,11 +143,15 @@ public class SwarmController_AStar : MonoBehaviour
         EnemyHealthBarManager manager = FindObjectOfType<EnemyHealthBarManager>();
         if (manager != null)
         {
-            GameObject barGO = Instantiate(manager.healthBarPrefab, manager.transform);
-            healthBarUI = barGO.GetComponent<EnemyHealthBarUI>();
-            manager.RegisterEnemy(transform, healthBarUI);
-            healthBarUI.UpdateHealth(currentHealth, stats.maxHealth, stats.maxHealth);
-            healthBarUI.gameObject.SetActive(false);
+            // Une seule copie prise ici (bars[0]) : pas encore adapte par joueur, voir la note
+            // equivalente dans BrightEyesController.SetupHealthBar().
+            System.Collections.Generic.List<EnemyHealthBarUI> bars = manager.RegisterEnemy(transform, stats.maxHealth, stats.maxHealth);
+            if (bars.Count > 0)
+            {
+                healthBarUI = bars[0];
+                healthBarUI.UpdateHealth(currentHealth, stats.maxHealth, stats.maxHealth);
+                healthBarUI.gameObject.SetActive(false);
+            }
         }
     }
 

@@ -73,9 +73,9 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
             {
                 audioSource2D.PlayOneShot(enemyHealth.stats.fallSound);
             }
-            if (enemyHealth != null && enemyHealth.healthBarUI != null)
+            if (enemyHealth != null && enemyHealth.HasHealthBars)
             {
-                enemyHealth.healthBarUI.Show();
+                enemyHealth.ShowAllHealthBars();
                 Debug.Log(string.Format("[EnemyPit] Forced healthbar show for {0} on Empty pit entry", name));
             }
         }
@@ -154,14 +154,14 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         if (!CanTakePitDamage()) return;
 
         // FORCER l'affichage de la healthbar pour les degats de pit
-        if (enemyHealth != null && enemyHealth.healthBarUI != null)
+        if (enemyHealth != null && enemyHealth.HasHealthBars)
         {
             Debug.Log($"[EnemyPit] Forcing healthbar show for {name}");
-            enemyHealth.healthBarUI.Show();
+            enemyHealth.ShowAllHealthBars();
         }
         else
         {
-            Debug.LogWarning($"[EnemyPit] Cannot show healthbar - enemyHealth: {enemyHealth != null}, healthBarUI: {enemyHealth?.healthBarUI != null}");
+            Debug.LogWarning($"[EnemyPit] Cannot show healthbar - enemyHealth: {enemyHealth != null}, healthBarUI: {enemyHealth != null && enemyHealth.HasHealthBars}");
         }
 
         float finalDamage;
@@ -246,8 +246,8 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
             isFallingInPit = true;
             if (enemyHealth != null && enemyHealth.stats.fallSound != null)
                 audioSource2D.PlayOneShot(enemyHealth.stats.fallSound);
-            if (enemyHealth != null && enemyHealth.healthBarUI != null)
-                enemyHealth.healthBarUI.Show();
+            if (enemyHealth != null && enemyHealth.HasHealthBars)
+                enemyHealth.ShowAllHealthBars();
         }
         else if (fillType == SplinePitZone.FillType.Water)
         {
