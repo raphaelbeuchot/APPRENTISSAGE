@@ -32,6 +32,11 @@ public class CoinSpawner : MonoBehaviour
         InvokeRepeating(nameof(SpawnCoin), 0f, spawnInterval);
     }
 
+    public void StopSpawning()
+    {
+        CancelInvoke(nameof(SpawnCoin));
+    }
+
     private void SpawnCoin()
     {
         Bounds bounds = spawnArea.bounds;

@@ -15,6 +15,8 @@ public class MultiLevelStart : MonoBehaviour
     [SerializeField] private CountdownManager countdownManager;
     [SerializeField] private MetalShutter metalShutter;
     [SerializeField] private GameManager gameManager;
+    [Tooltip("Optionnel : present seulement en scene Coin Race. Son chrono demarre au lever du rideau.")]
+    [SerializeField] private MultiCoinRaceManager coinRaceManager;
 
     [Header("Texte d'attente")]
     [SerializeField] private string readyMessage = "Get ready";
@@ -83,6 +85,9 @@ public class MultiLevelStart : MonoBehaviour
             metalShutter.StartOpening();
         else
             Debug.LogWarning("[MultiStart] Pas de MetalShutter dans la scene");
+
+        if (coinRaceManager != null)
+            coinRaceManager.StartRound();
 
         StartCoroutine(StartGameAfterDelay());
     }

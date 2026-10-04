@@ -16,6 +16,13 @@ public class CoinPickup : MonoBehaviour
 
     private bool collected;
 
+    // Permet au tas de pieces largue a la mort (PlayerCoinWallet) de porter un montant
+    // different de la valeur par defaut du prefab (value, utilisee par le spawn normal).
+    public void SetValue(int amount)
+    {
+        value = amount;
+    }
+
     private void Start()
     {
         GetComponent<Collider>().isTrigger = true;

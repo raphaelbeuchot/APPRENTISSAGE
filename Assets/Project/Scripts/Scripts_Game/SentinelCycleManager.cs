@@ -13,6 +13,8 @@ public class SentinelCycleManager : MonoBehaviour
     [Header("Dynamic Cycle Difficulty")]
     [Tooltip("Plus le chiffre est grand, moins la duree des cycles peut reduire. 0.3f = duree reduite jusqu'a 70%")]
     [SerializeField, Range(0.1f, 1f)] private float minCycleDurationMultiplier = 0.3f;
+    [Tooltip("Coin Race : neutralise la pression basee sur la distance (sans porte, le calcul se replierait sur la distance a la sentinelle elle-meme, non voulu). Pression plate, duree de base constante. Faux = comportement inchange (solo et course).")]
+    [SerializeField] private bool disableDistancePressure = false;
 
     private float initialPlayerSentinelDistance;
 
@@ -226,6 +228,8 @@ public class SentinelCycleManager : MonoBehaviour
 
     private float GetDistanceFactor()
     {
+        if (disableDistancePressure) return 0f;
+
         float distance = GetAverageDistanceToTarget();
         return Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
     }

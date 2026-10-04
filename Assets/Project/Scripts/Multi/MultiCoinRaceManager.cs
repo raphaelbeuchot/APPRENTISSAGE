@@ -10,6 +10,8 @@ public class MultiCoinRaceManager : MonoBehaviour
     [SerializeField] private float roundDuration = 180f;
     [Tooltip("Optionnel : affiche le temps restant (format MM:SS). Pose et stylise a la main comme le reste du HUD multi.")]
     [SerializeField] private TextMeshProUGUI timerText;
+    [Tooltip("Vide = auto-trouve dans la scene.")]
+    [SerializeField] private CoinSpawner coinSpawner;
 
     private PlayerCoinWallet leftWallet;
     private PlayerCoinWallet rightWallet;
@@ -35,6 +37,14 @@ public class MultiCoinRaceManager : MonoBehaviour
         if (leftWallet == null || rightWallet == null)
             Debug.LogWarning("[MultiCoinRace] Un des deux PlayerCoinWallet n'a pas ete trouve");
 
+        if (coinSpawner == null)
+            coinSpawner = FindFirstObjectByType<CoinSpawner>();
+    }
+
+    // Appele par MultiLevelStart au moment ou le rideau commence a se lever (StartOpening()),
+    // pas au Start() de la scene : le chrono ne doit pas tourner pendant "Get ready"/le rideau ferme.
+    public void StartRound()
+    {
         StartCoroutine(CountdownRoutine());
     }
 
@@ -69,5 +79,28 @@ public class MultiCoinRaceManager : MonoBehaviour
             Debug.Log($"[MultiCoinRace] Left gagne, {leftScore} contre {rightScore}");
         else
             Debug.Log($"[MultiCoinRace] Right gagne, {rightScore} contre {leftScore}");
+
+        if (coinSpawner != null)
+            coinSpawner.StopSpawning();
+
+        SentinelCycleManager sentinelCycle = FindFirstObjectByType<SentinelCycleManager>();
+        if (sentinelCycle != null)
+            sentinelCycle.StopCycle();
+
+        if (leftWallet != null) FreezePlayer(leftWallet.gameObject);
+        if (rightWallet != null) FreezePlayer(rightWallet.gameObject);
+    }
+
+    // Meme principe que GoalDoorNew.ReachGoal() : figer le transform ET l'animation,
+    // sinon l'Animator continue de jouer la derniere intention (ex: course sur place).
+    private static void FreezePlayer(GameObject player)
+    {
+        PlayerPhysicsMovement movement = player.GetComponent<PlayerPhysicsMovement>();
+        if (movement != null)
+            movement.enabled = false;
+
+        Animator animator = player.GetComponentInChildren<Animator>();
+        if (animator != null)
+            animator.speed = 0f;
     }
 }
