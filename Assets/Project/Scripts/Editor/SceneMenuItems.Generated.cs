@@ -258,70 +258,77 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/MainMenu.unity");
     }
 
-    [MenuItem("Scene/NIVEAUTESTMECANIQUES", priority = 37)]
+    [MenuItem("Scene/MultiStart", priority = 37)]
+    private static void Open_MultiStart()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        EditorSceneManager.OpenScene("Assets/Project/Scenes/MultiStart.unity");
+    }
+
+    [MenuItem("Scene/NIVEAUTESTMECANIQUES", priority = 38)]
     private static void Open_NIVEAUTESTMECANIQUES()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/NIVEAUTESTMECANIQUES.unity");
     }
 
-    [MenuItem("Scene/OLD/Level_000", priority = 38)]
+    [MenuItem("Scene/OLD/Level_000", priority = 39)]
     private static void Open_OLD_Level_000()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/OLD/Level_000.unity");
     }
 
-    [MenuItem("Scene/OLD/Level_001", priority = 39)]
+    [MenuItem("Scene/OLD/Level_001", priority = 40)]
     private static void Open_OLD_Level_001()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/OLD/Level_001.unity");
     }
 
-    [MenuItem("Scene/OLD/Level_002", priority = 40)]
+    [MenuItem("Scene/OLD/Level_002", priority = 41)]
     private static void Open_OLD_Level_002()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/OLD/Level_002.unity");
     }
 
-    [MenuItem("Scene/OLD/Level_003", priority = 41)]
+    [MenuItem("Scene/OLD/Level_003", priority = 42)]
     private static void Open_OLD_Level_003()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/OLD/Level_003.unity");
     }
 
-    [MenuItem("Scene/OLD/Level_005", priority = 42)]
+    [MenuItem("Scene/OLD/Level_005", priority = 43)]
     private static void Open_OLD_Level_005()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/OLD/Level_005.unity");
     }
 
-    [MenuItem("Scene/OLD/Level_EpervierLoop01", priority = 43)]
+    [MenuItem("Scene/OLD/Level_EpervierLoop01", priority = 44)]
     private static void Open_OLD_Level_EpervierLoop01()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/OLD/Level_EpervierLoop01.unity");
     }
 
-    [MenuItem("Scene/OLD/Level_Tuto01", priority = 44)]
+    [MenuItem("Scene/OLD/Level_Tuto01", priority = 45)]
     private static void Open_OLD_Level_Tuto01()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/OLD/Level_Tuto01.unity");
     }
 
-    [MenuItem("Scene/TutoChoice", priority = 45)]
+    [MenuItem("Scene/TutoChoice", priority = 46)]
     private static void Open_TutoChoice()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/TutoChoice.unity");
     }
 
-    [MenuItem("Scene/WheelOfFortune", priority = 46)]
+    [MenuItem("Scene/WheelOfFortune", priority = 47)]
     private static void Open_WheelOfFortune()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;

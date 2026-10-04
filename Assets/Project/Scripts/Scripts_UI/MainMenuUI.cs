@@ -10,6 +10,7 @@ public class MainMenuUI : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI newGameText;
     [SerializeField] private TextMeshProUGUI continueText;
+    [SerializeField] private TextMeshProUGUI multiText;
     [SerializeField] private TextMeshProUGUI optionsText;
     [SerializeField] private TextMeshProUGUI quitText;
 
@@ -46,6 +47,7 @@ public class MainMenuUI : MonoBehaviour
             continueText.gameObject.SetActive(false);
             optionsText.transform.position = continueText.transform.position;
             menuTexts.Add(newGameText);
+            menuTexts.Add(multiText);
             menuTexts.Add(optionsText);
             menuTexts.Add(quitText);
         }
@@ -53,6 +55,7 @@ public class MainMenuUI : MonoBehaviour
         {
             menuTexts.Add(newGameText);
             menuTexts.Add(continueText);
+            menuTexts.Add(multiText);
             menuTexts.Add(optionsText);
             menuTexts.Add(quitText);
         }
@@ -111,8 +114,9 @@ public class MainMenuUI : MonoBehaviour
             switch (currentSelection)
             {
                 case 0: NewGame(); break;
-                case 1: OpenOptions(); break;
-                case 2: Quit(); break;
+                case 1: OpenMulti(); break;
+                case 2: OpenOptions(); break;
+                case 3: Quit(); break;
             }
         }
         else
@@ -121,8 +125,9 @@ public class MainMenuUI : MonoBehaviour
             {
                 case 0: NewGame(); break;
                 case 1: Continue(); break;
-                case 2: OpenOptions(); break;
-                case 3: Quit(); break;
+                case 2: OpenMulti(); break;
+                case 3: OpenOptions(); break;
+                case 4: Quit(); break;
             }
         }
     }
@@ -145,6 +150,11 @@ public class MainMenuUI : MonoBehaviour
             idx = 0;
         LoadingScreenManager.TargetSceneIndex = LevelProgressionManager.Instance.levels[idx].sceneIndex;
         SceneManager.LoadScene(1);
+    }
+
+    void OpenMulti()
+    {
+        SceneManager.LoadScene("MultiStart");
     }
 
     void OpenOptions()

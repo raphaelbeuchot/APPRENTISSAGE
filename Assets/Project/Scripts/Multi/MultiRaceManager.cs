@@ -41,6 +41,12 @@ public class MultiRaceManager : MonoBehaviour
 
     private void Start()
     {
+        // Ecran de lancement multi (MultiStartUI) : si le joueur a choisi "First to X" avant de
+        // charger ce niveau, l'override prime sur la valeur d'Inspector. Null (scene testee
+        // directement en editeur, sans passer par le menu) = targetScore d'Inspector inchange.
+        if (MultiMatchScore.TargetScoreOverride.HasValue)
+            targetScore = MultiMatchScore.TargetScoreOverride.Value;
+
         // Son en 2D (pas PlayClipAtPoint) : signal "meta" comme l'ecran YOU LOSE, doit s'entendre
         // pareil quelle que soit la position du perdant par rapport a l'unique Audio Listener de la scene.
         audioSource = gameObject.AddComponent<AudioSource>();
