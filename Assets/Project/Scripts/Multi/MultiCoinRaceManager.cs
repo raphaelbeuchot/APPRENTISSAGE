@@ -27,8 +27,15 @@ public class MultiCoinRaceManager : MonoBehaviour
     // Fraction du chrono ecoulee (0 au debut, 1 a la fin) - sert de base a la pression sentinelle liee au temps.
     public float ElapsedFraction => roundDuration > 0f ? Mathf.Clamp01((roundDuration - TimeRemaining) / roundDuration) : 1f;
 
+    // Pose par l'ecran de lancement multi (MultiStartUI) avant SceneManager.LoadScene, en secondes.
+    // Null = pas passe par le menu (test direct d'une scene en editeur) : roundDuration d'Inspector inchange.
+    public static float? RoundDurationOverride;
+
     private void Start()
     {
+        if (RoundDurationOverride.HasValue)
+            roundDuration = RoundDurationOverride.Value;
+
         TimeRemaining = roundDuration;
 
         foreach (PlayerCoinWallet wallet in FindObjectsByType<PlayerCoinWallet>(FindObjectsSortMode.None))

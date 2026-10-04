@@ -34,11 +34,11 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Bowling_001.unity");
     }
 
-    [MenuItem("Scene/Level_CoinRace_Test", priority = 5)]
-    private static void Open_Level_CoinRace_Test()
+    [MenuItem("Scene/Level_CoinRace_Lava", priority = 5)]
+    private static void Open_Level_CoinRace_Lava()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_CoinRace_Test.unity");
+        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_CoinRace_Lava.unity");
     }
 
     [MenuItem("Scene/Level_Epervier01", priority = 6)]
@@ -167,25 +167,25 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_PotPourri.unity");
     }
 
-    [MenuItem("Scene/Level_StrangeAttractor", priority = 24)]
+    [MenuItem("Scene/Level_Race_Lava", priority = 24)]
+    private static void Open_Level_Race_Lava()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Race_Lava.unity");
+    }
+
+    [MenuItem("Scene/Level_Race_Slippery", priority = 25)]
+    private static void Open_Level_Race_Slippery()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Race_Slippery.unity");
+    }
+
+    [MenuItem("Scene/Level_StrangeAttractor", priority = 26)]
     private static void Open_Level_StrangeAttractor()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_StrangeAttractor.unity");
-    }
-
-    [MenuItem("Scene/Level_TestCameraMulti 2", priority = 25)]
-    private static void Open_Level_TestCameraMulti_2()
-    {
-        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_TestCameraMulti 2.unity");
-    }
-
-    [MenuItem("Scene/Level_TestCameraMulti", priority = 26)]
-    private static void Open_Level_TestCameraMulti()
-    {
-        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_TestCameraMulti.unity");
     }
 
     [MenuItem("Scene/Level_TomatoFest_01", priority = 27)]
