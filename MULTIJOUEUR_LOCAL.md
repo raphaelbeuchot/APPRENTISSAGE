@@ -476,3 +476,29 @@ La liste ci-dessous (état au 2026-09-20) sert toujours à décider sur quoi tra
 3. Une première attaque avec drapeau coop/versus (A).
 4. Lobby : join par device + choix du personnage (B + C).
 5. Layout 3-4 joueurs (B), puis contenu des personnages (C).
+
+---
+
+## Mode Coin Race — discussion et première implémentation (2026-10-04)
+
+*Nouveau mode, **séparé du score "First to Ten"** (pas une manche qui compte pour un match) : des pièces apparaissent aléatoirement dans la pièce, à ramasser sous la pression des cycles sentinelle, pendant un chrono. Le joueur avec le plus de pièces au bout du chrono gagne.*
+
+### Décisions de design
+- **Fin de manche par chrono** (pas par trigger comme la course) : gagnant connu seulement à la fin du temps imparti. Égalité simple si même score au bout du chrono (pas de fenêtre à gérer, contrairement à l'ex aequo de la course).
+- **Pression sentinelle repensée** : le calcul actuel (distance moyenne au but) n'a pas de sens ici, pas de but à atteindre. **Décision : la pression monte régulièrement avec le chrono écoulé** (ex : chrono de 3 min, pression max atteinte vers 2 min 30). Pas encore codé.
+- **Spawn des pièces : une toutes les 15s** (plutôt que "ramassage déclenche un nouveau spawn", gardé en tête comme variante à tester après si besoin).
+- **Mort punitive, avec vol possible** : à la mort, le joueur perd toutes ses pièces — elles tombent au sol et sont ramassables par n'importe qui (lui inclus, s'il revient avant l'autre), pas une simple disparition. Ajoute une tension joueur-joueur volontaire (cohérent avec la bousculade déjà en place). Pas encore codé.
+- **Question ouverte, pas tranchée** : comment le menu multi (`MultiStartUI`) propose le bon mode et charge le niveau correspondant — aujourd'hui le flux ne connaît qu'un seul type de manche (nombre de rounds → niveau de course). Un vrai choix de mode (Race / Coin Race, chacun avec ses propres paramètres : nombre de manches vs durée du chrono) sera un chantier à part, à traiter après que le cœur du mode fonctionne en scène de test — même séquence que pour la course (menu branché bien après le gameplay).
+
+### Implémentation en cours — scène de test `Level_CoinRace_Test`
+- **Scène** : dupliquée depuis `Level_TestCameraMulti`. `GoalDoorNew` et le GameObject `MultiRaceManager` retirés (pas de but à atteindre). `Score_Player1`/`Score_Player2` **gardés** (pas liés au score de match, juste les objets Text/Canvas déjà stylisés et placés — réutilisés pour afficher le nombre de pièces).
+- **✅ Première étape codée (spawn + ramassage + compteur par joueur, pas encore testée en jeu)** :
+  - `PlayerCoinWallet.cs` — compteur de pièces par joueur, à poser sur chaque joueur (même pattern que `MultiRespawn`).
+  - `CoinPickup.cs` — pièce ramassable, détection par layer "Human" (comme `KeyCollectible`), crédite le `PlayerCoinWallet` du joueur touché (`GetComponentInParent`), feedback son/particules optionnel.
+  - `CoinSpawner.cs` — fait apparaître une pièce toutes les `spawnInterval` secondes (15s par défaut) à un point aléatoire dans la zone définie par un `BoxCollider` (`spawnArea`, bounds en X/Z seulement). **La hauteur est trouvée par un raycast vers le bas filtré sur le layer "Ground"**, pas une valeur fixe dans les bounds : exclut naturellement les pits/lave (le rim marchable en layer Ground a un trou à leur emplacement, vérifié dans `SplinePitZone.cs`) et autorise les plateformes mobiles/tournantes (toujours en layer Ground par convention du projet, cf. `CLAUDE.md`), sans code dédié pour aucun des deux cas.
+  - `CoinWalletDisplay.cs` — affiche les deux `PlayerCoinWallet` en continu sur les textes existants (`Score_Player1`/`Score_Player2`), même pattern de polling que `MultiScoreDisplay` (à désactiver dans cette scène, remplacé par ce nouveau composant sur les mêmes objets).
+- **Limite notée, pas corrigée** : une pièce qui spawn sur une plateforme mobile/tournante n'est pas parentée à celle-ci — si la plateforme s'éloigne avant le ramassage, la pièce reste flottante à sa position d'origine au lieu de suivre. **Décision : noté pour plus tard, probablement à faire** (parentage temporaire façon `IMovingPlatform`, même principe que le joueur).
+- **✅ Testé en jeu (2026-10-04)** : spawn toutes les 15s (timing vérifié par log temporaire, intervalles exacts), ramassage, crédit du bon joueur. Deux pièges de setup rencontrés et corrigés en test, pas des bugs de code :
+  - **Mauvais prefab de pièce** : le `coinPrefab` assigné au départ était un prefab solo existant (`CoinParent`) portant encore `Collectible.cs` (système de progression permanente, cf. discussion plus haut) au lieu de `CoinPickup` — le ramassage ne créditait rien et plantait (`Destroy(transform.parent.gameObject)` sur un objet sans parent). Remplacé par un prefab dédié avec seulement `CoinPickup`.
+  - **`BoxCollider` de `spawnArea` décoché** : un collider désactivé renvoie des `bounds` réduits à un point (centré sur la position du Transform, taille zéro) plutôt que sa vraie taille (7×22 ici) — toutes les pièces spawnaient donc exactement au même endroit, d'où un ramassage qui créditait +2 (deux pièces superposées) et l'impression qu'aucune nouvelle pièce n'apparaissait. Réactiver la case du composant a suffi.
+- **Reste à faire** : pression sentinelle liée au chrono ; perte/vol de pièces à la mort ; fin de manche par chrono + égalité ; intégration menu.
