@@ -8632,9 +8632,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acd647bb3d6ec8c4fa3f9138a58032d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MultiCoinRaceManager
-  roundDuration: 180
+  roundDuration: 60
   timerText: {fileID: 1922993072}
   coinSpawner: {fileID: 1131314141}
+  endScreenFont: {fileID: 11400000, guid: bda45c9dee7f10249b5ecdc280eebdf3, type: 2}
+  restartPromptDelay: 2
 --- !u!4 &399156219
 Transform:
   m_ObjectHideFlags: 0
@@ -23701,7 +23703,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!199 &968977348
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -49053,7 +49055,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!199 &2037579450
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -55604,6 +55606,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5592999826705333007, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5592999826705333007, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: titleMessage
       value: Let's Go !
       objectReference: {fileID: 0}
@@ -56801,6 +56807,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: spotColorCompensated.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: disableDistancePressure
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}

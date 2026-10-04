@@ -1,10 +1,13 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 // Coin Race : chrono de manche. A la fin, le joueur avec le plus de pieces gagne (egalite si meme score).
-// Pour l'instant juste logue le resultat en console - l'ecran de fin (façon VICTORY/YOU LOSE de MultiRaceManager)
-// viendra en polish une fois le coeur du mode valide.
+// Ecran de fin (VICTORY/YOU LOSE/EX AEQUO) sur le meme principe que MultiRaceManager, sans la notion de
+// match (First to Ten) : Coin Race reste une manche isolee, pas de MultiMatchScore ni d'ecran MATCH WON.
 public class MultiCoinRaceManager : MonoBehaviour
 {
     [SerializeField] private float roundDuration = 180f;
@@ -12,6 +15,9 @@ public class MultiCoinRaceManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timerText;
     [Tooltip("Vide = auto-trouve dans la scene.")]
     [SerializeField] private CoinSpawner coinSpawner;
+    [SerializeField] private TMP_FontAsset endScreenFont;
+    [Tooltip("Delai avant que A (ou Entree au clavier) relance le niveau depuis l'ecran de fin.")]
+    [SerializeField] private float restartPromptDelay = 2f;
 
     private PlayerCoinWallet leftWallet;
     private PlayerCoinWallet rightWallet;
@@ -73,13 +79,6 @@ public class MultiCoinRaceManager : MonoBehaviour
         int leftScore = leftWallet != null ? leftWallet.Count : 0;
         int rightScore = rightWallet != null ? rightWallet.Count : 0;
 
-        if (leftScore == rightScore)
-            Debug.Log($"[MultiCoinRace] Ex aequo, {leftScore} pieces chacun");
-        else if (leftScore > rightScore)
-            Debug.Log($"[MultiCoinRace] Left gagne, {leftScore} contre {rightScore}");
-        else
-            Debug.Log($"[MultiCoinRace] Right gagne, {rightScore} contre {leftScore}");
-
         if (coinSpawner != null)
             coinSpawner.StopSpawning();
 
@@ -89,6 +88,24 @@ public class MultiCoinRaceManager : MonoBehaviour
 
         if (leftWallet != null) FreezePlayer(leftWallet.gameObject);
         if (rightWallet != null) FreezePlayer(rightWallet.gameObject);
+
+        if (leftScore == rightScore)
+        {
+            Debug.Log($"[MultiCoinRace] Ex aequo, {leftScore} pieces chacun");
+            if (leftWallet != null) ShowHalfScreenMessage(leftWallet.gameObject, "EX AEQUO");
+            if (rightWallet != null) ShowHalfScreenMessage(rightWallet.gameObject, "EX AEQUO");
+        }
+        else
+        {
+            PlayerCoinWallet winner = leftScore > rightScore ? leftWallet : rightWallet;
+            PlayerCoinWallet loser = leftScore > rightScore ? rightWallet : leftWallet;
+            Debug.Log($"[MultiCoinRace] {(leftScore > rightScore ? "Left" : "Right")} gagne, {Mathf.Max(leftScore, rightScore)} contre {Mathf.Min(leftScore, rightScore)}");
+
+            if (winner != null) ShowHalfScreenMessage(winner.gameObject, "VICTORY");
+            if (loser != null) ShowHalfScreenMessage(loser.gameObject, "YOU LOSE");
+        }
+
+        StartCoroutine(RestartOnButtonCoroutine());
     }
 
     // Meme principe que GoalDoorNew.ReachGoal() : figer le transform ET l'animation,
@@ -102,5 +119,82 @@ public class MultiCoinRaceManager : MonoBehaviour
         Animator animator = player.GetComponentInChildren<Animator>();
         if (animator != null)
             animator.speed = 0f;
+    }
+
+    // Repris de MultiRaceManager.ShowHalfScreenMessage : overlay noir alpha 0.5 + texte,
+    // sur la moitie d'ecran du joueur concerne (PlayerScreenSide, defaut Left si absent).
+    private void ShowHalfScreenMessage(GameObject player, string message)
+    {
+        PlayerScreenSide screenSide = player.GetComponent<PlayerScreenSide>();
+        bool isRight = screenSide != null && screenSide.side == PlayerScreenSide.Side.Right;
+
+        GameObject canvasObj = new GameObject("CoinRaceEndScreenCanvas");
+        Canvas canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 100;
+        CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+
+        GameObject bgObj = new GameObject("Background");
+        bgObj.transform.SetParent(canvasObj.transform, false);
+        RectTransform bgRect = bgObj.AddComponent<RectTransform>();
+        bgRect.anchorMin = isRight ? new Vector2(0.5f, 0f) : new Vector2(0f, 0f);
+        bgRect.anchorMax = isRight ? new Vector2(1f, 1f) : new Vector2(0.5f, 1f);
+        bgRect.offsetMin = Vector2.zero;
+        bgRect.offsetMax = Vector2.zero;
+        Image bg = bgObj.AddComponent<Image>();
+        bg.color = new Color(0f, 0f, 0f, 0.5f);
+
+        GameObject textObj = new GameObject("EndScreenText");
+        textObj.transform.SetParent(bgObj.transform, false);
+        RectTransform textRect = textObj.AddComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+
+        TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
+        if (endScreenFont != null) text.font = endScreenFont;
+        text.text = message;
+        text.fontSize = 80f;
+        text.alignment = TextAlignmentOptions.Center;
+        text.color = Color.white;
+        text.raycastTarget = false;
+    }
+
+    // Repris de MultiRaceManager.RestartOnButtonCoroutine, sans la branche MultiMatchScore/MATCH WON :
+    // Coin Race reste hors du score First to Ten, une manche = un ecran, pas de notion de match.
+    private IEnumerator RestartOnButtonCoroutine()
+    {
+        yield return new WaitForSeconds(restartPromptDelay);
+
+        while (!RestartButtonPressed())
+            yield return null;
+
+        while (RestartButtonHeld())
+            yield return null;
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    private bool RestartButtonPressed()
+    {
+        foreach (Gamepad gamepad in Gamepad.all)
+        {
+            if (gamepad.buttonSouth.wasPressedThisFrame)
+                return true;
+        }
+        return Keyboard.current != null && Keyboard.current.enterKey.wasPressedThisFrame;
+    }
+
+    private bool RestartButtonHeld()
+    {
+        foreach (Gamepad gamepad in Gamepad.all)
+        {
+            if (gamepad.buttonSouth.isPressed)
+                return true;
+        }
+        return Keyboard.current != null && Keyboard.current.enterKey.isPressed;
     }
 }
