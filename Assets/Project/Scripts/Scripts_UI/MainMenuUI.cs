@@ -6,12 +6,10 @@ using System.Collections.Generic;
 public class MainMenuUI : MonoBehaviour
 {
     [Header("Menu Options")]
-    [SerializeField] private OptionsPanelUI optionsPanelUI;
+    [SerializeField] private SoloPanelUI soloPanelUI;
 
-    [SerializeField] private TextMeshProUGUI newGameText;
-    [SerializeField] private TextMeshProUGUI continueText;
+    [SerializeField] private TextMeshProUGUI soloText;
     [SerializeField] private TextMeshProUGUI multiText;
-    [SerializeField] private TextMeshProUGUI optionsText;
     [SerializeField] private TextMeshProUGUI quitText;
 
     [Header("Audio")]
@@ -29,7 +27,6 @@ public class MainMenuUI : MonoBehaviour
     private Vector3 normalScale = Vector3.one;
     private float navigationCooldown = 0f;
     private float cooldownDuration = 0.2f;
-    private bool hasSave = false;
 
     void Awake()
     {
@@ -40,25 +37,9 @@ public class MainMenuUI : MonoBehaviour
     {
         Time.timeScale = 1f;
 
-        hasSave = LevelProgressionManager.Instance != null && LevelProgressionManager.Instance.HasSave();
-
-        if (!hasSave)
-        {
-            continueText.gameObject.SetActive(false);
-            optionsText.transform.position = continueText.transform.position;
-            menuTexts.Add(newGameText);
-            menuTexts.Add(multiText);
-            menuTexts.Add(optionsText);
-            menuTexts.Add(quitText);
-        }
-        else
-        {
-            menuTexts.Add(newGameText);
-            menuTexts.Add(continueText);
-            menuTexts.Add(multiText);
-            menuTexts.Add(optionsText);
-            menuTexts.Add(quitText);
-        }
+        menuTexts.Add(soloText);
+        menuTexts.Add(multiText);
+        menuTexts.Add(quitText);
 
         UpdateVisuals();
     }
@@ -71,7 +52,7 @@ public class MainMenuUI : MonoBehaviour
 
     void HandleNavigation()
     {
-        if (optionsPanelUI != null && optionsPanelUI.IsOpen()) return;
+        if (soloPanelUI != null && soloPanelUI.IsOpen()) return;
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -109,58 +90,23 @@ public class MainMenuUI : MonoBehaviour
 
     void SelectCurrentOption()
     {
-        if (!hasSave)
+        switch (currentSelection)
         {
-            switch (currentSelection)
-            {
-                case 0: NewGame(); break;
-                case 1: OpenMulti(); break;
-                case 2: OpenOptions(); break;
-                case 3: Quit(); break;
-            }
-        }
-        else
-        {
-            switch (currentSelection)
-            {
-                case 0: NewGame(); break;
-                case 1: Continue(); break;
-                case 2: OpenMulti(); break;
-                case 3: OpenOptions(); break;
-                case 4: Quit(); break;
-            }
+            case 0: OpenSolo(); break;
+            case 1: OpenMulti(); break;
+            case 2: Quit(); break;
         }
     }
 
-    void NewGame()
+    void OpenSolo()
     {
-        if (uiAudio != null) uiAudio.PlayNewGameAndSurvive();
-
-        if (LevelProgressionManager.Instance != null)
-            LevelProgressionManager.Instance.ResetProgression();
-
-        LoadingScreenManager.TargetSceneIndex = LevelProgressionManager.Instance.levels[0].sceneIndex;
-        SceneManager.LoadScene(1);
-    }
-
-    void Continue()
-    {
-        int idx = LevelProgressionManager.Instance.lastUnlockedLevelIndex;
-        if (idx < 0 || idx >= LevelProgressionManager.Instance.levels.Count)
-            idx = 0;
-        LoadingScreenManager.TargetSceneIndex = LevelProgressionManager.Instance.levels[idx].sceneIndex;
-        SceneManager.LoadScene(1);
+        if (soloPanelUI != null)
+            soloPanelUI.Open();
     }
 
     void OpenMulti()
     {
         SceneManager.LoadScene("MultiStart");
-    }
-
-    void OpenOptions()
-    {
-        if (optionsPanelUI != null)
-            optionsPanelUI.Open();
     }
 
     void Quit()
