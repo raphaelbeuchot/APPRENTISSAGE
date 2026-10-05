@@ -24,9 +24,11 @@ public class MultiStartUI : MonoBehaviour
     [SerializeField] private GameObject modeRoot;
     [SerializeField] private List<ModeEntry> modeEntries;
 
-    [Header("Etape 1 (Race) : nombre de manches (navigation horizontale)")]
-    [Tooltip("Une seule ligne \"First to X\" : le contenu change en te deplacant horizontalement (5 -> 10 -> Custom -> 5...), pas trois textes separes.")]
-    [SerializeField] private TextMeshProUGUI countDisplayText;
+    [Header("Etape 1 (Race) : nombre de manches (navigation verticale)")]
+    [Tooltip("Parent des 3 lignes, actif uniquement pendant cette etape.")]
+    [SerializeField] private GameObject countRoot;
+    [Tooltip("3 lignes dans l'ordre : First to 5, First to 10, Custom. Le texte est ecrit par le script ; la ligne Custom affiche \"< First to X >\" pendant le reglage.")]
+    [SerializeField] private List<TextMeshProUGUI> countEntries;
     [SerializeField] private int minCustom = 1;
     [SerializeField] private int maxCustom = 20;
     [SerializeField] private int defaultCustom = 10;
@@ -42,9 +44,11 @@ public class MultiStartUI : MonoBehaviour
     [SerializeField] private GameObject levelRoot;
     [SerializeField] private List<LevelEntry> levelEntries;
 
-    [Header("Etape 1 (Coin Race) : duree du chrono (navigation horizontale)")]
-    [Tooltip("Une seule ligne \"X min\" : 1 -> 3 -> 5 -> Custom -> 1..., meme principe que l'etape Race.")]
-    [SerializeField] private TextMeshProUGUI durationDisplayText;
+    [Header("Etape 1 (Coin Race) : duree du chrono (navigation verticale)")]
+    [Tooltip("Parent des 4 lignes, actif uniquement pendant cette etape.")]
+    [SerializeField] private GameObject durationRoot;
+    [Tooltip("4 lignes dans l'ordre : 1 min, 3 min, 5 min, Custom. Le texte est ecrit par le script ; la ligne Custom affiche \"< X min >\" pendant le reglage.")]
+    [SerializeField] private List<TextMeshProUGUI> durationEntries;
     [SerializeField] private int minCustomDurationMinutes = 1;
     [SerializeField] private int maxCustomDurationMinutes = 20;
     [SerializeField] private int defaultCustomDurationMinutes = 3;
@@ -156,13 +160,13 @@ public class MultiStartUI : MonoBehaviour
     {
         Vector2 input = PlayerInputManager.Instance.MoveInput;
 
-        if (input.x < -0.5f)
+        if (input.y > 0.5f)
         {
             countSelection = (countSelection - 1 + 3) % 3;
             navigationCooldown = cooldownDuration;
             if (uiAudio != null) uiAudio.PlayUp();
         }
-        else if (input.x > 0.5f)
+        else if (input.y < -0.5f)
         {
             countSelection = (countSelection + 1) % 3;
             navigationCooldown = cooldownDuration;
@@ -257,13 +261,13 @@ public class MultiStartUI : MonoBehaviour
     {
         Vector2 input = PlayerInputManager.Instance.MoveInput;
 
-        if (input.x < -0.5f)
+        if (input.y > 0.5f)
         {
             durationSelection = (durationSelection - 1 + 4) % 4;
             navigationCooldown = cooldownDuration;
             if (uiAudio != null) uiAudio.PlayUp();
         }
-        else if (input.x > 0.5f)
+        else if (input.y < -0.5f)
         {
             durationSelection = (durationSelection + 1) % 4;
             navigationCooldown = cooldownDuration;
@@ -403,10 +407,16 @@ public class MultiStartUI : MonoBehaviour
                 SetTextVisual(modeEntries[i].label, modeStep && i == modeSelection);
         }
 
-        if (countDisplayText != null)
+        if (countRoot != null) countRoot.SetActive(countStep);
+
+        if (countEntries != null)
         {
-            countDisplayText.gameObject.SetActive(countStep);
-            countDisplayText.text = BuildCountDisplayText();
+            for (int i = 0; i < countEntries.Count; i++)
+            {
+                if (countEntries[i] == null) continue;
+                countEntries[i].text = BuildCountEntryText(i);
+                SetTextVisual(countEntries[i], countStep && i == countSelection);
+            }
         }
 
         if (levelRoot != null) levelRoot.SetActive(levelStep);
@@ -417,10 +427,16 @@ public class MultiStartUI : MonoBehaviour
                 SetTextVisual(levelEntries[i].label, levelStep && i == levelSelection);
         }
 
-        if (durationDisplayText != null)
+        if (durationRoot != null) durationRoot.SetActive(durationStep);
+
+        if (durationEntries != null)
         {
-            durationDisplayText.gameObject.SetActive(durationStep);
-            durationDisplayText.text = BuildDurationDisplayText();
+            for (int i = 0; i < durationEntries.Count; i++)
+            {
+                if (durationEntries[i] == null) continue;
+                durationEntries[i].text = BuildDurationEntryText(i);
+                SetTextVisual(durationEntries[i], durationStep && i == durationSelection);
+            }
         }
 
         if (coinLevelRoot != null) coinLevelRoot.SetActive(coinLevelStep);
@@ -432,24 +448,22 @@ public class MultiStartUI : MonoBehaviour
         }
     }
 
-    private string BuildCountDisplayText()
+    private string BuildCountEntryText(int index)
     {
+        if (index == 0) return "First to 5";
+        if (index == 1) return "First to 10";
         if (currentStep == Step.CustomEdit)
-            return $"First to {customValue}";
-
-        if (countSelection == 0) return "First to 5";
-        if (countSelection == 1) return "First to 10";
+            return $"< First to {customValue} >";
         return "Custom";
     }
 
-    private string BuildDurationDisplayText()
+    private string BuildDurationEntryText(int index)
     {
+        if (index == 0) return "1 min";
+        if (index == 1) return "3 min";
+        if (index == 2) return "5 min";
         if (currentStep == Step.DurationCustomEdit)
-            return $"{customDurationMinutes} min";
-
-        if (durationSelection == 0) return "1 min";
-        if (durationSelection == 1) return "3 min";
-        if (durationSelection == 2) return "5 min";
+            return $"< {customDurationMinutes} min >";
         return "Custom";
     }
 

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -11,8 +12,8 @@ using UnityEngine.UI;
 public class MultiCoinRaceManager : MonoBehaviour
 {
     [SerializeField] private float roundDuration = 180f;
-    [Tooltip("Optionnel : affiche le temps restant (format MM:SS). Pose et stylise a la main comme le reste du HUD multi.")]
-    [SerializeField] private TextMeshProUGUI timerText;
+    [Tooltip("Optionnel : affiche le temps restant (format MM:SS) sur chaque moitie d'ecran, meme valeur partout. Pose et stylise a la main comme le reste du HUD multi.")]
+    [SerializeField] private List<TextMeshProUGUI> timerTexts;
     [Tooltip("Vide = auto-trouve dans la scene.")]
     [SerializeField] private CoinSpawner coinSpawner;
     [SerializeField] private TMP_FontAsset endScreenFont;
@@ -63,10 +64,13 @@ public class MultiCoinRaceManager : MonoBehaviour
 
     private void Update()
     {
-        if (timerText == null) return;
+        if (timerTexts == null) return;
 
         int seconds = Mathf.CeilToInt(Mathf.Max(0f, TimeRemaining));
-        timerText.text = $"{seconds / 60:00}:{seconds % 60:00}";
+        string text = $"{seconds / 60:00}:{seconds % 60:00}";
+
+        foreach (TextMeshProUGUI t in timerTexts)
+            if (t != null) t.text = text;
     }
 
     private IEnumerator CountdownRoutine()
