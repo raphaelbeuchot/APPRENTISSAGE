@@ -334,6 +334,11 @@ La liste ci-dessous (état au 2026-09-20) sert toujours à décider sur quoi tra
 
 *Tout ce qui se passe de bizarre ou de non souhaité en multi, à noter au fil des tests. Une entrée par bug : symptôme, cause (vérifiée ou supposée), statut, correctif envisagé. Quand un bug est corrigé, le garder ici avec le commit, plutôt que de l'effacer.*
 
+### 🐛 Régression solo : joueur figé dans son animation après le victory scale — **✅ corrigé et testé (2026-10-06), commit `90e40d03`**
+- **Symptôme** : en solo, après le victory scale, le joueur reste figé dans sa pose (salle de transition).
+- **Cause** : commit `52dc26e4` (2026-09-22, « pose figée réelle » de fin de course multi) : `GoalDoorNew.ReachGoal()` met `playerAnimator.speed = 0f`, aussi en solo ; `PostVictorySequencer` ne réactive que le mouvement (`player.enabled = true`), jamais la vitesse de l'animator.
+- **Fix** : `GoalDoorNew` ne fige l'animation que si `LevelManager.multiRaceMode` (surcharge du prefab à 1 dans `Level_Race_Lava` et `Level_Race_Slippery`). Solo = comportement d'avant le 22-09. Fichier partagé, commit séparé.
+
 ### Timer de gel des ennemis (spray) visible sur un seul écran — **ouvert (2026-10-06), cause identifiée, noté pour plus tard**
 - **Symptôme** (T2) : le « petit chrono » du gel d'un ennemi par le spray (`sprayStunTimer`) ne s'affiche que pour un seul joueur.
 - **Cause (lecture du code)** : même famille que la cause n°2 des pips. `StunTimerManager` positionne le cercle (`StunTimerUI`, `Image` fillAmount) dans un Canvas Screen Space Overlay via `Camera.main` (= caméra J1) → visible et bien placé seulement sur l'écran de gauche. Instancié par `EnemyHealth` (ligne ~187) sous `StunTimerManager.canvas`.
