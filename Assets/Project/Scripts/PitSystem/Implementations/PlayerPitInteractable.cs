@@ -36,6 +36,10 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     private CapsuleCollider capsuleCollider;
     private Rigidbody rb;
     private Animator animator;
+    private PlayerLocalInput localInput;
+
+    // Multi : input du joueur (PlayerLocalInput) s'il existe, sinon le singleton (solo inchange).
+    private bool InputInteractPressed => localInput != null ? localInput.InteractPressed : PlayerInputManager.Instance.InteractPressed;
 
     // State - ancien systeme
     private bool isInPit = false;
@@ -67,6 +71,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         capsuleCollider = GetComponent<CapsuleCollider>();
         rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();
+        localInput = GetComponent<PlayerLocalInput>();
 
         if (capsuleCollider != null)
             characterCenterHeight = capsuleCollider.height / 2f;
@@ -76,7 +81,7 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     {
         if (isClimbingOut) return;
 
-        if (isInPit && PlayerInputManager.Instance.InteractPressed)
+        if (isInPit && InputInteractPressed)
             TryClimbOut();
     }
 

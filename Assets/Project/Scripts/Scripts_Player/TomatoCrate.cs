@@ -5,36 +5,30 @@ public class TomatoCrate : MonoBehaviour
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 2f;
 
-    private Transform playerTransform;
-    private TomatoThrowSystem throwSystem;
+    // Tous les joueurs de la scene (un seul en solo, un par joueur en multi).
+    private TomatoThrowSystem[] throwSystems;
     private InteractBubble interactBubble;
 
     private void Start()
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-        {
-            playerTransform = playerObj.transform;
-            throwSystem = playerObj.GetComponent<TomatoThrowSystem>();
-        }
-        else
-        {
+        throwSystems = FindObjectsOfType<TomatoThrowSystem>();
+        if (throwSystems.Length == 0)
             Debug.LogWarning("[TomatoCrate] Player introuvable");
-        }
 
         interactBubble = GetComponent<InteractBubble>();
     }
 
     private void Update()
     {
-        if (playerTransform == null) return;
-
-        float distance = Vector3.Distance(transform.position, playerTransform.position);
-        bool inRange = distance <= interactionRange;
-
-        if (inRange && PlayerInputManager.Instance.InteractPressed)
+        foreach (TomatoThrowSystem throwSystem in throwSystems)
         {
-            if (throwSystem != null)
+            if (throwSystem == null) continue;
+
+            float distance = Vector3.Distance(transform.position, throwSystem.transform.position);
+            bool inRange = distance <= interactionRange;
+
+            // Chaque joueur fait le plein avec son propre input (PlayerLocalInput en multi, singleton en solo).
+            if (inRange && throwSystem.InputInteractPressed)
                 throwSystem.Refill();
         }
     }

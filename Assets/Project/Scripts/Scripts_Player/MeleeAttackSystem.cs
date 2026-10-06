@@ -14,6 +14,12 @@ public class MeleeAttackSystem : MonoBehaviour
     private PlayerPhysicsMovement movement;
     private TargetLockSystem lockSystem;
     private Animator animator;
+    private PlayerLocalInput localInput;
+
+    // Multi : input du joueur (PlayerLocalInput) s'il existe, sinon le singleton (solo inchange).
+    private bool InputSprayPressed => localInput != null ? localInput.SprayAttackPressed : PlayerInputManager.Instance.SprayAttackPressed;
+    private bool InputSprayHeld => localInput != null ? localInput.SprayAttackHeld : PlayerInputManager.Instance.SprayAttackHeld;
+    private bool InputReloadPressed => localInput != null ? localInput.ReloadPressed : PlayerInputManager.Instance.ReloadPressed;
 
 
     // State runtime
@@ -56,6 +62,7 @@ public class MeleeAttackSystem : MonoBehaviour
         health = GetComponent<PlayerHealth>();
         movement = GetComponent<PlayerPhysicsMovement>();
         lockSystem = GetComponent<TargetLockSystem>();
+        localInput = GetComponent<PlayerLocalInput>();
 
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
@@ -83,7 +90,7 @@ public class MeleeAttackSystem : MonoBehaviour
         if (stats == null) return;
 
         // Sortir crouch dès qu'on appuie sur spray
-        if (PlayerInputManager.Instance.SprayAttackPressed)
+        if (InputSprayPressed)
         {
             if (movement != null)
                 movement.ExitCrouch();
@@ -93,18 +100,18 @@ public class MeleeAttackSystem : MonoBehaviour
 
         // === SPRAY = RB/R2 uniquement ===
         // Tap simple
-        if (PlayerInputManager.Instance.SprayAttackPressed && CanAttack())
+        if (InputSprayPressed && CanAttack())
         {
             StartCoroutine(PerformAttack());
         }
         // Maintien continu
-        else if (PlayerInputManager.Instance.SprayAttackHeld && CanAttack() && Time.time >= lastSprayTime + stats.sprayFireRate)
+        else if (InputSprayHeld && CanAttack() && Time.time >= lastSprayTime + stats.sprayFireRate)
         {
             lastSprayTime = Time.time;
             StartCoroutine(PerformAttack());
         }
         // Son spray vide - tap
-        else if (PlayerInputManager.Instance.SprayAttackPressed && currentSprayAmmo <= 0 && !isReloading && !isGrabbed && !isAttacking && Time.time >= lastSprayTime + stats.sprayFireRate)
+        else if (InputSprayPressed && currentSprayAmmo <= 0 && !isReloading && !isGrabbed && !isAttacking && Time.time >= lastSprayTime + stats.sprayFireRate)
         {
             lastSprayTime = Time.time;
             if (audioSource != null && stats.sprayEmptySound != null)
@@ -113,7 +120,7 @@ public class MeleeAttackSystem : MonoBehaviour
                 animator.SetTrigger("SprayAttack");
         }
         // Son spray vide - hold
-        else if (PlayerInputManager.Instance.SprayAttackHeld && currentSprayAmmo <= 0 && !isReloading && !isGrabbed && !isAttacking && Time.time >= lastSprayTime + stats.sprayFireRate)
+        else if (InputSprayHeld && currentSprayAmmo <= 0 && !isReloading && !isGrabbed && !isAttacking && Time.time >= lastSprayTime + stats.sprayFireRate)
         {
             lastSprayTime = Time.time;
             if (audioSource != null && stats.sprayEmptySound != null)
@@ -124,7 +131,7 @@ public class MeleeAttackSystem : MonoBehaviour
     }
     void HandleReload()
     {
-        if (PlayerInputManager.Instance.ReloadPressed && currentSprayAmmo < stats.maxSprayAmmo && !isReloading)
+        if (InputReloadPressed && currentSprayAmmo < stats.maxSprayAmmo && !isReloading)
         {
             StartReload();
         }

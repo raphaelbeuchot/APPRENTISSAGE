@@ -18,6 +18,10 @@ public class TestClimbDetection : MonoBehaviour
     [SerializeField] private Animator animator;
 
     private bool isClimbing = false;
+    private PlayerLocalInput localInput;
+
+    // Multi : input du joueur (PlayerLocalInput) s'il existe, sinon le singleton (solo inchange).
+    private bool InputInteractPressed => localInput != null ? localInput.InteractPressed : PlayerInputManager.Instance.InteractPressed;
 
     void Start()
     {
@@ -25,6 +29,7 @@ public class TestClimbDetection : MonoBehaviour
         {
             animator = GetComponentInChildren<Animator>();
         }
+        localInput = playerMovement != null ? playerMovement.GetComponent<PlayerLocalInput>() : null;
     }
 
     void Update()
@@ -54,7 +59,7 @@ public class TestClimbDetection : MonoBehaviour
 
 
         // 1. RECUPERER INPUT ET CALCULER DIRECTION
-        Vector2 input = PlayerInputManager.Instance.MoveInput;
+        Vector2 input = playerMovement.InputMove;
 
         // Check si on a une direction bufferee valide
         bool hasValidBuffer = (Time.time - lastInputTime) <= inputBufferDuration;
@@ -136,7 +141,7 @@ public class TestClimbDetection : MonoBehaviour
             return;
 
         // Si E pas presse, stop ici
-        if (!PlayerInputManager.Instance.InteractPressed)
+        if (!InputInteractPressed)
             return;
 
         // === CLIMB DECLENCHE ===
@@ -377,7 +382,7 @@ public class TestClimbDetection : MonoBehaviour
 
         ReEnableMovement();
         
-        yield return new WaitUntil(() => !PlayerInputManager.Instance.InteractPressed);
+        yield return new WaitUntil(() => !InputInteractPressed);
 
         isClimbing = false;
         Debug.Log("[CLIMB] Climb termine, E relache, pret pour prochain climb");

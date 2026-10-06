@@ -9,6 +9,12 @@ public class TomatoThrowSystem : MonoBehaviour
     private TargetLockSystem lockSystem;
     private PlayerHealth health;
     private AudioSource audioSource;
+    private PlayerLocalInput localInput;
+
+    // Multi : input du joueur (PlayerLocalInput) s'il existe, sinon le singleton (solo inchange).
+    private bool InputThrowTomatoPressed => localInput != null ? localInput.ThrowTomatoPressed : PlayerInputManager.Instance.ThrowTomatoPressed;
+    // Lu par TomatoCrate pour savoir si CE joueur demande le plein.
+    public bool InputInteractPressed => localInput != null ? localInput.InteractPressed : PlayerInputManager.Instance.InteractPressed;
 
     private int currentTomatoCount;
     private bool isThrowing = false;
@@ -23,6 +29,7 @@ public class TomatoThrowSystem : MonoBehaviour
     {
         lockSystem = GetComponent<TargetLockSystem>();
         health = GetComponent<PlayerHealth>();
+        localInput = GetComponent<PlayerLocalInput>();
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
@@ -33,7 +40,7 @@ public class TomatoThrowSystem : MonoBehaviour
 
     void Update()
     {
-        if (!PlayerInputManager.Instance.ThrowTomatoPressed) return;
+        if (!InputThrowTomatoPressed) return;
         if (!CanThrow()) return;
         ThrowTomato();
     }

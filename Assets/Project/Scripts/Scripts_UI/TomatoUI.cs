@@ -15,7 +15,10 @@ public class TomatoUI : MonoBehaviour
     [SerializeField] private float punchScale = 1.4f;
     [SerializeField] private float punchDuration = 0.08f;
 
-    private TomatoThrowSystem throwSystem;
+    [Header("Player")]
+    [Tooltip("Multi : le joueur suivi par ce compteur (un compteur par joueur). Vide = joueur tague Player (solo).")]
+    [SerializeField] private TomatoThrowSystem throwSystem;
+
     private AudioSource audioSource;
     private bool hasBeenFilled = false;
     private Coroutine refillCoroutine;
@@ -23,19 +26,19 @@ public class TomatoUI : MonoBehaviour
 
     private void Start()
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
+        if (throwSystem == null)
         {
-            throwSystem = playerObj.GetComponent<TomatoThrowSystem>();
-            if (throwSystem != null)
-            {
-                throwSystem.OnTomatoCountChanged += UpdateUI;
-                throwSystem.OnRefill += OnRefill;
-            }
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+                throwSystem = playerObj.GetComponent<TomatoThrowSystem>();
+            else
+                Debug.LogWarning("[TomatoUI] Player introuvable");
         }
-        else
+
+        if (throwSystem != null)
         {
-            Debug.LogWarning("[TomatoUI] Player introuvable");
+            throwSystem.OnTomatoCountChanged += UpdateUI;
+            throwSystem.OnRefill += OnRefill;
         }
 
         audioSource = gameObject.AddComponent<AudioSource>();

@@ -26,15 +26,22 @@ public class TargetLockSystem : MonoBehaviour
     public bool IsLocked => currentTarget != null;
     public Transform CurrentTarget => currentTarget;
 
+    private PlayerLocalInput localInput;
+
+    // Multi : input du joueur (PlayerLocalInput) s'il existe, sinon le singleton (solo inchange).
+    private bool InputLockOnHeld => localInput != null ? localInput.LockOnHeld : PlayerInputManager.Instance.LockOnHeld;
+    private float InputSwitchTarget => localInput != null ? localInput.SwitchTargetInput : PlayerInputManager.Instance.SwitchTargetInput;
+
     private void Start()
     {
         if (mainCamera == null)
             mainCamera = Camera.main;
+        localInput = GetComponent<PlayerLocalInput>();
     }
 
     private void Update()
     {
-        if (PlayerInputManager.Instance.LockOnHeld)
+        if (InputLockOnHeld)
         {
             if (!IsLocked)
             {
@@ -59,7 +66,7 @@ public class TargetLockSystem : MonoBehaviour
                 UnlockTarget();
             }
 
-            float switchInput = PlayerInputManager.Instance.SwitchTargetInput;
+            float switchInput = InputSwitchTarget;
             if (Mathf.Abs(switchInput) < 0.3f)
             {
                 switchAxisWasNeutral = true;
