@@ -378,6 +378,9 @@ public class MultiStartUI : MonoBehaviour
 
     private void LoadLevelScene(string sceneName)
     {
+        // Appele la frame de la validation : on sait encore quel appareil a appuye.
+        MultiDeviceAssignment.AssignFromConfirm(MultiDeviceAssignment.DetectConfirmDevice());
+
         int buildIndex = SceneUtility.GetBuildIndexByScenePath($"Assets/Project/Scenes/{sceneName}.unity");
         if (buildIndex >= 0)
         {

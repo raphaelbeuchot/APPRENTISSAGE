@@ -21,6 +21,10 @@ public class PlayerLocalInput : MonoBehaviour
     private PlayerInputActions actions;
     private Gamepad currentGamepad;
 
+    // Assignation venue du menu multi (MultiDeviceAssignment), prioritaire sur le reglage d'Inspector.
+    private bool useAssignment;
+    private Gamepad assignedGamepad;
+
     // Pause : le singleton est verrouille de l'ouverture du menu jusqu'a la frame qui suit la reprise
     // (PauseMenuUI). Les actions sont alors ignorees, comme sur le singleton ; deplacement et sprint non.
     private bool Locked => PlayerInputManager.Instance != null && PlayerInputManager.Instance.IsLocked;
@@ -53,6 +57,7 @@ public class PlayerLocalInput : MonoBehaviour
     {
         activeInstances.Add(this);
         InputSystem.onDeviceChange += OnDeviceChange;
+        ApplyMenuAssignment();
         SetDevices(ResolveDevices());
         actions.Player.Enable();
     }
@@ -85,6 +90,21 @@ public class PlayerLocalInput : MonoBehaviour
         }
     }
 
+    // Cote gauche = P1, cote droit = P2 (meme identite que le score). Sans assignation (scene lancee
+    // directement en editeur) : reglage d'Inspector inchange.
+    private void ApplyMenuAssignment()
+    {
+        useAssignment = MultiDeviceAssignment.HasAssignment;
+        if (!useAssignment) return;
+
+        PlayerScreenSide screenSide = GetComponent<PlayerScreenSide>();
+        bool isPlayer2 = screenSide != null && screenSide.side == PlayerScreenSide.Side.Right;
+
+        bool isKeyboard = isPlayer2 ? MultiDeviceAssignment.Player2IsKeyboard : MultiDeviceAssignment.Player1IsKeyboard;
+        assignedGamepad = isPlayer2 ? MultiDeviceAssignment.Player2Gamepad : MultiDeviceAssignment.Player1Gamepad;
+        deviceKind = isKeyboard ? DeviceKind.KeyboardMouse : DeviceKind.Gamepad;
+    }
+
     private InputDevice[] ResolveDevices()
     {
         if (deviceKind == DeviceKind.KeyboardMouse)
@@ -93,6 +113,16 @@ public class PlayerLocalInput : MonoBehaviour
             if (Keyboard.current != null) devices.Add(Keyboard.current);
             if (Mouse.current != null) devices.Add(Mouse.current);
             return devices.ToArray();
+        }
+
+        if (useAssignment)
+        {
+            // Manette assignee par le menu, si toujours branchee ; sinon attente (la reconnexion prend le relais).
+            if (assignedGamepad != null && assignedGamepad.added && !IsClaimedByOther(assignedGamepad))
+                return new InputDevice[] { assignedGamepad };
+
+            Debug.Log($"[PlayerLocalInput] {name} : manette assignee absente, en attente d'une manette", this);
+            return new InputDevice[0];
         }
 
         if (gamepadIndex < Gamepad.all.Count && !IsClaimedByOther(Gamepad.all[gamepadIndex]))
