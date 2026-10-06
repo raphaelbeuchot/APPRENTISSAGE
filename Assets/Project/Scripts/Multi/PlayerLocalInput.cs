@@ -21,13 +21,28 @@ public class PlayerLocalInput : MonoBehaviour
     private PlayerInputActions actions;
     private Gamepad currentGamepad;
 
+    // Pause : le singleton est verrouille de l'ouverture du menu jusqu'a la frame qui suit la reprise
+    // (PauseMenuUI). Les actions sont alors ignorees, comme sur le singleton ; deplacement et sprint non.
+    private bool Locked => PlayerInputManager.Instance != null && PlayerInputManager.Instance.IsLocked;
+
     public Vector2 MoveInput => actions.Player.Movement.ReadValue<Vector2>();
     public bool SprintPressed => actions.Player.Sprint.WasPressedThisFrame();
-    public bool CrouchPressed => actions.Player.Crouch.WasPressedThisFrame();
+    public bool CrouchPressed => !Locked && actions.Player.Crouch.WasPressedThisFrame();
     public bool ToggleCameraViewPressed => actions.Player.ToggleCameraView.WasPressedThisFrame();
-    public bool MashEscapePressed => actions.Player.MashEscape.WasPressedThisFrame();
+    public bool MashEscapePressed => !Locked && actions.Player.MashEscape.WasPressedThisFrame();
     // Tap seul : pas de balai bas (BroomLow) en multi, comme le reste du mouvement local.
-    public bool BroomAttackPressed => actions.Player.BroomAttack.WasPressedThisFrame();
+    // Loadout de la scene (PlayerLoadout -> singleton), commun aux deux joueurs : memes garde-fous que le singleton.
+    private bool HasBroom => PlayerInputManager.Instance == null || PlayerInputManager.Instance.HasBroom;
+    private bool HasSpray => PlayerInputManager.Instance == null || PlayerInputManager.Instance.HasSpray;
+
+    public bool BroomAttackPressed => !Locked && HasBroom && actions.Player.BroomAttack.WasPressedThisFrame();
+    public bool SprayAttackPressed => !Locked && HasSpray && actions.Player.SprayAttack.WasPressedThisFrame();
+    public bool SprayAttackHeld => !Locked && HasSpray && actions.Player.SprayAttack.IsPressed();
+    public bool ReloadPressed => !Locked && actions.Player.Reload.WasPressedThisFrame();
+    public bool ThrowTomatoPressed => !Locked && actions.Player.ThrowTomato.WasPressedThisFrame();
+    public bool LockOnHeld => !Locked && actions.Player.LockOn.IsPressed();
+    public float SwitchTargetInput => Locked ? 0f : actions.Player.SwitchTarget.ReadValue<float>();
+    public bool InteractPressed => !Locked && actions.Player.Interact.WasPressedThisFrame();
 
     private void Awake()
     {
