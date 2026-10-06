@@ -114,10 +114,17 @@ public class EnemyHealthBarManager : MonoBehaviour
 
         if (healthBarPrefab != null)
         {
+            // Prefab UI (solo, Canvas Overlay) : doit vivre sous le Canvas pour etre dessine.
+            // Prefab world-space (multi, sprites) : reste sous le manager, hors Canvas (son echelle le deformerait).
+            bool isUIPrefab = healthBarPrefab.GetComponent<RectTransform>() != null;
+            Transform parent = isUIPrefab && canvas != null ? canvas.transform : transform;
+
             foreach (PlayerPipTarget target in playerTargets)
             {
-                GameObject barGO = Instantiate(healthBarPrefab, transform);
-                barGO.layer = target.pipLayer;
+                GameObject barGO = Instantiate(healthBarPrefab, parent);
+                // Layer par joueur utile seulement en world-space (culling par camera) ; le Canvas Overlay l'ignore.
+                if (!isUIPrefab)
+                    barGO.layer = target.pipLayer;
                 EnemyHealthBarUI bar = barGO.GetComponent<EnemyHealthBarUI>();
                 if (bar == null) continue;
 
