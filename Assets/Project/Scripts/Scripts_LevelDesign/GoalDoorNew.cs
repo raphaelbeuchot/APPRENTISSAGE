@@ -82,12 +82,14 @@ public class GoalDoorNew : MonoBehaviour
 
         // Fige la pose (transform ET animation, pas seulement le mouvement) : sans ca l'animator continue
         // de jouer la derniere intention (ex: course) meme si le personnage ne bouge plus physiquement.
+        // Animation figee en multi seulement : en solo, PostVictorySequencer reactive le joueur sans remettre
+        // animator.speed a 1, il resterait fige dans la salle de transition.
         PlayerPhysicsMovement playerMovement = player.GetComponent<PlayerPhysicsMovement>();
         if (playerMovement != null)
             playerMovement.enabled = false;
 
         Animator playerAnimator = player.GetComponentInChildren<Animator>();
-        if (playerAnimator != null)
+        if (playerAnimator != null && IsMultiRace())
             playerAnimator.speed = 0f;
 
         PlayerDetectionFeedback pdf = player.GetComponent<PlayerDetectionFeedback>();
@@ -123,6 +125,12 @@ public class GoalDoorNew : MonoBehaviour
     {
         if (isActive) return;
         StartCoroutine(UnlockAfterDelay());
+    }
+
+    private bool IsMultiRace()
+    {
+        LevelManager levelManager = FindObjectOfType<LevelManager>();
+        return levelManager != null && levelManager.multiRaceMode;
     }
 
     private IEnumerator UnlockAfterDelay()
