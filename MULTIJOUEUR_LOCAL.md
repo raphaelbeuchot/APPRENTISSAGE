@@ -20,6 +20,25 @@
 
 ---
 
+## ✅ Checklist de non-régression solo (créée le 2026-10-06)
+
+*À dérouler **après chaque commit qui touche un fichier partagé avec le solo**, avant de passer à la suite (~5 min). Raison : deux régressions solo découvertes le 2026-10-06 venaient de chantiers multi dont le test solo n'avait pas couvert la partie touchée — pips ennemis invisibles (`6c17fe21`, refonte pips) et joueur figé après le victory scale (`52dc26e4`, pose figée multi). Un niveau solo complet, **du début à la salle de transition**, au pad (et un passage clavier si l'input a été touché) :*
+
+1. **Début de niveau** : pupitre, ouverture du rideau, compte à rebours, barres de jeu (stamina, jauge de pression) qui apparaissent.
+2. **Déplacement** : marche, sprint, accroupi, glace / surfaces mobiles si le niveau en a.
+3. **Ennemis** : pips de vie au-dessus des ennemis à l'approche (lock = contour, poursuite = contour rouge, perte de pips aux dégâts), spray (tap + maintien, son spray vide), timer de gel au-dessus de l'ennemi sprayé.
+4. **Lock et tomates** : lock + changement de cible, plein à une caisse (compteur + son), lancer.
+5. **Balai** : tap, balai bas (maintien).
+6. **Pit et escalade** : sortie de pit, escalade d'un obstacle.
+7. **Sentinelle** : un Red Light, se faire repérer en bougeant.
+8. **Pause** : appuyer sur des actions pendant la pause puis reprendre (rien ne doit partir), Restart depuis la pause.
+9. **Mort** : mourir (sentinelle ou lave), restart du niveau.
+10. **Fin de niveau** : porte, victory scale, VictoryUI, **salle de transition (le joueur doit s'animer et marcher normalement)**.
+
+*Si un point casse : le noter dans « Bugs et comportements bizarres » avec le commit suspect, ne pas empiler d'autres changements par-dessus.*
+
+---
+
 ## Pourquoi split-screen plutôt que caméra partagée
 
 - Le script caméra existant (`CameraFollow.cs`) suit déjà une cible unique — en split-screen, il suffit de dupliquer ce script tel quel (2 instances, chacune avec son `target` et son `Rect` de viewport), sans logique nouvelle.
