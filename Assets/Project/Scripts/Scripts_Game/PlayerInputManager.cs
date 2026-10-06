@@ -98,7 +98,7 @@ public class PlayerInputManager : MonoBehaviour
 
         inputActions.Player.BroomAttack.started += ctx =>
         {
-            if (!HasBroom) return;
+            if (!HasBroom || IsLocked) return;
             broomIsHeld = true;
             broomPressStartTime = Time.time;
         };
@@ -107,6 +107,7 @@ public class PlayerInputManager : MonoBehaviour
         {
             if (!HasBroom) return;
             broomIsHeld = false;
+            if (IsLocked) return;
             if (BroomLowActive || wasInBroomLow)
             {
                 BroomLowActive = false;
@@ -120,10 +121,10 @@ public class PlayerInputManager : MonoBehaviour
             }
         };
 
-        inputActions.Player.LockOn.performed += ctx => LockOnHeld = true;
+        inputActions.Player.LockOn.performed += ctx => { if (!IsLocked) LockOnHeld = true; };
         inputActions.Player.LockOn.canceled += ctx => LockOnHeld = false;
 
-        inputActions.Player.ThrowTomato.performed += ctx => ThrowTomatoPressed = true;
+        inputActions.Player.ThrowTomato.performed += ctx => { if (!IsLocked) ThrowTomatoPressed = true; };
         inputActions.Player.ThrowTomato.canceled += ctx => ThrowTomatoPressed = false;
 
         inputActions.Player.SwitchTarget.performed += ctx => SwitchTargetInput = ctx.ReadValue<float>();
@@ -132,10 +133,10 @@ public class PlayerInputManager : MonoBehaviour
         inputActions.Player.Interact.performed += OnInteract;
         inputActions.Player.Interact.canceled += OnInteract;
 
-        inputActions.Player.Reload.performed += ctx => ReloadPressed = true;
+        inputActions.Player.Reload.performed += ctx => { if (!IsLocked) ReloadPressed = true; };
         inputActions.Player.Reload.canceled += ctx => ReloadPressed = false;
 
-        inputActions.Player.MashEscape.performed += ctx => MashEscapePressed = true;
+        inputActions.Player.MashEscape.performed += ctx => { if (!IsLocked) MashEscapePressed = true; };
         inputActions.Player.MashEscape.canceled += ctx => MashEscapePressed = false;
 
         inputActions.Player.Crouch.performed += ctx => { if (!IsLocked) CrouchPressed = true; };
@@ -202,10 +203,10 @@ public class PlayerInputManager : MonoBehaviour
     {
         if (!HasSpray) return;
 
-        if (context.performed)
+        if (context.performed && !IsLocked)
             SprayAttackPressed = true;
 
-        SprayAttackHeld = context.ReadValueAsButton();
+        SprayAttackHeld = context.ReadValueAsButton() && !IsLocked;
     }
 
     private void OnPause(InputAction.CallbackContext context)
@@ -216,10 +217,10 @@ public class PlayerInputManager : MonoBehaviour
 
     private void OnInteract(InputAction.CallbackContext context)
     {
-        if (context.performed)
+        if (context.performed && !IsLocked)
             InteractPressed = true;
 
-        InteractHeld = context.ReadValueAsButton();
+        InteractHeld = context.ReadValueAsButton() && !IsLocked;
     }
 
     public void ForceBroomLowOff()
