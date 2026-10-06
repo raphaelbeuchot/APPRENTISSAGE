@@ -286,6 +286,17 @@
                 },
                 {
                     "name": "",
+                    "id": "2af8b3e2-2466-4144-84fb-aa654cb998e5",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SprayAttack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "f0f928b2-7050-44a5-95ef-a8798109ba52",
                     "path": "<Keyboard>/b",
                     "interactions": "",
@@ -299,6 +310,17 @@
                     "name": "",
                     "id": "447a2096-1faa-4acd-b373-982856b08dcc",
                     "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BroomAttack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "54ad7451-2678-4a04-92d9-ee6209d752ef",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -330,6 +352,17 @@
                 },
                 {
                     "name": "",
+                    "id": "4b9cad0e-76db-449e-a2ce-8c01b1094aba",
+                    "path": "<Mouse>/middleButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LockOn",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "dec48c45-54d6-48b6-9ecd-2cb994b3c9a9",
                     "path": "<Keyboard>/u",
                     "interactions": "",
@@ -343,6 +376,17 @@
                     "name": "",
                     "id": "7a23214f-8cd2-47a5-8000-160610011e4f",
                     "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ThrowTomato",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5f10ab62-4f56-440e-b592-d96ff1444dad",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -407,6 +451,17 @@
                 },
                 {
                     "name": "",
+                    "id": "7d484f43-ebf5-4bda-805d-ef7379b45a0f",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MashEscape",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "2b06f1e0-03a6-4775-a88b-9904ed843a0e",
                     "path": "<Keyboard>/c",
                     "interactions": "",
@@ -420,6 +475,17 @@
                     "name": "",
                     "id": "668b8b56-8119-4ce6-ba96-60818263d3cb",
                     "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Crouch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d5ca4ccd-a461-43c7-851c-a6f0d4b494ae",
+                    "path": "<Keyboard>/leftCtrl",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -464,6 +530,17 @@
                     "name": "",
                     "id": "8fd177f9-6928-4414-9456-e0ce959b6685",
                     "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleCameraView",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c6ff8889-2965-4512-b90b-6654476c529c",
+                    "path": "<Keyboard>/v",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -529,13 +606,46 @@
                 {
                     "name": "",
                     "id": "2a469e0e-0cb8-49a2-8857-094ab18287fe",
-                    "path": "",
+                    "path": "<Mouse>/scroll/y",
+                    "interactions": "",
+                    "processors": "Clamp(min=-1,max=1)",
+                    "groups": "",
+                    "action": "SwitchTarget",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "1D Axis",
+                    "id": "667494fb-4a3f-49cd-b112-bf727d802086",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchTarget",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "11914b96-d101-4214-8b9a-a030a880ff2a",
+                    "path": "<Keyboard>/leftArrow",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "SwitchTarget",
                     "isComposite": false,
-                    "isPartOfComposite": false
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "positive",
+                    "id": "60fae167-86f2-43ee-8b75-e418c9ae32b1",
+                    "path": "<Keyboard>/rightArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchTarget",
+                    "isComposite": false,
+                    "isPartOfComposite": true
                 }
             ]
         }
