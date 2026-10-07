@@ -225,6 +225,8 @@
 
 **👉 Reprise (fin de session 2026-10-06)** : (1) ✅ bindings clavier testés et commités ; (2) `Level_CoinRace_Lava.unity` encore modifié après le commit `657823f9` (à vérifier/sauver ou discarder) ; (3) ✅ étape 3 faite (`e5535607`) — **chantier input terminé** (reste : test à deux manettes). En attente à part : chantier « UI au-dessus des objets en split-screen » (timer de gel, bulle d'interaction), chantier pits (sortie cassée solo + multi, récap du workflow de construction), accents cassés dans `PitFillDamageController.cs`.
 
+**✅ Chantier pits : sortie de pit corrigée et testée (2026-10-07), commit `71341382`** → voir l'entrée « Sortie de pit cassée » dans « Bugs et comportements bizarres ».
+
 **➕ Ajouts à la to-do (2026-10-07)** :
 - **Tri du 2026-10-07** : sortis de la to-do → caméras StartZone en multi, vue basse en multi, flag `isShoving` (recul seulement si armés), bugs lave sans dégâts et laser blanc (considérés corrigés). Gardé : réactions de la foule aux deux joueurs (`IsPlayerInSentinelLOS`/`IsPlayerMoving`), à faire.
 - **Vignette rouge de dégâts en multi** (lave, tirs sentinelle), seulement sur la moitié d'écran du joueur touché : composant prêt, setup scène à faire → voir « Vignette rouge de dégâts par joueur » plus bas.
@@ -360,6 +362,15 @@ La liste ci-dessous (état au 2026-09-20) sert toujours à décider sur quoi tra
 ## Bugs et comportements bizarres (ouverte le 2026-09-21)
 
 *Tout ce qui se passe de bizarre ou de non souhaité en multi, à noter au fil des tests. Une entrée par bug : symptôme, cause (vérifiée ou supposée), statut, correctif envisagé. Quand un bug est corrigé, le garder ici avec le commit, plutôt que de l'effacer.*
+
+### 🐛 Sortie de pit cassée (solo + multi) — **✅ corrigé et testé (2026-10-07), commit `71341382`**
+- **Symptôme** : à la sortie, le joueur monte, redescend au fond du pit, puis réapparaît sur le sol en glissant (figé dans la dernière pose). Bugs annexes trouvés en test : sortie « à vide » qui laisse le joueur coincé au fond (mash de X loin du mur), joueur bloqué ~3 s en anim de course en haut (après un tir de la sentinelle, ou en sortant pendant la fin du lunge du dash).
+- **Workflow de construction (rappel)** : `SplinePitZone` + `SplineContainer` (spline fermée, ≥ 3 knots), bouton **Generate Meshes** → `SplinePit_Walls` (layer `PitWall`), `_Floor` (Default), `_Rim` (layer `Ground`, largeur `rimMargin`), `_Trigger` (entrée/sortie du mode pit, boîte englobante), `_Fill` + `_FillTrigger` si rempli ; zone A* rendue non marchable au `Start`.
+- **Cause principale** : `ClimbOutAnimation` (`PlayerPitInteractable`) attendait la fin de l'anim `ExitPit` entre la montée et le pas final (ajouté le 2026-04-14 dans `50752dfc` « sons UI ») sans maintenir le corps : gravité active, joueur encore au-dessus du vide → chute, puis le pas final le replaçait d'un coup en haut. L'escalade d'obstacle (`TestClimbDetection`) n'a pas le problème : elle enchaîne montée et pas sans attente, et le joueur est posé sur l'obstacle.
+- **Causes annexes** : (1) pour les pits en spline, le contact mur est toujours considéré vrai, quelle que soit la distance → sortie déclenchable au milieu du pit, rayon de sol raté, `ExitPit()` marque le joueur hors du pit alors qu'il est au fond (plus aucune sortie possible). (2) `ExitPit` n'est atteignable que depuis Locomotion, et `Shot`/`Sweep` partent de Any State → anim jamais démarrée ou interrompue, la boucle attendait son timeout en Locomotion avec les `SpeedX/SpeedZ` figés (course), et un `ExitDone` restait en attente pour la sortie suivante. (3) Désactiver `PlayerPhysicsMovement` n'arrête pas `DashCoroutine` (le dash dure 0,2 s mais l'anim de lunge, état `Rolling` / clip `JumpALT`, dure plus).
+- **Correctifs (un seul fichier, partagé avec le solo)** : corps maintenu en haut pendant l'attente de l'anim (timeout 3 s + warning `[ClimbOut] Timeout`), fin anticipée si `ExitPit` est quittée ; `ExitDone` envoyé avant le pas final + `SpeedZ = 0.5` pendant le pas (marche, comme `TestClimbDetection`) ; `SpeedX/SpeedZ` à 0 et `ResetTrigger("ExitDone")` au début, `ResetTrigger` des deux triggers à la fin ; dans `TryClimbOut` : pas de sortie sans sol (`Ground`) 0,5 m devant, pendant `isDashing`, ni si l'Animator n'est pas en Locomotion (ou en transition).
+- **Revert** : `git revert 71341382` (fichier seul, indépendant des autres commits) → retour à la sortie cassée.
+- **Non traité (connu)** : pour un pit sec, `CanClimbOut` compare la hauteur des pieds à Y = 0 du monde, pas au bord du pit (pit posé ailleurs qu'à Y = 0 → sortie incohérente) ; non observé en test.
 
 ### 🐛 Régression solo : joueur figé dans son animation après le victory scale — **✅ corrigé et testé (2026-10-06), commit `90e40d03`**
 - **Symptôme** : en solo, après le victory scale, le joueur reste figé dans sa pose (salle de transition).
