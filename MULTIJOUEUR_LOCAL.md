@@ -225,7 +225,7 @@
 
 **👉 Reprise (fin de session 2026-10-06)** : (1) ✅ bindings clavier testés et commités ; (2) `Level_CoinRace_Lava.unity` encore modifié après le commit `657823f9` (à vérifier/sauver ou discarder) ; (3) ✅ étape 3 faite (`e5535607`) — **chantier input terminé** (reste : test à deux manettes). En attente à part : chantier « UI au-dessus des objets en split-screen » (timer de gel, bulle d'interaction), chantier pits (sortie cassée solo + multi, récap du workflow de construction), accents cassés dans `PitFillDamageController.cs`.
 
-**✅ Chantier pits : sortie de pit corrigée et testée (2026-10-07), commit `71341382`** → voir l'entrée « Sortie de pit cassée » dans « Bugs et comportements bizarres ».
+**✅ Chantier pits : sortie de pit corrigée et testée (2026-10-07), commit `71341382`** → voir l'entrée « Sortie de pit cassée » dans « Bugs et comportements bizarres ». **✅ Accents cassés de `PitFillDamageController.cs` réglés (2026-10-07)** : les 13 `�` (commentaires seulement, cassés par `6c17fe21` qui avait réécrit en UTF-8 ce fichier Latin-1) remplacés par des lettres sans accent, fichier désormais en pur ASCII.
 
 **➕ Ajouts à la to-do (2026-10-07)** :
 - **Tri du 2026-10-07** : sortis de la to-do → caméras StartZone en multi, vue basse en multi, flag `isShoving` (recul seulement si armés), bugs lave sans dégâts et laser blanc (considérés corrigés). Gardé : réactions de la foule aux deux joueurs (`IsPlayerInSentinelLOS`/`IsPlayerMoving`), à faire.
