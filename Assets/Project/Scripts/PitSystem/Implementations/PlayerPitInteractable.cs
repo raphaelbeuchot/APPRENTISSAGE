@@ -153,6 +153,12 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     {
         if (Time.time - lastClimbOutTime < climbOutCooldown) return;
         if (isClimbingOut) return;
+        // Pas de sortie pendant un dash : DashCoroutine continue de tourner meme composant desactive
+        if (playerMovement != null && playerMovement.isDashing) return;
+        // ExitPit n'est atteignable que depuis Locomotion : pas de sortie pendant la fin du lunge,
+        // un Shot, un StandUp, etc. (sinon la sortie se joue sans son anim)
+        if (animator != null && (animator.IsInTransition(0) || !animator.GetCurrentAnimatorStateInfo(0).IsName("Locomotion")))
+            return;
 
         if (!CanClimbOut(out float groundY)) return;
 
@@ -204,6 +210,12 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
             if (climbable != null) return;
         }
 
+        // Pas de sol devant (joueur trop loin du mur) : pas de sortie. Sinon la sortie se joue
+        // a vide et ExitPit() marque le joueur hors du pit alors qu'il est encore au fond.
+        Vector3 groundRayOrigin = transform.position + exitDirection * 0.5f + Vector3.up * 2f;
+        if (!Physics.Raycast(groundRayOrigin, Vector3.down, 5f, LayerMask.GetMask("Ground")))
+            return;
+
         StartCoroutine(ClimbOutAnimation(exitDirection, groundY));
     }
 
@@ -251,7 +263,14 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
 
         // Phase 1 : montee verticale
         if (animator != null)
+        {
+            // PlayerPhysicsMovement est desactive : sans ca, Locomotion garderait les vitesses de course
+            animator.SetFloat("SpeedX", 0f);
+            animator.SetFloat("SpeedZ", 0f);
+            // Un ExitDone reste en attente d'une sortie precedente ferait quitter ExitPit aussitot
+            animator.ResetTrigger("ExitDone");
             animator.SetTrigger("ExitPit");
+        }
 
         float tractionDuration = 0.6f;
         float elapsedTime = 0f;
@@ -266,8 +285,38 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
         }
         rb.MovePosition(topPos);
 
-        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName("ExitPit"));
-        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f);
+        // Attente de la fin de l'anim ExitPit : le corps est maintenu en haut (sinon la gravite
+        // le fait retomber dans le pit, il est encore au-dessus du vide). Timeout si l'anim ne
+        // demarre jamais (ExitPit n'est atteignable que depuis Locomotion). Sortie anticipee si
+        // l'anim est interrompue (Shot et Sweep partent de Any State).
+        float maxAnimWait = 3f;
+        float animWait = 0f;
+        bool exitPitStarted = false;
+        while (animWait < maxAnimWait && animator != null)
+        {
+            AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
+            if (state.IsName("ExitPit"))
+            {
+                exitPitStarted = true;
+                if (state.normalizedTime >= 1f) break;
+            }
+            else if (exitPitStarted)
+            {
+                break;
+            }
+
+            animWait += Time.fixedDeltaTime;
+            rb.MovePosition(topPos);
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            yield return new WaitForFixedUpdate();
+        }
+        if (animWait >= maxAnimWait)
+            Debug.LogWarning("[ClimbOut] Timeout : l'anim ExitPit n'a pas ete jouee jusqu'au bout");
+
+        // Retour en Locomotion avant le pas (sinon glissade figee sur la derniere image d'ExitPit)
+        if (animator != null)
+            animator.SetTrigger("ExitDone");
 
         // Phase 2 : pas horizontal
         float stepDuration = 0.4f;
@@ -282,12 +331,19 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
             rb.MovePosition(Vector3.Lerp(topPos, finalPos, t));
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
+            // Marche simulee pendant le pas (meme principe que TestClimbDetection)
+            if (animator != null)
+                animator.SetFloat("SpeedZ", 0.5f);
             yield return new WaitForFixedUpdate();
         }
         rb.MovePosition(finalPos);
 
+        // Aucun trigger de sortie ne doit survivre a cette sortie
         if (animator != null)
-            animator.SetTrigger("ExitDone");
+        {
+            animator.ResetTrigger("ExitPit");
+            animator.ResetTrigger("ExitDone");
+        }
 
         rb.constraints = oldConstraints;
         ExitPit();
