@@ -157,24 +157,34 @@ public class MultiRaceManager : MonoBehaviour
         if (pendingLoser != loser) yield break;
 
         PlayerHealth loserHealth = loser.GetComponent<PlayerHealth>();
-        if (loserHealth == null || loserHealth.IsDead()) yield break;
+        if (loserHealth == null) yield break;
 
         Debug.Log($"[MultiRace] {loser.name} n'a pas fini a temps : elimination");
 
         // Desactive le respawn AVANT la mort forcee : sans ca MultiRespawn le remettrait en jeu normalement.
+        // Aussi si deja mort (lave, sentinelle...) : sinon il respawnerait et continuerait sans ecran de fin.
+        // StopAllCoroutines : desactiver un composant ne stoppe PAS ses coroutines, il faut annuler
+        // explicitement une RespawnRoutine deja en attente (mort juste avant la fin du compte a rebours).
         MultiRespawn respawn = loser.GetComponent<MultiRespawn>();
         if (respawn != null)
+        {
+            respawn.StopAllCoroutines();
             respawn.enabled = false;
+        }
 
-        // Feedback "tir" (son + flash rouge + anim "Shot"), sans laser : la sentinelle est deja arretee
-        // a ce stade (un joueur a deja gagne), donc pas de position de tir credible a montrer.
-        PlayerDetectionFeedback feedback = loser.GetComponent<PlayerDetectionFeedback>();
-        if (feedback != null)
-            feedback.OnShotBySentinel();
-        if (eliminationSound != null)
-            audioSource.PlayOneShot(eliminationSound);
+        // Deja mort a la fin du compte a rebours : pas de tir force (il est deja a terre), juste l'ecran.
+        if (!loserHealth.IsDead())
+        {
+            // Feedback "tir" (son + flash rouge + anim "Shot"), sans laser : la sentinelle est deja arretee
+            // a ce stade (un joueur a deja gagne), donc pas de position de tir credible a montrer.
+            PlayerDetectionFeedback feedback = loser.GetComponent<PlayerDetectionFeedback>();
+            if (feedback != null)
+                feedback.OnShotBySentinel();
+            if (eliminationSound != null)
+                audioSource.PlayOneShot(eliminationSound);
 
-        loserHealth.TakeHeadshot();
+            loserHealth.TakeHeadshot();
+        }
 
         ShowLoseScreen(loser);
     }

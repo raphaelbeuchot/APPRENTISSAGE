@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: InsideGlow
-  m_Shader: {fileID: -6465566751694194690, guid: c97cd5fbe9354c540ae4f9d817839a1b, type: 3}
+  m_Name: WaterBasic
+  m_Shader: {fileID: -6465566751694194690, guid: cac149dc10db8184a8b329fc5d6d3a10, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -38,14 +38,15 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _GlowRadius: 0.85
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _Speed: 2.75
     m_Colors:
-    - _Color: {r: 0.72194403, g: 2.8143167, b: 0, a: 1}
+    - _Color_Ecume: {r: 0.80277944, g: 0.4402339, b: 0, a: 1}
+    - _Color_Water: {r: 1.8705481, g: 0.35810307, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &4521823688889334512
+--- !u!114 &1850732121546399849
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
