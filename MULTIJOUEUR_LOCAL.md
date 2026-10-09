@@ -366,6 +366,12 @@ La liste ci-dessous (état au 2026-09-20) sert toujours à décider sur quoi tra
 
 *Tout ce qui se passe de bizarre ou de non souhaité en multi, à noter au fil des tests. Une entrée par bug : symptôme, cause (vérifiée ou supposée), statut, correctif envisagé. Quand un bug est corrigé, le garder ici avec le commit, plutôt que de l'effacer.*
 
+### 🐛 Grab pendant un coup de balai : zombie frappé figé pour toujours (solo + multi) — **⚠️ corrigé préventivement sans reproduction (2026-10-09), commit `7553b2e7`**
+- **Symptôme supposé (jamais observé)** : un zombie frappé au balai reste planté sur place indéfiniment (ni poursuite, ni attaque).
+- **Scénario** : le balai touche un zombie A → `BroomAttackSystem` lance `KnockdownTarget` (IA de A désactivée 2 s puis réactivée). Si le joueur se fait grab par un zombie B **avant la fin de son anim de balai** (fenêtre < `broomAttackDuration`, après l'impact), `OnGrabStart` faisait `StopAllCoroutines()` → le `KnockdownTarget` de A était tué avec l'attaque, et l'IA de A jamais réactivée.
+- **Fix** : `OnGrabStart` n'arrête plus que la coroutine du coup (`broomAttackRoutine`, introduite par le commit `8ed18aff` « premier coup qui touche gagne » entre joueurs). Le design ne change pas : un grab interrompt toujours un coup de balai (règle « le premier qui touche gagne », symétrique de `CancelWindup`).
+- **Si un bug improbable apparaît en playtest autour du grab / du balai** (zombie qui ne se relève pas, joueur bloqué après un grab, anim de balai qui repart) : penser à ce commit. **Revert** : `git revert 7553b2e7` (isolé, un seul bloc dans `OnGrabStart`).
+
 ### 🐛 Sortie de pit cassée (solo + multi) — **✅ corrigé et testé (2026-10-07), commit `71341382`**
 - **Symptôme** : à la sortie, le joueur monte, redescend au fond du pit, puis réapparaît sur le sol en glissant (figé dans la dernière pose). Bugs annexes trouvés en test : sortie « à vide » qui laisse le joueur coincé au fond (mash de X loin du mur), joueur bloqué ~3 s en anim de course en haut (après un tir de la sentinelle, ou en sortant pendant la fin du lunge du dash).
 - **Workflow de construction (rappel)** : `SplinePitZone` + `SplineContainer` (spline fermée, ≥ 3 knots), bouton **Generate Meshes** → `SplinePit_Walls` (layer `PitWall`), `_Floor` (Default), `_Rim` (layer `Ground`, largeur `rimMargin`), `_Trigger` (entrée/sortie du mode pit, boîte englobante), `_Fill` + `_FillTrigger` si rempli ; zone A* rendue non marchable au `Start`.
