@@ -31750,6 +31750,9 @@ MonoBehaviour:
   spawnYOffset: 0.5
   raycastMargin: 2
   maxAttemptsPerSpawn: 20
+  spawnSound: {fileID: 8300000, guid: 65ee7d72352ac554fa0f673cf344af6b, type: 3}
+  spawnSoundVolume: 1
+  spawnParticlesPrefab: {fileID: 4730376483551194179, guid: 160ba8d3c6f2aad4197fbfd6417d1d5b, type: 3}
 --- !u!4 &1131314142
 Transform:
   m_ObjectHideFlags: 0
@@ -55695,8 +55698,20 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 150
       objectReference: {fileID: 0}
+    - target: {fileID: 1451811806440990736, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1807166732174698367, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: fadeDuration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2400017213557336056, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2686784824923349331, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2880000189980898460, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
@@ -55739,6 +55754,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 5c4afae9cd9a3054095614cd7f90f32f, type: 3}
+    - target: {fileID: 4440375624011712313, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5582139014781281917, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_CullTransparentMesh
       value: 1
@@ -55749,7 +55768,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5592999826705333007, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: titleMessage
-      value: Let's Go !
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5592999826705333007, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: rotateClockwise
@@ -55767,10 +55786,18 @@ PrefabInstance:
       propertyPath: m_Color.r
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5866847508065461185, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: playerHealth
       value: 
       objectReference: {fileID: 1871075794}
+    - target: {fileID: 6263098380597693447, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6269731636678902259, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: sprayBar
       value: 
@@ -55791,6 +55818,10 @@ PrefabInstance:
       propertyPath: pressureGauge2
       value: 
       objectReference: {fileID: 66390995}
+    - target: {fileID: 6926804615981978997, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7042985943530695834, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -55818,6 +55849,10 @@ PrefabInstance:
     - target: {fileID: 7049332619075172687, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -450
+      objectReference: {fileID: 0}
+    - target: {fileID: 7359883947822775500, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7393856716106443104, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: cycleManager
