@@ -615,7 +615,10 @@ public class BroomAttackSystem : MonoBehaviour
 
         if (isAttacking)
         {
-            StopAllCoroutines();
+            // Seulement la coroutine du coup : StopAllCoroutines tuait aussi les KnockdownTarget
+            // en cours, laissant le zombie frappe avec son IA desactivee pour toujours.
+            if (broomAttackRoutine != null)
+                StopCoroutine(broomAttackRoutine);
             broomAttackRoutine = null;
             isAttacking = false;
             if (animator != null)
