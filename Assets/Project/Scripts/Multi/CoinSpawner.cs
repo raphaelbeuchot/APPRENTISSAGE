@@ -17,7 +17,18 @@ public class CoinSpawner : MonoBehaviour
     [SerializeField] private float raycastMargin = 2f;
     [SerializeField] private int maxAttemptsPerSpawn = 20;
 
+    [Header("Feedback")]
+    [Tooltip("Son joue a l'apparition d'une piece (pas pour la toute premiere, posee au chargement de la scene). Vide = pas de son.")]
+    [SerializeField] private AudioClip spawnSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float spawnSoundVolume = 1f;
+    [Tooltip("Burst de particules a l'apparition (meme regle que le son). Le prefab doit se detruire seul : Stop Action = Destroy, Looping decoche.")]
+    [SerializeField] private GameObject spawnParticlesPrefab;
+
     private int groundMask;
+    private AudioSource audioSource;
+    // La premiere piece apparait au Start (pendant "Get ready", avant le rideau) : pas de son pour elle.
+    private bool firstSpawnDone;
 
     private void Start()
     {
@@ -28,6 +39,13 @@ public class CoinSpawner : MonoBehaviour
         }
 
         groundMask = 1 << LayerMask.NameToLayer("Ground");
+
+        // Son 2D : un seul Audio Listener (camera J1), un son 3D serait entendu depuis J1 seulement.
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
 
         InvokeRepeating(nameof(SpawnCoin), 0f, spawnInterval);
     }
@@ -53,6 +71,15 @@ public class CoinSpawner : MonoBehaviour
             {
                 Vector3 spawnPos = hit.point + Vector3.up * spawnYOffset;
                 Instantiate(coinPrefab, spawnPos, Quaternion.identity);
+
+                if (firstSpawnDone)
+                {
+                    if (spawnSound != null)
+                        audioSource.PlayOneShot(spawnSound, spawnSoundVolume);
+                    if (spawnParticlesPrefab != null)
+                        Instantiate(spawnParticlesPrefab, spawnPos, Quaternion.identity);
+                }
+                firstSpawnDone = true;
                 return;
             }
         }
