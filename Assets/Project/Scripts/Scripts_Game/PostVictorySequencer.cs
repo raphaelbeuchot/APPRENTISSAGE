@@ -257,6 +257,19 @@ public class PostVictorySequencer : MonoBehaviour
         else if (skipDecorExit)
             Debug.LogWarning("[PostVictory] skipDecorExit=true mais sentinelRoot non trouve — sentinel rise skippee.");
 
+        // Ajout : les cercles concentriques (ConcentricCirclesSpawner + enfants) montent aussi,
+        // sauf ceux deja sous sentinelRoot (ils montent avec lui, pas de double montee).
+        int circlesPending = 0;
+        if (skipDecorExit)
+        {
+            foreach (ConcentricCirclesSpawner circles in FindObjectsOfType<ConcentricCirclesSpawner>())
+            {
+                if (sentinelRoot != null && circles.transform.IsChildOf(sentinelRoot)) continue;
+                circlesPending++;
+                StartCoroutine(RiseAndHide(circles.transform, () => circlesPending--));
+            }
+        }
+
         if (endCurtain != null)
         {
             endCurtain.OnRiseComplete += () => curtainDone = true;
@@ -264,7 +277,7 @@ public class PostVictorySequencer : MonoBehaviour
         }
         else Debug.LogWarning("[PostVictory] Pas d'EndCurtain assigne — etape 5d skippee.");
 
-        yield return new WaitUntil(() => decorDone && curtainDone && sentinelDone);
+        yield return new WaitUntil(() => decorDone && curtainDone && sentinelDone && circlesPending == 0);
     }
 
     // ============================================
@@ -289,6 +302,27 @@ public class PostVictorySequencer : MonoBehaviour
 
         onDone?.Invoke();
         Debug.Log("[PostVictory] Sentinel montee et cachee.");
+    }
+
+    // Meme montee que la sentinelle (distance/duree communes), pour un transform quelconque.
+    private IEnumerator RiseAndHide(Transform target, Action onDone)
+    {
+        Vector3 startPos = target.position;
+        Vector3 endPos   = startPos + Vector3.up * sentinelRiseDistance;
+        float elapsed    = 0f;
+
+        while (elapsed < sentinelRiseDuration && target != null)
+        {
+            elapsed += Time.deltaTime;
+            target.position = Vector3.Lerp(startPos, endPos, Mathf.Clamp01(elapsed / sentinelRiseDuration));
+            yield return null;
+        }
+
+        if (target != null)
+            target.gameObject.SetActive(false);
+
+        onDone?.Invoke();
+        Debug.Log($"[PostVictory] {(target != null ? target.name : "?")} monte et cache.");
     }
 
     // ============================================
