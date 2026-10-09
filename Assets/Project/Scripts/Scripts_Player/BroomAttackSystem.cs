@@ -19,7 +19,10 @@ public class BroomAttackSystem : MonoBehaviour
 
 
     private bool isAttacking = false;
-   
+    // Coroutine du coup de balai en cours, gardee pour pouvoir l'annuler seule
+    // (StopAllCoroutines tuerait aussi les KnockdownTarget des zombies).
+    private Coroutine broomAttackRoutine;
+
     private bool isGrabbed = false;
     private Animator animator;
     void Start()
@@ -57,7 +60,7 @@ public class BroomAttackSystem : MonoBehaviour
         if (hasBroom)
         {
             if (CanAttack())
-                StartCoroutine(PerformBroomAttack());
+                broomAttackRoutine = StartCoroutine(PerformBroomAttack());
         }
         else
         {
@@ -187,6 +190,7 @@ public class BroomAttackSystem : MonoBehaviour
 
         // Plus de lerp forc�, laisser l'Animator g�rer la transition
         isAttacking = false;
+        broomAttackRoutine = null;
 
         // Reset SEULEMENT si n�cessaire pour �viter conflits spray
         if (animator != null)
@@ -198,6 +202,10 @@ public class BroomAttackSystem : MonoBehaviour
 
     public void OnBroomHit()
     {
+        // Attaque annulee (touche par un autre joueur avant que notre coup ne parte) :
+        // l'animation event peut quand meme arriver, il ne doit rien toucher.
+        if (!isAttacking) return;
+
         bool hitSomething = false;
 
         Collider[] hits = Physics.OverlapSphere(
@@ -393,6 +401,12 @@ public class BroomAttackSystem : MonoBehaviour
                 hitSomething = true;
                 continue;
             }
+
+            // Logique jeu de combat : le premier coup qui touche gagne, celui de la victime
+            // est annule (c'est le timing de l'animation event qui departage, pas l'input).
+            BroomAttackSystem targetBroom = hit.GetComponent<BroomAttackSystem>();
+            if (targetBroom != null)
+                targetBroom.CancelAttackFromHit();
 
             targetMovement.ApplyKnockback(dirToTarget * stats.broomPlayerKnockbackForce, stats.broomPlayerStunDuration);
 
@@ -602,6 +616,7 @@ public class BroomAttackSystem : MonoBehaviour
         if (isAttacking)
         {
             StopAllCoroutines();
+            broomAttackRoutine = null;
             isAttacking = false;
             if (animator != null)
                 animator.SetLayerWeight(1, 0f);
@@ -613,6 +628,20 @@ public class BroomAttackSystem : MonoBehaviour
     {
         isGrabbed = false;
         Debug.Log("BroomAttack: Player released, isGrabbed now FALSE");
+    }
+
+    // Multi : appele quand un autre joueur nous touche au balai. Annule seulement le coup
+    // de balai en cours (la bousculade n'a pas de windup, rien a annuler).
+    public void CancelAttackFromHit()
+    {
+        if (broomAttackRoutine == null) return;
+
+        StopCoroutine(broomAttackRoutine);
+        broomAttackRoutine = null;
+        isAttacking = false;
+        if (animator != null)
+            animator.SetLayerWeight(1, 0f);
+        Debug.Log("BroomAttack: CANCELLED by player hit");
     }
 
     public bool IsAttacking() => isAttacking;
