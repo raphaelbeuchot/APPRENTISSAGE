@@ -45,8 +45,8 @@ Un système qui se place lui-même au démarrage doit montrer cette position dan
 
 Pour passer un piège ou une plateforme au crible :
 
-- [ ] Est-ce un prefab complet (tout ce qu'il faut pour marcher), ou un montage refait à la main dans chaque scène ?
-- [ ] Ses réglages sont-ils dans un asset partagé, ou copiés dans chaque scène ? Les copies sont-elles identiques ?
+- [ ] Des réglages partagés vivent-ils encore dans les scènes (copiés d'un niveau à l'autre) ? Les copies sont-elles identiques ? → les sortir dans un asset partagé (SO).
+- [ ] Ce qui reste dans la scène est-il vraiment propre au niveau (forme, nombre, position) ? Un prefab n'est utile que s'il reste des éléments communs à monter à chaque fois — ce n'est pas un but en soi.
 - [ ] Y a-t-il des listes ou références à remplir à la main qui pourraient être trouvées automatiquement ?
 - [ ] Trouve-t-il le joueur et les managers tout seul ? Fonctionne-t-il avec deux joueurs (si besoin) ?
 - [ ] Ce qu'on voit en édition correspond-il au départ du jeu ?
@@ -89,11 +89,12 @@ Rien de tout ça ne change le comportement en jeu.
 1. [x] Aperçu des wagons en édition (gizmos pleins, forme réelle du wagon, premier wagon en jaune) — validé le 2026-10-10
 2. [x] **Wagons créés par le manager + asset `LavaTrainSettings`** (ex-étapes 2 et 3 fusionnées) — codé, trois scènes migrées et playtestées le 2026-10-10
    - `Scripts/Scriptable Objects/LavaTrainSettings.cs` : prefab du wagon, vitesse, inerties, message, sons, matériaux, tailles du disque.
-   - Asset `Scripts/Scriptable Objects/LavaTrain_01.asset`, valeurs recopiées des scènes. Choix de référence : `stopInertia` = **2** (LavaTrain01, arrêt en ~1,1 s ; LavaTrain02/03 avaient **3**, arrêt plus sec en ~0,75 s — à réessayer si le freinage paraît trop mou) ; matériau « basic » = **`Materials/LavaTrain/Black_01`** (l'autre, `Materials/Black_01`, est visuellement identique mais partagé avec le reste du projet).
+   - Asset `Scripts/Scriptable Objects/LavaTrain_01.asset`, valeurs recopiées des scènes. Choix de référence : `stopInertia` = **2** au départ (LavaTrain01, arrêt en ~1,1 s ; LavaTrain02/03 avaient **3**, arrêt plus sec en ~0,75 s), puis ajusté à **1.85** après playtest. ⚠️ Plus la valeur est haute, plus le train s'arrête **vite** (c'est la vitesse à laquelle il rejoint 0, pas une inertie au sens physique) ; matériau « basic » = **`Materials/LavaTrain/Black_01`** (l'autre, `Materials/Black_01`, est visuellement identique mais partagé avec le reste du projet).
    - Dans le manager (par scène) : la spline, le SO, le **nombre de wagons**. Les wagons sont créés au Start en enfants du manager.
    - Vérifié avant : rien d'autre dans les scènes ne pointe vers les wagons ; leurs rotations et échelles étaient celles du prefab ; le manager est à la racine avec une échelle de 1.
    - **Migration par scène** : supprimer les wagons posés à la main, assigner `LavaTrain_01` au manager, régler le nombre (01 : 5, 02 : 5, 03 : 6), tester.
-3. [ ] Prefab `LavaTrain` complet (manager + spline), installé scène par scène
+3. ~~Prefab `LavaTrain` complet (manager + spline)~~ → **optionnel** (décidé le 2026-10-10) : avec le SO, il ne reste dans le manager que la spline, le SO et le nombre de wagons, tous propres à chaque niveau → un prefab n'apporterait que des overrides. Seul gain : monter plus vite un nouveau niveau Lava Train. À faire seulement si on en crée beaucoup.
+4. [ ] Multi (voir constat 4), plus tard.
 
 ---
 
