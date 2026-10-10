@@ -10,6 +10,9 @@ public class LevelData
     public string[] collectibleIDs;
 }
 
+// Awake avant les autres scripts : l'instance de MainMenu doit exister avant qu'un script
+// appelle Instance, sinon une copie s'auto-instancie depuis Resources (sauvegarde coupee)
+[DefaultExecutionOrder(-100)]
 public class LevelProgressionManager : MonoBehaviour
 {
     private static LevelProgressionManager _instance;
@@ -24,7 +27,9 @@ public class LevelProgressionManager : MonoBehaviour
                 if (prefab != null)
                 {
                     Instantiate(prefab);
-                    Debug.Log("[LevelProgressionManager] Auto-instancie depuis Resources.");
+                    // Auto-instancie = niveau lance hors MainMenu (en editeur) : progression en memoire seulement
+                    if (_instance != null) _instance.saveEnabled = false;
+                    Debug.Log("[LevelProgressionManager] Auto-instancie depuis Resources (niveau lance hors MainMenu) : progression non sauvegardee.");
                 }
                 else
                 {
@@ -47,6 +52,10 @@ public class LevelProgressionManager : MonoBehaviour
 
     private HashSet<int> completedLevels = new HashSet<int>();
     private HashSet<int> unlockedLevels = new HashSet<int>();
+
+    // Faux quand le manager s'est auto-instancie (niveau lance directement en editeur) :
+    // la progression de la vraie partie (MainMenu > Continue) n'est pas ecrasee par les tests
+    private bool saveEnabled = true;
 
     private const string PREFS_COMPLETED = "CompletedLevels";
     private const string PREFS_UNLOCKED = "UnlockedLevels";
@@ -142,7 +151,7 @@ public class LevelProgressionManager : MonoBehaviour
         unlockedLevels.Clear();
         if (levels.Count > 0) unlockedLevels.Add(0);
         if (levels.Count > 1) unlockedLevels.Add(1);
-        Save();
+        Save(force: true);
         Debug.Log("[LevelProgression] Progression reinitalisee.");
         if (CollectibleManager.Instance != null)
             CollectibleManager.Instance.ResetAllCollectibles();
@@ -198,8 +207,15 @@ public class LevelProgressionManager : MonoBehaviour
         return -1;
     }
 
-    private void Save()
+    // force : la reinitialisation explicite est toujours ecrite, meme hors MainMenu
+    private void Save(bool force = false)
     {
+        if (!saveEnabled && !force)
+        {
+            Debug.Log("[LevelProgression] Progression non sauvegardee (niveau lance hors MainMenu).");
+            return;
+        }
+
         PlayerPrefs.SetString(PREFS_COMPLETED, SerializeSet(completedLevels));
         PlayerPrefs.SetString(PREFS_UNLOCKED, SerializeSet(unlockedLevels));
         PlayerPrefs.SetInt("LastUnlockedLevel", lastUnlockedLevelIndex);
