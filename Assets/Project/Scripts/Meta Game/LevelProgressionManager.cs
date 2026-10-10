@@ -59,6 +59,9 @@ public class LevelProgressionManager : MonoBehaviour
 
     private const string PREFS_COMPLETED = "CompletedLevels";
     private const string PREFS_UNLOCKED = "UnlockedLevels";
+    // Empreinte de l'ordre du catalogue au moment de la sauvegarde : la sauvegarde stocke des positions
+    // dans la liste, donc si l'ordre change, la progression est remise a zero (sinon decalage silencieux)
+    private const string PREFS_CATALOG_SIGNATURE = "CatalogSignature";
 
     void Awake()
     {
@@ -218,6 +221,7 @@ public class LevelProgressionManager : MonoBehaviour
 
         PlayerPrefs.SetString(PREFS_COMPLETED, SerializeSet(completedLevels));
         PlayerPrefs.SetString(PREFS_UNLOCKED, SerializeSet(unlockedLevels));
+        PlayerPrefs.SetString(PREFS_CATALOG_SIGNATURE, ComputeCatalogSignature());
         PlayerPrefs.SetInt("LastUnlockedLevel", lastUnlockedLevelIndex);
         PlayerPrefs.Save();
     }
@@ -228,10 +232,48 @@ public class LevelProgressionManager : MonoBehaviour
         unlockedLevels = DeserializeSet(PlayerPrefs.GetString(PREFS_UNLOCKED, ""));
         lastUnlockedLevelIndex = PlayerPrefs.GetInt("LastUnlockedLevel", -1);
 
+        // Ordre du catalogue change depuis la derniere sauvegarde -> progression remise a zero.
+        // Pas d'empreinte (sauvegarde anterieure a ce controle) : on adopte l'ordre actuel sans rien effacer.
+        string savedSignature = PlayerPrefs.GetString(PREFS_CATALOG_SIGNATURE, "");
+        string currentSignature = ComputeCatalogSignature();
+        if (HasSave() && savedSignature != "" && savedSignature != currentSignature)
+        {
+            completedLevels.Clear();
+            unlockedLevels.Clear();
+            lastUnlockedLevelIndex = -1;
+            Debug.LogWarning("[LevelProgression] L'ordre du catalogue a change depuis la derniere sauvegarde : progression remise a zero.");
+            if (levels.Count > 0) unlockedLevels.Add(0);
+            if (levels.Count > 1) unlockedLevels.Add(1);
+            Save();
+        }
+        else if (HasSave() && savedSignature == "" && saveEnabled)
+        {
+            PlayerPrefs.SetString(PREFS_CATALOG_SIGNATURE, currentSignature);
+            PlayerPrefs.Save();
+        }
+
         if (levels.Count > 0) unlockedLevels.Add(0);
         if (levels.Count > 1) unlockedLevels.Add(1);
 
         Debug.Log("[LevelProgression] Charge. Completes : " + completedLevels.Count + " | Debloques : " + unlockedLevels.Count);
+    }
+
+    // Hash FNV-1a des chemins de scene du catalogue, dans l'ordre (stable d'une session a l'autre)
+    private string ComputeCatalogSignature()
+    {
+        if (catalog == null) return "";
+
+        uint hash = 2166136261;
+        foreach (LevelCatalogEntry entry in catalog.levels)
+        {
+            string path = (entry != null ? entry.scenePath : "") + "|";
+            foreach (char c in path)
+            {
+                hash ^= c;
+                hash *= 16777619;
+            }
+        }
+        return hash.ToString("x8");
     }
 
     private string SerializeSet(HashSet<int> set)

@@ -13,18 +13,18 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_It's Show Time.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_Ice (Caution floor slippery)", priority = 2)]
-    private static void Open_Solo_Level_Ice__Caution_floor_slippery_()
-    {
-        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Ice.unity");
-    }
-
-    [MenuItem("Scene/Solo/Level_Go For a Spin (Go for a Spin !)", priority = 3)]
+    [MenuItem("Scene/Solo/Level_Go For a Spin (Go for a Spin !)", priority = 2)]
     private static void Open_Solo_Level_Go_For_a_Spin__Go_for_a_Spin___()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Go For a Spin.unity");
+    }
+
+    [MenuItem("Scene/Solo/Level_Ice (Caution floor slippery)", priority = 3)]
+    private static void Open_Solo_Level_Ice__Caution_floor_slippery_()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Ice.unity");
     }
 
     [MenuItem("Scene/Solo/Level_HandleHurdles (Handle Hurdles)", priority = 4)]
@@ -90,8 +90,8 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_TrafficJam_03.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_TomatoFest_01 (TomatoFest01)", priority = 13)]
-    private static void Open_Solo_Level_TomatoFest_01__TomatoFest01_()
+    [MenuItem("Scene/Solo/Level_TomatoFest_01 (TomaThrow)", priority = 13)]
+    private static void Open_Solo_Level_TomatoFest_01__TomaThrow_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_TomatoFest_01.unity");

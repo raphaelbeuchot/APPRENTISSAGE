@@ -52,6 +52,9 @@ public class LevelCatalogEditor : Editor
 
             string path = AssetDatabase.GetAssetPath(entry.scene);
 
+            if (entry.scenePath != path)
+                warnings.Add(label + " : chemin de scene perime (scene renommee ou deplacee) -> bouton « Rafraichir les chemins de scene ».");
+
             if (!buildScenes.ContainsKey(path))
                 warnings.Add(label + " : la scene n'est pas dans les Build Settings.");
             else if (!buildScenes[path])
