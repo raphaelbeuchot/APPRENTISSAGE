@@ -5,42 +5,26 @@ using System.Collections.Generic;
 public class PlatformTrainManager : MonoBehaviour
 {
     [Header("Spline")]
+    [Tooltip("Le premier wagon part du point 0 de la spline, le train avance dans le sens de la spline")]
     [SerializeField] private SplineContainer splineContainer;
 
+    [Header("Settings")]
+    [Tooltip("Reglages partages (prefab du wagon, vitesses, sons, materiaux)")]
+    [SerializeField] private LavaTrainSettings settings;
+
     [Header("Platforms")]
-    [SerializeField] private List<PlatformTrainCar> platforms = new List<PlatformTrainCar>();
+    [Tooltip("Nombre de wagons, crees au Start et repartis a intervalles egaux sur la spline")]
+    [SerializeField, Min(1)] private int platformCount = 5;
 
-    [Header("Speed")]
-    [SerializeField] private float trainSpeed = 2f;
-    [SerializeField] private float stopInertia = 3f;
-    [SerializeField] private float startInertia = 25f;
+    private List<PlatformTrainCar> platforms = new List<PlatformTrainCar>();
 
-    [Header("Comment")]
-    [SerializeField] private string holdMessage = "Hold X to stop";
-    [SerializeField] private bool showMessageOnce = true;
     private bool messageShown = false;
     private bool playerWasOnTrain = false;
 
-
-    [Header("Audio Train")]
-    [SerializeField] private AudioClip brakeSound;
-    [SerializeField] private AudioClip releaseSound;
     private AudioSource trainAudioSource;
     private bool wasHoldingX = false;
     private float holdXTimer = 0f;
     private bool brakeSoundPlayed = false;
-    [SerializeField] private AudioClip startSound;
-
-    [Header("Materials")]
-    [SerializeField] private Material lavaTrainBasic;
-    [SerializeField] private Material lavaTrainOn;
-    [SerializeField] private Material lavaTrainOff;
-
-    [Header("Disc Scale")]
-    [SerializeField] private float discScaleBase = 0.8f;
-    [SerializeField] private float discScaleOnPlatform = 0.7f;
-    [SerializeField] private float discScaleHoldingX = 0.6f;
-    [SerializeField] private float discLerpSpeed = 5f;
 
     private float currentSpeed = 0f;
     private float splineLength = 0f;
@@ -58,19 +42,22 @@ public class PlatformTrainManager : MonoBehaviour
             return;
         }
 
-        splineLength = splineContainer.Spline.GetLength();
-
-        if (platforms.Count == 0)
+        if (settings == null || settings.platformPrefab == null)
         {
-            Debug.LogError("[PlatformTrainManager] Aucune plateforme assignee !");
+            Debug.LogError("[PlatformTrainManager] LavaTrainSettings (ou son prefab de wagon) non assigne !");
             enabled = false;
             return;
         }
 
-        float spacing = 1f / platforms.Count;
-        for (int i = 0; i < platforms.Count; i++)
+        splineLength = splineContainer.Spline.GetLength();
+
+        float spacing = 1f / platformCount;
+        for (int i = 0; i < platformCount; i++)
         {
-            platforms[i].currentProgress = spacing * i;
+            PlatformTrainCar car = Instantiate(settings.platformPrefab, GetSplinePosition(spacing * i), settings.platformPrefab.transform.rotation, transform);
+            car.name = settings.platformPrefab.name + " (" + i + ")";
+            car.currentProgress = spacing * i;
+            platforms.Add(car);
         }
 
         lastPositions = new Vector3[platforms.Count];
@@ -78,9 +65,8 @@ public class PlatformTrainManager : MonoBehaviour
 
         for (int i = 0; i < platforms.Count; i++)
         {
-            lastPositions[i] = GetSplinePosition(platforms[i].currentProgress);
-            platforms[i].transform.position = lastPositions[i];
-            currentDiscScales[i] = discScaleBase;
+            lastPositions[i] = platforms[i].transform.position;
+            currentDiscScales[i] = settings.discScaleBase;
         }
 
         currentSpeed = 0f;
@@ -106,25 +92,25 @@ public class PlatformTrainManager : MonoBehaviour
 
         if (justBoarded)
         {
-            if (!showMessageOnce || !messageShown)
+            if (!settings.showMessageOnce || !messageShown)
             {
-                CommentPanel.Show(holdMessage);
+                CommentPanel.Show(settings.holdMessage);
                 messageShown = true;
             }
 
-            if (startSound != null)
-                trainAudioSource.PlayOneShot(startSound);
+            if (settings.startSound != null)
+                trainAudioSource.PlayOneShot(settings.startSound);
         }
 
         playerWasOnTrain = playerOnTrain;
-        // Son brake : apres 0.2s de maintien
+        // Son brake : apres 0.1s de maintien
         if (holdingX)
         {
             holdXTimer += Time.fixedDeltaTime;
             if (!brakeSoundPlayed && holdXTimer >= 0.1f)
             {
-                if (brakeSound != null)
-                    trainAudioSource.PlayOneShot(brakeSound);
+                if (settings.brakeSound != null)
+                    trainAudioSource.PlayOneShot(settings.brakeSound);
                 brakeSoundPlayed = true;
             }
         }
@@ -132,16 +118,16 @@ public class PlatformTrainManager : MonoBehaviour
         {
             if (wasHoldingX && playerOnTrain)
             {
-                if (releaseSound != null)
-                    trainAudioSource.PlayOneShot(releaseSound);
+                if (settings.releaseSound != null)
+                    trainAudioSource.PlayOneShot(settings.releaseSound);
             }
             holdXTimer = 0f;
             brakeSoundPlayed = false;
         }
 
         wasHoldingX = holdingX;
-        float targetSpeed = holdingX ? 0f : trainSpeed;
-        float inertia = holdingX ? stopInertia : startInertia;
+        float targetSpeed = holdingX ? 0f : settings.trainSpeed;
+        float inertia = holdingX ? settings.stopInertia : settings.startInertia;
         currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, inertia * Time.fixedDeltaTime);
 
         float progressIncrement = (currentSpeed / splineLength) * Time.fixedDeltaTime;
@@ -168,21 +154,21 @@ public class PlatformTrainManager : MonoBehaviour
             // Material
             if (platforms[i] == playerCar)
             {
-                platforms[i].lavaTrainFloor.sharedMaterial = holdingX ? lavaTrainOff : lavaTrainOn;
+                platforms[i].lavaTrainFloor.sharedMaterial = holdingX ? settings.lavaTrainOff : settings.lavaTrainOn;
             }
             else
             {
-                platforms[i].lavaTrainFloor.sharedMaterial = lavaTrainBasic;
+                platforms[i].lavaTrainFloor.sharedMaterial = settings.lavaTrainBasic;
             }
 
             // Scale disque
             float targetScale;
             if (platforms[i] == playerCar)
-                targetScale = holdingX ? discScaleHoldingX : discScaleOnPlatform;
+                targetScale = holdingX ? settings.discScaleHoldingX : settings.discScaleOnPlatform;
             else
-                targetScale = discScaleBase;
+                targetScale = settings.discScaleBase;
 
-            currentDiscScales[i] = Mathf.Lerp(currentDiscScales[i], targetScale, discLerpSpeed * Time.fixedDeltaTime);
+            currentDiscScales[i] = Mathf.Lerp(currentDiscScales[i], targetScale, settings.discLerpSpeed * Time.fixedDeltaTime);
 
             Transform discTransform = platforms[i].lavaTrainFloor.transform;
             Vector3 s = discTransform.localScale;
@@ -204,5 +190,37 @@ public class PlatformTrainManager : MonoBehaviour
     {
         if (player == null) return false;
         return player.GetCurrentPlatform() is PlatformTrainCar;
+    }
+
+    // Apercu en edition : la ou chaque wagon sera cree au Start (meme calcul que Start)
+    void OnDrawGizmos()
+    {
+        if (Application.isPlaying) return;
+        if (splineContainer == null || platformCount < 1) return;
+
+        // Forme du wagon : les meshes du prefab (plaque + disque), relatifs a sa racine
+        PlatformTrainCar prefab = settings != null ? settings.platformPrefab : null;
+        MeshFilter[] meshes = prefab != null ? prefab.GetComponentsInChildren<MeshFilter>() : new MeshFilter[0];
+        Vector3 rootPosition = prefab != null ? prefab.transform.position : Vector3.zero;
+
+        float spacing = 1f / platformCount;
+        for (int i = 0; i < platformCount; i++)
+        {
+            Vector3 position = GetSplinePosition(spacing * i);
+            Gizmos.color = i == 0 ? new Color(1f, 0.9f, 0f, 0.6f) : new Color(1f, 0.5f, 0f, 0.6f);
+
+            if (meshes.Length == 0)
+            {
+                Gizmos.DrawCube(position, new Vector3(1f, 0.1f, 1f));
+                continue;
+            }
+
+            foreach (MeshFilter mf in meshes)
+            {
+                if (mf.sharedMesh == null) continue;
+                Vector3 offset = mf.transform.position - rootPosition;
+                Gizmos.DrawMesh(mf.sharedMesh, position + offset, mf.transform.rotation, mf.transform.lossyScale);
+            }
+        }
     }
 }

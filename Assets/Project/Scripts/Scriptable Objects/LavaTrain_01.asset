@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcf68cdd146049eea222a7b9cbe6fe8b, type: 3}
+  m_Name: LavaTrain_01
+  m_EditorClassIdentifier: Assembly-CSharp::LavaTrainSettings
+  platformPrefab: {fileID: 3815674186385368104, guid: d9c8ddd2c20c71247a4436ea065cf7ac, type: 3}
+  trainSpeed: 1
+  stopInertia: 2
+  startInertia: 25
+  holdMessage: Hold X to stop
+  showMessageOnce: 1
+  startSound: {fileID: 8300000, guid: 1d77b499a2ce6a0438497f9312a98597, type: 3}
+  brakeSound: {fileID: 8300000, guid: 2d08e399dc96fbc4eaaf724aec3fb5dc, type: 3}
+  releaseSound: {fileID: 8300000, guid: b9ef0d084c2cb014d8fe452e71cab848, type: 3}
+  lavaTrainBasic: {fileID: 2100000, guid: 929a012dd902395439afad2329f92c60, type: 2}
+  lavaTrainOn: {fileID: 2100000, guid: 57972a36ba692ab44abffee5db2aa4dc, type: 2}
+  lavaTrainOff: {fileID: 2100000, guid: 820e00f84e8137a4098a0467738b9d44, type: 2}
+  discScaleBase: 0.6
+  discScaleOnPlatform: 0.7
+  discScaleHoldingX: 0.5
+  discLerpSpeed: 3.5
