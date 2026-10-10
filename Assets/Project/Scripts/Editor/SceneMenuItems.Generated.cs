@@ -146,8 +146,8 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_LavaTrain03.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_Epervier02 (Bowling II)", priority = 21)]
-    private static void Open_Solo_Level_Epervier02__Bowling_II_()
+    [MenuItem("Scene/Solo/Level_Epervier02 (Bowling III)", priority = 21)]
+    private static void Open_Solo_Level_Epervier02__Bowling_III_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Epervier02.unity");
