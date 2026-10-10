@@ -103,7 +103,7 @@ Rien de tout ça ne change le comportement en jeu.
 Même logique que le principe 1 : l'ordre de la campagne dans un asset unique, par référence de scène au lieu des numéros de build. Contexte du problème dans `CE_QUI_RESTE_A_FAIRE.md` (section TECH).
 
 **Étapes** :
-1. [x] **Asset `LevelCatalog`** (2026-10-10, validé dans Unity) — `Scripts/Meta Game/LevelCatalog.cs`, `Scripts/Editor/LevelCatalogEditor.cs` (alertes : ligne sans scène, scène hors Build Settings ou désactivée, scène en double, nom affiché en double ; bouton « Rafraîchir les chemins de scène »), `Scripts/Editor/LevelCatalogEntryDrawer.cs` (titre de ligne = nom de la scène). Asset `Project/ScriptableObjects/LevelCatalog.asset` pré-rempli avec les 24 niveaux de MainMenu. **Pas encore utilisé par le jeu.**
+1. [x] **Asset `LevelCatalog`** (2026-10-10, validé dans Unity) — `Scripts/Meta Game/LevelCatalog.cs`, `Scripts/Editor/LevelCatalogEditor.cs` (alertes : ligne sans scène, scène hors Build Settings ou désactivée, scène en double, nom affiché en double ; bouton « Rafraîchir les chemins de scène »), `Scripts/Editor/LevelCatalogEntryDrawer.cs` (titre de ligne = nom de la scène). Asset `Project/Resources/LevelCatalog.asset` pré-rempli avec les 24 niveaux de MainMenu (déplacé de `Project/ScriptableObjects/` vers `Resources/` à l'étape 3, même identifiant). Utilisé par le jeu depuis l'étape 2a.
    - Une ligne = la scène (référence, éditeur) + son chemin (rempli automatiquement, utilisé en jeu) + nom affiché (optionnel) + collectibles.
    - Le nom affiché ne sert qu'à l'écran LevelSelect, atteint seulement à la fin du dernier niveau, sans `PostVictorySequencer`, ou par un vieux chemin de `LevelManager`. Si vide → nom de la scène (à l'étape 2).
    - Collectibles reproduits tels qu'effectifs dans MainMenu : seulement **Rush Hour III** (`RushHour03`) et **Lava Train III** (`LavaTrain_03`). Les autres listes avaient été vidées (d'anciens identifiants traînent encore, inutilisés, dans le fichier de MainMenu).
@@ -114,7 +114,7 @@ Même logique que le principe 1 : l'ordre de la campagne dans un asset unique, p
    - [ ] **2b — remise à zéro automatique de la progression quand l'ordre du catalogue change** (empreinte de l'ordre dans la sauvegarde). Décidé le 2026-10-10 : en dev, une remise à zéro est souhaitable ; il s'agit surtout d'éviter un décalage silencieux si on oublie.
    - [ ] **2c — sécurité des chemins de scène** : alerte si un chemin est périmé (scène renommée/déplacée), mise à jour automatique avant un build.
    - ⏸ **Sauvegarde par identifiant de scène** (au lieu de la position dans la liste) : **à faire avant de distribuer des builds** (testeurs, sortie). Aujourd'hui la sauvegarde (PlayerPrefs `CompletedLevels`, `UnlockedLevels`, `LastUnlockedLevel`) stocke des positions → réordonner décale la progression.
-3. [ ] **Texte de lancement dans le catalogue** (décidé le 2026-10-10 : centraliser). Voir ci-dessous.
+3. [x] **Texte de lancement dans le catalogue** (validé le 2026-10-11). Voir ci-dessous.
 4. [x] ~~`SceneMenuGenerator` lit le catalogue~~ → fait avec 2a.
 5. [ ] Multi (Race / Coin Race), plus tard.
 
@@ -129,7 +129,7 @@ But : la **vision globale de la progression** de la campagne, qui manquait au pr
 
 **Règles** :
 - Enrichir **au fil des besoins réels**, un champ à la fois, pas de champs « au cas où ».
-- **Chaque champ a un repli identique** : si le catalogue ne dit rien (champ vide, ou scène hors campagne : test, multi, tuto), la scène garde son réglage local.
+- **Dans la campagne, le catalogue décide seul** (règle précisée le 2026-10-11). Une scène présente dans le catalogue ne lit **jamais** son réglage local, même si le champ est vide : un champ vide est un oubli, signalé par une alerte dans l'Inspector du catalogue (sinon une vieille erreur de copie réapparaîtrait en silence). Le réglage local ne sert qu'aux **scènes hors catalogue** (multi, tests, tutos). Les réglages locaux restés dans les scènes de la campagne deviennent du ménage.
 - Si les lignes deviennent trop épaisses : variante « une fiche de niveau par asset, le catalogue ne fait que les ordonner ». Pas nécessaire aujourd'hui.
 
 **Candidats, dans l'ordre** : (1) texte de lancement — décidé ; (2) **loadout** (balai / spray) — aujourd'hui en overrides du joueur dans chaque scène, dispersés et illisibles à l'échelle de la campagne ; (3) musique, si besoin de la piloter niveau par niveau.
@@ -138,23 +138,26 @@ But : la **vision globale de la progression** de la campagne, qui manquait au pr
 
 **Aujourd'hui** : `CountdownTextConfig` (champ `titleMessage`, plus les réglages d'animation) est sur l'objet `CountdownText` du prefab `UI` (aussi `UI_Multi`, `UI_ShowTime`) ; chaque scène remplace le texte dans son instance. `GameUIManager` le lit au compte à rebours. Sans lien avec le nom affiché du catalogue.
 
-**Branchement proposé (suggestion)** : un champ « texte de lancement » par ligne du catalogue. Au compte à rebours, `GameUIManager` demande le texte de la scène en cours (par son chemin) via `LevelProgressionManager` ; si la scène n'est pas dans le catalogue ou que le texte est vide → texte de `CountdownTextConfig` comme aujourd'hui (scènes multi, test, tutos inchangées). `CountdownTextConfig` garde les réglages d'animation. Dépend de l'étape 2. ⚠️ `GameUIManager` est partagé avec le multi → checklist solo + vérifier une scène multi.
+**Branchement retenu** : champ `launchText` par ligne du catalogue ; catalogue rangé dans `Resources/` et lu par `LevelCatalog.Get()` (aucune référence à brancher). `CountdownTextConfig.GetTitle()` : scène présente dans le catalogue (trouvée par son chemin) → son `launchText`, **même vide** (alerte « pas de texte de lancement » dans l'Inspector du catalogue) ; scène hors catalogue → son `titleMessage` (multi, tests, tutos). `GameUIManager` inchangé. Écarté : passer par `LevelProgressionManager` (le créerait dans les scènes multi, absent au compte à rebours d'un niveau lancé en éditeur) ou une référence glissée (3 endroits à brancher : prefabs `UI`, `UI_ShowTime`, scène MeetTheEnemies). Textes recopiés depuis les scènes le 2026-10-10, les 24 remplis (It's Show Time : « It's Show Time ! », Pit'em All : « Pit 'em all ! », qui venaient des textes par défaut des prefabs `UI_ShowTime` et `UI`). ⚠️ `CountdownTextConfig` est partagé avec le multi → checklist solo + une scène multi.
 
-**Textes actuels — erreurs de copie à corriger** (choix des textes : à toi) :
+**Ménage** : les `titleMessage` modifiés dans les scènes de la campagne ne servent plus → à supprimer. Le texte par défaut du prefab `UI` est « Pit 'em all ! » (texte d'un niveau devenu défaut de tous) → remettre un texte neutre (ex. « Super Panopticon! »).
+
+**Textes — erreurs de copie à corriger** (désormais directement dans le catalogue ; choix des textes : à toi) :
 | Scène | Texte de lancement actuel | Nom dans la campagne |
 |---|---|---|
-| ~~Level_Ice~~ | ~~Go for a Spin !~~ → **Caution Wet Floor** (corrigé dans la scène le 2026-10-10) | Slippery slope |
+| ~~Level_Ice~~ | ~~Go for a Spin !~~ → **Caution Wet Floor** (corrigé le 2026-10-10) | Caution floor slippery |
 | Level_TomatoFest_01 | It's Show Time ! | TomatoFest01 |
 | Level_Manage the Staff | It's show time ! | Manage the Staff |
 | Level_Bowling_001 / Level_Epervier01 | Right up your alley ! (les deux) | Bowling I / Bowling II |
 
-Pas de texte propre (texte par défaut du prefab) : Pit'em All, It's Show Time, PotPourri, tutos, scènes multi.
+Hors campagne (texte local de la scène ou défaut du prefab) : PotPourri, tutos, scènes multi.
 
 ---
 
 ## Ménage noté en passant
 
-- Deux dossiers de ScriptableObjects : `Project/ScriptableObjects/` (grilles de pits, `LevelCatalog`) et `Scripts/Scriptable Objects/` (réglages : `LavaTrain_01`, `RotatingPlatform_*`…). À regrouper.
+- Deux dossiers de ScriptableObjects : `Project/ScriptableObjects/` (grilles de pits) et `Scripts/Scriptable Objects/` (réglages : `LavaTrain_01`, `RotatingPlatform_*`…). À regrouper. (`LevelCatalog` est maintenant dans `Resources/`.)
+- Level_MeetTheEnemies : objet `CountDownTextSecondaire` mort (un `CountdownTextConfig` « Meet the Staff ! » sans composant texte, rien ne pointe vers lui). Le texte affiché est celui du prefab UI (« Not alone anymore ! »).
 
 ---
 

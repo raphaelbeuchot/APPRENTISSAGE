@@ -62,6 +62,9 @@ public class LevelCatalogEditor : Editor
             else
                 seenScenes[path] = i;
 
+            if (string.IsNullOrEmpty(entry.launchText))
+                warnings.Add(label + " : pas de texte de lancement (rien ne s'affichera au demarrage du niveau).");
+
             if (string.IsNullOrEmpty(entry.levelName))
                 continue;
             if (seenNames.ContainsKey(entry.levelName))

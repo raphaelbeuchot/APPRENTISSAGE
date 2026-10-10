@@ -13,8 +13,8 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_It's Show Time.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_Ice (Slippery slope)", priority = 2)]
-    private static void Open_Solo_Level_Ice__Slippery_slope_()
+    [MenuItem("Scene/Solo/Level_Ice (Caution floor slippery)", priority = 2)]
+    private static void Open_Solo_Level_Ice__Caution_floor_slippery_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Ice.unity");
