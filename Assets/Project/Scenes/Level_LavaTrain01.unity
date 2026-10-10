@@ -25548,17 +25548,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 506873655801851025, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
   m_PrefabInstance: {fileID: 542083163}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &542083165 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2645102951557143351, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
-  m_PrefabInstance: {fileID: 542083163}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
 --- !u!1 &542435366
 GameObject:
   m_ObjectHideFlags: 0
@@ -36006,11 +35995,23 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 542083164}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: goalDoor
+      value: 
+      objectReference: {fileID: 871157096}
+    - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: globalVolume
       value: 
-      objectReference: {fileID: 542083165}
+      objectReference: {fileID: 832575518}
+    - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: objectsToHide.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: 'objectsToHide.Array.data[0]'
+      value: 
+      objectReference: {fileID: 871157096}
+    - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: 'objectsToHide.Array.data[1]'
       value: 
       objectReference: {fileID: 871157096}
     m_RemovedComponents: []
@@ -39683,7 +39684,7 @@ PrefabInstance:
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: redLightMusicLoop
       value: 
-      objectReference: {fileID: 8300000, guid: 33baaeebfb1ef4e4eb5c2b1e532c20a5, type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: sentinelTransform
       value: 
@@ -39695,7 +39696,7 @@ PrefabInstance:
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: greenLightMusicLoop
       value: 
-      objectReference: {fileID: 8300000, guid: 0aa7a84ba97d27f46b02b067f7c60011, type: 3}
+      objectReference: {fileID: 8300000, guid: 32448afd17dc6394993b3699c4d7489d, type: 3}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: redLightDirectional
       value: 
