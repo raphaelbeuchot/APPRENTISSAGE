@@ -143,7 +143,7 @@ But : la **vision globale de la progression** de la campagne, qui manquait au pr
 **Textes actuels — erreurs de copie à corriger** (choix des textes : à toi) :
 | Scène | Texte de lancement actuel | Nom dans la campagne |
 |---|---|---|
-| Level_Ice | Go for a Spin ! | Slippery slope |
+| ~~Level_Ice~~ | ~~Go for a Spin !~~ → **Caution Wet Floor** (corrigé dans la scène le 2026-10-10) | Slippery slope |
 | Level_TomatoFest_01 | It's Show Time ! | TomatoFest01 |
 | Level_Manage the Staff | It's show time ! | Manage the Staff |
 | Level_Bowling_001 / Level_Epervier01 | Right up your alley ! (les deux) | Bowling I / Bowling II |
