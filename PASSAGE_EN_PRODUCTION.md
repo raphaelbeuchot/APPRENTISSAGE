@@ -98,9 +98,46 @@ Rien de tout ça ne change le comportement en jeu.
 
 ---
 
-## Chantiers liés
+## Catalogue de niveaux
 
-- **Catalogue de niveaux** (validé le 2026-10-10, pas commencé) : l'ordre de la campagne par asset et par référence de scène au lieu des numéros de build. Même logique que le principe 1. Détail dans `CE_QUI_RESTE_A_FAIRE.md` (section TECH).
+Même logique que le principe 1 : l'ordre de la campagne dans un asset unique, par référence de scène au lieu des numéros de build. Contexte du problème dans `CE_QUI_RESTE_A_FAIRE.md` (section TECH).
+
+**Étapes** :
+1. [x] **Asset `LevelCatalog`** (2026-10-10, validé dans Unity) — `Scripts/Meta Game/LevelCatalog.cs`, `Scripts/Editor/LevelCatalogEditor.cs` (alertes : ligne sans scène, scène hors Build Settings ou désactivée, scène en double, nom affiché en double ; bouton « Rafraîchir les chemins de scène »), `Scripts/Editor/LevelCatalogEntryDrawer.cs` (titre de ligne = nom de la scène). Asset `Project/ScriptableObjects/LevelCatalog.asset` pré-rempli avec les 24 niveaux de MainMenu. **Pas encore utilisé par le jeu.**
+   - Une ligne = la scène (référence, éditeur) + son chemin (rempli automatiquement, utilisé en jeu) + nom affiché (optionnel) + collectibles.
+   - Le nom affiché ne sert qu'à l'écran LevelSelect, atteint seulement à la fin du dernier niveau, sans `PostVictorySequencer`, ou par un vieux chemin de `LevelManager`. Si vide → nom de la scène (à l'étape 2).
+   - Collectibles reproduits tels qu'effectifs dans MainMenu : seulement **Rush Hour III** (`RushHour03`) et **Lava Train III** (`LavaTrain_03`). Les autres listes avaient été vidées (d'anciens identifiants traînent encore, inutilisés, dans le fichier de MainMenu).
+   - Alerte attendue : « Bowling II » en double (Level_Epervier01 et Level_Epervier02).
+2. [ ] **`LevelProgressionManager` lit le catalogue** ; suppression de la liste de MainMenu et de la liste divergente du prefab `Resources/LevelProgressionManager` (le prefab pointera sur le catalogue). ⚠️ **D'abord** : la sauvegarde (PlayerPrefs `CompletedLevels`, `UnlockedLevels`, `LastUnlockedLevel`) stocke la **position dans la liste** → réordonner la campagne décale les sauvegardes. À régler avant. Puis checklist solo.
+3. [ ] **Texte de lancement dans le catalogue** (décidé le 2026-10-10 : centraliser). Voir ci-dessous.
+4. [ ] `SceneMenuGenerator` lit le catalogue.
+5. [ ] Multi (Race / Coin Race), plus tard.
+
+### Texte de lancement (le texte qui tourne au début du niveau)
+
+**Aujourd'hui** : `CountdownTextConfig` (champ `titleMessage`, plus les réglages d'animation) est sur l'objet `CountdownText` du prefab `UI` (aussi `UI_Multi`, `UI_ShowTime`) ; chaque scène remplace le texte dans son instance. `GameUIManager` le lit au compte à rebours. Sans lien avec le nom affiché du catalogue.
+
+**Branchement proposé (suggestion)** : un champ « texte de lancement » par ligne du catalogue. Au compte à rebours, `GameUIManager` demande le texte de la scène en cours (par son chemin) via `LevelProgressionManager` ; si la scène n'est pas dans le catalogue ou que le texte est vide → texte de `CountdownTextConfig` comme aujourd'hui (scènes multi, test, tutos inchangées). `CountdownTextConfig` garde les réglages d'animation. Dépend de l'étape 2. ⚠️ `GameUIManager` est partagé avec le multi → checklist solo + vérifier une scène multi.
+
+**Textes actuels — erreurs de copie à corriger** (choix des textes : à toi) :
+| Scène | Texte de lancement actuel | Nom dans la campagne |
+|---|---|---|
+| Level_Ice | Go for a Spin ! | Slippery slope |
+| Level_TomatoFest_01 | It's Show Time ! | TomatoFest01 |
+| Level_Manage the Staff | It's show time ! | Manage the Staff |
+| Level_Bowling_001 / Level_Epervier01 | Right up your alley ! (les deux) | Bowling I / Bowling II |
+
+Pas de texte propre (texte par défaut du prefab) : Pit'em All, It's Show Time, PotPourri, tutos, scènes multi.
+
+---
+
+## Ménage noté en passant
+
+- Deux dossiers de ScriptableObjects : `Project/ScriptableObjects/` (grilles de pits, `LevelCatalog`) et `Scripts/Scriptable Objects/` (réglages : `LavaTrain_01`, `RotatingPlatform_*`…). À regrouper.
+
+---
+
+## Chantiers liés
 - **Déploiement du `VictoryManager`** : 13 niveaux solo équipés, voir `Assets/Project/VICTORY_SEQUENCE.md`.
 
 ---
