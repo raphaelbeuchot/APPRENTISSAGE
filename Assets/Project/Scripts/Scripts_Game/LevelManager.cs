@@ -181,6 +181,11 @@ public class LevelManager : MonoBehaviour
         LevelStatsTracker.Instance?.OnLevelCompleted();
         Debug.Log("=== NIVEAU COMPLETE! ===");
 
+        // Plus de bascule vue basse jusqu'a la fin du niveau (le retour en vue normale
+        // se fait sous l'ecran de victoire, cf. PostVictorySequencer.OnVictoryScreenCovered).
+        foreach (CameraPanningExtension panning in FindObjectsOfType<CameraPanningExtension>())
+            panning.LockViewToggle();
+
         if (CollectibleManager.Instance != null)
             CollectibleManager.Instance.ConfirmRunCollectibles();
 

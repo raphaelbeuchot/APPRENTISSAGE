@@ -43,6 +43,10 @@ public class PostVictorySequencer : MonoBehaviour
     [Tooltip("Distance de montee en Y (si skipDecorExit)")]
     [SerializeField] private float sentinelRiseDistance = 12f;
 
+    [Header("Fin du VictoryScale")]
+    [Tooltip("GOs desactives (SetActive false) des que le fond de l'ecran de victoire couvre la scene, juste apres le VictoryScale")]
+    [SerializeField] private GameObject[] objectsToHideOnVictory;
+
     [Header("5d — EndCurtain")]
     [HideInInspector] [SerializeField] private EndCurtainRise endCurtain;
 
@@ -154,6 +158,23 @@ public class PostVictorySequencer : MonoBehaviour
     {
         Debug.Log("[PostVictory] Sequence demarre.");
         StartCoroutine(SequenceCoroutine());
+    }
+
+    /// <summary>Appele par VictoryUI quand le fond couvre la scene (fin du VictoryScale).</summary>
+    public void OnVictoryScreenCovered()
+    {
+        // Retour en vue normale si le joueur etait en vue basse (invisible : sous le fond)
+        foreach (CameraPanningExtension panning in FindObjectsOfType<CameraPanningExtension>())
+            panning.ForceNormalView();
+
+        if (objectsToHideOnVictory == null) return;
+
+        foreach (GameObject go in objectsToHideOnVictory)
+        {
+            if (go != null)
+                go.SetActive(false);
+        }
+        Debug.Log($"[PostVictory] {objectsToHideOnVictory.Length} objet(s) desactive(s) a la fin du VictoryScale.");
     }
 
     // ============================================

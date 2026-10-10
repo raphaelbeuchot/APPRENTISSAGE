@@ -150,6 +150,10 @@ public class VictoryUI : MonoBehaviour
         foreach (var ghost in ghosts)
             if (ghost != null) Destroy(ghost.gameObject);
 
+        // 3a. Fin du VictoryScale, scene couverte par le fond : objets a desactiver + retour en vue normale
+        if (PostVictorySequencer.Instance != null)
+            PostVictorySequencer.Instance.OnVictoryScreenCovered();
+
         // 3b. Si skipTexts : pas de slide, on active l'input directement
         if (skipTexts)
         {

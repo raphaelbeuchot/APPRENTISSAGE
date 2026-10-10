@@ -42,6 +42,9 @@ public class CameraPanningExtension : CinemachineExtension
     private Vector3 currentPanOffset;
     private bool isHighPosition = false;
     public bool isLowView = false;
+    // Victoire (solo) : plus de bascule de vue jusqu'a la fin du niveau, sinon la vue basse
+    // reprend la priorite sur les cameras de victoire / TransitionRoom.
+    private bool viewToggleLocked = false;
     private Transform playerTransform;
     private Dictionary<Renderer, Material[]> originalMaterials = new Dictionary<Renderer, Material[]>();
     private HashSet<Renderer> occludedRenderers = new HashSet<Renderer>();
@@ -110,6 +113,24 @@ public class CameraPanningExtension : CinemachineExtension
         isHighPosition = true;
     }
 
+    // Victoire (solo) : bloque la bascule vue basse / vue normale jusqu'a la fin du niveau.
+    public void LockViewToggle()
+    {
+        viewToggleLocked = true;
+    }
+
+    // Victoire (solo) : revient en vue normale si on etait en vue basse
+    // (les materiaux masques sont restaures par LateUpdate des que isLowView repasse a faux).
+    public void ForceNormalView()
+    {
+        if (!isLowView) return;
+
+        isLowView = false;
+        if (lowViewCamera != null) lowViewCamera.Priority = inactivePriority;
+        if (activePrimaryCamera != null) activePrimaryCamera.Priority = activePriority;
+        Debug.Log("[CameraPanning] Retour force en vue normale (victoire)");
+    }
+
     public void SetPrimaryCamera(CinemachineCamera newPrimary)
     {
         if (activePrimaryCamera != null) activePrimaryCamera.Priority = inactivePriority;
@@ -132,7 +153,7 @@ public class CameraPanningExtension : CinemachineExtension
     {
         // Multi (instance configuree pour un joueur) : pas de bascule sans camera de vue basse,
         // sinon isLowView passerait a vrai et le masquage d'obstacles se lancerait sans vue basse.
-        bool canToggleView = isHighPosition && (trackedPlayer == null || lowViewCamera != null);
+        bool canToggleView = isHighPosition && !viewToggleLocked && (trackedPlayer == null || lowViewCamera != null);
 
         if (canToggleView && IsToggleViewPressed())
         {
