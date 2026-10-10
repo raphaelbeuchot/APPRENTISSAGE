@@ -11,8 +11,7 @@ using UnityEditor;
 // ou via Scene > Refresh Scene List.
 //
 // Les scenes sont rangees par categorie, dans l'ordre de jeu quand il existe :
-//   Solo            : campagne, lue dans le LevelProgressionManager de MainMenu (overrides)
-//                     complete par le prefab Resources (valeurs non surchargees)
+//   Solo            : campagne, lue dans le LevelCatalog
 //   Multi/Race      : MultiStartUI.levelEntries de MultiStart
 //   Multi/Coin Race : MultiStartUI.coinLevelEntries de MultiStart
 //   Start Menus / Other Menus : listes fixes ci-dessous
@@ -23,9 +22,7 @@ internal static class SceneMenuGenerator
     private const string ScenesRootFolder = "Assets/Project/Scenes";
     private const string GeneratedFilePath = "Assets/Project/Scripts/Editor/SceneMenuItems.Generated.cs";
 
-    private const string MainMenuScenePath = "Assets/Project/Scenes/MainMenu.unity";
     private const string MultiStartScenePath = "Assets/Project/Scenes/MultiStart.unity";
-    private const string ProgressionPrefabPath = "Assets/Project/Resources/LevelProgressionManager.prefab";
 
     private static readonly string[] StartMenuScenes = { "MainMenu", "MultiStart", "LoadingScreen" };
     private static readonly string[] OtherMenuScenes = { "LevelSelect", "WheelOfFortune" };
@@ -60,7 +57,8 @@ internal static class SceneMenuGenerator
         {
             bool relevant = importedAssets.Concat(deletedAssets).Concat(movedAssets).Concat(movedFromAssetPaths)
                 .Select(path => path.Replace('\\', '/'))
-                .Any(path => (path.StartsWith(ScenesRootFolder) && path.EndsWith(".unity")) || path == ProgressionPrefabPath);
+                .Any(path => (path.StartsWith(ScenesRootFolder) && path.EndsWith(".unity"))
+                    || (path.EndsWith(".asset") && AssetDatabase.GetMainAssetTypeAtPath(path) == typeof(LevelCatalog)));
 
             if (relevant)
             {
@@ -102,12 +100,13 @@ internal static class SceneMenuGenerator
         }
 
         // Solo : ordre de la campagne
-        foreach (var level in ReadCampaign())
+        foreach (var entry in ReadCampaign())
         {
-            if (level.sceneIndex < 0 || level.sceneIndex >= buildPaths.Count) continue;
-            string scenePath = buildPaths[level.sceneIndex];
+            if (entry.scene == null) continue;
+            string scenePath = AssetDatabase.GetAssetPath(entry.scene);
+            if (!allScenePaths.Contains(scenePath)) continue;
             string sceneName = Path.GetFileNameWithoutExtension(scenePath);
-            string label = string.IsNullOrEmpty(level.levelName) ? sceneName : sceneName + " (" + level.levelName + ")";
+            string label = string.IsNullOrEmpty(entry.levelName) ? sceneName : sceneName + " (" + entry.levelName + ")";
             Add("Solo", label, scenePath);
         }
 
@@ -135,41 +134,14 @@ internal static class SceneMenuGenerator
         WriteFile(entries);
     }
 
-    // Liste de campagne : valeurs du prefab Resources, surchargees par l'instance de MainMenu.
-    private static List<LevelData> ReadCampaign()
+    // Liste de campagne : lignes du LevelCatalog (premier trouve dans le projet).
+    private static List<LevelCatalogEntry> ReadCampaign()
     {
-        var levels = new List<LevelData>();
-        if (File.Exists(ProgressionPrefabPath))
-        {
-            string prefab = File.ReadAllText(ProgressionPrefabPath).Replace("\r", "");
-            foreach (Match m in Regex.Matches(prefab, @"- levelName: (.*)\n\s+sceneIndex: (-?\d+)"))
-                levels.Add(new LevelData { levelName = Unquote(m.Groups[1].Value), sceneIndex = int.Parse(m.Groups[2].Value) });
-        }
+        string guid = AssetDatabase.FindAssets("t:LevelCatalog").FirstOrDefault();
+        if (guid == null) return new List<LevelCatalogEntry>();
 
-        if (!File.Exists(MainMenuScenePath) || !File.Exists(ProgressionPrefabPath + ".meta")) return levels;
-
-        string guid = Regex.Match(File.ReadAllText(ProgressionPrefabPath + ".meta"), @"guid: ([0-9a-f]+)").Groups[1].Value;
-        string scene = File.ReadAllText(MainMenuScenePath).Replace("\r", "");
-        string instance = Regex.Split(scene, @"\n(?=--- !u!)")
-            .FirstOrDefault(doc => doc.StartsWith("--- !u!1001 ") && doc.Contains("m_SourcePrefab: {fileID: 100100000, guid: " + guid));
-        if (instance == null) return levels;
-
-        Match size = Regex.Match(instance, @"propertyPath: levels\.Array\.size\n\s*value: (\d+)");
-        if (size.Success)
-        {
-            int count = int.Parse(size.Groups[1].Value);
-            while (levels.Count < count) levels.Add(new LevelData { levelName = "", sceneIndex = -1 });
-            if (levels.Count > count) levels.RemoveRange(count, levels.Count - count);
-        }
-
-        foreach (Match m in Regex.Matches(instance, @"propertyPath: levels\.Array\.data\[(\d+)\]\.(levelName|sceneIndex)\n\s*value: (.*)"))
-        {
-            int i = int.Parse(m.Groups[1].Value);
-            if (i >= levels.Count) continue;
-            if (m.Groups[2].Value == "levelName") levels[i].levelName = Unquote(m.Groups[3].Value);
-            else if (int.TryParse(m.Groups[3].Value.Trim(), out int idx)) levels[i].sceneIndex = idx;
-        }
-        return levels;
+        LevelCatalog catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(AssetDatabase.GUIDToAssetPath(guid));
+        return catalog != null ? catalog.levels : new List<LevelCatalogEntry>();
     }
 
     // Noms de scenes d'une liste de MultiStartUI (levelEntries / coinLevelEntries), dans l'ordre.

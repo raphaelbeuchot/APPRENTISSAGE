@@ -108,9 +108,13 @@ Même logique que le principe 1 : l'ordre de la campagne dans un asset unique, p
    - Le nom affiché ne sert qu'à l'écran LevelSelect, atteint seulement à la fin du dernier niveau, sans `PostVictorySequencer`, ou par un vieux chemin de `LevelManager`. Si vide → nom de la scène (à l'étape 2).
    - Collectibles reproduits tels qu'effectifs dans MainMenu : seulement **Rush Hour III** (`RushHour03`) et **Lava Train III** (`LavaTrain_03`). Les autres listes avaient été vidées (d'anciens identifiants traînent encore, inutilisés, dans le fichier de MainMenu).
    - Alerte attendue : « Bowling II » en double (Level_Epervier01 et Level_Epervier02).
-2. [ ] **`LevelProgressionManager` lit le catalogue** ; suppression de la liste de MainMenu et de la liste divergente du prefab `Resources/LevelProgressionManager` (le prefab pointera sur le catalogue). ⚠️ **D'abord** : la sauvegarde (PlayerPrefs `CompletedLevels`, `UnlockedLevels`, `LastUnlockedLevel`) stocke la **position dans la liste** → réordonner la campagne décale les sauvegardes. À régler avant. Puis checklist solo.
+2. **Le jeu lit le catalogue** :
+   - [x] **2a — branchement** (validé le 2026-10-10) : `LevelProgressionManager` a un champ `catalog` et construit sa liste `levels` au Awake (numéro de build calculé depuis le chemin, nom de la scène si nom affiché vide ; scène hors build → erreur console, ligne ignorée). `levels` n'est plus sérialisée : les anciennes listes (24 overrides dans MainMenu, 16 lignes dans le prefab `Resources`) sont des données mortes, ignorées. Catalogue branché dans le prefab `Resources/LevelProgressionManager` (MainMenu en hérite). `SceneMenuGenerator` (menu « Scene ») lit aussi le catalogue (ex-étape 4, nécessaire en même temps). Corrige le bug « niveau lancé depuis l'éditeur → LevelSelect ou ancien niveau suivant après la victoire ».
+   - [ ] **2b — remise à zéro automatique de la progression quand l'ordre du catalogue change** (empreinte de l'ordre dans la sauvegarde). Décidé le 2026-10-10 : en dev, une remise à zéro est souhaitable ; il s'agit surtout d'éviter un décalage silencieux si on oublie.
+   - [ ] **2c — sécurité des chemins de scène** : alerte si un chemin est périmé (scène renommée/déplacée), mise à jour automatique avant un build.
+   - ⏸ **Sauvegarde par identifiant de scène** (au lieu de la position dans la liste) : **à faire avant de distribuer des builds** (testeurs, sortie). Aujourd'hui la sauvegarde (PlayerPrefs `CompletedLevels`, `UnlockedLevels`, `LastUnlockedLevel`) stocke des positions → réordonner décale la progression.
 3. [ ] **Texte de lancement dans le catalogue** (décidé le 2026-10-10 : centraliser). Voir ci-dessous.
-4. [ ] `SceneMenuGenerator` lit le catalogue.
+4. [x] ~~`SceneMenuGenerator` lit le catalogue~~ → fait avec 2a.
 5. [ ] Multi (Race / Coin Race), plus tard.
 
 ### Ce qui a sa place dans le catalogue (décidé le 2026-10-10)

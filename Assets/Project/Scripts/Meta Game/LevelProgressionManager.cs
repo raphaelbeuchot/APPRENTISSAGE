@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
 [System.Serializable]
@@ -35,7 +36,11 @@ public class LevelProgressionManager : MonoBehaviour
     }
 
     [Header("Configuration niveaux")]
-    public List<LevelData> levels = new List<LevelData>();
+    [Tooltip("Ordre de la campagne solo (source unique)")]
+    [SerializeField] private LevelCatalog catalog;
+
+    // Construite depuis le catalogue au Awake (plus reglable dans l'Inspector)
+    [System.NonSerialized] public List<LevelData> levels = new List<LevelData>();
     public int lastUnlockedLevelIndex { get; private set; } = -1;
 
     private ModifierType activeModifier = ModifierType.None;
@@ -55,7 +60,42 @@ public class LevelProgressionManager : MonoBehaviour
         }
         _instance = this;
         DontDestroyOnLoad(gameObject);
+        BuildLevelsFromCatalog();
         Load();
+    }
+
+    private void BuildLevelsFromCatalog()
+    {
+        levels.Clear();
+        if (catalog == null)
+        {
+            Debug.LogError("[LevelProgression] LevelCatalog non assigne !");
+            return;
+        }
+
+        for (int i = 0; i < catalog.levels.Count; i++)
+        {
+            LevelCatalogEntry entry = catalog.levels[i];
+            if (entry == null || string.IsNullOrEmpty(entry.scenePath))
+            {
+                Debug.LogError("[LevelProgression] Catalogue, ligne " + i + " : aucune scene, ligne ignoree.");
+                continue;
+            }
+
+            int buildIndex = SceneUtility.GetBuildIndexByScenePath(entry.scenePath);
+            if (buildIndex < 0)
+            {
+                Debug.LogError("[LevelProgression] Catalogue, ligne " + i + " : scene absente des Build Settings (" + entry.scenePath + "), ligne ignoree.");
+                continue;
+            }
+
+            levels.Add(new LevelData
+            {
+                levelName = string.IsNullOrEmpty(entry.levelName) ? System.IO.Path.GetFileNameWithoutExtension(entry.scenePath) : entry.levelName,
+                sceneIndex = buildIndex,
+                collectibleIDs = entry.collectibleIDs
+            });
+        }
     }
 
     public void CompleteLevel(int sceneIndex)
