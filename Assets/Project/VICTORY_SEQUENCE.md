@@ -35,6 +35,7 @@ GoalDoor → VictoryScale → VictoryUI → Wipe → PostVictorySequencer
 ### 1. GoalDoor atteinte (`LevelManager.OnPlayerReachedGoal`)
 - `LevelStatsTracker.OnLevelCompleted()` — enregistre stats + reset compteur tentatives
 - `player.enabled = false` — freeze le joueur
+- **Vue basse verrouillée** (2026-10-10) : `CameraPanningExtension.LockViewToggle()` sur toutes les extensions → la bascule Y/V ne fait plus rien jusqu'à la fin du niveau (sinon la vue basse reprend la priorité sur `CM_Victory` / `CM_TransitionRoom`)
 - Lance `PlayerVictoryScale.TriggerScale()`
 
 ### 2. VictoryScale (`PlayerVictoryScale`)
@@ -50,6 +51,7 @@ GoalDoor → VictoryScale → VictoryUI → Wipe → PostVictorySequencer
 1. `SentinelCycleManager.StopCycleForVictory()` — arrête cycle + audio + fire `OnCycleChanged(GreenLight)` → tous les `CycleReactiveRenderer` passent en matériau neutre (plus de pulse)
 2. **Fond fade in** (`bgFadeDuration` = 0.4s) — le fond coloré apparaît progressivement sur les ghosts
 3. **Kill ghosts** — détruits une fois couverts par le fond
+   - **3a (2026-10-10)** — `PostVictorySequencer.OnVictoryScreenCovered()` : retour forcé en vue normale si le joueur était en vue basse (`CameraPanningExtension.ForceNormalView()`), puis `SetActive(false)` sur chaque GO de **`objectsToHideOnVictory`** (Inspector du VictoryManager, header « Fin du VictoryScale »). Invisible pour le joueur : la scène est sous le fond. Astuce : ranger le décor à cacher sous des parents vides (ex. `ROAMING OBSTACLES`, `BUILDINGS DECOR` dans TrafficJam_01) et mettre seulement les parents dans la liste.
 4. **Container visible** (`localScale = 1`) — les textes apparaissent dans le layout
 5. **Slides séquentiels** (`textSlideDuration` = 0.35s) :
    - Titre "LEVEL COMPLETE" : slide depuis la gauche → centre + son `titleSlideSound`
@@ -426,9 +428,20 @@ Créer deux prefabs réutilisables :
 2. [x] Auto-assign — champs sûrs implémentés
 3. [x] Volume fade-out progressif
 4. [x] Direction décor — fix murs (player X)
-5. [ ] **Fix détection GoalDoor** — `StopCycleForVictory()` dans `LevelManager.OnPlayerReachedGoal` ← À FAIRE
-6. [ ] **Créer le prefab `VictoryManager`** ← PROCHAINE ÉTAPE PRINCIPALE
-   - Dans Unity : drag du GO VictoryManager → `Prefabs/Victory/`
-7. [ ] Créer le prefab `TransitionRoom`
-   - Dans Unity : drag du GO TransitionRoom → `Prefabs/Victory/`
-8. [ ] Déployer sur les 23 niveaux
+5. [ ] **Fix détection GoalDoor** — `StopCycleForVictory()` dans `LevelManager.OnPlayerReachedGoal` — *probablement obsolète (2026-10-09)* : `GoalDoorNew.ReachGoal()` appelle déjà `StopCycle()` au contact et `VictoryUI` appelle `StopCycleForVictory()` ; à confirmer en jeu (plus de tir après avoir touché la porte) puis cocher
+6. [x] **Prefab `VictoryManager`** — existe (`Prefabs/TransitionRoom/VictoryManager.prefab`)
+7. [x] Prefab `TransitionRoom` — existe (`Prefabs/TransitionRoom/TRANSITIONROOM.prefab`)
+8. [ ] Déployer sur les niveaux — **13 niveaux solo équipés au 2026-10-10** (Bowling_001, Flower01, Flower02, Go For a Spin, GoWithTheFlow01/02, HandleHurdles, Ice, It's Show Time, LavaTrain01, StrangeAttractor, TrafficJam_01, WesternCanyon) ; les autres utilisent encore l'ancien flux de fin (pas cassé, juste incohérent)
+
+---
+
+### Journal de session — 2026-10-09 / 2026-10-10 : fin « rideau seul » partout
+
+**Objectif** : sur toutes les victoires, plus d'expulsion du décor à gauche/droite ; seulement le lever de rideau, comme dans It's Show Time.
+
+- **`Skip Decor Exit` coché dans le prefab `VictoryManager`** → hérité par tous les niveaux (Ice et Go For a Spin l'ont aussi en override à vrai : même résultat, mais ils ne suivront pas si on décoche un jour le prefab). Effet : `DecorExitSequencer` ne tourne plus ; le rideau (`EndCurtainRise`, trouvé par composant) monte comme avant ; **la racine de l'objet tagué `Sentinel` monte** (`sentinelRiseDistance` 12 m / `sentinelRiseDuration` 2 s) puis est désactivée.
+- **Pourquoi la sentinelle montait dans It's Show Time et pas ailleurs** : `PostVictorySequencer` la trouve par **tag `Sentinel`** puis prend `transform.root`. Seul It's Show Time avait un objet tagué (`CentralLightTest`, sous `LevelEssentiels`) → c'est tout `LevelEssentiels` qui montait.
+- **Décision** : taguer **`LevelEssentiels` lui-même** `Sentinel` dans chaque niveau → tout le groupe (sentinelle(s), cercles, volet, StartZone…) monte. Fait dans tous les niveaux équipés sauf **StrangeAttractor** (sentinelle, volet, porte… à la racine de la scène : à ranger sous `LevelEssentiels` puis taguer). ⚠️ Ne jamais ranger sous `LevelEssentiels` un objet nécessaire après la victoire (il est désactivé à la fin de la montée) — `VictoryManager` doit rester ailleurs (racine ou parent `VICTORY`).
+- **Ajout code** : les `ConcentricCirclesSpawner` hors du groupe tagué montent aussi (`RiseAndHide`). Probablement redondant une fois StrangeAttractor rangé → nettoyage noté dans `CE_QUI_RESTE_A_FAIRE.md`.
+- **`objectsToHideOnVictory`** et **verrouillage de la vue basse** : voir étapes 1 et 3a du flow détaillé.
+- Le tag `Sentinel` ne sert nulle part ailleurs que dans `PostVictorySequencer` et `DecorExitSequencer` (ce dernier ne tourne plus).
