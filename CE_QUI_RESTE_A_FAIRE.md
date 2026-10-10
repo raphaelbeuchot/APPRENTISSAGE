@@ -39,6 +39,12 @@
 - [ ] ⚪ **Doublon de nom « Bowling II »** dans la campagne (Level_Epervier01 et Level_Epervier02).
 - [ ] ⚪ **Code mort de l'ancien parcours tuto** : les tutos ne sont plus atteignables (« New Game » charge le premier niveau de la campagne), mais `LevelManager` traite encore le build n° 3 (TutoNew) à part, et `TutoChoiceUI` charge des scènes par des numéros de build qui ne correspondent plus.
 - [ ] ⚪ **PostVictorySequencer — ajout « montée des cercles concentriques » probablement redondant** (2026-10-09) : ajouté pour faire monter les `ConcentricCirclesSpawner` quand `Skip Decor Exit` est coché. Une fois `LevelEssentiels` tagué `Sentinel` dans toutes les scènes avec `VictoryManager`, les cercles montent déjà avec le groupe (ils sont sous `LevelEssentiels` partout sauf dans `StrangeAttractor`). À nettoyer : retirer l'ajout (`RiseAndHide` + boucle dans `Step5c5d`) après avoir rangé `StrangeAttractor` comme les autres niveaux.
+- [ ] ⚪ **Ranger les hiérarchies avec des parents vides : ce qui peut casser** (analyse du 2026-10-10). En général sans risque : les références assignées dans l'Inspector, `FindObjectOfType`, les tags et layers (propres à chaque objet, jamais hérités) survivent au déplacement. **Points sensibles** :
+  - `transform.root` : `PostVictorySequencer` fait monter la **racine** de l'objet tagué `Sentinel` (donc tout `LevelEssentiels`) ; `DecorExitSequencer` traite le décor **par racine** (une racine qui contient Player / Camera / Canvas / EndCurtain est exclue en entier) et exclut tout ce qui a un **ancêtre** sur le layer `Ground`. Regrouper le décor sous un parent commun change ces résultats.
+  - `transform.Find("nom")` : recherche d'enfants par nom/chemin, mais toujours à l'intérieur d'un même objet (pits, ponts du Western Canyon, ragdolls, entrées de LevelSelect) → ne pas renommer/déplacer les enfants **internes** de ces objets.
+  - `GameObject.Find("MainCamera")` dans `PlayerPhysicMovement` : recherche par **nom** → ne pas renommer la caméra.
+  - `GetComponentInParent` / `GetComponentsInChildren` (une trentaine de fichiers) : surtout à l'intérieur d'un personnage ou d'un prefab ; un parent vide ajouté au-dessus n'y change rien tant qu'il ne porte pas de composant.
+  - Dans une instance de prefab, on ne peut pas déplacer les enfants hérités (règle Unity).
 - [ ] 🟡 **Victory sequence** — switch off des éléments de décor mobiles à la victoire : rotating platforms, conveyors, roaming obstacles
 
 ---
@@ -50,6 +56,8 @@
 - [ ] 🟡 **Player — animations tomates** : stance de visée (lock-on actif) + animation de lancer au moment du tir
 - [ ] ⚪ **KeyCollectible — particules ramassage** : effet radial au pickup + petites étoiles qui suivent le joueur s'il se déplace après ramassage
 - [ ] 🟡 **GoalDoor — animation au contact** : au lieu de disparaître dans la VictorySequence, déclencher une animation immédiate dès le OnTriggerEnter du collider (ouverture, explosion, feedback visuel fort)
+  - **Idée précisée (2026-10-10)** : au contact, **glow qui saute à +1.5 puis redescend, en même temps qu'un fade out** de la porte. Faisable dans `GoalDoorNew.ReachGoal()` (coroutine). Points à vérifier avant : le shader/matériau de la porte a-t-il une émission (glow) et supporte-t-il la transparence (fade : Surface Type Transparent, ou dissolve/dither dans un Shader Graph) ? Aujourd'hui la porte est détruite à l'étape 5a de `PostVictorySequencer` (après le wipe) → à adapter si elle disparaît déjà au contact.
+- [ ] 🟡 **Écran de fin du victory scale à revoir** (2026-10-10) : l'écran de victoire (`VictoryUI` : fond coloré + « LEVEL COMPLETE » + nombre d'essais, attente d'un input, puis wipe) ne plaît pas. À repenser (lien avec « Victory — textes adaptatifs » et le lore : texte de la machine ?).
 - [ ] 🟡 **Audio — GoalDoor** : killer le crowd reaction dès que le joueur touche la GoalDoor, et déclencher un son dédié sur GoalDoor reach à la place
 - [ ] ⚪ **Audio — BroomAttack sur Prop** : bruitage au hit d'un GO layer "Prop" — champ à assigner dans l'inspecteur de `PhysicsProp`. Backlog : envisager des ScriptableObjects par type de prop pour varier les sons
 
