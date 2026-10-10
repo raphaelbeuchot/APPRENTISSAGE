@@ -113,6 +113,22 @@ Même logique que le principe 1 : l'ordre de la campagne dans un asset unique, p
 4. [ ] `SceneMenuGenerator` lit le catalogue.
 5. [ ] Multi (Race / Coin Race), plus tard.
 
+### Ce qui a sa place dans le catalogue (décidé le 2026-10-10)
+
+But : la **vision globale de la progression** de la campagne, qui manquait au projet. Une info va dans le catalogue si elle répond à **au moins une** de ces questions :
+1. Elle concerne **le niveau dans son ensemble**, pas un objet précis dedans ?
+2. On veut la **comparer d'un niveau à l'autre** (vue campagne) ?
+3. On en a besoin **avant que la scène soit chargée** (menus, chargement, progression) ?
+
+→ Oui : texte de lancement, loadout, musique, collectibles, plus tard chapitre / temps de référence… → Non : ce qui est spatial ou propre à un système (nombre de wagons, position d'un piège, vitesse d'une plateforme) reste dans la scène ou dans le SO du système.
+
+**Règles** :
+- Enrichir **au fil des besoins réels**, un champ à la fois, pas de champs « au cas où ».
+- **Chaque champ a un repli identique** : si le catalogue ne dit rien (champ vide, ou scène hors campagne : test, multi, tuto), la scène garde son réglage local.
+- Si les lignes deviennent trop épaisses : variante « une fiche de niveau par asset, le catalogue ne fait que les ordonner ». Pas nécessaire aujourd'hui.
+
+**Candidats, dans l'ordre** : (1) texte de lancement — décidé ; (2) **loadout** (balai / spray) — aujourd'hui en overrides du joueur dans chaque scène, dispersés et illisibles à l'échelle de la campagne ; (3) musique, si besoin de la piloter niveau par niveau.
+
 ### Texte de lancement (le texte qui tourne au début du niveau)
 
 **Aujourd'hui** : `CountdownTextConfig` (champ `titleMessage`, plus les réglages d'animation) est sur l'objet `CountdownText` du prefab `UI` (aussi `UI_Multi`, `UI_ShowTime`) ; chaque scène remplace le texte dans son instance. `GameUIManager` le lit au compte à rebours. Sans lien avec le nom affiché du catalogue.
