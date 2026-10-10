@@ -16,6 +16,7 @@
 
 - [ ] 🟡 **PauseMenuUI** — désactiver l'accès au pause menu dans la StartRoom, ou au moins bloquer tant que le fade-in initial n'est pas terminé
 - [ ] 🟡 **Strange Attractor — silhouette blanche à la première attraction** (noté le 2026-10-09) : la première fois que le joueur est attiré, sa silhouette apparaît en **blanc** (comme une détection de la sentinelle) au lieu du **jaune** attendu ; les attractions suivantes sont bien en jaune. Non diagnostiqué.
+- [ ] 🔴 **Bowling — joueur passé à travers le sol** (noté le 2026-10-09) : quand une boule de bowling est descendue du plafond, le joueur est passé à travers le sol. La sécurité existe : `EpervierManager.Update()` (utilisé dans Bowling_001, Epervier01/02, LavaTrain01/02/03 ; variante `EpervierManagerLoop` dans EpervierLoop01) lance chaque frame **un seul raycast vertical**, depuis le centre du joueur à 1,4 m de haut, sur 2 m (`escapeRaycastHeight`), layer `Obstacle` ; s'il touche une boule d'une ligne en état `Dropping`/`Rearranging`, `EscapeCoroutine` pousse le joueur vers l'avant (`ApplyProgressivePush`). **Pistes non vérifiées** : (1) un seul rayon central → une boule qui tombe légèrement décalée chevauche le joueur sans toucher le rayon ; (2) une boule rapide peut passer de « au-dessus de 3,4 m » à « dans le joueur » en une frame (pas de détection) ; (3) la boule n'est pas dans l'état `Dropping`/`Rearranging` au moment du contact. Piste de correctif : un `SphereCast` ou `OverlapCapsule` de la taille du joueur au lieu d'un rayon. Au passage : `Debug.Log("[Epervier] Raycast ne touche rien")` est écrit à chaque frame (spam console).
 - [ ] 🟡 **Sentinelle / RotatingPlatform** — dans le niveau bombs+rotplat : un ennemi projeté par une bombe sur une rotating platform tourne correctement mais n'est plus détecté par la sentinelle — vérifier les états de l'ennemi après impact (état "stunned" / "on platform" qui coupe la détection ?)
 
 ---
@@ -34,6 +35,7 @@
 
 - [ ] ⚪ **KeeponTruckin SDF.asset — toujours dirty** : font TMP en mode Dynamic (m_AtlasPopulationMode: 1), Unity régénère la glyph table à chaque session. Fix rapide : `git update-index --skip-worktree` sur le fichier. Fix propre : passer en mode Static dans Unity (bake tous les caractères utilisés)
 
+- [ ] ⚪ **PostVictorySequencer — ajout « montée des cercles concentriques » probablement redondant** (2026-10-09) : ajouté pour faire monter les `ConcentricCirclesSpawner` quand `Skip Decor Exit` est coché. Une fois `LevelEssentiels` tagué `Sentinel` dans toutes les scènes avec `VictoryManager`, les cercles montent déjà avec le groupe (ils sont sous `LevelEssentiels` partout sauf dans `StrangeAttractor`). À nettoyer : retirer l'ajout (`RiseAndHide` + boucle dans `Step5c5d`) après avoir rangé `StrangeAttractor` comme les autres niveaux.
 - [ ] 🟡 **Victory sequence** — switch off des éléments de décor mobiles à la victoire : rotating platforms, conveyors, roaming obstacles
 
 ---
