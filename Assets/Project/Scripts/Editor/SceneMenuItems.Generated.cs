@@ -111,8 +111,8 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_MeetTheEnemies.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_Manage the Staff (Manage the Staff)", priority = 16)]
-    private static void Open_Solo_Level_Manage_the_Staff__Manage_the_Staff_()
+    [MenuItem("Scene/Solo/Level_Manage the Staff (Riff Raff)", priority = 16)]
+    private static void Open_Solo_Level_Manage_the_Staff__Riff_Raff_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Manage the Staff.unity");

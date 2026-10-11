@@ -132,7 +132,18 @@ But : la **vision globale de la progression** de la campagne, qui manquait au pr
 - **Dans la campagne, le catalogue décide seul** (règle précisée le 2026-10-11). Une scène présente dans le catalogue ne lit **jamais** son réglage local, même si le champ est vide : un champ vide est un oubli, signalé par une alerte dans l'Inspector du catalogue (sinon une vieille erreur de copie réapparaîtrait en silence). Le réglage local ne sert qu'aux **scènes hors catalogue** (multi, tests, tutos). Les réglages locaux restés dans les scènes de la campagne deviennent du ménage.
 - Si les lignes deviennent trop épaisses : variante « une fiche de niveau par asset, le catalogue ne fait que les ordonner ». Pas nécessaire aujourd'hui.
 
-**Candidats, dans l'ordre** : (1) texte de lancement — décidé ; (2) **loadout** (balai / spray) — aujourd'hui en overrides du joueur dans chaque scène, dispersés et illisibles à l'échelle de la campagne ; (3) musique, si besoin de la piloter niveau par niveau.
+**Candidats, dans l'ordre** : (1) texte de lancement — fait ; (2) **loadout** (balai / spray) — aujourd'hui en overrides du joueur dans chaque scène, dispersés et illisibles à l'échelle de la campagne ; (3) musique, si besoin de la piloter niveau par niveau.
+
+**Loadout — objection (2026-10-11)** : en travaillant une scène, c'est pratique de désactiver balai/spray à la volée pour tester. Or, avec « le catalogue décide seul », la case de la scène serait ignorée. Principe retenu : **les réglages de test vivent dans un outil de debug, pas dans les données du niveau** (le désordre actuel du loadout vient sans doute en partie de tests jamais remis en place). → d'abord le **DevPanel** (ci-dessous), puis le loadout dans le catalogue.
+
+### DevPanel (outil de playtest)
+
+Décidé le 2026-10-11. `Scripts/Meta Game/DevPanel.cs` — première version validée le 2026-10-11.
+- **F1** en Play ouvre/ferme un panneau de cases à cocher ; **jeu en pause** pendant l'ouverture (vitesse rétablie à la fermeture).
+- S'installe tout seul au lancement (`RuntimeInitializeOnLoadMethod`), rien à poser dans les scènes ; **éditeur et builds de développement seulement** (absent d'un build joueur).
+- Options **retenues d'un Play à l'autre** (PlayerPrefs `DEV_…`) ; **badge « DEV »** à l'écran tant qu'une option est active. ⚠️ `DevManager.startFromZero` vide toutes les PlayerPrefs, donc aussi ces options.
+- Dessiné en `OnGUI` (outil de debug : pas de Canvas ni de prefab). Ajouter une option = un champ + une ligne + sa sauvegarde.
+- **Options** : (1) **Forcer le loadout** + balai / spray — appliqué à chaque lancement de niveau par-dessus le loadout du niveau, décoché → loadout du niveau rétabli (`PlayerLoadout.ApplyLoadout` / `RestoreLevelLoadout`). Solo uniquement (rien n'est touché s'il y a plusieurs joueurs). (2) À venir : invincible (`PlayerHealth`), puis selon les besoins (niveau suivant, ralentir le temps, couper la sentinelle…).
 
 ### Texte de lancement (le texte qui tourne au début du niveau)
 
@@ -147,7 +158,7 @@ But : la **vision globale de la progression** de la campagne, qui manquait au pr
 |---|---|---|
 | ~~Level_Ice~~ | ~~Go for a Spin !~~ → **Caution Wet Floor** (corrigé le 2026-10-10) | Caution floor slippery |
 | Level_TomatoFest_01 | It's Show Time ! | TomatoFest01 |
-| Level_Manage the Staff | It's show time ! | Manage the Staff |
+| ~~Level_Manage the Staff~~ | ~~It's show time !~~ → **Riff Raff** (corrigé dans le catalogue le 2026-10-11) | Riff Raff |
 | Level_Bowling_001 / Level_Epervier01 | Right up your alley ! (les deux) | Bowling I / Bowling II |
 
 Hors campagne (texte local de la scène ou défaut du prefab) : PotPourri, tutos, scènes multi.
