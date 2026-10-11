@@ -10,6 +10,10 @@ public class LevelCatalogEditor : Editor
     {
         LevelCatalog catalog = (LevelCatalog)target;
 
+        if (GUILayout.Button("Ouvrir dans Game Catalog", GUILayout.Height(28)))
+            GameCatalogWindow.Open();
+        EditorGUILayout.Space();
+
         List<string> warnings = CollectWarnings(catalog);
         if (warnings.Count == 0)
             EditorGUILayout.HelpBox(catalog.levels.Count + " niveaux, aucun probleme.", MessageType.Info);
@@ -28,7 +32,8 @@ public class LevelCatalogEditor : Editor
         DrawDefaultInspector();
     }
 
-    private List<string> CollectWarnings(LevelCatalog catalog)
+    // Partage avec GameCatalogWindow
+    internal static List<string> CollectWarnings(LevelCatalog catalog)
     {
         List<string> warnings = new List<string>();
 

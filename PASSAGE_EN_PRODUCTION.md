@@ -118,6 +118,14 @@ Même logique que le principe 1 : l'ordre de la campagne dans un asset unique, p
 4. [x] ~~`SceneMenuGenerator` lit le catalogue~~ → fait avec 2a.
 5. [ ] Multi (Race / Coin Race), plus tard.
 
+### Fenêtre Game Catalog (décidée le 2026-10-11)
+
+Vue campagne du catalogue dans une **fenêtre dédiée**, menu du haut **Game Catalog > Ouvrir le catalogue** (pas de raccourci clavier). Un tableau, une ligne par niveau dans l'ordre de jeu, lisible sans rien déplier.
+- **Colonne Niveau = l'appellation** : scène (titre), nom affiché, texte de lancement (modifiables sur place). Détail dépliable : référence de scène, chemin, liste des collectibles. Glisser-déposer pour réordonner (Ctrl+Z), alertes partagées avec l'Inspector. Bouton « Ouvrir dans Game Catalog » dans l'Inspector de l'asset.
+- **Colonnes** : Collectibles (nombre) ; puis **Balai / Spray** (réglages **pilotés** : le catalogue décide) ; puis **Caisse de tomates / Ennemis** (**observés** : lus dans les scènes par un bouton « Analyser les scènes », résultat gardé avec sa date — la vérité reste le contenu de la scène, pas de double vérité).
+- **Étapes** : (1) [x] la fenêtre avec les champs actuels (validée le 2026-10-11) — `Scripts/Editor/GameCatalogWindow.cs` ; (2) [ ] loadout : colonnes Balai/Spray, import depuis les scènes, `PlayerLoadout` lit le catalogue ; (3) [ ] colonnes observées caisse/ennemis + « Analyser les scènes ».
+- Idée DevPanel liée : « Désactiver les ennemis » (test), plutôt que de piloter les ennemis depuis le catalogue.
+
 ### Ce qui a sa place dans le catalogue (décidé le 2026-10-10)
 
 But : la **vision globale de la progression** de la campagne, qui manquait au projet. Une info va dans le catalogue si elle répond à **au moins une** de ces questions :
