@@ -631,6 +631,11 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: db0e068500e2fa147ac1fe4319d7307b, type: 2}
   flameRenderer: {fileID: 8618912776951890525}
   healthBarUI: {fileID: 0}
+  enemyDetectionRange: 8
+  enemyAttractionForce: 3
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1 &3682582575042725816
 GameObject:
   m_ObjectHideFlags: 0
@@ -1059,7 +1064,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 30e51f7694b853c42ac9769cb896c378, type: 2}
+  - {fileID: 2100000, guid: 03701c57cb001804ba36e15f2d9664e6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1279,7 +1284,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 30e51f7694b853c42ac9769cb896c378, type: 2}
+  - {fileID: 2100000, guid: 03701c57cb001804ba36e15f2d9664e6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

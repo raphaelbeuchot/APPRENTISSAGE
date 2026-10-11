@@ -3,6 +3,8 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using Unity.Cinemachine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System;
 
 /// <summary>
@@ -36,12 +38,15 @@ public class PostVictorySequencer : MonoBehaviour
     [SerializeField] private bool skipDecorExit = false;
     [HideInInspector] [SerializeField] private DecorExitSequencer decorExit;
 
-    [Tooltip("Transform racine de la sentinelle (auto via tag Sentinel)")]
-    [HideInInspector] [SerializeField] private Transform sentinelRoot;
-    [Tooltip("Duree de la montee de la sentinelle (si skipDecorExit)")]
+    // Tout objet tague Sentinel monte (avec ses enfants), puis est desactive. Un objet tague sous un autre
+    // objet tague monte deja avec lui (pas de double montee). Auto au Awake.
+    private readonly List<Transform> risingObjects = new List<Transform>();
+    [Tooltip("Duree de la montee des objets tagues Sentinel (si skipDecorExit)")]
     [SerializeField] private float sentinelRiseDuration = 2f;
     [Tooltip("Distance de montee en Y (si skipDecorExit)")]
     [SerializeField] private float sentinelRiseDistance = 12f;
+    [Tooltip("Securite : delai maximum d'attente des montees (rideau, objets tagues) avant de poursuivre la sequence")]
+    [SerializeField] private float maxRiseWait = 10f;
 
     [Header("Fin du VictoryScale")]
     [Tooltip("GOs desactives (SetActive false) des que le fond de l'ecran de victoire couvre la scene, juste apres le VictoryScale")]
@@ -123,11 +128,11 @@ public class PostVictorySequencer : MonoBehaviour
         if (transitionRoomDoor == null)
             transitionRoomDoor = FindObjectOfType<TransitionRoomDoor>();
 
-        if (sentinelRoot == null)
-        {
-            GameObject go = GameObject.FindWithTag("Sentinel");
-            if (go != null) sentinelRoot = go.transform.root;
-        }
+        // Tous les objets tagues Sentinel (actifs) ; on ne garde que les plus hauts dans la hierarchie
+        risingObjects.Clear();
+        foreach (GameObject go in GameObject.FindGameObjectsWithTag("Sentinel"))
+            risingObjects.Add(go.transform);
+        risingObjects.RemoveAll(t => risingObjects.Any(other => other != t && t.IsChildOf(other)));
 
         if (cm_transitionRoom == null)
         {
@@ -260,7 +265,6 @@ public class PostVictorySequencer : MonoBehaviour
         // Flags initiaux : true si le composant est absent ou l'etape skippee (pas besoin d'attendre)
         bool decorDone    = decorExit   == null || skipDecorExit;
         bool curtainDone  = endCurtain  == null;
-        bool sentinelDone = !skipDecorExit || sentinelRoot == null;
 
         if (!skipDecorExit && decorExit != null)
         {
@@ -273,21 +277,28 @@ public class PostVictorySequencer : MonoBehaviour
             else Debug.LogWarning("[PostVictory] Pas de DecorExitSequencer assigne — etape 5c skippee.");
         }
 
-        if (skipDecorExit && sentinelRoot != null)
-            StartCoroutine(SentinelRise(() => sentinelDone = true));
-        else if (skipDecorExit)
-            Debug.LogWarning("[PostVictory] skipDecorExit=true mais sentinelRoot non trouve — sentinel rise skippee.");
+        // Tout objet tague Sentinel monte (avec ses enfants) puis est desactive
+        int risingPending = 0;
+        if (skipDecorExit)
+        {
+            if (risingObjects.Count == 0)
+                Debug.LogWarning("[PostVictory] skipDecorExit=true mais aucun objet tague Sentinel — rien ne monte.");
+            foreach (Transform rising in risingObjects)
+            {
+                risingPending++;
+                StartCoroutine(RiseAndHide(rising, () => risingPending--));
+            }
+        }
 
-        // Ajout : les cercles concentriques (ConcentricCirclesSpawner + enfants) montent aussi,
-        // sauf ceux deja sous sentinelRoot (ils montent avec lui, pas de double montee).
-        int circlesPending = 0;
+        // Rustine (2026-10-09) : les cercles concentriques hors des objets tagues montent aussi.
+        // A retirer quand les niveaux concernes auront leurs cercles tagues (colonne Cercles du LD Catalog).
         if (skipDecorExit)
         {
             foreach (ConcentricCirclesSpawner circles in FindObjectsOfType<ConcentricCirclesSpawner>())
             {
-                if (sentinelRoot != null && circles.transform.IsChildOf(sentinelRoot)) continue;
-                circlesPending++;
-                StartCoroutine(RiseAndHide(circles.transform, () => circlesPending--));
+                if (risingObjects.Any(r => circles.transform.IsChildOf(r))) continue;
+                risingPending++;
+                StartCoroutine(RiseAndHide(circles.transform, () => risingPending--));
             }
         }
 
@@ -298,34 +309,21 @@ public class PostVictorySequencer : MonoBehaviour
         }
         else Debug.LogWarning("[PostVictory] Pas d'EndCurtain assigne — etape 5d skippee.");
 
-        yield return new WaitUntil(() => decorDone && curtainDone && sentinelDone && circlesPending == 0);
+        // Securite : ne jamais rester bloque. Rideau desactive pendant sa montee (ex. range sous un objet tague)
+        // ou delai depasse -> on continue avec un avertissement.
+        float startTime = Time.time;
+        yield return new WaitUntil(() =>
+            (decorDone && curtainDone && risingPending == 0)
+            || (!curtainDone && endCurtain != null && !endCurtain.gameObject.activeInHierarchy)
+            || Time.time - startTime > maxRiseWait);
+
+        if (!curtainDone && endCurtain != null && !endCurtain.gameObject.activeInHierarchy)
+            Debug.LogWarning("[PostVictory] L'EndCurtain a ete desactive avant la fin de sa montee (range sous un objet tague Sentinel ?) — sequence poursuivie.");
+        else if (!(decorDone && curtainDone && risingPending == 0))
+            Debug.LogWarning($"[PostVictory] Montees non terminees apres {maxRiseWait} s (decor {decorDone}, rideau {curtainDone}, objets en cours {risingPending}) — sequence poursuivie.");
     }
 
-    // ============================================
-    // ETAPE 5c — SENTINEL RISE (si skipDecorExit)
-    // ============================================
-
-    private IEnumerator SentinelRise(Action onDone)
-    {
-        Vector3 startPos = sentinelRoot.position;
-        Vector3 endPos   = startPos + Vector3.up * sentinelRiseDistance;
-        float elapsed    = 0f;
-
-        while (elapsed < sentinelRiseDuration && sentinelRoot != null)
-        {
-            elapsed += Time.deltaTime;
-            sentinelRoot.position = Vector3.Lerp(startPos, endPos, Mathf.Clamp01(elapsed / sentinelRiseDuration));
-            yield return null;
-        }
-
-        if (sentinelRoot != null)
-            sentinelRoot.gameObject.SetActive(false);
-
-        onDone?.Invoke();
-        Debug.Log("[PostVictory] Sentinel montee et cachee.");
-    }
-
-    // Meme montee que la sentinelle (distance/duree communes), pour un transform quelconque.
+    // Montee des objets tagues Sentinel (et de la rustine des cercles) : distance/duree communes, puis desactivation.
     private IEnumerator RiseAndHide(Transform target, Action onDone)
     {
         Vector3 startPos = target.position;

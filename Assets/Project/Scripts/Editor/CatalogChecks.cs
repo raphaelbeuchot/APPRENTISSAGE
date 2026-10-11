@@ -85,7 +85,8 @@ internal static class CatalogChecks
         new CatalogCheck("goalDoor", "GoalDoor", LDCatalog, s => s.Find(c => c is GoalDoorNew)),
         new CatalogCheck("key", "Cle", LDCatalog, s => s.Find(c => c is KeyCollectible)),
         new CatalogCheck("victory", "Fin de niveau", LDCatalog, s => s.Find(c => c is PostVictorySequencer)),
-        new CatalogCheck("curtain", "Rideau", LDCatalog, s => s.Find(c => c is EndCurtainRise)),
+        new CatalogCheck("curtain", "Rideau", LDCatalog, CheckCurtain),
+        new CatalogCheck("circles", "Cercles", LDCatalog, CheckCircles),
         new CatalogCheck("transitionRoom", "Transition Room", LDCatalog, s => s.Find(c => c is TransitionRoomDoor)),
     };
 
@@ -119,6 +120,40 @@ internal static class CatalogChecks
             && PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(g).StartsWith(OldStartZonePrefix)).ToList();
         if (oldZones.Count > 0) return CheckResult.Warn("Ancienne start zone, sans porte d'entree : " + Describe(oldZones[0], null, oldZones.Count));
         return CheckResult.None();
+    }
+
+    // A la victoire, tout objet tague Sentinel monte puis est desactive : le rideau ne doit pas etre dessous
+    // (il serait desactive pendant sa propre montee)
+    private static CheckResult CheckCurtain(SceneScan s)
+    {
+        CheckResult curtain = s.Find(c => c is EndCurtainRise);
+        if (curtain.Status != CheckStatus.Ok) return curtain;
+
+        MonoBehaviour rise = s.Components.First(c => c is EndCurtainRise);
+        Transform tagged = TaggedSentinelAncestor(rise.transform);
+        if (tagged != null)
+            return CheckResult.Warn("Range sous un objet tague Sentinel (" + tagged.name + ") : desactive pendant sa montee. Le sortir de ce groupe.");
+        return curtain;
+    }
+
+    // Cercles hors des objets tagues Sentinel = ne montent que grace a la rustine de PostVictorySequencer
+    private static CheckResult CheckCircles(SceneScan s)
+    {
+        List<MonoBehaviour> circles = s.Components.Where(c => c is ConcentricCirclesSpawner).ToList();
+        if (circles.Count == 0) return CheckResult.None();
+
+        List<MonoBehaviour> outside = circles.Where(c => TaggedSentinelAncestor(c.transform) == null).ToList();
+        if (outside.Count > 0)
+            return CheckResult.Warn("Hors des objets tagues Sentinel (montent grace a la rustine) : " + Describe(outside[0].gameObject, null, outside.Count) + ". Les taguer ou les ranger sous un objet tague.");
+        return CheckResult.Ok(Describe(circles[0].gameObject, "sous un objet tague Sentinel", circles.Count));
+    }
+
+    // L'objet lui-meme ou son premier parent tague Sentinel, null sinon
+    private static Transform TaggedSentinelAncestor(Transform t)
+    {
+        for (; t != null; t = t.parent)
+            if (t.CompareTag("Sentinel")) return t;
+        return null;
     }
 
     public static string Describe(GameObject go, string what, int count)

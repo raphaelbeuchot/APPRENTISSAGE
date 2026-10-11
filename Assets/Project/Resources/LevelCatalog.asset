@@ -32,8 +32,8 @@ MonoBehaviour:
       status: 0
       detail: 
     - id: levelEssentiels
-      status: 1
-      detail: LevelEssentiels (PAS tague Sentinel)
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
     - id: startDoor
       status: 1
       detail: 'Ancienne start zone, sans porte d''entree : LevelEssentiels/StartZone_8m'
@@ -45,13 +45,16 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VictoryManager (PostVictorySequencer)
+      detail: VICTORY/VictoryManager (PostVictorySequencer)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
     - id: transitionRoom
       status: 2
-      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
+      detail: VICTORY/TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     scenePath: Assets/Project/Scenes/Level_It's Show Time.unity
     collectibleIDs: []
   - scene: {fileID: 102900000, guid: 0ca2f5020764ea445be9af52abfc3c7f, type: 3}
@@ -86,13 +89,16 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VictoryManager (PostVictorySequencer)
+      detail: VICTORY/VictoryManager (PostVictorySequencer)
     - id: curtain
       status: 2
-      detail: LevelEssentiels/EndCurtain (EndCurtainRise)
+      detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
     - id: transitionRoom
       status: 2
-      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
+      detail: VICTORY/TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     scenePath: Assets/Project/Scenes/Level_Go For a Spin.unity
     collectibleIDs: []
   - scene: {fileID: 102900000, guid: 2a8700de5ad36204ab5bc71c7310805a, type: 3}
@@ -131,6 +137,9 @@ MonoBehaviour:
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
     - id: transitionRoom
       status: 2
       detail: VICTORY/TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -172,6 +181,10 @@ MonoBehaviour:
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
     - id: transitionRoom
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -213,6 +226,10 @@ MonoBehaviour:
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 1
+      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : ConcentricCircles
+        Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -254,6 +271,9 @@ MonoBehaviour:
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
     - id: transitionRoom
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -295,6 +315,10 @@ MonoBehaviour:
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
     - id: transitionRoom
       status: 2
       detail: VICTORY/TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -336,6 +360,10 @@ MonoBehaviour:
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
     - id: transitionRoom
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -377,6 +405,10 @@ MonoBehaviour:
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
     - id: transitionRoom
       status: 2
       detail: VICTORY/TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -418,6 +450,9 @@ MonoBehaviour:
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
     - id: transitionRoom
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -459,6 +494,10 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 1
+      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : LevelEssentiels/MainSentinel/ConcentricCircles
+        Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
       status: 0
       detail: 
@@ -500,6 +539,10 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 1
+      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : LevelEssentiels/MainSentinel/ConcentricCircles
+        Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
       status: 0
       detail: 
@@ -542,6 +585,10 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 1
+      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : LevelEssentiels/ConcentricCircles
+        Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
       status: 0
       detail: 
@@ -583,6 +630,10 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
     - id: transitionRoom
       status: 0
       detail: 
@@ -624,6 +675,10 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 1
+      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : LevelEssentiels/MainSentinel/ConcentricCircles
+        Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
       status: 0
       detail: 
@@ -665,6 +720,10 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 1
+      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : ConcentricCircles
+        Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
       status: 0
       detail: 
@@ -706,6 +765,10 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 1
+      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : ConcentricCircles
+        Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
       status: 0
       detail: 
@@ -747,6 +810,10 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 1
+      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : LevelEssentiels/MainSentinel/ConcentricCircles
+        Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
       status: 0
       detail: 
@@ -788,6 +855,9 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
     - id: transitionRoom
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -829,6 +899,10 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
     - id: transitionRoom
       status: 0
       detail: 
@@ -871,6 +945,10 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 1
+      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : LevelEssentiels/MainSentinel/ConcentricCircles
+        Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
       status: 0
       detail: 
@@ -912,6 +990,10 @@ MonoBehaviour:
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
     - id: transitionRoom
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -953,6 +1035,10 @@ MonoBehaviour:
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
     - id: transitionRoom
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -994,9 +1080,13 @@ MonoBehaviour:
     - id: curtain
       status: 0
       detail: 
+    - id: circles
+      status: 1
+      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : LevelEssentiels/MainSentinel/ConcentricCircles
+        Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
       status: 0
       detail: 
     scenePath: Assets/Project/Scenes/Level_TrafficJam_04.unity
     collectibleIDs: []
-  lastAnalysis: 11/10/2026 a 09:50
+  lastAnalysis: 11/10/2026 a 18:27
