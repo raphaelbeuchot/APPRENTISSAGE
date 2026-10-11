@@ -22,6 +22,19 @@ public class LevelCatalogEntry
     public bool hasBroom = true;
     public bool hasSpray = true;
 
+#if UNITY_EDITOR
+    // Observe dans la scene par Game Catalog > Analyser les scenes (affichage seulement, jamais lu en jeu)
+    [HideInInspector] public bool observedTomatoCrate;
+    [HideInInspector] public bool observedEnemies;
+    [HideInInspector] public bool observedBrightEyes;
+    [HideInInspector] public bool observedBombs;
+    // Objet qui a declenche la coche (bulle au survol dans Game Catalog)
+    [HideInInspector] public string observedTomatoCrateFoundOn;
+    [HideInInspector] public string observedEnemiesFoundOn;
+    [HideInInspector] public string observedBrightEyesFoundOn;
+    [HideInInspector] public string observedBombsFoundOn;
+#endif
+
     [Tooltip("Rempli automatiquement depuis la scene (utilise en jeu)")]
     public string scenePath;
 
@@ -34,6 +47,11 @@ public class LevelCatalogEntry
 public class LevelCatalog : ScriptableObject
 {
     public List<LevelCatalogEntry> levels = new List<LevelCatalogEntry>();
+
+#if UNITY_EDITOR
+    // Date de la derniere analyse des scenes (Game Catalog)
+    [HideInInspector] public string lastAnalysis;
+#endif
 
     private static LevelCatalog cached;
 
