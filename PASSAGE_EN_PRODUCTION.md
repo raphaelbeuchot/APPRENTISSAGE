@@ -126,6 +126,57 @@ Vue campagne du catalogue dans une **fenêtre dédiée**, menu du haut **Game Ca
 - **Étapes** : (1) [x] la fenêtre avec les champs actuels (validée le 2026-10-11) — `Scripts/Editor/GameCatalogWindow.cs` ; (2) [x] loadout (validé le 2026-10-11, import fait) : champs `hasBroom` / `hasSpray` par ligne, colonnes Balai/Spray cochables dans la fenêtre ; `PlayerLoadout.Awake` prend les valeurs du catalogue si la scène y est (cases de la scène ignorées, utiles seulement hors catalogue), forçage DevPanel toujours prioritaire ; bouton « Importer le loadout depuis les scènes » = **migration unique** (ouvre chaque scène en arrière-plan sans la modifier, lit le `PlayerLoadout` actif, avertit si aucun ou plusieurs), à retirer à l'étape 3 ; (3) [x] colonnes observées (validé le 2026-10-11) : **Caisse** (`TomatoCrate`), **Ennemis** (zombies et essaims : `EnemyHealth`, `EnemyAI_AStar`, `EnemyAI_PitMode`, `SwarmController_AStar`, `SwarmSpawner` — sans les BrightEyes), **BrightEyes** (`BrightEyesController`), **Bombes** (`BombSpawner`, système à part) ; présence seulement (le nombre importe peu) ; **présent = l'objet qui porte le composant est actif (lui et ses parents) et le composant est activé** ; en gris, non cliquables ; la bulle au survol d'une coche (et la console) donne l'objet trouvé. Bouton « Analyser les scènes » (remplace l'import du loadout, retiré) ; résultat gardé dans le catalogue (champs éditeur seulement) avec la date affichée — à relancer après avoir modifié des scènes.
 - Idée DevPanel liée : « Désactiver les ennemis » (test), plutôt que de piloter les ennemis depuis le catalogue.
 
+### Fenêtre LD Catalog (décidée le 2026-10-11)
+
+**Pur observateur** de la structure des niveaux de la campagne : menu **Game Catalog > Ouvrir le LD catalog**. Mêmes lignes et même ordre que le Game Catalog, rien d'éditable (l'ordre se règle dans le Game Catalog). Un seul bouton « Analyser les scènes » pour les deux fenêtres. Exemple qui a motivé l'outil : on ne voyait pas que la plupart des niveaux avaient encore l'ancienne start zone.
+
+**Cases à trois états** : cochée = présent et correct ; **tiret orange = à compléter** ; vide = absent. Bulle au survol : objet trouvé ou problème. Validé le 2026-10-11.
+
+| Colonne | ✔ | ⚠ |
+|---|---|---|
+| LevelEssentiels | objet nommé « LevelEssentiels » tagué `Sentinel` | présent mais pas tagué |
+| Start Door | `LevelEntranceDoor` (nouvelle start zone `Prefabs/StartZone/StartZone_8`) | **ancienne** start zone (instance de `Prefabs/LevelEssentiels/StartZone_*m`) sans porte |
+| GoalDoor | `GoalDoorNew` | — |
+| Clé | `KeyCollectible` | — |
+| Fin de niveau | `PostVictorySequencer` (nouveau flux de fin) | — |
+| Rideau | `EndCurtainRise` | — |
+| Transition Room | `TransitionRoomDoor` | — |
+
+Écartés : Pupitre et `SentinelCycleManager` (essentiels, forcément présents), `VictoryUI` (relève de l'UI → peut-être un **3ᵉ catalogue « UI »** plus tard).
+
+**Système de vérifications générique** (`Scripts/Editor/CatalogChecks.cs`) : une colonne = une ligne dans `CatalogChecks.All` (identifiant, étiquette, catalogue, fonction qui lit la scène). Repérage par **composant**, par **instance de prefab** ou par **nom / tag**. Résultats rangés par niveau dans une liste (`LevelCatalogEntry.observed`, éditeur seulement). Les 4 colonnes observées du Game Catalog y sont passées (les anciens champs `observed…` ont disparu → **relancer une analyse**). Ajouter une colonne = une ligne.
+
+**Plus tard** : vérifications croisées (ex. collectibles posés dans la scène ↔ déclarés dans le catalogue).
+
+### Montée de victoire unifiée : rideau + bloc sentinelle (décidé le 2026-10-11)
+
+**Constat (révélé par le LD Catalog)** : trois mécanismes de montée différents à la victoire, ajoutés au fil des besoins :
+| Ce qui monte | Comment c'est trouvé | Mouvement |
+|---|---|---|
+| Rideau | composant `EndCurtainRise` (un seul : `FindObjectOfType`) | sa propre hauteur, 1,2 s, courbe douce |
+| Groupe sentinelle | *un* objet tagué `Sentinel` → **sa racine** (`transform.root`) | 12 m, 2 s, linéaire, puis désactivé |
+| Cercles de lumière | **tous** les `ConcentricCirclesSpawner` (rustine) | idem sentinelle |
+Ex. It's Show Time : `LevelEssentiels` non tagué, mais `CentralLightTest` (enfant) tagué Sentinel → tout le groupe monte « par accident ».
+
+**Écarté** : glisser le bloc sentinelle en enfant du rideau — le rideau est un cube étiré (8 × 10 × 0,2 dans le prefab, largeur 8 à 40 selon les niveaux) → le bloc hériterait de l'échelle (cisaillement de ce qui tourne, étirement si on redimensionne le rideau) ; et l'ancien système prendrait le rideau pour « racine de la sentinelle ».
+
+**Retenu** : un **prefab parent « Rideau + Sentinelle »** (échelle 1) :
+- sur le parent : `EndCurtainRise` revu — **hauteur de montée réglable** (0 = calcul actuel, la hauteur du rideau → les rideaux existants marchent sans rien toucher, migration scène par scène), même montée douce qu'aujourd'hui, case **« Désactiver à la fin »** (désactive tout le groupe ; si le rideau « pop » en haut du cadre, décocher pour ce niveau) ;
+- enfant 1 : le rideau (cube à la taille du niveau) ;
+- enfant 2 : le **bloc sentinelle, prefab imbriqué** (sentinelle, cercles, lumière centrale) → le polish se répercute partout.
+- Le reste de `LevelEssentiels` (start zone, volet, pupitre…) **ne monte plus** : sans importance, invisible à la fin du niveau.
+
+**Étapes** : (1) [x] LD Catalog validé et commité ; (2) [x] code (validé le 2026-10-11, ENDWALL de Go For a Spin fonctionne) : `EndCurtainRise` — champs **Rise Height** (0 = hauteur du premier Renderer des enfants, comportement historique) et **Deactivate When Risen** (décoché par défaut : les rideaux existants ne changent pas) ; `PostVictorySequencer` — **rustine des cercles retirée** (`RiseAndHide` et sa boucle) ; (3) [ ] prefabs créés par l'utilisateur, migration d'un premier niveau pour valider, puis des autres (colonne LD Catalog « Rideau + bloc sentinelle » au lieu de « LevelEssentiels tagué ») — **premier essai : ENDWALL dans Level_Go For a Spin** (parent avec `EndCurtainRise`, enfants : `EndCurtain` + bloc sentinelle ; retirer l'`EndCurtainRise` de **l'instance** du rideau, pas du prefab `EndCurtain` utilisé par 15 scènes non migrées : sinon leur rideau ne monte plus ; on le retirera du prefab à la fin de la migration ; `PostVictorySequencer` ne lève qu'un seul `EndCurtainRise`, choisi au hasard s'il y en a plusieurs) ; (4) [ ] suppression du reste de l'ancien système (tag Sentinel, racine) et retrait du tag dans les scènes ; retrait de l'`EndCurtainRise` du prefab `EndCurtain`. ⚠️ Pendant la migration : **pas de tag Sentinel sur le bloc** (sinon l'ancien système le prend pour racine).
+
+**Idée de polish (2026-10-11)** : avant, le rideau et la sentinelle montaient avec un léger décalage (courbes et durées différentes), ce qui plaisait ; avec le parent commun, tout monte d'un bloc. Suggestion : un composant **« Retard de montée »** sur un enfant (ex. bloc sentinelle, 0,15 s) : même courbe que le parent, décalée ; le parent attend le dernier retardataire avant de tout désactiver ; plusieurs retards possibles pour une cascade (sentinelle → cercles → lumière), réglés dans le prefab. Pas encore décidé.
+
+### Suivi des chantiers de reprise (discuté le 2026-10-11)
+
+La montée unifiée ajoute un chantier de reprise des niveaux (après la start zone). Besoin : savoir ce qui est effectivement migré et ce qui reste dans les vieilles versions. Principe : **ne pas tenir de liste de niveaux à la main** (elle se désynchronise).
+- **Le doc** (ici) garde le *pourquoi* et le *comment* de chaque chantier : décision, ancien / nouveau système, recette de migration d'un niveau.
+- **Le LD Catalog** mesure l'*état réel* dans les scènes : une colonne par chantier (✔ migré / ⚠ ancienne version / — absent). **Suggestion** : un compteur par colonne (« Start Door : 3/24 ») et une colonne « Rideau + bloc sentinelle ».
+- **Statut de production par niveau** (brouillon / LD validé / art en cours / final), réglé à la main dans le Game Catalog, pour ce qui ne se détecte pas automatiquement : **voulu, à faire plus tard**.
+
 ### Ce qui a sa place dans le catalogue (décidé le 2026-10-10)
 
 But : la **vision globale de la progression** de la campagne, qui manquait au projet. Une info va dans le catalogue si elle répond à **au moins une** de ces questions :
@@ -182,6 +233,8 @@ Hors campagne (texte local de la scène ou défaut du prefab) : PotPourri, tutos
 
 - Deux dossiers de ScriptableObjects : `Project/ScriptableObjects/` (grilles de pits) et `Scripts/Scriptable Objects/` (réglages : `LavaTrain_01`, `RotatingPlatform_*`…). À regrouper. (`LevelCatalog` est maintenant dans `Resources/`.)
 - Level_MeetTheEnemies : objet `CountDownTextSecondaire` mort (un `CountdownTextConfig` « Meet the Staff ! » sans composant texte, rien ne pointe vers lui). Le texte affiché est celui du prefab UI (« Not alone anymore ! »).
+- Script `StartZone` (`Scripts/Scripts_LevelDesign/StartZone.cs`) : **code mort**, porté par aucune scène ni aucun prefab (le niveau est lancé par le pupitre).
+- **Deux familles de start zones** : la nouvelle `Prefabs/StartZone/StartZone_8` (avec porte d'entrée : `LevelEntranceDoor`, `DoorBasic`, `DoorButtonFX`) et les anciennes `Prefabs/LevelEssentiels/StartZone_8m / _10m / _12m` (décor + trigger, sans script) → déployer la nouvelle, puis retirer les anciennes. Suivi : colonne Start Door du LD Catalog.
 
 ---
 

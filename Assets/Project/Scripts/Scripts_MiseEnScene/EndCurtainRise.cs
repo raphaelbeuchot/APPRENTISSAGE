@@ -14,6 +14,12 @@ public class EndCurtainRise : MonoBehaviour
 
     [SerializeField] private AnimationCurve riseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Tooltip("Hauteur de montee en metres. 0 = hauteur du premier Renderer trouve dans les enfants (comportement historique du rideau seul)")]
+    [SerializeField] private float riseHeight = 0f;
+
+    [Tooltip("Desactive cet objet (et ses enfants : rideau, bloc sentinelle...) une fois la montee terminee")]
+    [SerializeField] private bool deactivateWhenRisen = false;
+
     [Header("Son")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip riseSound;
@@ -36,8 +42,8 @@ public class EndCurtainRise : MonoBehaviour
 
     private IEnumerator RiseCoroutine()
     {
-        // Hauteur = bounds du Renderer (ou Collider en fallback)
-        float height = GetHeight();
+        // Hauteur reglee, sinon bounds du Renderer (ou Collider en fallback)
+        float height = riseHeight > 0f ? riseHeight : GetHeight();
         if (height <= 0f)
         {
             Debug.LogWarning("[EndCurtainRise] Hauteur introuvable — rideau monte de 1 unite par defaut.");
@@ -64,6 +70,9 @@ public class EndCurtainRise : MonoBehaviour
         transform.position = endPos;
         Debug.Log("[EndCurtainRise] Rideau leve.");
         OnRiseComplete?.Invoke();
+
+        if (deactivateWhenRisen)
+            gameObject.SetActive(false);
     }
 
     // ============================================
