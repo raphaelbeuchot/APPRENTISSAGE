@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEditorInternal;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,10 @@ using System.Linq;
 // Glisser-deposer pour reordonner (Ctrl+Z), alertes partagees avec l'Inspector du catalogue.
 public class GameCatalogWindow : EditorWindow
 {
-    private const float CollectiblesWidth = 90f;
+    private const float CollectiblesWidth = 80f;
+    private const float ToggleColumnWidth = 55f;
+    // Colonnes a droite de la colonne Niveau : Balai, Spray, Collectibles
+    private const float ColumnsWidth = 2f * ToggleColumnWidth + CollectiblesWidth;
     private const float FieldLabelWidth = 125f;
 
     private LevelCatalog catalog;
@@ -125,6 +130,9 @@ public class GameCatalogWindow : EditorWindow
             Selection.activeObject = catalog;
             EditorGUIUtility.PingObject(catalog);
         }
+        // Differe : dialogue + ouverture de scenes en plein OnGUI casseraient la mise en page
+        if (GUILayout.Button("Importer le loadout depuis les scenes", EditorStyles.toolbarButton, GUILayout.Width(230f)))
+            EditorApplication.delayCall += ImportLoadoutFromScenes;
         GUILayout.FlexibleSpace();
         if (GUILayout.Button("Sauvegarder", EditorStyles.toolbarButton, GUILayout.Width(90f)))
             AssetDatabase.SaveAssetIfDirty(catalog);
@@ -133,9 +141,71 @@ public class GameCatalogWindow : EditorWindow
 
     private void DrawHeader(Rect rect)
     {
-        float levelWidth = rect.width - CollectiblesWidth;
+        float levelWidth = rect.width - ColumnsWidth;
+        float x = rect.x + levelWidth;
         EditorGUI.LabelField(new Rect(rect.x + 14f, rect.y, levelWidth - 14f, rect.height), "Niveau", EditorStyles.boldLabel);
-        EditorGUI.LabelField(new Rect(rect.x + levelWidth, rect.y, CollectiblesWidth, rect.height), "Collectibles", centeredLabel);
+        EditorGUI.LabelField(new Rect(x, rect.y, ToggleColumnWidth, rect.height), "Balai", centeredLabel);
+        EditorGUI.LabelField(new Rect(x + ToggleColumnWidth, rect.y, ToggleColumnWidth, rect.height), "Spray", centeredLabel);
+        EditorGUI.LabelField(new Rect(x + 2f * ToggleColumnWidth, rect.y, CollectiblesWidth, rect.height), "Collectibles", centeredLabel);
+    }
+
+    // Migration unique : recopie dans le catalogue le loadout actif du joueur de chaque scene de la campagne.
+    // Ensuite le catalogue decide ; les scenes ne sont plus relues pour le loadout.
+    private void ImportLoadoutFromScenes()
+    {
+        if (catalog == null || serializedCatalog == null) return;
+        if (!EditorUtility.DisplayDialog("Importer le loadout",
+            "Lire le loadout actif du joueur dans chaque scene de la campagne et l'ecrire dans le catalogue ?\n\nLes cases Balai / Spray actuelles du catalogue seront remplacees. Les scenes ne sont pas modifiees.",
+            "Importer", "Annuler"))
+            return;
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            return;
+
+        Undo.RecordObject(catalog, "Importer le loadout depuis les scenes");
+        int imported = 0;
+        try
+        {
+            for (int i = 0; i < catalog.levels.Count; i++)
+            {
+                LevelCatalogEntry entry = catalog.levels[i];
+                if (entry == null || entry.scene == null) continue;
+
+                string path = AssetDatabase.GetAssetPath(entry.scene);
+                EditorUtility.DisplayProgressBar("Importer le loadout", path, (float)i / catalog.levels.Count);
+
+                Scene scene = SceneManager.GetSceneByPath(path);
+                bool wasOpen = scene.isLoaded;
+                if (!wasOpen) scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
+
+                List<PlayerLoadout> loadouts = new List<PlayerLoadout>();
+                foreach (GameObject root in scene.GetRootGameObjects())
+                    loadouts.AddRange(root.GetComponentsInChildren<PlayerLoadout>(false));
+
+                if (loadouts.Count == 0)
+                {
+                    Debug.LogWarning("[Game Catalog] " + entry.scene.name + " : aucun PlayerLoadout actif, loadout du catalogue inchange.");
+                }
+                else
+                {
+                    if (loadouts.Count > 1)
+                        Debug.LogWarning("[Game Catalog] " + entry.scene.name + " : " + loadouts.Count + " PlayerLoadout actifs, le premier est utilise (" + loadouts[0].name + ").");
+                    entry.hasBroom = loadouts[0].hasBroom;
+                    entry.hasSpray = loadouts[0].hasSpray;
+                    imported++;
+                    Debug.Log("[Game Catalog] " + entry.scene.name + " : balai " + (entry.hasBroom ? "ON" : "OFF") + ", spray " + (entry.hasSpray ? "ON" : "OFF"));
+                }
+
+                if (!wasOpen) EditorSceneManager.CloseScene(scene, true);
+            }
+        }
+        finally
+        {
+            EditorUtility.ClearProgressBar();
+        }
+
+        EditorUtility.SetDirty(catalog);
+        serializedCatalog.Update();
+        Debug.Log("[Game Catalog] Loadout importe pour " + imported + " niveaux.");
     }
 
     private float ElementHeight(int index)
@@ -156,13 +226,16 @@ public class GameCatalogWindow : EditorWindow
         SerializedProperty scene = entry.FindPropertyRelative("scene");
         SerializedProperty collectibles = entry.FindPropertyRelative("collectibleIDs");
 
-        float levelWidth = rect.width - CollectiblesWidth;
+        float levelWidth = rect.width - ColumnsWidth;
         float y = rect.y + 3f;
 
         // Ligne 1 : numero + scene (titre depliable) | colonnes
         string sceneName = scene.objectReferenceValue != null ? scene.objectReferenceValue.name : "(aucune scene)";
         entry.isExpanded = EditorGUI.Foldout(new Rect(rect.x + 12f, y, levelWidth - 12f, Line), entry.isExpanded, (index + 1) + ".  " + sceneName, true, boldFoldout);
-        EditorGUI.LabelField(new Rect(rect.x + levelWidth, y, CollectiblesWidth, Line), collectibles.arraySize > 0 ? collectibles.arraySize.ToString() : "-", centeredLabel);
+        float x = rect.x + levelWidth;
+        DrawCenteredToggle(new Rect(x, y, ToggleColumnWidth, Line), entry.FindPropertyRelative("hasBroom"));
+        DrawCenteredToggle(new Rect(x + ToggleColumnWidth, y, ToggleColumnWidth, Line), entry.FindPropertyRelative("hasSpray"));
+        EditorGUI.LabelField(new Rect(x + 2f * ToggleColumnWidth, y, CollectiblesWidth, Line), collectibles.arraySize > 0 ? collectibles.arraySize.ToString() : "-", centeredLabel);
 
         // Lignes 2-3 : appellation
         y += Line + Gap;
@@ -181,6 +254,13 @@ public class GameCatalogWindow : EditorWindow
         y += Line + Gap;
         float h = EditorGUI.GetPropertyHeight(collectibles, true);
         EditorGUI.PropertyField(new Rect(rect.x + 26f, y, levelWidth - 30f, h), collectibles, new GUIContent("Collectibles"), true);
+    }
+
+    private void DrawCenteredToggle(Rect column, SerializedProperty property)
+    {
+        const float toggleSize = 16f;
+        Rect r = new Rect(column.x + (column.width - toggleSize) * 0.5f, column.y, toggleSize, column.height);
+        EditorGUI.PropertyField(r, property, GUIContent.none);
     }
 
     private void DrawField(Rect rect, string label, SerializedProperty property)

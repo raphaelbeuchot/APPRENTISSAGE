@@ -18,6 +18,10 @@ public class LevelCatalogEntry
     [Tooltip("Texte qui tourne au lancement du niveau (optionnel : texte du CountdownTextConfig de la scene si vide)")]
     public string launchText;
 
+    [Tooltip("Loadout du joueur dans ce niveau (le catalogue decide : la case du PlayerLoadout de la scene est ignoree)")]
+    public bool hasBroom = true;
+    public bool hasSpray = true;
+
     [Tooltip("Rempli automatiquement depuis la scene (utilise en jeu)")]
     public string scenePath;
 

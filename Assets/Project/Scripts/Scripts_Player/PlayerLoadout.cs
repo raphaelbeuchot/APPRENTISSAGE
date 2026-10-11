@@ -19,6 +19,15 @@ public class PlayerLoadout : MonoBehaviour
 
     private void Awake()
     {
+        // Niveau de la campagne : le catalogue decide (les cases ci-dessus ne servent qu'hors catalogue : multi, tests, tutos)
+        LevelCatalog catalog = LevelCatalog.Get();
+        LevelCatalogEntry entry = catalog != null ? catalog.FindByScenePath(gameObject.scene.path) : null;
+        if (entry != null)
+        {
+            hasBroom = entry.hasBroom;
+            hasSpray = entry.hasSpray;
+        }
+
         levelBroom = hasBroom;
         levelSpray = hasSpray;
         if (PlayerInputManager.Instance != null)
