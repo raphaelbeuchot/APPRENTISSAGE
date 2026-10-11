@@ -114,7 +114,7 @@ public class SentinelDetector : MonoBehaviour
             EnemyHealth enemyHealth = col.GetComponent<EnemyHealth>();
             if (enemyHealth != null && enemyHealth.IsRecovering()) continue;
 
-            if (humanMovement != null && (humanMovement.IsSweeping() || humanMovement.IsGroggy() || humanMovement.IsGroggyStunned() || humanMovement.respawnImmune))
+            if (humanMovement != null && (humanMovement.IsSweeping() || humanMovement.IsGroggy() || humanMovement.IsGroggyStunned() || humanMovement.respawnImmune || DevFlags.SentinelIgnoresPlayer))
                 continue;
 
             EnemyAI_AStar stunnedCheck = col.GetComponent<EnemyAI_AStar>();

@@ -143,7 +143,12 @@ Décidé le 2026-10-11. `Scripts/Meta Game/DevPanel.cs` — première version va
 - S'installe tout seul au lancement (`RuntimeInitializeOnLoadMethod`), rien à poser dans les scènes ; **éditeur et builds de développement seulement** (absent d'un build joueur).
 - Options **retenues d'un Play à l'autre** (PlayerPrefs `DEV_…`) ; **badge « DEV »** à l'écran tant qu'une option est active. ⚠️ `DevManager.startFromZero` vide toutes les PlayerPrefs, donc aussi ces options.
 - Dessiné en `OnGUI` (outil de debug : pas de Canvas ni de prefab). Ajouter une option = un champ + une ligne + sa sauvegarde.
-- **Options** : (1) **Forcer le loadout** + balai / spray — appliqué à chaque lancement de niveau par-dessus le loadout du niveau, décoché → loadout du niveau rétabli (`PlayerLoadout.ApplyLoadout` / `RestoreLevelLoadout`). Solo uniquement (rien n'est touché s'il y a plusieurs joueurs). (2) À venir : invincible (`PlayerHealth`), puis selon les besoins (niveau suivant, ralentir le temps, couper la sentinelle…).
+- **Options** : (1) **Forcer le loadout** + balai / spray — appliqué à chaque lancement de niveau par-dessus le loadout du niveau, décoché → loadout du niveau rétabli (`PlayerLoadout.ApplyLoadout` / `RestoreLevelLoadout`). Solo uniquement (rien n'est touché s'il y a plusieurs joueurs).
+  - (2) **Invincible** (validé le 2026-10-11) : `DevFlags.Invincible` → `PlayerHealth.TakeDamage` ignore les dégâts (sentinelle, zombies, pits, lave). `TakeHeadshot` non concerné (élimination de la course multi). Le recul des tirs reste. À vérifier : comportement dans la lave (le joueur coule-t-il ou reste-t-il coincé ?).
+  - (3) **Zéro détection sentinelle** (validé le 2026-10-11) : `DevFlags.SentinelIgnoresPlayer` → `SentinelDetector` ignore les joueurs, sur la même ligne que les exemptions existantes (balai, sonné, réapparition). Pas de tir, de silhouette ni d'alarme ; zombies et pièges inchangés.
+  - (4) **Porte ouverte** (validé le 2026-10-11) : le DevPanel ouvre la `GoalDoorNew` (`SetActive(true)`) à chaque lancement de niveau et quand on coche ; ouvre aussi les portes « tuer tous les ennemis » (`LevelManager` les verrouille au Start, avant le DevPanel). Décocher ne referme pas la porte en cours de niveau.
+  - Invincible, zéro détection et porte ouverte agissent **aussi en multi** (tous les joueurs) — voulu (2026-10-11) ; le loadout reste solo. `DevFlags` (`Scripts/Meta Game/DevFlags.cs`) : interrupteurs statiques toujours à faux dans un build joueur.
+  - À venir selon les besoins : niveau suivant, ralentir le temps…
 
 ### Texte de lancement (le texte qui tourne au début du niveau)
 

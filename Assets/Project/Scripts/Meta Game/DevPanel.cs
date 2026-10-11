@@ -13,6 +13,9 @@ public class DevPanel : MonoBehaviour
     private const string PREFS_FORCE_LOADOUT = "DEV_ForceLoadout";
     private const string PREFS_LOADOUT_BROOM = "DEV_LoadoutBroom";
     private const string PREFS_LOADOUT_SPRAY = "DEV_LoadoutSpray";
+    private const string PREFS_INVINCIBLE = "DEV_Invincible";
+    private const string PREFS_NO_DETECTION = "DEV_NoSentinelDetection";
+    private const string PREFS_OPEN_DOOR = "DEV_OpenGoalDoor";
 
     private bool open;
     private float timeScaleBeforeOpen = 1f;
@@ -21,6 +24,13 @@ public class DevPanel : MonoBehaviour
     private bool forceLoadout;
     private bool loadoutBroom = true;
     private bool loadoutSpray = true;
+
+    // Joueur / sentinelle (DevFlags, tous les joueurs, solo et multi)
+    private bool invincible;
+    private bool noDetection;
+
+    // Niveau
+    private bool openDoor;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -56,6 +66,7 @@ public class DevPanel : MonoBehaviour
     {
         yield return null;
         if (forceLoadout) ApplyLoadout();
+        if (openDoor) OpenGoalDoors();
     }
 
     void Update()
@@ -80,7 +91,7 @@ public class DevPanel : MonoBehaviour
 
     private bool AnyOptionActive()
     {
-        return forceLoadout;
+        return forceLoadout || invincible || noDetection || openDoor;
     }
 
     void OnGUI()
@@ -123,6 +134,42 @@ public class DevPanel : MonoBehaviour
             if (forceLoadout) ApplyLoadout();
             else if (forceChanged) RestoreLoadout();
         }
+
+        GUILayout.Space(6);
+        GUILayout.Label("— Joueur —");
+        bool newInvincible = GUILayout.Toggle(invincible, " Invincible");
+        bool newNoDetection = GUILayout.Toggle(noDetection, " Zero detection sentinelle");
+
+        GUILayout.Space(6);
+        GUILayout.Label("— Niveau —");
+        bool newOpenDoor = GUILayout.Toggle(openDoor, " Porte ouverte (sans cle)");
+
+        if (newInvincible != invincible || newNoDetection != noDetection || newOpenDoor != openDoor)
+        {
+            bool doorJustOpened = newOpenDoor && !openDoor;
+            invincible = newInvincible;
+            noDetection = newNoDetection;
+            openDoor = newOpenDoor;
+            ApplyFlags();
+            SavePrefs();
+            if (doorJustOpened) OpenGoalDoors();
+        }
+    }
+
+    private void ApplyFlags()
+    {
+        DevFlags.Invincible = invincible;
+        DevFlags.SentinelIgnoresPlayer = noDetection;
+    }
+
+    // Decocher en cours de niveau ne referme pas la porte (retour a la normale au prochain lancement)
+    private void OpenGoalDoors()
+    {
+        GoalDoorNew[] doors = FindObjectsByType<GoalDoorNew>(FindObjectsSortMode.None);
+        foreach (GoalDoorNew door in doors)
+            door.SetActive(true);
+        if (doors.Length > 0)
+            Debug.Log("[DevPanel] Porte de fin ouverte.");
     }
 
     // Solo uniquement : avec plusieurs joueurs (multi), on ne touche a rien
@@ -153,6 +200,10 @@ public class DevPanel : MonoBehaviour
         forceLoadout = PlayerPrefs.GetInt(PREFS_FORCE_LOADOUT, 0) == 1;
         loadoutBroom = PlayerPrefs.GetInt(PREFS_LOADOUT_BROOM, 1) == 1;
         loadoutSpray = PlayerPrefs.GetInt(PREFS_LOADOUT_SPRAY, 1) == 1;
+        invincible = PlayerPrefs.GetInt(PREFS_INVINCIBLE, 0) == 1;
+        noDetection = PlayerPrefs.GetInt(PREFS_NO_DETECTION, 0) == 1;
+        openDoor = PlayerPrefs.GetInt(PREFS_OPEN_DOOR, 0) == 1;
+        ApplyFlags();
     }
 
     private void SavePrefs()
@@ -160,6 +211,9 @@ public class DevPanel : MonoBehaviour
         PlayerPrefs.SetInt(PREFS_FORCE_LOADOUT, forceLoadout ? 1 : 0);
         PlayerPrefs.SetInt(PREFS_LOADOUT_BROOM, loadoutBroom ? 1 : 0);
         PlayerPrefs.SetInt(PREFS_LOADOUT_SPRAY, loadoutSpray ? 1 : 0);
+        PlayerPrefs.SetInt(PREFS_INVINCIBLE, invincible ? 1 : 0);
+        PlayerPrefs.SetInt(PREFS_NO_DETECTION, noDetection ? 1 : 0);
+        PlayerPrefs.SetInt(PREFS_OPEN_DOOR, openDoor ? 1 : 0);
         PlayerPrefs.Save();
     }
 }
