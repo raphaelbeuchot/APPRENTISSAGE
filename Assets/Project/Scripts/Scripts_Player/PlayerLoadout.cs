@@ -12,8 +12,15 @@ public class PlayerLoadout : MonoBehaviour
     [Header("Weapon GameObjects")]
     [SerializeField] private GameObject broomObject;
     [SerializeField] private GameObject sprayObject;
+
+    // Loadout du niveau, retenu pour pouvoir y revenir apres un forcage (DevPanel)
+    private bool levelBroom;
+    private bool levelSpray;
+
     private void Awake()
     {
+        levelBroom = hasBroom;
+        levelSpray = hasSpray;
         if (PlayerInputManager.Instance != null)
             PlayerInputManager.Instance.SetLoadout(hasBroom, hasSpray);
     }
@@ -21,5 +28,21 @@ public class PlayerLoadout : MonoBehaviour
     {
         if (broomObject != null) broomObject.SetActive(hasBroom);
         if (sprayObject != null) sprayObject.SetActive(hasSpray);
+    }
+
+    // Change le loadout en cours de partie (input + armes visibles)
+    public void ApplyLoadout(bool broom, bool spray)
+    {
+        hasBroom = broom;
+        hasSpray = spray;
+        if (PlayerInputManager.Instance != null)
+            PlayerInputManager.Instance.SetLoadout(hasBroom, hasSpray);
+        if (broomObject != null) broomObject.SetActive(hasBroom);
+        if (sprayObject != null) sprayObject.SetActive(hasSpray);
+    }
+
+    public void RestoreLevelLoadout()
+    {
+        ApplyLoadout(levelBroom, levelSpray);
     }
 }

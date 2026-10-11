@@ -374,6 +374,11 @@ La liste ci-dessous (état au 2026-09-20) sert toujours à décider sur quoi tra
 
 *Tout ce qui se passe de bizarre ou de non souhaité en multi, à noter au fil des tests. Une entrée par bug : symptôme, cause (vérifiée ou supposée), statut, correctif envisagé. Quand un bug est corrigé, le garder ici avec le commit, plutôt que de l'effacer.*
 
+### 🐛 P2 clavier : coup de balai au lancement sans appui (multi) — **à diagnostiquer (noté le 2026-10-11)**
+- **Symptôme** : parfois, au lancement d'une scène multi, le joueur 2 au clavier fait un coup de balai alors que la touche B n'a pas été pressée (impression de l'utilisateur, à confirmer).
+- **Cause** : non diagnostiquée. Pistes non vérifiées : un appui « resté » de la scène précédente (menu MultiStart, Entrée/espace pour valider) relu à la première frame ; une touche partagée entre une action de menu et l'action balai du clavier P2 ; l'état initial de l'action au moment où `PlayerLocalInput` attribue le clavier (`MultiDeviceAssignment`).
+- **À faire** : reproduire (quelle scène, quelle touche pressée juste avant le lancement), puis vérifier les bindings clavier P2 et la lecture de l'action balai à la première frame.
+
 ### 🐛 Grab pendant un coup de balai : zombie frappé figé pour toujours (solo + multi) — **⚠️ corrigé préventivement sans reproduction (2026-10-09), commit `7553b2e7`**
 - **Symptôme supposé (jamais observé)** : un zombie frappé au balai reste planté sur place indéfiniment (ni poursuite, ni attaque).
 - **Scénario** : le balai touche un zombie A → `BroomAttackSystem` lance `KnockdownTarget` (IA de A désactivée 2 s puis réactivée). Si le joueur se fait grab par un zombie B **avant la fin de son anim de balai** (fenêtre < `broomAttackDuration`, après l'impact), `OnGrabStart` faisait `StopAllCoroutines()` → le `KnockdownTarget` de A était tué avec l'attaque, et l'IA de A jamais réactivée.
