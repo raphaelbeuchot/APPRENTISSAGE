@@ -4,6 +4,17 @@ using System.Collections.Generic;
 using UnityEditor;
 #endif
 
+#if UNITY_EDITOR
+// Resultat d'une verification observee (voir Scripts/Editor/CatalogChecks.cs)
+[System.Serializable]
+public class ObservedCheck
+{
+    public string id;
+    public int status;    // 0 absent, 1 a completer, 2 correct
+    public string detail; // objet trouve ou probleme (bulle au survol)
+}
+#endif
+
 [System.Serializable]
 public class LevelCatalogEntry
 {
@@ -23,16 +34,8 @@ public class LevelCatalogEntry
     public bool hasSpray = true;
 
 #if UNITY_EDITOR
-    // Observe dans la scene par Game Catalog > Analyser les scenes (affichage seulement, jamais lu en jeu)
-    [HideInInspector] public bool observedTomatoCrate;
-    [HideInInspector] public bool observedEnemies;
-    [HideInInspector] public bool observedBrightEyes;
-    [HideInInspector] public bool observedBombs;
-    // Objet qui a declenche la coche (bulle au survol dans Game Catalog)
-    [HideInInspector] public string observedTomatoCrateFoundOn;
-    [HideInInspector] public string observedEnemiesFoundOn;
-    [HideInInspector] public string observedBrightEyesFoundOn;
-    [HideInInspector] public string observedBombsFoundOn;
+    // Observe dans la scene par "Analyser les scenes" (Game Catalog / LD Catalog) : affichage seulement, jamais lu en jeu
+    [HideInInspector] public List<ObservedCheck> observed = new List<ObservedCheck>();
 #endif
 
     [Tooltip("Rempli automatiquement depuis la scene (utilise en jeu)")]
