@@ -51,6 +51,8 @@ public class PostVictorySequencer : MonoBehaviour
     [Header("Fin du VictoryScale")]
     [Tooltip("GOs desactives (SetActive false) des que le fond de l'ecran de victoire couvre la scene, juste apres le VictoryScale")]
     [SerializeField] private GameObject[] objectsToHideOnVictory;
+    [Tooltip("Layers dont l'affichage est coupe (renderers + lumieres des objets du layer ET de leurs enfants ; pas les collisions ni les scripts) au meme moment. Eviter Default, Human, UI")]
+    [SerializeField] private LayerMask layersToHideOnVictory;
 
     [Header("5d — EndCurtain")]
     [HideInInspector] [SerializeField] private EndCurtainRise endCurtain;
@@ -59,8 +61,10 @@ public class PostVictorySequencer : MonoBehaviour
     private float _goalDoorWorldX;
 
     [Header("5d+ — Apres rideau leve")]
-    [Tooltip("GOs supplementaires a cacher en plus du layer Ground (murs, lumieres specifiques au niveau...)")]
+    [Tooltip("A LA FIN de la sequence (bascule vers la salle de transition, avec l'extinction) : GOs dont l'affichage est coupe, enfants compris, en plus du layer Ground. Pour faire disparaitre un objet SOUS l'ecran de victoire, utiliser Objects To Hide On Victory")]
     [SerializeField] private GameObject[] objectsToHide;
+    [Tooltip("Au meme moment (fin de sequence) : layers dont l'affichage est coupe, objets du layer ET leurs enfants (renderers + lumieres ; pas les collisions ni les scripts). Ground est deja traite automatiquement. Eviter Default, Human, UI")]
+    [SerializeField] private LayerMask layersToHide;
 
     [Tooltip("Duree du fade-out du volume PostVictory apres le lever du rideau (0 = coupure immediate)")]
     [SerializeField] private float volumeFadeOutDuration = 1.5f;
@@ -172,15 +176,137 @@ public class PostVictorySequencer : MonoBehaviour
         foreach (CameraPanningExtension panning in FindObjectsOfType<CameraPanningExtension>())
             panning.ForceNormalView();
 
-        if (objectsToHideOnVictory == null) return;
-
-        foreach (GameObject go in objectsToHideOnVictory)
+        if (objectsToHideOnVictory != null)
         {
-            if (go != null)
-                go.SetActive(false);
+            foreach (GameObject go in objectsToHideOnVictory)
+            {
+                if (go != null)
+                    go.SetActive(false);
+            }
+            Debug.Log($"[PostVictory] {objectsToHideOnVictory.Length} objet(s) desactive(s) a la fin du VictoryScale.");
         }
-        Debug.Log($"[PostVictory] {objectsToHideOnVictory.Length} objet(s) desactive(s) a la fin du VictoryScale.");
+
+        HideLayers(layersToHideOnVictory, "a la fin du VictoryScale");
+        DeactivateFrozenEnemies();
     }
+
+    // ============================================
+    // ENNEMIS : figes au contact de la GoalDoor, desactives sous l'ecran de victoire
+    // ============================================
+
+    private readonly List<GameObject> frozenEnemies = new List<GameObject>();
+
+    /// <summary>Appele par LevelManager au contact de la GoalDoor (solo).</summary>
+    public void FreezeEnemies()
+    {
+        frozenEnemies.Clear();
+        foreach (MonoBehaviour c in FindObjectsOfType<MonoBehaviour>())
+        {
+            if (IsEnemyComponent(c) && !frozenEnemies.Contains(c.gameObject))
+                frozenEnemies.Add(c.gameObject);
+        }
+        // Un objet range sous un autre ennemi est fige avec lui
+        frozenEnemies.RemoveAll(e => frozenEnemies.Any(other => other != e && e.transform.IsChildOf(other.transform)));
+
+        foreach (GameObject enemy in frozenEnemies)
+            Freeze(enemy);
+
+        // Pips de vie : elements d'UI sous le Canvas (pas enfants des ennemis), replaces a chaque frame par
+        // EnemyHealthBarManager -> on les desinscrit (detruits) des le contact
+        if (EnemyHealthBarManager.Instance != null)
+        {
+            foreach (GameObject enemy in frozenEnemies)
+                foreach (Transform t in enemy.GetComponentsInChildren<Transform>(true))
+                    EnemyHealthBarManager.Instance.UnregisterEnemy(t);
+        }
+
+        // Le joueur ne doit plus etre attire par un BrightEyes fige (il reprend la main dans la salle de transition)
+        PlayerPhysicsMovement movement = player != null ? player : FindObjectOfType<PlayerPhysicsMovement>();
+        if (movement != null) movement.RemoveBrightEyesAttraction();
+
+        Debug.Log($"[PostVictory] {frozenEnemies.Count} ennemi(s) fige(s) (zombies, essaims, BrightEyes, bombes).");
+    }
+
+    // Zombies, essaims (et leurs spawners), BrightEyes, bombes (spawners et projectiles)
+    private static bool IsEnemyComponent(MonoBehaviour c)
+    {
+        return c is EnemyHealth || c is EnemyAI_AStar || c is EnemyAI_PitMode
+            || c is SwarmController_AStar || c is SwarmSpawner
+            || c is BrightEyesController
+            || c is BombSpawner || c is BombProjectile;
+    }
+
+    // Fige sur place : scripts coupes (coroutines comprises : desactiver un script ne les arrete pas),
+    // animations en pause, physique arretee
+    private static void Freeze(GameObject enemy)
+    {
+        foreach (MonoBehaviour mb in enemy.GetComponentsInChildren<MonoBehaviour>(true))
+        {
+            if (mb == null) continue;
+            mb.StopAllCoroutines();
+            mb.enabled = false;
+        }
+        foreach (Animator animator in enemy.GetComponentsInChildren<Animator>(true))
+            animator.speed = 0f;
+        foreach (Rigidbody rb in enemy.GetComponentsInChildren<Rigidbody>(true))
+        {
+            if (!rb.isKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+            rb.isKinematic = true;
+        }
+    }
+
+    private void DeactivateFrozenEnemies()
+    {
+        int count = 0;
+        foreach (GameObject enemy in frozenEnemies)
+        {
+            if (enemy == null) continue;
+            enemy.SetActive(false);
+            count++;
+        }
+        if (count > 0)
+            Debug.Log($"[PostVictory] {count} ennemi(s) desactive(s) sous l'ecran de victoire.");
+    }
+
+    // Coupe l'affichage (renderers + lumieres) des objets des layers donnes ET de leurs enfants (le layer
+    // ne se transmet pas : un parent "Obstacle" a souvent ses meshes enfants sur Default) ; collisions et scripts intacts
+    private void HideLayers(LayerMask layers, string moment)
+    {
+        if (layers.value == 0) return;
+
+        HashSet<Renderer> renderers = new HashSet<Renderer>();
+        HashSet<Light> lights = new HashSet<Light>();
+        foreach (Transform t in FindObjectsOfType<Transform>())
+        {
+            if ((layers.value & (1 << t.gameObject.layer)) == 0) continue;
+            renderers.UnionWith(t.GetComponentsInChildren<Renderer>());
+            lights.UnionWith(t.GetComponentsInChildren<Light>());
+        }
+
+        foreach (Renderer rend in renderers) rend.enabled = false;
+        foreach (Light light in lights) light.enabled = false;
+        Debug.Log($"[PostVictory] {renderers.Count} renderer(s) et {lights.Count} lumiere(s) caches par layer (enfants compris) {moment}.");
+    }
+
+#if UNITY_EDITOR
+    // Garde-fou : layers dont le masquage casserait la suite (joueur, UI) ou cacherait presque tout
+    void OnValidate()
+    {
+        foreach (string dangerous in new[] { "Default", "Human", "UI" })
+        {
+            int layer = LayerMask.NameToLayer(dangerous);
+            if (layer == -1) continue;
+            if ((layersToHideOnVictory.value & (1 << layer)) != 0)
+                Debug.LogWarning($"[PostVictory] Layers To Hide On Victory contient '{dangerous}' : risque de cacher le joueur, l'UI ou presque toute la scene.", this);
+            if ((layersToHide.value & (1 << layer)) != 0)
+                Debug.LogWarning($"[PostVictory] Layers To Hide contient '{dangerous}' : risque de cacher le joueur, l'UI ou presque toute la scene.", this);
+        }
+    }
+#endif
 
     // ============================================
     // SEQUENCE
@@ -384,18 +510,20 @@ public class PostVictorySequencer : MonoBehaviour
             Debug.LogWarning("[PostVictory] Layer 'Ground' introuvable — auto-hide Ground skippee.");
         }
 
-        // Manuel : objectsToHide (extras niveau-specifiques)
+        // Manuel : objectsToHide (extras niveau-specifiques), enfants compris (renderers + lumieres)
         if (objectsToHide != null)
         {
             foreach (GameObject go in objectsToHide)
             {
                 if (go == null) continue;
-                Renderer rend = go.GetComponent<Renderer>();
-                if (rend != null) { rend.enabled = false; count++; }
+                foreach (Renderer rend in go.GetComponentsInChildren<Renderer>()) { rend.enabled = false; count++; }
+                foreach (Light light in go.GetComponentsInChildren<Light>()) { light.enabled = false; count++; }
             }
         }
 
         Debug.Log($"[PostVictory] {count} renderers desactives (Ground auto + manuel).");
+
+        HideLayers(layersToHide, "a la fin de la sequence");
     }
 
     // ============================================

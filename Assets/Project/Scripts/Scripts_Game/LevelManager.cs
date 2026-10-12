@@ -179,6 +179,10 @@ public class LevelManager : MonoBehaviour
 
         levelCompleted = true;
         LevelStatsTracker.Instance?.OnLevelCompleted();
+
+        // Ennemis figes sur place (desactives ensuite sous l'ecran de victoire)
+        if (PostVictorySequencer.Instance != null)
+            PostVictorySequencer.Instance.FreezeEnemies();
         Debug.Log("=== NIVEAU COMPLETE! ===");
 
         // Plus de bascule vue basse jusqu'a la fin du niveau (le retour en vue normale

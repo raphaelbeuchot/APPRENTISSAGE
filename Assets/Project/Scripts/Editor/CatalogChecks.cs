@@ -1,5 +1,8 @@
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
+using Unity.Cinemachine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using System;
@@ -84,7 +87,7 @@ internal static class CatalogChecks
         new CatalogCheck("startDoor", "Start Door", LDCatalog, CheckStartDoor),
         new CatalogCheck("goalDoor", "GoalDoor", LDCatalog, s => s.Find(c => c is GoalDoorNew)),
         new CatalogCheck("key", "Cle", LDCatalog, s => s.Find(c => c is KeyCollectible)),
-        new CatalogCheck("victory", "Fin de niveau", LDCatalog, s => s.Find(c => c is PostVictorySequencer)),
+        new CatalogCheck("victory", "Fin de niveau", LDCatalog, CheckVictory),
         new CatalogCheck("curtain", "Rideau", LDCatalog, CheckCurtain),
         new CatalogCheck("circles", "Cercles", LDCatalog, CheckCircles),
         new CatalogCheck("transitionRoom", "Transition Room", LDCatalog, s => s.Find(c => c is TransitionRoomDoor)),
@@ -120,6 +123,50 @@ internal static class CatalogChecks
             && PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(g).StartsWith(OldStartZonePrefix)).ToList();
         if (oldZones.Count > 0) return CheckResult.Warn("Ancienne start zone, sans porte d'entree : " + Describe(oldZones[0], null, oldZones.Count));
         return CheckResult.None();
+    }
+
+    // Nouvelle fin de niveau (PostVictorySequencer) : tout ce dont la sequence a besoin pour aller au bout
+    private static CheckResult CheckVictory(SceneScan s)
+    {
+        MonoBehaviour sequencer = s.Components.FirstOrDefault(c => c is PostVictorySequencer);
+        if (sequencer == null) return CheckResult.None();
+
+        SerializedObject so = new SerializedObject(sequencer);
+        List<string> missing = new List<string>();
+
+        SerializedProperty skip = so.FindProperty("skipDecorExit");
+        if (skip != null && !skip.boolValue)
+            missing.Add("Skip Decor Exit decoche (ancienne sortie du decor)");
+
+        // Global Volume : doit etre le volume PostVictory (tague VolumePostVictory, dans TRANSITIONROOM).
+        // Assigne a la main, il passe avant le tag : s'il pointe sur le volume du niveau, flashs et fondu
+        // s'appliquent au mauvais volume (cas Flower01, 2026-10-12). Vide = trouve par le tag.
+        Volume assigned = so.FindProperty("globalVolume")?.objectReferenceValue as Volume;
+        GameObject taggedVolume = s.ActiveObjects.FirstOrDefault(g => g.CompareTag("VolumePostVictory"));
+        Volume volume = assigned != null ? assigned : (taggedVolume != null ? taggedVolume.GetComponent<Volume>() : null);
+        if (volume == null)
+            missing.Add("pas de Global Volume (objet actif tague VolumePostVictory) : pas de flashs ni d'extinction");
+        else
+        {
+            if (assigned != null && !assigned.CompareTag("VolumePostVictory"))
+                missing.Add("Global Volume assigne a la main = '" + assigned.name + "' au lieu du volume PostVictory (vider le champ ou y mettre PostVictory)");
+            if (volume.sharedProfile == null || !volume.sharedProfile.Has<ColorAdjustments>())
+                missing.Add("profil du Global Volume sans Color Adjustments : pas de flashs");
+        }
+
+        GameObject cam = s.ActiveObjects.FirstOrDefault(g => g.CompareTag("CameraTransitionRoom"));
+        if (cam == null || cam.GetComponent<CinemachineCamera>() == null)
+            missing.Add("pas de camera Cinemachine taguee CameraTransitionRoom : pas de passage a la salle de transition");
+
+        if (!s.Components.Any(c => c is TransitionRoomDoor))
+            missing.Add("pas de TransitionRoomDoor");
+        if (!s.Components.Any(c => c is EndCurtainRise))
+            missing.Add("pas de rideau (EndCurtainRise)");
+        if (!s.ActiveObjects.Any(g => g.CompareTag("Sentinel")))
+            missing.Add("aucun objet tague Sentinel : rien ne monte");
+
+        if (missing.Count > 0) return CheckResult.Warn(string.Join(" ; ", missing));
+        return CheckResult.Ok(Describe(sequencer.gameObject, "configuration complete", 1));
     }
 
     // A la victoire, tout objet tague Sentinel monte puis est desactive : le rideau ne doit pas etre dessous
