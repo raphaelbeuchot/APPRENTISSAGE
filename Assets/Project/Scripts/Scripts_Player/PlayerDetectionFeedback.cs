@@ -18,7 +18,9 @@ public class PlayerDetectionFeedback : MonoBehaviour
     private Material[][] originalMaterials;
     private Animator animator;
 
-    [HideInInspector]
+    // Etat de jeu, jamais sauvegarde : une valeur "true" enregistree dans le prefab Player faisait demarrer
+    // chaque niveau "deja detecte" (silhouette blanche au premier rafraichissement, ex. BrightEyes, 2026-10-12)
+    [System.NonSerialized]
     public bool isCurrentlyDetected = false;
     private bool isDetectedByBrightEyes = false;
 

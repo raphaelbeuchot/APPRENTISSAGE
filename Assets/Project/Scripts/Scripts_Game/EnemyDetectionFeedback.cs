@@ -17,7 +17,8 @@ public class EnemyDetectionFeedback : MonoBehaviour
     private Material[][] originalMaterials;
     private AudioSource audioSource;
 
-    [HideInInspector]
+    // Etat de jeu, jamais sauvegarde (meme piege que PlayerDetectionFeedback, 2026-10-12)
+    [System.NonSerialized]
     public bool isCurrentlyDetected = false;
 
     void Start()
