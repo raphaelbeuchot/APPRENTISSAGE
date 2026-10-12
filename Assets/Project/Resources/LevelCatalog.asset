@@ -45,7 +45,7 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VICTORY/VictoryManager (PostVictorySequencer)
+      detail: VICTORY/VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -89,7 +89,7 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VICTORY/VictoryManager (PostVictorySequencer)
+      detail: VICTORY/VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -133,7 +133,7 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VICTORY/VictoryManager (PostVictorySequencer)
+      detail: VICTORY/VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -167,8 +167,8 @@ MonoBehaviour:
       status: 2
       detail: LevelEssentiels (tague Sentinel)
     - id: startDoor
-      status: 1
-      detail: 'Ancienne start zone, sans porte d''entree : LevelEssentiels/StartZone_8m'
+      status: 2
+      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
     - id: goalDoor
       status: 2
       detail: LevelEssentiels/GoalDoor (GoalDoorNew)
@@ -177,7 +177,7 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VictoryManager (PostVictorySequencer)
+      detail: VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -209,27 +209,26 @@ MonoBehaviour:
       status: 0
       detail: 
     - id: levelEssentiels
-      status: 1
-      detail: LevelEssentiels (PAS tague Sentinel)
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
     - id: startDoor
-      status: 1
-      detail: 'Ancienne start zone, sans porte d''entree : StartZone_8m'
+      status: 2
+      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
     - id: goalDoor
       status: 2
-      detail: GoalDoor (GoalDoorNew)
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
     - id: key
       status: 2
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VictoryManager (PostVictorySequencer)
+      detail: VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
     - id: circles
-      status: 1
-      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : ConcentricCircles
-        Manager. Les taguer ou les ranger sous un objet tague.'
+      status: 2
+      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
     - id: transitionRoom
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
@@ -267,7 +266,7 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VictoryManager (PostVictorySequencer)
+      detail: VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -311,7 +310,7 @@ MonoBehaviour:
       detail: LevelEssentiels/KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VICTORY/VictoryManager (PostVictorySequencer)
+      detail: VICTORY/VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -356,7 +355,7 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VictoryManager (PostVictorySequencer)
+      detail: VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -400,8 +399,9 @@ MonoBehaviour:
       status: 2
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
-      status: 2
-      detail: VICTORY/VictoryManager (PostVictorySequencer)
+      status: 1
+      detail: Global Volume assigne a la main = 'Global Volume' au lieu du volume
+        PostVictory (vider le champ ou y mettre PostVictory)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -446,7 +446,7 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VictoryManager (PostVictorySequencer)
+      detail: VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -851,10 +851,10 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VictoryManager (PostVictorySequencer)
+      detail: VictoryManager (configuration complete)
     - id: curtain
-      status: 0
-      detail: 
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
     - id: circles
       status: 2
       detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
@@ -986,7 +986,7 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VictoryManager (PostVictorySequencer)
+      detail: VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -1031,7 +1031,7 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VictoryManager (PostVictorySequencer)
+      detail: VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -1089,4 +1089,4 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_TrafficJam_04.unity
     collectibleIDs: []
-  lastAnalysis: 11/10/2026 a 18:27
+  lastAnalysis: 12/10/2026 a 16:31

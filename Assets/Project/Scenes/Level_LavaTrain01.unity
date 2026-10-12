@@ -705,7 +705,7 @@ GameObject:
   - component: {fileID: 112630077}
   - component: {fileID: 112630076}
   - component: {fileID: 112630075}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: SideWalls (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3496,7 +3496,7 @@ GameObject:
   - component: {fileID: 491945525}
   - component: {fileID: 491945524}
   - component: {fileID: 491945523}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: SideWalls
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -26473,82 +26473,6 @@ Transform:
   - {fileID: 380463610}
   m_Father: {fileID: 950462266}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &697552401
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1060718293308637070, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: weight
-      value: 0.418
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 2.82353
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 7.83111
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005608424140542871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7223738199076534618, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_Name
-      value: RedVolume
-      objectReference: {fileID: 0}
-    - target: {fileID: 7223738199076534618, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
---- !u!114 &697552402 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5847959052634411871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-  m_PrefabInstance: {fileID: 697552401}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 117157ca8c4a2bd4090bd48b4e6852a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedLightVolumeController
 --- !u!1 &705119799
 GameObject:
   m_ObjectHideFlags: 0
@@ -27976,6 +27900,17 @@ Transform:
   - {fileID: 1948181835}
   m_Father: {fileID: 569380275}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &922254719 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2645102951557143351, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
+  m_PrefabInstance: {fileID: 542083163}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
 --- !u!1 &940198126
 GameObject:
   m_ObjectHideFlags: 0
@@ -36001,7 +35936,7 @@ PrefabInstance:
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: globalVolume
       value: 
-      objectReference: {fileID: 832575518}
+      objectReference: {fileID: 922254719}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: objectsToHide.Array.size
       value: 1
@@ -39728,7 +39663,7 @@ PrefabInstance:
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: redLightVolumeController
       value: 
-      objectReference: {fileID: 697552402}
+      objectReference: {fileID: 0}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: lightsToDisableInRedLight.Array.size
       value: 3
@@ -39809,7 +39744,6 @@ MonoBehaviour:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 697552401}
   - {fileID: 832575519}
   - {fileID: 1361275057}
   - {fileID: 1189802042}
