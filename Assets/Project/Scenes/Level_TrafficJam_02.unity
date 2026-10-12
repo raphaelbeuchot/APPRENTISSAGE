@@ -58161,7 +58161,7 @@ MonoBehaviour:
   isInKnockback: 0
   deathByPit: 0
   destroyOnDeath: 1
-  healthBarUI: {fileID: 0}
+  healthBarUIs: []
   pulseScaleMultiplier: 1.2
   pulseDuration: 0.3
 --- !u!136 &1118344338
@@ -64442,6 +64442,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7795896a60b7f74c91dec122302123e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraPanningController
+  trackedPlayer: {fileID: 0}
+  playerCamera: {fileID: 0}
+  localInput: {fileID: 0}
   startWithFreeCameraEnabled: 0
   verticalOffset: 4
   verticalPanSpeed: 5
@@ -93618,7 +93621,7 @@ MonoBehaviour:
   isInKnockback: 0
   deathByPit: 0
   destroyOnDeath: 1
-  healthBarUI: {fileID: 0}
+  healthBarUIs: []
   pulseScaleMultiplier: 1.2
   pulseDuration: 0.3
 --- !u!136 &1785196391
@@ -100272,7 +100275,7 @@ GameObject:
   - component: {fileID: 1890326246}
   m_Layer: 0
   m_Name: LevelEssentiels
-  m_TagString: Untagged
+  m_TagString: Sentinel
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -103351,7 +103354,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 115993669638194592}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 

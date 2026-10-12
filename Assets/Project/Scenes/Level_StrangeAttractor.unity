@@ -1789,6 +1789,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: LateralWall_30m
       objectReference: {fileID: 0}
+    - target: {fileID: 4055131976543759574, guid: a29af100138cf1f47b94cd75cbb9c665, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7662367959402886095, guid: a29af100138cf1f47b94cd75cbb9c665, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1892,8 +1900,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 279709654}
-  m_Layer: 0
-  m_Name: MarqueeLigneGauche (2)
+  m_Layer: 22
+  m_Name: MarqueeLigneDroite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1908,7 +1916,7 @@ Transform:
   m_GameObject: {fileID: 279709653}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.8999987, y: 0.775, z: 25.4}
+  m_LocalPosition: {x: 7.9, y: 0.775, z: 25.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3387,6 +3395,11 @@ Transform:
   - {fileID: 1246996740}
   m_Father: {fileID: 478456910}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &508168376 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5448087078063435277, guid: 9add82e09ab85c0479ee6459b24b7793, type: 3}
+  m_PrefabInstance: {fileID: 861876492}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &509320381 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8461077461872918516, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
@@ -7886,6 +7899,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 432456871}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: layersToHide.m_Bits
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: objectsToHide.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -7907,11 +7924,11 @@ PrefabInstance:
       objectReference: {fileID: 1035117230}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: layersToHideOnVictory.m_Bits
-      value: 8
+      value: 4194304
       objectReference: {fileID: 0}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: objectsToHideOnVictory.Array.size
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: 'objectsToHideOnVictory.Array.data[0]'
@@ -7929,6 +7946,10 @@ PrefabInstance:
       propertyPath: 'objectsToHideOnVictory.Array.data[3]'
       value: 
       objectReference: {fileID: 1159299402}
+    - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: 'objectsToHideOnVictory.Array.data[4]'
+      value: 
+      objectReference: {fileID: 508168376}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -9734,8 +9755,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1536602235}
-  m_Layer: 0
-  m_Name: MarqueeLigneGauche (3)
+  m_Layer: 22
+  m_Name: MarqueeLigneDroite 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9750,7 +9771,7 @@ Transform:
   m_GameObject: {fileID: 1536602234}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.8999987, y: 0.475, z: 25.4}
+  m_LocalPosition: {x: 7.9, y: 0.475, z: 25.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -9768,8 +9789,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1538007427}
-  m_Layer: 0
-  m_Name: MarqueeLigneGauche (1)
+  m_Layer: 22
+  m_Name: MarqueeLigneGauche 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9784,7 +9805,7 @@ Transform:
   m_GameObject: {fileID: 1538007426}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.24999857, y: 0.475, z: 25.4}
+  m_LocalPosition: {x: 0.049998567, y: 0.475, z: 25.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -12508,6 +12529,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: LateralWall_30m_Left
       objectReference: {fileID: 0}
+    - target: {fileID: 4055131976543759574, guid: a29af100138cf1f47b94cd75cbb9c665, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7662367959402886095, guid: a29af100138cf1f47b94cd75cbb9c665, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -12649,7 +12678,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2030725683}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: MarqueeLigneGauche
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12665,7 +12694,7 @@ Transform:
   m_GameObject: {fileID: 2030725682}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.24999857, y: 0.775, z: 25.4}
+  m_LocalPosition: {x: 0.049998567, y: 0.775, z: 25.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -15257,8 +15286,8 @@ SceneRoots:
   - {fileID: 126368964}
   - {fileID: 1110628654}
   - {fileID: 2030725683}
-  - {fileID: 279709654}
   - {fileID: 1538007427}
+  - {fileID: 279709654}
   - {fileID: 1536602235}
   - {fileID: 8191566194484627769}
   - {fileID: 23277303}

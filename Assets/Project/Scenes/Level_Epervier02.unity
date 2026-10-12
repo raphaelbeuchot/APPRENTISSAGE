@@ -24304,6 +24304,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EpervierManager
   sentinelCycleManager: {fileID: 0}
+  ballPhysicsMaterial: {fileID: 0}
   spawnPoint: {fileID: 576217686}
   arrivalPoint: {fileID: 671211048}
   groundY: 0
@@ -24777,6 +24778,11 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: 56f8281de24256a43a9268333d0e4791, type: 2}
   flameRenderer: {fileID: 496632967}
   healthBarUI: {fileID: 0}
+  enemyDetectionRange: 8
+  enemyAttractionForce: 3
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!65 &496632966
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -25141,6 +25147,7 @@ MonoBehaviour:
   metalShutter: {fileID: 1803505161}
   gameStartDelay: 4.5
   gameManager: {fileID: 1801742136}
+  launchCyclesOnActivation: 1
   startZoneCamera: {fileID: 1189802041}
   normalCamera: {fileID: 1231677634}
   activePriority: 20
@@ -61112,6 +61119,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7795896a60b7f74c91dec122302123e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraPanningController
+  trackedPlayer: {fileID: 0}
+  playerCamera: {fileID: 0}
+  localInput: {fileID: 0}
   startWithFreeCameraEnabled: 0
   verticalOffset: 5
   verticalPanSpeed: 10
@@ -94473,7 +94483,7 @@ GameObject:
   - component: {fileID: 1890326246}
   m_Layer: 0
   m_Name: LevelEssentiels
-  m_TagString: Untagged
+  m_TagString: Sentinel
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -103036,17 +103046,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
---- !u!114 &2064839567 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3111822479116291425, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
-  m_PrefabInstance: {fileID: 115993669638194592}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c12391bb4c5e5d84880004088e9248c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VictoryUI
 --- !u!1001 &2065662939
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -107331,7 +107330,7 @@ PrefabInstance:
     - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: victoryUI
       value: 
-      objectReference: {fileID: 2064839567}
+      objectReference: {fileID: 0}
     - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: gameOverUI
       value: 
