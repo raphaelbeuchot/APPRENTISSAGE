@@ -45,6 +45,10 @@ public class PostVictorySequencer : MonoBehaviour
     [SerializeField] private float sentinelRiseDuration = 2f;
     [Tooltip("Distance de montee en Y (si skipDecorExit)")]
     [SerializeField] private float sentinelRiseDistance = 12f;
+    [Tooltip("Courbe de la montee des objets tagues (meme principe que le rideau : douce par defaut). 0 -> 1 en X = debut -> fin")]
+    [SerializeField] private AnimationCurve sentinelRiseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [Tooltip("Decalage (s) du depart de la montee des objets tagues par rapport au rideau")]
+    [SerializeField] private float sentinelRiseDelay = 0.5f;
     [Tooltip("Securite : delai maximum d'attente des montees (rideau, objets tagues) avant de poursuivre la sequence")]
     [SerializeField] private float maxRiseWait = 10f;
 
@@ -440,6 +444,12 @@ public class PostVictorySequencer : MonoBehaviour
     // Montee d'un objet tague Sentinel (avec ses enfants) : distance/duree communes, puis desactivation.
     private IEnumerator RiseAndHide(Transform target, Action onDone)
     {
+        // Decalage par rapport au rideau (qui part tout de suite)
+        if (sentinelRiseDelay > 0f)
+            yield return new WaitForSeconds(sentinelRiseDelay);
+
+        if (target == null) { onDone?.Invoke(); yield break; }
+
         Vector3 startPos = target.position;
         Vector3 endPos   = startPos + Vector3.up * sentinelRiseDistance;
         float elapsed    = 0f;
@@ -447,9 +457,13 @@ public class PostVictorySequencer : MonoBehaviour
         while (elapsed < sentinelRiseDuration && target != null)
         {
             elapsed += Time.deltaTime;
-            target.position = Vector3.Lerp(startPos, endPos, Mathf.Clamp01(elapsed / sentinelRiseDuration));
+            float t = sentinelRiseCurve.Evaluate(Mathf.Clamp01(elapsed / sentinelRiseDuration));
+            target.position = Vector3.LerpUnclamped(startPos, endPos, t);
             yield return null;
         }
+
+        if (target != null)
+            target.position = endPos;
 
         if (target != null)
             target.gameObject.SetActive(false);
