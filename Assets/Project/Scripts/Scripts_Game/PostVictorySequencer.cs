@@ -416,18 +416,6 @@ public class PostVictorySequencer : MonoBehaviour
             }
         }
 
-        // Rustine (2026-10-09) : les cercles concentriques hors des objets tagues montent aussi.
-        // A retirer quand les niveaux concernes auront leurs cercles tagues (colonne Cercles du LD Catalog).
-        if (skipDecorExit)
-        {
-            foreach (ConcentricCirclesSpawner circles in FindObjectsOfType<ConcentricCirclesSpawner>())
-            {
-                if (risingObjects.Any(r => circles.transform.IsChildOf(r))) continue;
-                risingPending++;
-                StartCoroutine(RiseAndHide(circles.transform, () => risingPending--));
-            }
-        }
-
         if (endCurtain != null)
         {
             endCurtain.OnRiseComplete += () => curtainDone = true;
@@ -449,7 +437,7 @@ public class PostVictorySequencer : MonoBehaviour
             Debug.LogWarning($"[PostVictory] Montees non terminees apres {maxRiseWait} s (decor {decorDone}, rideau {curtainDone}, objets en cours {risingPending}) — sequence poursuivie.");
     }
 
-    // Montee des objets tagues Sentinel (et de la rustine des cercles) : distance/duree communes, puis desactivation.
+    // Montee d'un objet tague Sentinel (avec ses enfants) : distance/duree communes, puis desactivation.
     private IEnumerator RiseAndHide(Transform target, Action onDone)
     {
         Vector3 startPos = target.position;

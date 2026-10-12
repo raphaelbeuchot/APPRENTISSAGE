@@ -451,7 +451,7 @@ Créer deux prefabs réutilisables :
 - **Nouvelle règle : tout objet tagué `Sentinel` monte (avec ses enfants), puis est désactivé.** Avant : un seul objet tagué (le premier trouvé) et c'était **sa racine** qui montait — héritage de `DecorExitSequencer`, qui raisonnait en « blocs racines » de la scène. Un objet tagué rangé sous un autre objet tagué ne monte qu'une fois (avec son parent). Là où `LevelEssentiels` (racine) est tagué : comportement inchangé.
 - **Piège trouvé (It's Show Time)** : `EndCurtain` rangé sous `LevelEssentiels` tagué → désactivé avec le groupe avant la fin de sa propre montée → `PostVictorySequencer` attendait indéfiniment : pas de caméra TransitionRoom, pas d'extinction du volume / du sol, porte de transition non activée. Corrigé dans la scène (rideau sorti du groupe).
 - **Sécurités** : `PostVictorySequencer` ne reste plus bloqué — si le rideau est désactivé pendant sa montée, ou après `maxRiseWait` (10 s), la séquence continue avec un avertissement console. LD Catalog : colonne **Rideau** ⚠ si le rideau est sous un objet tagué ; nouvelle colonne **Cercles** ⚠ si des cercles sont hors des objets tagués (ils ne montent que grâce à la rustine).
-- **Rustine des cercles** : conservée tant que la colonne Cercles signale des niveaux ; à retirer une fois leurs cercles tagués (ou rangés sous un objet tagué).
+- **Rustine des cercles** : **retirée le 2026-10-12**, une fois la colonne Cercles du LD Catalog propre. Règle désormais : des cercles qui doivent monter sont tagués Sentinel ou rangés sous un objet tagué (la colonne Cercles le vérifie).
 
 ### 2026-10-12 : layers à cacher + vérification complète dans le LD Catalog
 
