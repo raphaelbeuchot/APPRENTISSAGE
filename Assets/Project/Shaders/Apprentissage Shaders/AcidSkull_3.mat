@@ -13,7 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
-  m_LightmapFlags: 2
+  m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
@@ -42,21 +42,17 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Alpha: 0
-    - _ErosionForce: 0.5
-    - _ErosionSpeed: 0.25
-    - _Noise_Force: 0.5
-    - _Noise_SPeed: 0.25
+    - _Noise_Force: 0.05
+    - _Noise_SPeed: 0.15
     - _Noise_Scale: 0.5
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Twirl_Speed: 0.15
-    - _Voronoi_Cell_Density: 25
+    - _Twirl_STrength: 8
+    - _Twirl_Speed: 0.25
+    - _Voronoi_Cell_Density: 4.5
     m_Colors:
-    - _Acid_Color: {r: 0.112569444, g: 0.7490197, b: 0, a: 0.72156864}
-    - _Color: {r: 0.296905, g: 0.36320752, b: 0.21586862, a: 0.3137255}
-    - _Color_Base: {r: 0.33747134, g: 1.4980392, b: 0.13425812, a: 0.56078434}
-    - _Color_Skull: {r: 4.365023, g: 5.9921565, b: 2.3459861, a: 0.5647059}
+    - _Color_Base: {r: 0.2937859, g: 1.304119, b: 0.1168785, a: 0.6980392}
+    - _Color_Skull: {r: 1.395062, g: 1.915094, b: 0.7497775, a: 0.42745098}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &3295775782389219136
