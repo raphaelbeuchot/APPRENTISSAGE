@@ -91,6 +91,7 @@ public static class SplinePitMeshGenerator
         mesh.vertices = vertices;
         mesh.triangles = tris.ToArray();
         mesh.normals = normals;
+        mesh.uv = PlanarUVs(vertices);
         return mesh;
     }
 
@@ -195,6 +196,7 @@ public static class SplinePitMeshGenerator
         mesh.vertices = verts.ToArray();
         mesh.triangles = tris.ToArray();
         mesh.normals = normals;
+        mesh.uv = PlanarUVs(mesh.vertices);
         return mesh;
     }
 
@@ -310,6 +312,17 @@ public static class SplinePitMeshGenerator
         mesh.vertices = vertices;
         mesh.triangles = tris;
         mesh.normals = normals;
+        mesh.uv = PlanarUVs(vertices);
         return mesh;
+    }
+
+    // UV "vue du dessus" : 1 unite d'UV par metre (X, Z). Sans UV, un materiau texture n'affiche qu'une couleur
+    // (ex. PitFill acide avec texture). La repetition se regle avec le Tiling du materiau.
+    private static Vector2[] PlanarUVs(Vector3[] vertices)
+    {
+        Vector2[] uvs = new Vector2[vertices.Length];
+        for (int i = 0; i < vertices.Length; i++)
+            uvs[i] = new Vector2(vertices[i].x, vertices[i].z);
+        return uvs;
     }
 }
