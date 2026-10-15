@@ -77,7 +77,10 @@ public class SplinePitZoneEditor : Editor
     static float rectWidth = 6f;   // axe X local de la spline
     static float rectLength = 4f;  // axe Z local de la spline
     static float cornerRadius = 1f;
-    const int pointsPerCorner = 8; // points d'echantillonnage vises par coin arrondi
+    static float bulgeX = 0f;      // fleche au milieu des cotes paralleles a X (gonflent vers -Z / +Z)
+    static float bulgeZ = 0f;      // fleche au milieu des cotes paralleles a Z (gonflent vers -X / +X)
+    const int pointsPerCorner = 8; // points d'echantillonnage vises par quart de tour
+    const float maxTotalTilt = 89f; // inclinaison max cumulee des cotes : au-dela, un coin tournerait a l'envers
 
     void DrawRoundedRectSection(SplinePitZone zone)
     {
@@ -90,14 +93,25 @@ public class SplinePitZoneEditor : Editor
         float maxRadius = Mathf.Min(rectWidth, rectLength) * 0.49f;
         cornerRadius = EditorGUILayout.Slider("Rayon des coins", cornerRadius, 0f, maxRadius);
 
+        float chordX = rectWidth - 2f * cornerRadius;
+        float chordZ = rectLength - 2f * cornerRadius;
+        // Nommes selon la direction du gonflement : "Bombe X" pousse les cotes gauche/droite vers -X / +X
+        bulgeZ = EditorGUILayout.Slider(new GUIContent("Bombe X", "Gonflement vers -X / +X : milieu des cotes gauche et droite (m)"), bulgeZ, 0f, chordZ * 0.5f);
+        bulgeX = EditorGUILayout.Slider(new GUIContent("Bombe Z", "Gonflement vers -Z / +Z : milieu des cotes bas et haut (m)"), bulgeX, 0f, chordX * 0.5f);
+
+        float tiltX = SideTilt(bulgeX, chordX);
+        float tiltZ = SideTilt(bulgeZ, chordZ);
+        if (tiltX + tiltZ > maxTotalTilt)
+            EditorGUILayout.HelpBox("Bombes trop forts pour ces coins : ils seront reduits a la creation pour garder une forme convexe.", MessageType.Warning);
+
         UnityEngine.Splines.SplineContainer sc = zone.GetSplineContainer();
         GUI.enabled = sc != null;
         GUI.backgroundColor = Color.cyan;
         if (GUILayout.Button("Creer (remplace la spline)", GUILayout.Height(25)))
         {
             Undo.RecordObjects(new Object[] { sc, zone }, "Rectangle arrondi");
-            BuildRoundedRect(sc.Spline, rectWidth, rectLength, cornerRadius);
-            zone.splineSampleCount = Mathf.Max(zone.splineSampleCount, SampleCountFor(rectWidth, rectLength, cornerRadius));
+            BuildRoundedRect(sc.Spline, rectWidth, rectLength, cornerRadius, tiltX, tiltZ);
+            zone.splineSampleCount = Mathf.Max(zone.splineSampleCount, SampleCountFor(sc.Spline));
             EditorUtility.SetDirty(sc);
             zone.GenerateMeshes();
             EditorUtility.SetDirty(zone);
@@ -109,55 +123,108 @@ public class SplinePitZoneEditor : Editor
         GUILayout.EndVertical();
     }
 
-    // 8 noeuds (2 par coin) en mode Mirrored, tangentes alignees sur les cotes :
-    // les cotes restent droits, chaque coin est un quart de cercle (tangente = 0.5523 * rayon).
-    // Rayon 0 : 4 noeuds lineaires (rectangle aux angles vifs).
-    static void BuildRoundedRect(UnityEngine.Splines.Spline spline, float width, float length, float radius)
+    // Inclinaison (degres) de la tangente en bout d'un cote bombe en arc de cercle :
+    // fleche s sur une corde L -> demi-angle au centre = 2 * atan(2s / L).
+    static float SideTilt(float bulge, float chord)
     {
+        if (bulge <= 0.0001f || chord <= 0.0001f) return 0f;
+        return 2f * Mathf.Atan(2f * bulge / chord) * Mathf.Rad2Deg;
+    }
+
+    // Parcours anti-horaire vu du dessus (bas, droite, haut, gauche). Angles en degres dans le plan XZ
+    // (0 = +X, 90 = +Z). Un cote bombe part incline de -tilt vers l'exterieur et revient a +tilt.
+    // Rayon > 0 : 8 noeuds (2 par coin), Continuous. Rayon 0 : 4 noeuds aux coins, Broken (angle vif).
+    // Longueur des tangentes de chaque segment = approximation Bezier d'un arc de cercle.
+    static void BuildRoundedRect(UnityEngine.Splines.Spline spline, float width, float length, float radius,
+        float tiltX, float tiltZ)
+    {
+        float total = tiltX + tiltZ;
+        if (total > maxTotalTilt)
+        {
+            tiltX *= maxTotalTilt / total;
+            tiltZ *= maxTotalTilt / total;
+        }
+
         float hx = width * 0.5f;
         float hz = length * 0.5f;
+        bool sharp = radius <= 0.001f;
+
+        // Position, direction d'arrivee, direction de depart
+        var pos = new System.Collections.Generic.List<Vector3>();
+        var dirIn = new System.Collections.Generic.List<float>();
+        var dirOut = new System.Collections.Generic.List<float>();
+        void Add(Vector3 p, float aIn, float aOut) { pos.Add(p); dirIn.Add(aIn); dirOut.Add(aOut); }
+
+        if (sharp)
+        {
+            Add(new Vector3(-hx, 0f, -hz), 270f + tiltZ, 0f - tiltX);
+            Add(new Vector3(hx, 0f, -hz), 0f + tiltX, 90f - tiltZ);
+            Add(new Vector3(hx, 0f, hz), 90f + tiltZ, 180f - tiltX);
+            Add(new Vector3(-hx, 0f, hz), 180f + tiltX, 270f - tiltZ);
+        }
+        else
+        {
+            Add(new Vector3(-hx + radius, 0f, -hz), 0f - tiltX, 0f - tiltX);
+            Add(new Vector3(hx - radius, 0f, -hz), 0f + tiltX, 0f + tiltX);
+            Add(new Vector3(hx, 0f, -hz + radius), 90f - tiltZ, 90f - tiltZ);
+            Add(new Vector3(hx, 0f, hz - radius), 90f + tiltZ, 90f + tiltZ);
+            Add(new Vector3(hx - radius, 0f, hz), 180f - tiltX, 180f - tiltX);
+            Add(new Vector3(-hx + radius, 0f, hz), 180f + tiltX, 180f + tiltX);
+            Add(new Vector3(-hx, 0f, hz - radius), 270f - tiltZ, 270f - tiltZ);
+            Add(new Vector3(-hx, 0f, -hz + radius), 270f + tiltZ, 270f + tiltZ);
+        }
+
+        int n = pos.Count;
+        var tanIn = new Vector3[n];
+        var tanOut = new Vector3[n];
+        for (int i = 0; i < n; i++)
+        {
+            int next = (i + 1) % n;
+            float turn = Mathf.DeltaAngle(dirOut[i], dirIn[next]);
+            float h = ArcHandleLength(Vector3.Distance(pos[i], pos[next]), turn);
+            tanOut[i] = Dir(dirOut[i]) * h;
+            tanIn[next] = -Dir(dirIn[next]) * h;
+        }
+
         spline.Clear();
-
-        if (radius <= 0.001f)
-        {
-            spline.Add(new Unity.Mathematics.float3(-hx, 0f, -hz), UnityEngine.Splines.TangentMode.Linear);
-            spline.Add(new Unity.Mathematics.float3(hx, 0f, -hz), UnityEngine.Splines.TangentMode.Linear);
-            spline.Add(new Unity.Mathematics.float3(hx, 0f, hz), UnityEngine.Splines.TangentMode.Linear);
-            spline.Add(new Unity.Mathematics.float3(-hx, 0f, hz), UnityEngine.Splines.TangentMode.Linear);
-            spline.Closed = true;
-            return;
-        }
-
-        float k = 0.5523f * radius;
-        // Position du noeud, direction de parcours
-        Vector3[,] knots =
-        {
-            { new Vector3(-hx + radius, 0f, -hz), Vector3.right },
-            { new Vector3(hx - radius, 0f, -hz), Vector3.right },
-            { new Vector3(hx, 0f, -hz + radius), Vector3.forward },
-            { new Vector3(hx, 0f, hz - radius), Vector3.forward },
-            { new Vector3(hx - radius, 0f, hz), Vector3.left },
-            { new Vector3(-hx + radius, 0f, hz), Vector3.left },
-            { new Vector3(-hx, 0f, hz - radius), Vector3.back },
-            { new Vector3(-hx, 0f, -hz + radius), Vector3.back },
-        };
-
-        for (int i = 0; i < 8; i++)
-        {
-            Vector3 dir = knots[i, 1] * k;
-            var knot = new UnityEngine.Splines.BezierKnot(knots[i, 0], -dir, dir, Quaternion.identity);
-            spline.Add(knot, UnityEngine.Splines.TangentMode.Mirrored);
-        }
+        var mode = sharp ? UnityEngine.Splines.TangentMode.Broken : UnityEngine.Splines.TangentMode.Continuous;
+        for (int i = 0; i < n; i++)
+            spline.Add(new UnityEngine.Splines.BezierKnot(pos[i], tanIn[i], tanOut[i], Quaternion.identity), mode);
         spline.Closed = true;
     }
 
-    // L'echantillonnage est regulier sur tout le perimetre : il faut assez de points
-    // pour que chaque petit arrondi en recoive environ pointsPerCorner.
-    static int SampleCountFor(float width, float length, float radius)
+    static Vector3 Dir(float angleDeg)
     {
-        if (radius <= 0.001f) return 32;
-        float perimeter = 2f * (width + length) - 8f * radius + 2f * Mathf.PI * radius;
-        float spacing = (Mathf.PI * radius * 0.5f) / pointsPerCorner;
-        return Mathf.Clamp(Mathf.CeilToInt(perimeter / spacing), 32, 512);
+        float a = angleDeg * Mathf.Deg2Rad;
+        return new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+    }
+
+    // Tangente Bezier d'un arc de cercle de corde c qui tourne de turnDeg : (4/3) tan(turn/4) * R,
+    // avec R = c / (2 sin(turn/2)). Quart de cercle : 0.5523 * rayon. Segment droit : c / 3.
+    static float ArcHandleLength(float chord, float turnDeg)
+    {
+        float t = Mathf.Abs(turnDeg) * Mathf.Deg2Rad;
+        if (t < 0.0001f) return chord / 3f;
+        float r = chord / (2f * Mathf.Sin(t * 0.5f));
+        return 4f / 3f * Mathf.Tan(t * 0.25f) * r;
+    }
+
+    // L'echantillonnage est regulier sur tout le perimetre : il faut assez de points pour que
+    // le segment le plus serre (petit coin, cote bombe) en recoive environ pointsPerCorner par quart de tour.
+    static int SampleCountFor(UnityEngine.Splines.Spline spline)
+    {
+        float minSpacing = float.MaxValue;
+        for (int i = 0; i < spline.Count; i++)
+        {
+            int next = (i + 1) % spline.Count;
+            Vector3 a = Vector3.Normalize((Vector3)Unity.Mathematics.math.rotate(spline[i].Rotation, spline[i].TangentOut));
+            Vector3 b = Vector3.Normalize((Vector3)Unity.Mathematics.math.rotate(spline[next].Rotation, -spline[next].TangentIn));
+            float turn = Vector3.Angle(a, b);
+            int needed = Mathf.CeilToInt(turn / 90f * pointsPerCorner);
+            if (needed > 0)
+                minSpacing = Mathf.Min(minSpacing, spline.GetCurveLength(i) / needed);
+        }
+        if (minSpacing == float.MaxValue) return 32;
+        return Mathf.Clamp(Mathf.CeilToInt(spline.GetLength() / minSpacing), 32, 512);
     }
 }
