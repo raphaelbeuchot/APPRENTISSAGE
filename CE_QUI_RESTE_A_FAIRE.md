@@ -49,6 +49,7 @@
   - Dans une instance de prefab, on ne peut pas déplacer les enfants hérités (règle Unity).
 - [ ] 🟡 **Victory sequence** — switch off des éléments de décor mobiles à la victoire : rotating platforms, conveyors, roaming obstacles
 
+- [ ] ⚪ **Fosses spline en prefab** (noté le 2026-10-15) : « Generate Meshes » crée les meshes en mémoire, sans fichier → sauvegardés avec la scène, mais **perdus dans un prefab** (instances sans mesh). Contournement : « Generate Meshes » sur chaque instance. Piste : enregistrer les meshes en `.asset`. Aussi : le blocage A* (`SplinePitZone.ApplyAStarWalkability`, recalculé au `Start`, donc OK pour des instances) utilise le **rectangle englobant** aligné monde → trop large pour une fosse ronde ou tournée ; piste : `GraphUpdateShape` avec le contour.
 ---
 
 ## 🎨 POLISH
