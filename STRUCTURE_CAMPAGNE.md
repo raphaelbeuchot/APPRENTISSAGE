@@ -4,6 +4,13 @@
 
 *Liens : `LORE_ET_DESIGN.md` (promotion, carte d'accès), `PASSAGE_EN_PRODUCTION.md` (section « Catalogue de niveaux » : l'ordre réel vit dans `Project/Resources/LevelCatalog.asset`), `Assets/DESIGN.md` (boucle de progression, objectifs, Talos).*
 
+## Où on en est (2026-10-15)
+
+- **Décidé** : le balai devient un accessoire d'épisode, comme les tomates (socle de prise placé selon le niveau, dépôt rapide en sortie, toujours équipé en multi). Voir « Le balai et les tomates ».
+- **En réflexion, pas tranché** : l'agencement de la campagne. La discussion s'est orientée vers des **biomes en blocs continus**, avec une mécanique maison et des invités, mais rien n'est décidé ni réordonné.
+- **Mis de côté** (« laisser mariner ») : les idées de nouveaux biomes ; la promotion, la carte d'accès et les portes « Personnel uniquement ».
+- **Prochaine étape possible** : passer chaque famille de pièges au crible « tient un arc / niveau de respiration », pour esquisser le squelette de la campagne.
+
 ---
 
 ## La question de départ
@@ -33,7 +40,7 @@ Trois modèles discutés :
 
 Conséquence : les outils ne se règlent pas en découpant un biome mais en le **plaçant** dans la campagne (un biome qui demande les tomates et le balai vient après leur présentation).
 
-**Format TV** (suggestion) : un arc = une saison, son dernier niveau = la finale, moment naturel pour une promotion (balai, carte d'accès).
+**Format TV** (suggestion) : un arc = une saison, son dernier niveau = la finale, moment naturel pour une promotion (carte d'accès ; le balai ne porte plus la promotion depuis le choix du socle).
 
 ## Biome Flower (plateformes rotatives) — un arc qui fonctionne
 
@@ -45,7 +52,7 @@ Conséquence : les outils ne se règlent pas en découpant un biome mais en le *
 | Flower Power III | examen : plateformes au-dessus d'une fosse d'acide, maîtrise vitale |
 
 - **Écart actuel** : Go for a Spin est le niveau 2 du catalogue, Flower I le 19.
-- `Level_Flower03.unity` existe mais **n'est pas encore dans le `LevelCatalog`**.
+- `Level_Flower03.unity` a été ajouté au `LevelCatalog` (« Flower Power III ») par l'utilisateur le 2026-10-15.
 - À faire au passage : ajouter **l'acide** au menu déroulant du composant `SplinePitZone` (son `FillType` ne propose que None, Water, Lava).
 
 ## Biome Lava (train) — exemple pris en notes
@@ -102,6 +109,7 @@ Direction artistique rappelée : **thématiques ciné et TV des années 70**.
 
 ## Questions ouvertes
 
-- Blocs, mélange ou biomes : non tranché.
+- Blocs, mélange ou biomes : non tranché (discussion orientée vers les biomes en blocs).
 - Quelles familles de pièges tiennent un arc, lesquelles sont des respirations ?
-- Où placer la présentation des tomates et du balai dans une campagne par biomes ?
+- Le balai et les tomates n'ont plus besoin d'être « obtenus » (socle, caisses) : reste à décider **où et comment les présenter la première fois** (premier socle, première caisse, texte de la machine ?).
+- La promotion, la carte d'accès, les portes « Personnel uniquement » (reporté).
