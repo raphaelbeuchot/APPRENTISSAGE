@@ -84,6 +84,22 @@ Points ouverts :
 - Revisite en nettoyeur : prendre le balai au socle en entrant pour faire son service.
 - Code : `CE_QUI_RESTE_A_FAIRE.md` prévoit déjà le ramassage (`InteractBubble` + `EquipBroom()` à ajouter dans `PlayerLoadout`) ; le dépôt en serait l'inverse.
 
+## Biomes
+
+Direction artistique rappelée : **thématiques ciné et TV des années 70**.
+
+**Existants** : plateau TV de base, Lava, Flower Power, Western, Rush Hour (pas très beau, mais l'idée plaît), plus Bowling et la glace (*Caution floor slippery*), qui peuvent devenir des biomes ou servir d'invités.
+
+**Idées (2026-10-15)**, en réutilisant des mécaniques existantes :
+- **Centre commercial** (*Zombie*, Romero 1978) — **plaît beaucoup** pour les tapis roulants (escalators). Invités possibles : rayons en labyrinthe, chariots en obstacles mobiles.
+- **Station spatiale** (*Cosmos 1999*, *2001*, *Moonraker*) — idée d'**endgame** de l'utilisateur : *on est dans une vraie station spatiale* (rejoint la fiction du vaisseau de `Assets/DESIGN.md`). Pas sûr de la garder.
+- **Plage** (*Les Dents de la mer*) — fosses d'eau et nage ; lien avec l'idée d'ennemi dans les fosses d'eau (`CE_QUI_RESTE_A_FAIRE.md`, backlog).
+- **Discothèque / roller disco** (*Saturday Night Fever*) — dalles lumineuses rythmées, sol glissant réutilisé.
+- **Émission de cuisine** — plateau TV dans le plateau, foyer naturel des tomates.
+- **Film catastrophe** (*L'Aventure du Poséidon*, *La Tour infernale*) — spectaculaire mais coûteux.
+- **Chalet de ski** (James Bond de l'époque) — la glace en biome complet.
+- ~~Kung-fu / salle des miroirs~~ — **vigilance** : risque de caricature raciste, à éviter sous cette forme.
+
 ## Questions ouvertes
 
 - Blocs, mélange ou biomes : non tranché.
