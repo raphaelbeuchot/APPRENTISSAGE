@@ -174,102 +174,102 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_TrafficJam_04.unity");
     }
 
-    [MenuItem("Scene/Multi/Race/Level_Race_Lava", priority = 25)]
+    [MenuItem("Scene/Solo/Level_Flower03 (Flower Power III)", priority = 25)]
+    private static void Open_Solo_Level_Flower03__Flower_Power_III_()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Flower03.unity");
+    }
+
+    [MenuItem("Scene/Multi/Race/Level_Race_Lava", priority = 26)]
     private static void Open_Multi_Race_Level_Race_Lava()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Race_Lava.unity");
     }
 
-    [MenuItem("Scene/Multi/Race/Level_Race_Slippery", priority = 26)]
+    [MenuItem("Scene/Multi/Race/Level_Race_Slippery", priority = 27)]
     private static void Open_Multi_Race_Level_Race_Slippery()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Race_Slippery.unity");
     }
 
-    [MenuItem("Scene/Multi/Coin Race/Level_CoinRace_Lava", priority = 27)]
+    [MenuItem("Scene/Multi/Coin Race/Level_CoinRace_Lava", priority = 28)]
     private static void Open_Multi_Coin_Race_Level_CoinRace_Lava()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_CoinRace_Lava.unity");
     }
 
-    [MenuItem("Scene/Start Menus/MainMenu", priority = 28)]
+    [MenuItem("Scene/Start Menus/MainMenu", priority = 29)]
     private static void Open_Start_Menus_MainMenu()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/MainMenu.unity");
     }
 
-    [MenuItem("Scene/Start Menus/MultiStart", priority = 29)]
+    [MenuItem("Scene/Start Menus/MultiStart", priority = 30)]
     private static void Open_Start_Menus_MultiStart()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/MultiStart.unity");
     }
 
-    [MenuItem("Scene/Start Menus/LoadingScreen", priority = 30)]
+    [MenuItem("Scene/Start Menus/LoadingScreen", priority = 31)]
     private static void Open_Start_Menus_LoadingScreen()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/LoadingScreen.unity");
     }
 
-    [MenuItem("Scene/Other Menus/LevelSelect", priority = 31)]
+    [MenuItem("Scene/Other Menus/LevelSelect", priority = 32)]
     private static void Open_Other_Menus_LevelSelect()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/LevelSelect.unity");
     }
 
-    [MenuItem("Scene/Other Menus/WheelOfFortune", priority = 32)]
+    [MenuItem("Scene/Other Menus/WheelOfFortune", priority = 33)]
     private static void Open_Other_Menus_WheelOfFortune()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/WheelOfFortune.unity");
     }
 
-    [MenuItem("Scene/Out of Campaign/Level_TutoNew", priority = 33)]
+    [MenuItem("Scene/Out of Campaign/Level_TutoNew", priority = 34)]
     private static void Open_Out_of_Campaign_Level_TutoNew()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_TutoNew.unity");
     }
 
-    [MenuItem("Scene/Out of Campaign/Level_TutoNew02", priority = 34)]
+    [MenuItem("Scene/Out of Campaign/Level_TutoNew02", priority = 35)]
     private static void Open_Out_of_Campaign_Level_TutoNew02()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_TutoNew02.unity");
     }
 
-    [MenuItem("Scene/Out of Campaign/Level_PotPourri", priority = 35)]
+    [MenuItem("Scene/Out of Campaign/Level_PotPourri", priority = 36)]
     private static void Open_Out_of_Campaign_Level_PotPourri()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_PotPourri.unity");
     }
 
-    [MenuItem("Scene/Other/Levels/Level_001", priority = 36)]
+    [MenuItem("Scene/Other/Levels/Level_001", priority = 37)]
     private static void Open_Other_Levels_Level_001()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Levels/Level_001.unity");
     }
 
-    [MenuItem("Scene/Other/Levels/Level_008", priority = 37)]
+    [MenuItem("Scene/Other/Levels/Level_008", priority = 38)]
     private static void Open_Other_Levels_Level_008()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Levels/Level_008.unity");
-    }
-
-    [MenuItem("Scene/Other/Level_Flower03", priority = 38)]
-    private static void Open_Other_Level_Flower03()
-    {
-        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Flower03.unity");
     }
 
     [MenuItem("Scene/Other/Level_Multi_Test", priority = 39)]

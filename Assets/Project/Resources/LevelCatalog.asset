@@ -729,7 +729,7 @@ MonoBehaviour:
   - scene: {fileID: 102900000, guid: 832e351d556fbf8459a7810e3b1ccf1a, type: 3}
     levelName: Pit'em All
     launchText: Pit 'em all !
-    hasBroom: 1
+    hasBroom: 0
     hasSpray: 0
     observed:
     - id: tomatoCrate
@@ -1085,4 +1085,48 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_TrafficJam_04.unity
     collectibleIDs: []
-  lastAnalysis: 14/10/2026 a 23:29
+  - scene: {fileID: 102900000, guid: 452db213822304249a0e5ac677faf8fd, type: 3}
+    levelName: Flower Power III
+    launchText: Flower Power
+    hasBroom: 0
+    hasSpray: 0
+    observed:
+    - id: tomatoCrate
+      status: 0
+      detail: 
+    - id: enemies
+      status: 0
+      detail: 
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 1
+      detail: 'Ancienne start zone, sans porte d''entree : StartZone_8m'
+    - id: goalDoor
+      status: 2
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
+    - id: key
+      status: 2
+      detail: KeyCollectible/Collectible (KeyCollectible)
+    - id: victory
+      status: 2
+      detail: VictoryManager (configuration complete)
+    - id: curtain
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
+    - id: transitionRoom
+      status: 2
+      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
+    scenePath: Assets/Project/Scenes/Level_Flower03.unity
+    collectibleIDs: []
+  lastAnalysis: 15/10/2026 a 21:05
