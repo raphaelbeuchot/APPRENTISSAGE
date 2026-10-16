@@ -80,6 +80,7 @@ Conséquence : les outils ne se règlent pas en découpant un biome mais en le *
 - Un **socle de dépôt** en sortie de niveau si besoin : *« Pour continuer, merci de déposer votre balai. »* Logique pénitentiaire réelle : les outils de travail sont comptés, pris et rendus à chaque service.
 - L'obtention du balai dans le lore (la promotion) est mise de côté pour l'instant.
 - Texte de la machine pour un niveau sans balai (piste) : *« Vos privilèges de nettoyage sont suspendus pour la durée de cet épisode. Nous vous remercions de votre compréhension. »*
+- Texte en réserve (2026-10-16, « au cas où ») : ***« Game goes Broom ! »*** — deux usages envisagés : **nom de niveau**, ou **texte affiché la première fois qu'on prend le balai au socle** (rejoint la question ouverte « où et comment présenter la première fois »).
 
 Décidé par l'utilisateur (2026-10-15) :
 - **Placement du socle de prise : selon le niveau**, comme les tomates (parfois dès le début, parfois plus loin). Un niveau difficile au début devient jouissif quand on récupère le balai au milieu.
