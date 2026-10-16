@@ -86,6 +86,9 @@ Décidé par l'utilisateur (2026-10-15) :
 - **Placement du socle de prise : selon le niveau**, comme les tomates (parfois dès le début, parfois plus loin). Un niveau difficile au début devient jouissif quand on récupère le balai au milieu.
 - **Dépôt : hyper rapide et satisfaisant, très arcade.**
 - **Multi : pas de socle, on a toujours le balai.**
+- **Mort / restart (2026-10-16) : on perd le balai, le socle est de nouveau plein.** La prise est instantanée, donc se rééquiper ne coûte rien ; et avec un socle en milieu de niveau, on repart vraiment de zéro, ce qui est voulu.
+
+Fait (2026-10-16) : socle de prise `BroomPedestal` (Interact dans le rayon ; Broom Visual, Hide On Take, particules de ramassage, son via l'AudioSource du GameManager), testé dans Pit'em All. Reste le socle de dépôt.
 
 Points ouverts :
 - **La promotion et les portes fermées** (carte d'accès, porte latérale « Personnel uniquement » de `LORE_ET_DESIGN.md`) : à discuter, maintenant que le balai ne porte plus la promotion.
