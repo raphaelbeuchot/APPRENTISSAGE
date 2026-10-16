@@ -29,7 +29,13 @@ public class PupitreInteraction : MonoBehaviour
     [Header("Restart Spawn")]
     [SerializeField] private float restartSpawnDistance = 1f;
 
+    [Header("Depot du balai")]
+    [Tooltip("Le niveau ne se lance pas tant que le joueur a le balai : il doit le poser sur un BroomPedestal en mode Depot")]
+    [SerializeField] private bool mustPutAwayBroom = false;
+    [SerializeField] private string putAwayBroomMessage = "Pour continuer, merci de deposer votre balai.";
+
     private Transform player;
+    private PlayerLoadout loadout;
     private bool hasActivated = false;
     private const string RESTART_KEY = "AutoStartCountdown";
 
@@ -47,6 +53,9 @@ public class PupitreInteraction : MonoBehaviour
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
             player = playerObj.transform;
+
+        if (mustPutAwayBroom)
+            loadout = FindObjectOfType<PlayerLoadout>();
 
         // Check si restart
         bool isRestart = PlayerPrefs.GetInt(RESTART_KEY, 0) == 1;
@@ -104,6 +113,12 @@ public class PupitreInteraction : MonoBehaviour
 
         if (playerInRange && PlayerInputManager.Instance.InteractPressed)
         {
+            if (mustPutAwayBroom && loadout != null && loadout.hasBroom)
+            {
+                CommentPanel.Show(putAwayBroomMessage);
+                return;
+            }
+
             GetComponent<InteractBubble>()?.Hide();
             ActivatePupitre();
         }

@@ -1,29 +1,55 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
-// Socle de prise du balai : le balai est un accessoire d'episode (voir STRUCTURE_CAMPAGNE.md).
-// Le niveau demarre sans balai (case Has Broom decochee dans le LevelCatalog), le joueur le prend ici.
+// Socle du balai : le balai est un accessoire d'episode (voir STRUCTURE_CAMPAGNE.md).
+// Prise : le niveau demarre sans balai (case Has Broom decochee dans le LevelCatalog), le joueur le prend ici.
+// Depot : le niveau demarre avec le balai, le joueur le pose ici (le pupitre peut l'exiger : Must Put Away Broom),
+// puis le socle s'enfonce dans le sol. Sur un restart, le socle est deja enfonce et le joueur n'a pas de balai.
 // Solo uniquement : en multi on a toujours le balai, pas de socle.
 public class BroomPedestal : MonoBehaviour
 {
+    public enum PedestalMode { Pickup, Deposit }
+
+    [Header("Mode")]
+    [SerializeField] private PedestalMode mode = PedestalMode.Pickup;
+    public PedestalMode Mode => mode;
+
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 2f;
 
     [Header("Visual")]
-    [Tooltip("Balai pose sur le socle, cache une fois pris")]
+    [Tooltip("Balai pose sur le socle : cache une fois pris (Prise), affiche une fois depose (Depot)")]
     [SerializeField] private GameObject broomVisual;
-    [Tooltip("Polish du balai en attente (particules, lumiere...) a eteindre a la prise. Inutile pour les enfants du Broom Visual, deja eteints avec lui")]
-    [SerializeField] private GameObject[] hideOnTake;
+    [Tooltip("Polish du socle en attente (particules, lumiere...) a eteindre a l'utilisation. Inutile pour les enfants du Broom Visual en mode Prise, deja eteints avec lui")]
+    [FormerlySerializedAs("hideOnTake")]
+    [SerializeField] private GameObject[] hideOnUse;
 
-    [Header("Feedback de prise")]
-    [Tooltip("Particules de ramassage, activees a la prise (Play On Awake). Detachees vers le socle avant activation : peuvent etre rangees n'importe ou")]
-    [SerializeField] private GameObject pickupEffect;
+    [Header("Feedback")]
+    [Tooltip("Particules jouees a la prise ou au depot (Play On Awake). Detachees du socle avant activation : peuvent etre rangees n'importe ou")]
+    [FormerlySerializedAs("pickupEffect")]
+    [SerializeField] private GameObject useEffect;
     [Tooltip("Joue sur l'AudioSource du GameManager")]
-    [SerializeField] private AudioClip pickupSound;
+    [FormerlySerializedAs("pickupSound")]
+    [SerializeField] private AudioClip useSound;
+
+    [Header("Depot : enfoncement")]
+    [Tooltip("Attente apres le depot avant que le socle s'enfonce")]
+    [SerializeField] private float sinkDelay = 2f;
+    [SerializeField] private float sinkDistance = 1f;
+    [SerializeField] private float sinkDuration = 0.5f;
 
     private PlayerLoadout loadout;
     private InteractBubble interactBubble;
     private AudioSource audioSource;
-    private bool taken;
+    private bool used;
+    private bool isRestart;
+
+    private void Awake()
+    {
+        // Lu en Awake : CountdownManager efface la cle dans son Start
+        isRestart = PlayerPrefs.GetInt("AutoStartCountdown", 0) == 1;
+    }
 
     private void Start()
     {
@@ -36,44 +62,105 @@ public class BroomPedestal : MonoBehaviour
         GameManager gameManager = FindObjectOfType<GameManager>();
         if (gameManager != null)
             audioSource = gameManager.GetComponent<AudioSource>();
-        if (audioSource == null && pickupSound != null)
+        if (audioSource == null && useSound != null)
             Debug.LogWarning("[BroomPedestal] AudioSource introuvable sur GameManager");
 
-        // L'effet ne doit se jouer qu'a la prise, meme s'il est laisse actif dans la scene
-        if (pickupEffect != null) pickupEffect.SetActive(false);
+        // L'effet ne doit se jouer qu'a l'utilisation, meme s'il est laisse actif dans la scene
+        if (useEffect != null) useEffect.SetActive(false);
+
+        if (mode == PedestalMode.Deposit)
+        {
+            if (broomVisual != null) broomVisual.SetActive(false);
+            // Restart : on reapparait sans balai, socle deja enfonce
+            if (isRestart) SetDepositedInstant();
+        }
     }
 
     private void Update()
     {
-        if (taken || loadout == null || PlayerInputManager.Instance == null) return;
+        if (used || loadout == null || PlayerInputManager.Instance == null) return;
 
         float distance = Vector3.Distance(transform.position, loadout.transform.position);
-        if (distance <= interactionRange && PlayerInputManager.Instance.InteractPressed)
+        if (distance > interactionRange || !PlayerInputManager.Instance.InteractPressed) return;
+
+        if (mode == PedestalMode.Pickup)
             Take();
+        else if (loadout.hasBroom)
+            Deposit();
     }
 
     private void Take()
     {
-        taken = true;
+        used = true;
         loadout.ApplyLoadout(true, loadout.hasSpray);
 
-        // Detache avant d'eteindre quoi que ce soit : rangee sous le balai, l'effet serait eteint avec lui
-        if (pickupEffect != null)
-        {
-            pickupEffect.transform.SetParent(transform, true);
-            pickupEffect.SetActive(true);
-        }
-        if (audioSource != null && pickupSound != null)
-            audioSource.PlayOneShot(pickupSound);
-
+        PlayFeedback();
         if (broomVisual != null) broomVisual.SetActive(false);
-        foreach (GameObject go in hideOnTake)
+        HideIdleVisuals();
+    }
+
+    private void Deposit()
+    {
+        used = true;
+        loadout.ApplyLoadout(false, loadout.hasSpray);
+
+        PlayFeedback();
+        if (broomVisual != null) broomVisual.SetActive(true);
+        HideIdleVisuals();
+        StartCoroutine(SinkCoroutine());
+    }
+
+    private void SetDepositedInstant()
+    {
+        used = true;
+        if (loadout != null) loadout.ApplyLoadout(false, loadout.hasSpray);
+
+        if (broomVisual != null) broomVisual.SetActive(true);
+        HideIdleVisuals();
+        transform.position += Vector3.down * sinkDistance;
+    }
+
+    // Detache avant d'eteindre ou d'enfoncer quoi que ce soit : rangee sous le balai ou le socle,
+    // l'effet serait eteint ou enfonce avec lui
+    private void PlayFeedback()
+    {
+        if (useEffect != null)
+        {
+            useEffect.transform.SetParent(transform.parent, true);
+            useEffect.SetActive(true);
+        }
+        if (audioSource != null && useSound != null)
+            audioSource.PlayOneShot(useSound);
+    }
+
+    private void HideIdleVisuals()
+    {
+        foreach (GameObject go in hideOnUse)
             if (go != null) go.SetActive(false);
         if (interactBubble != null)
         {
             interactBubble.Hide();
             interactBubble.enabled = false;
         }
+    }
+
+    // Meme enfoncement que le pupitre (PupitreInteraction.SinkPupitreCoroutine)
+    private IEnumerator SinkCoroutine()
+    {
+        yield return new WaitForSeconds(sinkDelay);
+
+        Vector3 startPos = transform.position;
+        Vector3 targetPos = startPos + Vector3.down * sinkDistance;
+        float elapsed = 0f;
+
+        while (elapsed < sinkDuration)
+        {
+            elapsed += Time.deltaTime;
+            transform.position = Vector3.Lerp(startPos, targetPos, elapsed / sinkDuration);
+            yield return null;
+        }
+
+        transform.position = targetPos;
     }
 
     private void OnDrawGizmosSelected()

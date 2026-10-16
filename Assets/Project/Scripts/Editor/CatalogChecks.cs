@@ -81,6 +81,7 @@ internal static class CatalogChecks
         new CatalogCheck("enemies", "Ennemis", GameCatalog, s => s.Find(IsEnemy)),
         new CatalogCheck("brightEyes", "BrightEyes", GameCatalog, s => s.Find(c => c is BrightEyesController)),
         new CatalogCheck("bombs", "Bombes", GameCatalog, s => s.Find(c => c is BombSpawner)),
+        new CatalogCheck("broomPedestal", "Socle balai", GameCatalog, CheckBroomPedestal),
 
         // LD Catalog
         new CatalogCheck("levelEssentiels", "LevelEssentiels", LDCatalog, CheckLevelEssentiels),
@@ -101,6 +102,15 @@ internal static class CatalogChecks
         bool enemyComponent = c is EnemyHealth || c is EnemyAI_AStar || c is EnemyAI_PitMode
             || c is SwarmController_AStar || c is SwarmSpawner;
         return enemyComponent && c.GetComponent<BrightEyesController>() == null;
+    }
+
+    // Socles du balai, par mode (Prise, Depot) : information seulement, le loadout reste pilote par Has Broom
+    private static CheckResult CheckBroomPedestal(SceneScan s)
+    {
+        List<BroomPedestal> found = s.Components.OfType<BroomPedestal>().ToList();
+        if (found.Count == 0) return CheckResult.None();
+        string modes = string.Join(" + ", found.Select(p => p.Mode == BroomPedestal.PedestalMode.Pickup ? "Prise" : "Depot").Distinct());
+        return CheckResult.Ok(Describe(found[0].gameObject, modes, found.Count));
     }
 
     // Objet "LevelEssentiels" ; tague Sentinel pour monter avec le groupe a la victoire (PostVictorySequencer)
@@ -264,6 +274,30 @@ internal static class CatalogChecks
         if (GUILayout.Button("Analyser les scenes", EditorStyles.toolbarButton, GUILayout.Width(130f)))
             EditorApplication.delayCall += () => AnalyzeAll(catalog);
         GUILayout.Label(string.IsNullOrEmpty(catalog.lastAnalysis) ? "  jamais analyse" : "  analyse le " + catalog.lastAnalysis, EditorStyles.miniLabel);
+    }
+
+    private static UnityEditorInternal.ReorderableList.Defaults headerDefaults;
+
+    // En-tete de colonnes dessine hors du scroll (reste visible) : la liste est creee sans en-tete et
+    // le scroll doit toujours afficher sa barre verticale, pour que les colonnes restent alignees.
+    // Memes marges que l'en-tete d'une ReorderableList.
+    public static void DrawFixedListHeader(UnityEditorInternal.ReorderableList list)
+    {
+        Rect rect = GUILayoutUtility.GetRect(0f, list.headerHeight, GUILayout.ExpandWidth(true));
+        rect.xMax -= GUI.skin.verticalScrollbar.fixedWidth;
+        if (Event.current.type == EventType.Repaint)
+        {
+            // defaultBehaviours n'existe qu'apres le premier dessin d'une liste
+            UnityEditorInternal.ReorderableList.Defaults defaults = UnityEditorInternal.ReorderableList.defaultBehaviours;
+            if (defaults == null)
+                defaults = headerDefaults ?? (headerDefaults = new UnityEditorInternal.ReorderableList.Defaults());
+            defaults.DrawHeaderBackground(rect);
+        }
+        rect.xMin += 6f;
+        rect.xMax -= 6f;
+        rect.y += 1f;
+        rect.height -= 2f;
+        list.drawHeaderCallback(rect);
     }
 
     public static void DrawHeaderCell(Rect column, CatalogCheck check, GUIStyle style)

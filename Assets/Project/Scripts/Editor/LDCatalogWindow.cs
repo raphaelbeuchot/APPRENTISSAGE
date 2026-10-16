@@ -48,7 +48,7 @@ public class LDCatalogWindow : EditorWindow
 
         serializedCatalog = new SerializedObject(catalog);
         // Lecture seule : ni glisser-deposer, ni ajout / retrait (l'ordre se regle dans le Game Catalog)
-        list = new ReorderableList(serializedCatalog, serializedCatalog.FindProperty("levels"), false, true, false, false);
+        list = new ReorderableList(serializedCatalog, serializedCatalog.FindProperty("levels"), false, false, false, false);
         list.drawHeaderCallback = DrawHeader;
         list.drawElementCallback = DrawElement;
         list.elementHeight = Line + 6f;
@@ -81,7 +81,9 @@ public class LDCatalogWindow : EditorWindow
 
         EditorGUILayout.HelpBox("Case cochee = present ; tiret orange = a completer ; vide = absent. Survoler une case pour voir l'objet trouve ou le probleme.", MessageType.None);
 
-        scroll = EditorGUILayout.BeginScrollView(scroll);
+        // En-tete hors du scroll : reste visible quand on fait defiler les niveaux
+        CatalogChecks.DrawFixedListHeader(list);
+        scroll = EditorGUILayout.BeginScrollView(scroll, false, true);
         list.DoLayoutList();
         EditorGUILayout.EndScrollView();
     }

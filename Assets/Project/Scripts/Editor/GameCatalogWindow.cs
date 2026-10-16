@@ -67,7 +67,7 @@ public class GameCatalogWindow : EditorWindow
         if (catalog == null) return;
 
         serializedCatalog = new SerializedObject(catalog);
-        list = new ReorderableList(serializedCatalog, serializedCatalog.FindProperty("levels"), true, true, true, true);
+        list = new ReorderableList(serializedCatalog, serializedCatalog.FindProperty("levels"), true, false, true, true);
         list.drawHeaderCallback = DrawHeader;
         list.drawElementCallback = DrawElement;
         list.elementHeightCallback = ElementHeight;
@@ -90,8 +90,6 @@ public class GameCatalogWindow : EditorWindow
 
         DrawToolbar();
 
-        scroll = EditorGUILayout.BeginScrollView(scroll);
-
         List<string> warnings = LevelCatalogEditor.CollectWarnings(catalog);
         if (warnings.Count == 0)
             EditorGUILayout.HelpBox(catalog.levels.Count + " niveaux, aucun probleme.", MessageType.Info);
@@ -100,6 +98,10 @@ public class GameCatalogWindow : EditorWindow
                 EditorGUILayout.HelpBox(w, MessageType.Warning);
 
         EditorGUILayout.Space(4);
+
+        // En-tete hors du scroll : reste visible quand on fait defiler les niveaux
+        CatalogChecks.DrawFixedListHeader(list);
+        scroll = EditorGUILayout.BeginScrollView(scroll, false, true);
 
         EditorGUI.BeginChangeCheck();
         list.DoLayoutList();

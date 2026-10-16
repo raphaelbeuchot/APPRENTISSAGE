@@ -88,7 +88,14 @@ Décidé par l'utilisateur (2026-10-15) :
 - **Multi : pas de socle, on a toujours le balai.**
 - **Mort / restart (2026-10-16) : on perd le balai, le socle est de nouveau plein.** La prise est instantanée, donc se rééquiper ne coûte rien ; et avec un socle en milieu de niveau, on repart vraiment de zéro, ce qui est voulu.
 
-Fait (2026-10-16) : socle de prise `BroomPedestal` (Interact dans le rayon ; Broom Visual, Hide On Take, particules de ramassage, son via l'AudioSource du GameManager), testé dans Pit'em All. Reste le socle de dépôt.
+Fait (2026-10-16) : socle de prise `BroomPedestal` (Interact dans le rayon ; Broom Visual, Hide On Use, particules, son via l'AudioSource du GameManager), testé dans Pit'em All.
+
+**Dépôt — décidé le 2026-10-16 : en entrée du niveau sans balai, pas en sortie du précédent** (la sortie obligerait à figer l'ordre des niveaux, encore mouvant) :
+- Le niveau est coché Has Broom (on entre avec), un `BroomPedestal` en mode **Dépôt** est posé dans la start room, et le pupitre a **Must Put Away Broom** coché : tant qu'on a le balai, le X sur le pupitre affiche le texte (`CommentPanel`) au lieu de lancer le niveau.
+- On peut déposer tout de suite, sans passer par le pupitre.
+- Au dépôt, le balai apparaît sur le socle, qui **s'enfonce dans le sol** comme le pupitre. Sur un restart, le socle est déjà en position basse et on réapparaît sans balai.
+- Le Game Catalog affiche une colonne **Socle balai** (Prise / Dépôt), en information seulement : le loadout reste piloté par Has Broom.
+- **Contrainte d'ordre** : un niveau de dépôt doit suivre un niveau dont on sort avec le balai (Has Broom sans dépôt, ou socle de prise). Le catalogue pourrait le vérifier plus tard (alerte), pas fait.
 
 Points ouverts :
 - **La promotion et les portes fermées** (carte d'accès, porte latérale « Personnel uniquement » de `LORE_ET_DESIGN.md`) : à discuter, maintenant que le balai ne porte plus la promotion.
