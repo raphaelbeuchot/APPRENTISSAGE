@@ -176,18 +176,21 @@ public class GameCatalogWindow : EditorWindow
         float levelWidth = rect.width - ColumnsWidth;
         float y = rect.y + 3f;
 
-        // Ligne 1 : numero + scene (titre depliable) | colonnes
+        // Ligne 1 : numero + scene (titre depliable)
         string sceneName = scene.objectReferenceValue != null ? scene.objectReferenceValue.name : "(aucune scene)";
         entry.isExpanded = EditorGUI.Foldout(new Rect(rect.x + 12f, y, levelWidth - 12f, Line), entry.isExpanded, (index + 1) + ".  " + sceneName, true, boldFoldout);
+
+        // Colonnes centrees verticalement sur les 3 lignes du resume (= hauteur de la ligne 2)
+        float columnsY = y + Line + Gap;
         float x = rect.x + levelWidth;
-        DrawCenteredToggle(new Rect(x, y, ToggleColumnWidth, Line), entry.FindPropertyRelative("hasBroom"));
-        DrawCenteredToggle(new Rect(x + ToggleColumnWidth, y, ToggleColumnWidth, Line), entry.FindPropertyRelative("hasSpray"));
+        DrawCenteredToggle(new Rect(x, columnsY, ToggleColumnWidth, Line), entry.FindPropertyRelative("hasBroom"));
+        DrawCenteredToggle(new Rect(x + ToggleColumnWidth, columnsY, ToggleColumnWidth, Line), entry.FindPropertyRelative("hasSpray"));
         x += 2f * ToggleColumnWidth;
         LevelCatalogEntry catalogEntry = index < catalog.levels.Count ? catalog.levels[index] : null;
         for (int i = 0; i < ObservedChecks.Count; i++)
-            CatalogChecks.DrawCell(new Rect(x + i * ObservedColumnWidth, y, ObservedColumnWidth, Line), catalogEntry, ObservedChecks[i]);
+            CatalogChecks.DrawCell(new Rect(x + i * ObservedColumnWidth, columnsY, ObservedColumnWidth, Line), catalogEntry, ObservedChecks[i]);
         x += ObservedChecks.Count * ObservedColumnWidth;
-        EditorGUI.LabelField(new Rect(x, y, CollectiblesWidth, Line), collectibles.arraySize > 0 ? collectibles.arraySize.ToString() : "-", centeredLabel);
+        EditorGUI.LabelField(new Rect(x, columnsY, CollectiblesWidth, Line), collectibles.arraySize > 0 ? collectibles.arraySize.ToString() : "-", centeredLabel);
 
         // Lignes 2-3 : appellation
         y += Line + Gap;

@@ -86,6 +86,7 @@ internal static class CatalogChecks
         // LD Catalog
         new CatalogCheck("levelEssentiels", "LevelEssentiels", LDCatalog, CheckLevelEssentiels),
         new CatalogCheck("startDoor", "Start Door", LDCatalog, CheckStartDoor),
+        new CatalogCheck("pupitre", "Pupitre", LDCatalog, CheckPupitre),
         new CatalogCheck("goalDoor", "GoalDoor", LDCatalog, s => s.Find(c => c is GoalDoorNew)),
         new CatalogCheck("key", "Cle", LDCatalog, s => s.Find(c => c is KeyCollectible)),
         new CatalogCheck("victory", "Fin de niveau", LDCatalog, CheckVictory),
@@ -104,13 +105,31 @@ internal static class CatalogChecks
         return enemyComponent && c.GetComponent<BrightEyesController>() == null;
     }
 
-    // Socles du balai, par mode (Prise, Depot) : information seulement, le loadout reste pilote par Has Broom
+    // Socles du balai, par mode (Prise, Depot) : information seulement, le loadout reste pilote par Has Broom.
+    // La coherence avec le pupitre est controlee cote LD (colonne Pupitre).
     private static CheckResult CheckBroomPedestal(SceneScan s)
     {
         List<BroomPedestal> found = s.Components.OfType<BroomPedestal>().ToList();
         if (found.Count == 0) return CheckResult.None();
         string modes = string.Join(" + ", found.Select(p => p.Mode == BroomPedestal.PedestalMode.Pickup ? "Prise" : "Depot").Distinct());
         return CheckResult.Ok(Describe(found[0].gameObject, modes, found.Count));
+    }
+
+    // Pupitre de lancement. Socle Depot et case Must Put Away Broom vont ensemble : socle sans la case = on
+    // lance le niveau balai en main ; case sans socle = joueur bloque au pupitre s'il arrive avec le balai.
+    private static CheckResult CheckPupitre(SceneScan s)
+    {
+        List<PupitreInteraction> pupitres = s.Components.OfType<PupitreInteraction>().ToList();
+        List<PupitreInteraction> mustPutAway = pupitres.Where(p => new SerializedObject(p).FindProperty("mustPutAwayBroom")?.boolValue == true).ToList();
+        bool hasDeposit = s.Components.OfType<BroomPedestal>().Any(p => p.Mode == BroomPedestal.PedestalMode.Deposit);
+
+        if (pupitres.Count == 0)
+            return hasDeposit ? CheckResult.Warn("Socle balai en mode Depot mais aucun pupitre actif") : CheckResult.None();
+        if (hasDeposit && mustPutAway.Count == 0)
+            return CheckResult.Warn("Socle balai en mode Depot mais Must Put Away Broom decoche (" + Describe(pupitres[0].gameObject, null, pupitres.Count) + ") : on peut lancer le niveau balai en main");
+        if (!hasDeposit && mustPutAway.Count > 0)
+            return CheckResult.Warn("Must Put Away Broom coche (" + Describe(mustPutAway[0].gameObject, null, mustPutAway.Count) + ") mais aucun socle balai actif en mode Depot : joueur bloque s'il arrive avec le balai");
+        return CheckResult.Ok(Describe(pupitres[0].gameObject, hasDeposit ? "depot du balai exige" : null, pupitres.Count));
     }
 
     // Objet "LevelEssentiels" ; tague Sentinel pour monter avec le groupe a la victoire (PostVictorySequencer)
