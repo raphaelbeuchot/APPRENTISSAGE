@@ -10382,7 +10382,7 @@ MonoBehaviour:
   sinkDuration: 0.5
   interactionRange: 1
   restartSpawnDistance: 1
-  mustPutAwayBroom: 1
+  mustPutAwayBroom: 0
   putAwayBroomMessage: Pour continuer, merci de deposer votre balai.
 --- !u!23 &193707927
 MeshRenderer:
@@ -116840,6 +116840,10 @@ PrefabInstance:
     - target: {fileID: 6061651079784703727, guid: 4068a09b1ee49a04a8348a92afd064b4, type: 3}
       propertyPath: m_Name
       value: BROOMPEDESTAL_Deposit
+      objectReference: {fileID: 0}
+    - target: {fileID: 6061651079784703727, guid: 4068a09b1ee49a04a8348a92afd064b4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
