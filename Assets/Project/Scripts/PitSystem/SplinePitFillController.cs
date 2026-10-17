@@ -25,10 +25,10 @@ public class SplinePitFillController : MonoBehaviour
 
         EnemyPitInteractable enemyPit = go.GetComponent<EnemyPitInteractable>();
         if (enemyPit != null && pitZone != null)
-            enemyPit.OnEnterSplinePit(pitZone.fillType, pitZone.depth);
+            enemyPit.OnEnterSplinePit(pitZone.FillCategory, pitZone.depth);
 
         PlayerPitInteractable playerPit = go.GetComponent<PlayerPitInteractable>();
-        if (playerPit != null && pitZone != null && pitZone.fillType == SplinePitZone.FillType.Water)
+        if (playerPit != null && pitZone != null && pitZone.FillCategory == PitContentType.ContentCategory.Water)
         {
             playerPit.OnEnterSplineFill(pitZone);
             return; // Pas de degats en water pour le player

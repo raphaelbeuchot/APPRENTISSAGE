@@ -20,13 +20,14 @@ public class SplinePitZone : MonoBehaviour
 
     private SplineContainer splineContainer;
 
-    public enum FillType { None, Water, Lava }
-
+    // Le contenu (SO) decide de tout : pas de SO ou SO Empty = fosse vide
     [Header("Fill Settings")]
-    public FillType fillType = FillType.None;
     public float fillLevel = 0.5f;
     public PitContentType fillContentType;
     public Material fillMaterial;
+
+    public PitContentType.ContentCategory FillCategory =>
+        fillContentType != null ? fillContentType.category : PitContentType.ContentCategory.Empty;
 
     private void Start()
     {
@@ -131,7 +132,7 @@ public class SplinePitZone : MonoBehaviour
         triggerGO.AddComponent<SplinePitTriggerZone>();
 
         // Fill
-        if (fillType != FillType.None && fillLevel > 0f)
+        if (FillCategory != PitContentType.ContentCategory.Empty && fillLevel > 0f)
         {
             float fillY = contour[0].y - depth + fillLevel;
 

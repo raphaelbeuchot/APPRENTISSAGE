@@ -11,7 +11,6 @@ public class PitContentType : ScriptableObject
 
     [Header("Visual")]
     public GameObject contentPrefab;
-    public Color previewColor = new Color(0.5f, 0.5f, 1f, 0.4f);
 
     [Header("Death Settings - Liquids")]
     [Tooltip("Durée de la mort progressive dans les liquides (en secondes)")]

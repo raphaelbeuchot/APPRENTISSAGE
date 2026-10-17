@@ -235,13 +235,14 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
         Debug.Log($"[EnemyPit] {name} speed restored to {originalNavSpeed:F2}");
     }
 
-    public void OnEnterSplinePit(SplinePitZone.FillType fillType, float depth)
+    // DamageZone (acide) traite comme InstantKill tant que les degats dans la duree ne sont pas codes
+    public void OnEnterSplinePit(PitContentType.ContentCategory category, float depth)
     {
         isInPit = true;
 
         bool isShallowPit = depth <= 1f;
 
-        if (fillType == SplinePitZone.FillType.None)
+        if (category == PitContentType.ContentCategory.Empty)
         {
             isFallingInPit = true;
             if (enemyHealth != null && enemyHealth.stats.fallSound != null)
@@ -249,7 +250,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
             if (enemyHealth != null && enemyHealth.HasHealthBars)
                 enemyHealth.ShowAllHealthBars();
         }
-        else if (fillType == SplinePitZone.FillType.Water)
+        else if (category == PitContentType.ContentCategory.Water)
         {
             if (isShallowPit)
             {
@@ -266,7 +267,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
                     enemyAI.enabled = false;
             }
         }
-        else if (fillType == SplinePitZone.FillType.Lava)
+        else if (category == PitContentType.ContentCategory.InstantKill || category == PitContentType.ContentCategory.DamageZone)
         {
             if (enemyHealth != null && enemyHealth.stats.lavaSplashSound != null)
                 audioSource2D.PlayOneShot(enemyHealth.stats.lavaSplashSound);
@@ -274,7 +275,7 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
                 enemyAI.enabled = false;
         }
 
-        Debug.Log(string.Format("[EnemyPit] {0} entered spline pit - fillType={1}, depth={2}", name, fillType, depth));
+        Debug.Log(string.Format("[EnemyPit] {0} entered spline pit - category={1}, depth={2}", name, category, depth));
     }
 
     public bool IsInPit() => isInPit;
