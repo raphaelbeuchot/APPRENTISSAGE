@@ -93,6 +93,7 @@ Fait (2026-10-16) : socle de prise `BroomPedestal` (Interact dans le rayon ; Bro
 **Dépôt — décidé le 2026-10-16 : en entrée du niveau sans balai, pas en sortie du précédent** (la sortie obligerait à figer l'ordre des niveaux, encore mouvant) :
 - Le niveau est coché Has Broom (on entre avec), un `BroomPedestal` en mode **Dépôt** est posé dans la start room, et le pupitre a **Must Put Away Broom** coché : tant qu'on a le balai, le X sur le pupitre affiche le texte (`CommentPanel`) au lieu de lancer le niveau.
 - On peut déposer tout de suite, sans passer par le pupitre.
+- Interface (2026-10-17) : **la bulle dit *comment*, la machine dit *pourquoi***. Le socle de dépôt a son `InteractBubble` (X), comme le pupitre, la caisse de tomates et le socle de prise ; le texte de la machine ne mentionne jamais de bouton. La bulle X du pupitre reste visible même quand il est bloqué (c'est ce X qui déclenche l'explication).
 - Au dépôt, le balai apparaît sur le socle, qui **s'enfonce dans le sol** comme le pupitre. Sur un restart, le socle est déjà en position basse et on réapparaît sans balai.
 - Le Game Catalog affiche une colonne **Socle balai** (Prise / Dépôt), en information seulement : le loadout reste piloté par Has Broom.
 - **Contrainte d'ordre** : un niveau de dépôt doit suivre un niveau dont on sort avec le balai (Has Broom sans dépôt, ou socle de prise). Le catalogue pourrait le vérifier plus tard (alerte), pas fait.

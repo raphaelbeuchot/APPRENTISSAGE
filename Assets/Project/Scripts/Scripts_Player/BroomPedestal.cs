@@ -17,6 +17,8 @@ public class BroomPedestal : MonoBehaviour
 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 2f;
+    [Tooltip("Texte affiche dans le CommentPanel tant que le joueur est dans le rayon (vide = aucun). Ne mentionne pas de bouton : c'est le role de l'InteractBubble")]
+    [SerializeField] private string approachMessage = "";
 
     [Header("Visual")]
     [Tooltip("Balai pose sur le socle : cache une fois pris (Prise), affiche une fois depose (Depot)")]
@@ -44,6 +46,7 @@ public class BroomPedestal : MonoBehaviour
     private AudioSource audioSource;
     private bool used;
     private bool isRestart;
+    private bool messageShown;
 
     private void Awake()
     {
@@ -81,7 +84,11 @@ public class BroomPedestal : MonoBehaviour
         if (used || loadout == null || PlayerInputManager.Instance == null) return;
 
         float distance = Vector3.Distance(transform.position, loadout.transform.position);
-        if (distance > interactionRange || !PlayerInputManager.Instance.InteractPressed) return;
+        bool inRange = distance <= interactionRange;
+        // En mode Depot, rien a dire a un joueur qui n'a pas de balai
+        UpdateApproachMessage(inRange && (mode == PedestalMode.Pickup || loadout.hasBroom));
+
+        if (!inRange || !PlayerInputManager.Instance.InteractPressed) return;
 
         if (mode == PedestalMode.Pickup)
             Take();
@@ -135,6 +142,7 @@ public class BroomPedestal : MonoBehaviour
 
     private void HideIdleVisuals()
     {
+        UpdateApproachMessage(false);
         foreach (GameObject go in hideOnUse)
             if (go != null) go.SetActive(false);
         if (interactBubble != null)
@@ -142,6 +150,16 @@ public class BroomPedestal : MonoBehaviour
             interactBubble.Hide();
             interactBubble.enabled = false;
         }
+    }
+
+    // Affiche a l'entree dans le rayon, retire a la sortie. Hide seulement si c'est ce socle qui a affiche :
+    // ne pas effacer le texte d'un autre (pupitre bloque)
+    private void UpdateApproachMessage(bool show)
+    {
+        if (string.IsNullOrEmpty(approachMessage) || show == messageShown) return;
+        messageShown = show;
+        if (show) CommentPanel.ShowPersistent(approachMessage);
+        else CommentPanel.Hide();
     }
 
     // Meme enfoncement que le pupitre (PupitreInteraction.SinkPupitreCoroutine)
