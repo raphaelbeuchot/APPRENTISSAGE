@@ -73,13 +73,15 @@ public static class SplinePitMeshGenerator
             vertices[i] = contour[i] + Vector3.down * depth;
         vertices[count] = center;
 
+        // Face vers le haut quel que soit le sens de la spline (le rectangle arrondi de l'editeur est CCW)
+        bool clockwise = IsClockwiseXZ(contour);
         List<int> tris = new List<int>();
         for (int i = 0; i < count; i++)
         {
             int next = (i + 1) % count;
             tris.Add(count);
-            tris.Add(i);
-            tris.Add(next);
+            tris.Add(clockwise ? i : next);
+            tris.Add(clockwise ? next : i);
         }
 
         Vector3[] normals = new Vector3[vertices.Length];
@@ -294,13 +296,15 @@ public static class SplinePitMeshGenerator
             vertices[i] = new Vector3(contour[i].x, fillY, contour[i].z);
         vertices[count] = center;
 
+        // Face vers le haut quel que soit le sens de la spline, comme le sol
+        bool clockwise = IsClockwiseXZ(contour);
         int[] tris = new int[count * 3];
         for (int i = 0; i < count; i++)
         {
             int next = (i + 1) % count;
             tris[i * 3 + 0] = count;
-            tris[i * 3 + 1] = i;
-            tris[i * 3 + 2] = next;
+            tris[i * 3 + 1] = clockwise ? i : next;
+            tris[i * 3 + 2] = clockwise ? next : i;
         }
 
         Vector3[] normals = new Vector3[vertices.Length];
