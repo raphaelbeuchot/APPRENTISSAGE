@@ -162,8 +162,10 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
 
         if (!CanClimbOut(out float groundY)) return;
 
-        // Spline : calcul normal depuis la spline
-        if (isInSplinePit && currentSplinePitZone != null)
+        // Spline : un mur PitWall touche a l'instant a la priorite (flancs d'une ile, comme dans l'ancien
+        // systeme) ; sinon, direction vers le point le plus proche du contour de la fosse
+        bool recentWallContact = Time.time - lastWallContactTime < wallContactPersistence;
+        if (isInSplinePit && currentSplinePitZone != null && !recentWallContact)
         {
             SplineContainer sc = currentSplinePitZone.GetSplineContainer();
             if (sc != null)
