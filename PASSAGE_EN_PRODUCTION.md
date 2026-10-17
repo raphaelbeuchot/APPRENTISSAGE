@@ -231,6 +231,30 @@ Hors campagne (texte local de la scène ou défaut du prefab) : PotPourri, tutos
 
 ---
 
+## Fosses : un seul système, la fosse spline (2026-10-17)
+
+Deux systèmes cohabitent :
+- **Ancien, sur grille (PitBrush)** : `PitZone` + `PitFill` + `PitFillDamageController`. Encore dans 10 scènes : Lava Train I, II, III, TutoNew, TutoNew02, Pit'em All, Western Canyon, Meet the Staff, Go with the Flow II, `OLD/Level_005`.
+- **Nouveau, sur spline** : `SplinePitZone` + `SplinePitFillController` + `SplinePitTriggerZone`. 19 fosses dans 7 scènes : Flower03, Go with the Flow II, Meet the Staff, Western Flow, Race Lava, Coin Race Lava, Race Slippery (ces trois dernières en multi).
+
+**Décidé** :
+- **On abandonne PitBrush**, le système spline est bien plus pratique à manipuler. On ne pose plus de fosses sur grille, et on migre les fosses d'une scène **quand on finalise ce niveau** (méthode de ce doc). Le code de l'ancien système ne sera supprimé qu'après la dernière scène migrée.
+- **Le SO `PitContentType` décide du comportement, le composant décide du look.** Le menu Fill Type de `SplinePitZone` a été supprimé (fait, validé) : c'est la catégorie du SO qui compte. Pas de SO, ou un SO Empty, et la fosse reste vide. Le `Fill Material` reste sur le composant : on peut varier le level art fosse par fosse sans multiplier les SO. Le `Content Prefab` du SO ne sert qu'à l'ancien système et partira avec lui. `previewColor` a été supprimé (inutilisé).
+
+**Ce que le système spline ne fait pas encore** (à ajouter avant de migrer une scène qui en dépend) :
+- les dégâts de chute dans une fosse vide (`fallImmunityThreshold`, `fallDamageMultiplier`) ;
+- les piques au fond (catégorie Spikes) ;
+- les formes très creusées (en L, en U) : le sol et la surface sont construits en éventail depuis le centre, la grille acceptait n'importe quelle forme.
+
+**À faire** :
+- [ ] **Acide en DamageZone** (dégâts dans la durée). Les réglages existent dans le SO, aucun code ne les applique : DamageZone est traité comme InstantKill en attendant. À discuter d'abord : peut-on marcher ou nager dans l'acide, en sortir, que deviennent les ennemis ?
+- [ ] **Surface et shaders** : la surface générée a des UV d'une unité par mètre, alors que `Liquid_Basic` attend des UV de 0 à 1 comme sur un quad (motif minuscule, Tiling peu utilisable). En attendant, un quad posé sous le niveau du sol, masqué par le bord, fait l'affaire. Piste : le composant génère lui-même ce rectangle (UV de 0 à 1, sommets à l'intérieur pour d'éventuelles vagues).
+- [ ] **Eau avec courant** : pousser ce qui flotte dans une direction, sur le modèle du `ConveyorBelt`, avec la texture qui défile.
+- Noté en passant, non tranché : en eau, le joueur nage sans dégâts mais **les ennemis s'y noient** (seul le joueur est protégé dans `SplinePitFillController`). Voulu ?
+- La nage : le perso flotte si le remplissage dépasse 1 m (à 0,7 m sous la surface, vitesse × 0,5, pas d'animation dédiée) ; à 1 m ou moins, il est seulement ralenti. Vérifié en jeu le 2026-10-17.
+
+---
+
 ## Ménage noté en passant
 
 - Deux dossiers de ScriptableObjects : `Project/ScriptableObjects/` (grilles de pits) et `Scripts/Scriptable Objects/` (réglages : `LavaTrain_01`, `RotatingPlatform_*`…). À regrouper. (`LevelCatalog` est maintenant dans `Resources/`.)
@@ -249,3 +273,4 @@ Hors campagne (texte local de la scène ou défaut du prefab) : PotPourri, tutos
 
 - **2026-10-10** : discussion générale sur l'organisation du projet ; cas d'étude Lava Train ; ouverture de ce doc.
 - **2026-10-10 (suite)** : pilote Lava Train, étapes 1 et 2 faites. Le manager ne demande plus que la spline, le SO et le nombre de wagons ; les wagons sont créés au Start et visibles en aperçu en édition. Ressenti : « beaucoup mieux ».
+- **2026-10-17** : fosses. Abandon de PitBrush au profit de la fosse spline ; menu Fill Type supprimé (le SO décide du comportement, le composant du look) ; sol et surface orientés correctement quel que soit le sens de la spline.

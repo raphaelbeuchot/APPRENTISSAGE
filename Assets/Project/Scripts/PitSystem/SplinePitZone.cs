@@ -23,7 +23,9 @@ public class SplinePitZone : MonoBehaviour
     // Le contenu (SO) decide de tout : pas de SO ou SO Empty = fosse vide
     [Header("Fill Settings")]
     public float fillLevel = 0.5f;
+    [Tooltip("Comportement du contenu (eau, lave, acide...). Pas de SO ou SO Empty = fosse vide")]
     public PitContentType fillContentType;
+    [Tooltip("Look de la surface, propre a cette fosse (le SO ne decide que du comportement)")]
     public Material fillMaterial;
 
     public PitContentType.ContentCategory FillCategory =>

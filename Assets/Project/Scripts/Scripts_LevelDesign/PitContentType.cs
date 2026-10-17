@@ -10,6 +10,7 @@ public class PitContentType : ScriptableObject
     public ContentCategory category = ContentCategory.Empty;
 
     [Header("Visual")]
+    [Tooltip("Ancien systeme PitBrush (PitFill) seulement : ignore par les fosses spline, dont le look vient du Fill Material de SplinePitZone")]
     public GameObject contentPrefab;
 
     [Header("Death Settings - Liquids")]
