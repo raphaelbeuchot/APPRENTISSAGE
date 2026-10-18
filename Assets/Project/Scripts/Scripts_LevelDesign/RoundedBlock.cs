@@ -38,8 +38,14 @@ public class RoundedBlock : MonoBehaviour
     [Min(0f)] public float radiusC = 0.5f;
     [Min(0f)] public float radiusD = 0.5f;
 
-    [Tooltip("Nombre de segments par quart de rond.")]
+    [Tooltip("Nombre de segments par quart de rond (coins du profil et arrondis du pourtour).")]
     [Range(1, 32)] public int cornerSegments = 4;
+
+    [Header("Arrondi du pourtour")]
+    [Tooltip("Quart de rond sur tout le bord de la face 'haute' du profil : dessus (Dessus), avant +Z (Avant), droite +X (Cote).")]
+    [Min(0f)] public float roundTop = 0f;
+    [Tooltip("Quart de rond sur tout le bord de la face opposee : dessous (Dessus), arriere -Z (Avant), gauche -X (Cote).")]
+    [Min(0f)] public float roundBottom = 0f;
 
     [Header("Materiaux")]
     [Tooltip("Decoche : un seul materiau pour tout le bloc. Coche : 2 materiaux sur le MeshRenderer, " +
@@ -175,35 +181,32 @@ public class RoundedBlock : MonoBehaviour
         return r;
     }
 
-    // Contour ferme dans le sens trigo : depart au milieu du cote gauche (couture des UV du tour),
+    // Contour ferme dans le sens trigo, retreci de 'inset' (un rectangle arrondi retreci reste un rectangle arrondi :
+    // demi-tailles - inset, rayons - inset). Depart au milieu du cote gauche (couture des UV du tour),
     // puis coins A (-u,-v), B (+u,-v), C (+u,+v), D (-u,+v). Le dernier point = le premier (pour fermer les UV).
-    List<RingPoint> BuildRing(float hu, float hv)
+    // Chaque coin a toujours cornerSegments + 1 points, meme vif (rayon 0 : points superposes, normales en eventail) :
+    // tous les contours ont ainsi le meme nombre de points et se relient point a point. Les quads entre points
+    // superposes sont d'aire nulle, l'arete reste donc nette.
+    List<RingPoint> BuildRing(float hu, float hv, float[] radii, float inset)
     {
-        float[] r = GetRadii(hu, hv);
-        Vector2[] corners = { new Vector2(-hu, -hv), new Vector2(hu, -hv), new Vector2(hu, hv), new Vector2(-hu, hv) };
+        float iu = hu - inset;
+        float iv = hv - inset;
+        Vector2[] corners = { new Vector2(-iu, -iv), new Vector2(iu, -iv), new Vector2(iu, iv), new Vector2(-iu, iv) };
         float[] startAngles = { 180f, 270f, 0f, 90f };
 
         List<RingPoint> ring = new List<RingPoint>();
-        ring.Add(new RingPoint(new Vector2(-hu, 0f), Vector2.left));
+        ring.Add(new RingPoint(new Vector2(-iu, 0f), Vector2.left));
 
         for (int k = 0; k < 4; k++)
         {
             Vector2 sign = new Vector2(Mathf.Sign(corners[k].x), Mathf.Sign(corners[k].y));
-            if (r[k] > 0.0001f)
+            float r = Mathf.Max(0f, radii[k] - inset);
+            Vector2 center = corners[k] - sign * r;
+            for (int s = 0; s <= cornerSegments; s++)
             {
-                Vector2 center = corners[k] - sign * r[k];
-                for (int s = 0; s <= cornerSegments; s++)
-                {
-                    float a = (startAngles[k] + 90f * s / cornerSegments) * Mathf.Deg2Rad;
-                    Vector2 n = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
-                    ring.Add(new RingPoint(center + n * r[k], n));
-                }
-            }
-            else
-            {
-                // Coin vif : point double, une normale par cote, pour une arete nette
-                ring.Add(new RingPoint(corners[k], Dir2(startAngles[k])));
-                ring.Add(new RingPoint(corners[k], Dir2(startAngles[k] + 90f)));
+                float a = (startAngles[k] + 90f * s / cornerSegments) * Mathf.Deg2Rad;
+                Vector2 n = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+                ring.Add(new RingPoint(center + n * r, n));
             }
         }
 
@@ -211,16 +214,89 @@ public class RoundedBlock : MonoBehaviour
         return ring;
     }
 
-    static Vector2 Dir2(float degrees)
+    // Une tranche horizontale du tour : contour retreci de 'inset', place en w, normale = normale du contour * cos
+    // + axe d'extrusion * wNormal (arrondis du pourtour). v = distance parcourue sur le tour depuis le bord du dessous.
+    struct Station
     {
-        float a = degrees * Mathf.Deg2Rad;
-        return new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+        public float inset, w, inPlane, wNormal, v;
+    }
+
+    // Du bord du dessous au bord du dessus : quart de rond du bas, flanc droit, quart de rond du haut.
+    List<Station> BuildStations(float hw, float bottom, float top)
+    {
+        List<Station> stations = new List<Station>();
+        int seg = cornerSegments;
+
+        // Bas : de la face du dessous (theta = 90) au flanc (theta = 0)
+        if (bottom > 0.0001f)
+        {
+            for (int s = 0; s <= seg; s++)
+            {
+                float t = (90f - 90f * s / seg) * Mathf.Deg2Rad;
+                stations.Add(new Station
+                {
+                    inset = bottom * (1f - Mathf.Cos(t)), w = -hw + bottom - bottom * Mathf.Sin(t),
+                    inPlane = Mathf.Cos(t), wNormal = -Mathf.Sin(t)
+                });
+            }
+        }
+        else
+            stations.Add(new Station { inset = 0f, w = -hw, inPlane = 1f, wNormal = 0f });
+
+        // Haut : du flanc (theta = 0) a la face du dessus (theta = 90)
+        if (top > 0.0001f)
+        {
+            for (int s = 0; s <= seg; s++)
+            {
+                float t = (90f * s / seg) * Mathf.Deg2Rad;
+                stations.Add(new Station
+                {
+                    inset = top * (1f - Mathf.Cos(t)), w = hw - top + top * Mathf.Sin(t),
+                    inPlane = Mathf.Cos(t), wNormal = Mathf.Sin(t)
+                });
+            }
+        }
+        else
+            stations.Add(new Station { inset = 0f, w = hw, inPlane = 1f, wNormal = 0f });
+
+        // Distance parcourue sur le profil vertical (UV v du tour, en metres)
+        float v = 0f;
+        for (int j = 0; j < stations.Count; j++)
+        {
+            if (j > 0)
+            {
+                Station a = stations[j - 1], b = stations[j];
+                v += new Vector2(b.inset - a.inset, b.w - a.w).magnitude;
+            }
+            Station st = stations[j];
+            st.v = v;
+            stations[j] = st;
+        }
+        return stations;
+    }
+
+    // Rayons d'arrondi du pourtour bornes : pas plus que la demi-taille du profil (le contour retreci
+    // s'inverserait), et a eux deux pas plus que l'epaisseur (reduits en proportion).
+    void GetEdgeRounds(float hu, float hv, float hw, out float bottom, out float top)
+    {
+        float max = Mathf.Min(hu, hv);
+        bottom = Mathf.Clamp(roundBottom, 0f, max);
+        top = Mathf.Clamp(roundTop, 0f, max);
+        float sum = bottom + top;
+        if (sum > hw * 2f)
+        {
+            float k = hw * 2f / sum;
+            bottom *= k;
+            top *= k;
+        }
     }
 
     void BuildMesh(Mesh mesh)
     {
         GetExtents(out float hu, out float hv, out float hw);
-        List<RingPoint> ring = BuildRing(hu, hv);
+        float[] radii = GetRadii(hu, hv);
+        GetEdgeRounds(hu, hv, hw, out float roundBot, out float roundTopClamped);
+        List<Station> stations = BuildStations(hw, roundBot, roundTopClamped);
 
         List<Vector3> verts = new List<Vector3>();
         List<Vector3> normals = new List<Vector3>();
@@ -229,45 +305,56 @@ public class RoundedBlock : MonoBehaviour
         List<int> capTris = new List<int>();
         List<int> sideTris = new List<int>();
 
-        // --- Tour : une bande de quads, normales lisses sur les arrondis
-        float perimeter = 0f;
-        for (int i = 1; i < ring.Count; i++) perimeter += Vector2.Distance(ring[i - 1].p, ring[i].p);
-        float length = hw * 2f;
+        // --- Tour : un contour par station, relies point a point. Normales lisses sur les arrondis.
+        // UV u = distance le long du contour non retreci, pour que les colonnes d'UV restent alignees d'une station a l'autre.
+        List<RingPoint> baseRing = BuildRing(hu, hv, radii, 0f);
+        int ringCount = baseRing.Count;
+        float[] dist = new float[ringCount];
+        for (int i = 1; i < ringCount; i++)
+            dist[i] = dist[i - 1] + Vector2.Distance(baseRing[i - 1].p, baseRing[i].p);
+        float perimeter = dist[ringCount - 1];
+        float profileLength = stations[stations.Count - 1].v;
 
         int sideStart = verts.Count;
-        float dist = 0f;
-        for (int i = 0; i < ring.Count; i++)
+        foreach (Station st in stations)
         {
-            if (i > 0) dist += Vector2.Distance(ring[i - 1].p, ring[i].p);
-            Vector3 n = DirToLocal(ring[i].n.x, ring[i].n.y, 0f);
-            for (int side = 0; side < 2; side++)
+            List<RingPoint> ring = st.inset > 0f ? BuildRing(hu, hv, radii, st.inset) : baseRing;
+            for (int i = 0; i < ringCount; i++)
             {
-                float w = side == 0 ? -hw : hw;
-                verts.Add(ToLocal(ring[i].p.x, ring[i].p.y, w, hv, hw));
-                normals.Add(n);
-                uv0.Add(new Vector2(dist, w + hw));
-                uv2.Add(new Vector2(dist / perimeter, (w + hw) / length));
+                Vector2 n2 = baseRing[i].n * st.inPlane;
+                verts.Add(ToLocal(ring[i].p.x, ring[i].p.y, st.w, hv, hw));
+                normals.Add(DirToLocal(n2.x, n2.y, st.wNormal).normalized);
+                uv0.Add(new Vector2(dist[i], st.v));
+                uv2.Add(new Vector2(dist[i] / perimeter, st.v / profileLength));
             }
         }
-        for (int i = 0; i < ring.Count - 1; i++)
+        for (int j = 0; j < stations.Count - 1; j++)
         {
-            int a = sideStart + i * 2;
-            Vector3 n = (normals[a] + normals[a + 2]).normalized;
-            AddQuad(verts, sideTris, a, a + 2, a + 3, a + 1, n);
+            for (int i = 0; i < ringCount - 1; i++)
+            {
+                int a = sideStart + j * ringCount + i;
+                int b = a + 1;
+                int c = b + ringCount;
+                int d = a + ringCount;
+                Vector3 n = (normals[a] + normals[b] + normals[c] + normals[d]).normalized;
+                AddQuad(verts, sideTris, a, b, c, d, n);
+            }
         }
 
-        // --- Faces plates (avant = +w, arriere = -w) : eventail depuis le centre.
-        // Le contour est convexe et UV / positions sont lineaires sur la face, donc l'eventail est exact.
+        // --- Faces plates (avant = +w, arriere = -w) : eventail depuis le centre, sur le contour retreci
+        // par l'arrondi du pourtour. Le contour est convexe et UV / positions sont lineaires sur la face,
+        // donc l'eventail est exact.
         for (int side = 0; side < 2; side++)
         {
             float w = side == 0 ? hw : -hw;
             float mirror = side == 0 ? 1f : -1f; // la face arriere vue de derriere n'est pas en miroir
             Vector3 n = DirToLocal(0f, 0f, side == 0 ? 1f : -1f);
+            List<RingPoint> ring = BuildRing(hu, hv, radii, side == 0 ? roundTopClamped : roundBot);
             int capStart = verts.Count;
 
             AddCapVertex(verts, normals, uv0, uv2, 0f, 0f, w, hu, hv, hw, mirror, n);
-            // Le dernier point du contour double le premier : inutile ici. Les coins vifs doubles donnent
-            // un triangle degenere sans consequence.
+            // Le dernier point du contour double le premier : inutile ici. Les points superposes des coins vifs
+            // donnent des triangles degeneres sans consequence.
             for (int i = 0; i < ring.Count - 1; i++)
                 AddCapVertex(verts, normals, uv0, uv2, ring[i].p.x, ring[i].p.y, w, hu, hv, hw, mirror, n);
 
