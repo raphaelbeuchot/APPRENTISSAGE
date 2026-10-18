@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Bloc de decor parametrique : un rectangle aux coins arrondis (profil), extrude.
+// Bloc de decor parametrique : un rectangle aux coins arrondis (profil), extrude, eventuellement troue.
 // Usage : poser sur un Cube (ou tout GO avec MeshFilter), regler, le mesh se met a jour en direct.
 // Le mesh n'est pas sauvegarde : il est reconstruit a partir des reglages a chaque chargement,
 // donc le composant marche tel quel dans un prefab.
 //
 // UV0 : en metres (densite constante quelle que soit la taille), le Tiling du materiau regle la repetition.
-//       Faces plates : projection dans le plan de la face. Tour : u = distance le long du contour, v = epaisseur.
+//       Faces plates : projection dans le plan de la face. Tranches : u = distance le long du contour,
+//       v = distance parcourue en remontant la tranche (arrondis compris).
 // UV2 (canal TEXCOORD2, "UV2" dans Shader Graph) : 0-1 sur chaque face, pour degrades / lisere dans un shader maison.
 [ExecuteAlways]
 [RequireComponent(typeof(MeshFilter))]
@@ -42,14 +43,33 @@ public class RoundedBlock : MonoBehaviour
     [Range(1, 32)] public int cornerSegments = 4;
 
     [Header("Arrondi du pourtour")]
-    [Tooltip("Quart de rond sur tout le bord de la face 'haute' du profil : dessus (Dessus), avant +Z (Avant), droite +X (Cote).")]
+    [Tooltip("Quart de rond sur tout le bord de la face 'haute' du profil : dessus (Dessus), avant +Z (Avant), droite +X (Cote). " +
+             "S'applique aussi au bord du trou.")]
     [Min(0f)] public float roundTop = 0f;
-    [Tooltip("Quart de rond sur tout le bord de la face opposee : dessous (Dessus), arriere -Z (Avant), gauche -X (Cote).")]
+    [Tooltip("Quart de rond sur tout le bord de la face opposee : dessous (Dessus), arriere -Z (Avant), gauche -X (Cote). " +
+             "S'applique aussi au bord du trou.")]
     [Min(0f)] public float roundBottom = 0f;
 
+    [Header("Trou")]
+    [Tooltip("Perce le bloc de part en part. Le trou se declare par ses marges, vues dans le plan du profil " +
+             "(les lettres G/D/B/H s'affichent dans la scene quand l'objet est selectionne).")]
+    public bool hole = false;
+    [Tooltip("Une seule marge pour les 4 cotes (trou centre).")]
+    public bool linkMargins = true;
+    [Min(0f)] public float margin = 0.3f;
+    [Tooltip("Marges par cote (si Marges liees est decoche). Des marges differentes decalent le trou.")]
+    [Min(0f)] public float marginLeft = 0.3f;
+    [Min(0f)] public float marginRight = 0.3f;
+    [Min(0f)] public float marginBottom = 0.3f;
+    [Min(0f)] public float marginTop = 0.3f;
+    [Tooltip("Decoche : coins du trou deduits des coins exterieurs (rayon - marge), largeur constante dans les virages. " +
+             "Coche : un rayon libre pour les 4 coins du trou.")]
+    public bool customHoleCorners = false;
+    [Min(0f)] public float holeRadius = 0.2f;
+
     [Header("Materiaux")]
-    [Tooltip("Decoche : un seul materiau pour tout le bloc. Coche : 2 materiaux sur le MeshRenderer, " +
-             "element 0 = faces (dessus / dessous du profil), element 1 = tranche (le tour, ex. guirlande lumineuse).")]
+    [Tooltip("Decoche : un seul materiau pour tout le bloc. Coche : un materiau par partie sur le MeshRenderer, " +
+             "element 0 = faces, 1 = tranche exterieure, 2 = tranche du trou (si Trou est coche).")]
     public bool separateMaterials = false;
 
     [System.NonSerialized] Mesh generatedMesh;
@@ -57,8 +77,16 @@ public class RoundedBlock : MonoBehaviour
     struct RingPoint
     {
         public Vector2 p; // position dans le plan du profil (u, v)
-        public Vector2 n; // normale dans ce plan
+        public Vector2 n; // normale dans ce plan, vers l'exterieur du rectangle
         public RingPoint(Vector2 p, Vector2 n) { this.p = p; this.n = n; }
+    }
+
+    // Rectangle arrondi dans le plan du profil : centre, demi-tailles, rayons des coins A-D
+    struct Rect2
+    {
+        public Vector2 center;
+        public float hu, hv;
+        public float[] radii;
     }
 
     void OnEnable()
@@ -121,22 +149,22 @@ public class RoundedBlock : MonoBehaviour
     }
 
     // Autant de materiaux que de sous-meshes : un materiau en trop serait redessine par-dessus le dernier
-    // sous-mesh, un materiau manquant laisserait la tranche invisible (on recopie alors celui des faces).
+    // sous-mesh, un materiau manquant laisserait une partie invisible (on recopie alors le dernier present).
     void MatchMaterialCount()
     {
         MeshRenderer mr = GetComponent<MeshRenderer>();
         if (mr == null) return;
         Material[] mats = mr.sharedMaterials;
-        int wanted = separateMaterials ? 2 : 1;
+        int wanted = separateMaterials ? (hole ? 3 : 2) : 1;
         if (mats.Length == wanted || mats.Length == 0) return;
 
         Material[] fixedMats = new Material[wanted];
         for (int i = 0; i < wanted; i++)
-            fixedMats[i] = i < mats.Length ? mats[i] : mats[0];
+            fixedMats[i] = i < mats.Length ? mats[i] : mats[mats.Length - 1];
         mr.sharedMaterials = fixedMats;
     }
 
-    // ---------------------------------------------------------------- Construction
+    // ---------------------------------------------------------------- Dimensions
 
     // Demi-tailles dans le repere du profil : hu, hv = plan du profil, hw = extrusion
     void GetExtents(out float hu, out float hv, out float hw)
@@ -171,37 +199,96 @@ public class RoundedBlock : MonoBehaviour
         }
     }
 
-    float[] GetRadii(float hu, float hv)
+    Rect2 GetOuterRect(float hu, float hv)
     {
         float max = Mathf.Min(hu, hv);
         float[] r = linkCorners
             ? new[] { radius, radius, radius, radius }
             : new[] { radiusA, radiusB, radiusC, radiusD };
         for (int i = 0; i < 4; i++) r[i] = Mathf.Clamp(r[i], 0f, max);
-        return r;
+        return new Rect2 { center = Vector2.zero, hu = hu, hv = hv, radii = r };
     }
 
-    // Contour ferme dans le sens trigo, retreci de 'inset' (un rectangle arrondi retreci reste un rectangle arrondi :
-    // demi-tailles - inset, rayons - inset). Depart au milieu du cote gauche (couture des UV du tour),
-    // puis coins A (-u,-v), B (+u,-v), C (+u,+v), D (-u,+v). Le dernier point = le premier (pour fermer les UV).
-    // Chaque coin a toujours cornerSegments + 1 points, meme vif (rayon 0 : points superposes, normales en eventail) :
-    // tous les contours ont ainsi le meme nombre de points et se relient point a point. Les quads entre points
-    // superposes sont d'aire nulle, l'arete reste donc nette.
-    List<RingPoint> BuildRing(float hu, float hv, float[] radii, float inset)
+    // Marges G, D, B, H bornees : le trou garde au moins 1 cm dans chaque sens (marges reduites en proportion).
+    void GetMargins(float hu, float hv, out float left, out float right, out float bottom, out float top)
     {
-        float iu = hu - inset;
-        float iv = hv - inset;
-        Vector2[] corners = { new Vector2(-iu, -iv), new Vector2(iu, -iv), new Vector2(iu, iv), new Vector2(-iu, iv) };
+        left = Mathf.Max(0.01f, linkMargins ? margin : marginLeft);
+        right = Mathf.Max(0.01f, linkMargins ? margin : marginRight);
+        bottom = Mathf.Max(0.01f, linkMargins ? margin : marginBottom);
+        top = Mathf.Max(0.01f, linkMargins ? margin : marginTop);
+
+        float maxU = hu * 2f - 0.01f;
+        if (left + right > maxU) { float k = maxU / (left + right); left *= k; right *= k; }
+        float maxV = hv * 2f - 0.01f;
+        if (bottom + top > maxV) { float k = maxV / (bottom + top); bottom *= k; top *= k; }
+    }
+
+    Rect2 GetHoleRect(Rect2 outer, float left, float right, float bottom, float top)
+    {
+        float minU = -outer.hu + left, maxU = outer.hu - right;
+        float minV = -outer.hv + bottom, maxV = outer.hv - top;
+        Rect2 rect = new Rect2
+        {
+            center = new Vector2((minU + maxU) * 0.5f, (minV + maxV) * 0.5f),
+            hu = (maxU - minU) * 0.5f,
+            hv = (maxV - minV) * 0.5f
+        };
+
+        // Coins A (-u,-v), B (+u,-v), C (+u,+v), D (-u,+v) : chacun touche deux marges
+        float[] cornerMargin = { (left + bottom) * 0.5f, (right + bottom) * 0.5f, (right + top) * 0.5f, (left + top) * 0.5f };
+        float max = Mathf.Min(rect.hu, rect.hv);
+        rect.radii = new float[4];
+        for (int k = 0; k < 4; k++)
+        {
+            float r = customHoleCorners ? holeRadius : outer.radii[k] - cornerMargin[k];
+            rect.radii[k] = Mathf.Clamp(r, 0f, max);
+        }
+        return rect;
+    }
+
+    // Rayons d'arrondi du pourtour bornes : pas plus que la demi-taille du profil (le contour retreci
+    // s'inverserait), pas plus que la moitie de la plus petite marge avec un trou (les arrondis exterieur et
+    // interieur se chevaucheraient), et a eux deux pas plus que l'epaisseur (reduits en proportion).
+    void GetEdgeRounds(float maxRound, float hw, out float bottom, out float top)
+    {
+        bottom = Mathf.Clamp(roundBottom, 0f, maxRound);
+        top = Mathf.Clamp(roundTop, 0f, maxRound);
+        float sum = bottom + top;
+        if (sum > hw * 2f)
+        {
+            float k = hw * 2f / sum;
+            bottom *= k;
+            top *= k;
+        }
+    }
+
+    // ---------------------------------------------------------------- Contours
+
+    // Contour ferme dans le sens trigo, retreci de 'inset' (negatif = elargi). Un rectangle arrondi retreci ou
+    // elargi reste un rectangle arrondi : demi-tailles - inset, rayons - inset. Depart au milieu du cote gauche
+    // (couture des UV des tranches), puis coins A, B, C, D. Le dernier point = le premier (pour fermer les UV).
+    // Chaque coin a toujours cornerSegments + 1 points, meme vif (rayon 0 : points superposes, normales en eventail) :
+    // tous les contours, exterieurs comme interieurs, ont ainsi le meme nombre de points et se relient point a point.
+    // Les quads entre points superposes sont d'aire nulle, l'arete reste donc nette.
+    List<RingPoint> BuildRing(Rect2 rect, float inset)
+    {
+        float iu = rect.hu - inset;
+        float iv = rect.hv - inset;
+        Vector2 c = rect.center;
+        Vector2[] corners =
+        {
+            c + new Vector2(-iu, -iv), c + new Vector2(iu, -iv), c + new Vector2(iu, iv), c + new Vector2(-iu, iv)
+        };
+        Vector2[] signs = { new Vector2(-1, -1), new Vector2(1, -1), new Vector2(1, 1), new Vector2(-1, 1) };
         float[] startAngles = { 180f, 270f, 0f, 90f };
 
         List<RingPoint> ring = new List<RingPoint>();
-        ring.Add(new RingPoint(new Vector2(-iu, 0f), Vector2.left));
+        ring.Add(new RingPoint(c + new Vector2(-iu, 0f), Vector2.left));
 
         for (int k = 0; k < 4; k++)
         {
-            Vector2 sign = new Vector2(Mathf.Sign(corners[k].x), Mathf.Sign(corners[k].y));
-            float r = Mathf.Max(0f, radii[k] - inset);
-            Vector2 center = corners[k] - sign * r;
+            float r = Mathf.Max(0f, rect.radii[k] - inset);
+            Vector2 center = corners[k] - signs[k] * r;
             for (int s = 0; s <= cornerSegments; s++)
             {
                 float a = (startAngles[k] + 90f * s / cornerSegments) * Mathf.Deg2Rad;
@@ -214,7 +301,7 @@ public class RoundedBlock : MonoBehaviour
         return ring;
     }
 
-    // Une tranche horizontale du tour : contour retreci de 'inset', place en w, normale = normale du contour * cos
+    // Une tranche horizontale du tour : contour decale de 'inset', place en w, normale = normale du contour * inPlane
     // + axe d'extrusion * wNormal (arrondis du pourtour). v = distance parcourue sur le tour depuis le bord du dessous.
     struct Station
     {
@@ -259,7 +346,7 @@ public class RoundedBlock : MonoBehaviour
         else
             stations.Add(new Station { inset = 0f, w = hw, inPlane = 1f, wNormal = 0f });
 
-        // Distance parcourue sur le profil vertical (UV v du tour, en metres)
+        // Distance parcourue sur le profil vertical (UV v des tranches, en metres)
         float v = 0f;
         for (int j = 0; j < stations.Count; j++)
         {
@@ -275,27 +362,23 @@ public class RoundedBlock : MonoBehaviour
         return stations;
     }
 
-    // Rayons d'arrondi du pourtour bornes : pas plus que la demi-taille du profil (le contour retreci
-    // s'inverserait), et a eux deux pas plus que l'epaisseur (reduits en proportion).
-    void GetEdgeRounds(float hu, float hv, float hw, out float bottom, out float top)
-    {
-        float max = Mathf.Min(hu, hv);
-        bottom = Mathf.Clamp(roundBottom, 0f, max);
-        top = Mathf.Clamp(roundTop, 0f, max);
-        float sum = bottom + top;
-        if (sum > hw * 2f)
-        {
-            float k = hw * 2f / sum;
-            bottom *= k;
-            top *= k;
-        }
-    }
+    // ---------------------------------------------------------------- Construction
 
     void BuildMesh(Mesh mesh)
     {
         GetExtents(out float hu, out float hv, out float hw);
-        float[] radii = GetRadii(hu, hv);
-        GetEdgeRounds(hu, hv, hw, out float roundBot, out float roundTopClamped);
+        Rect2 outer = GetOuterRect(hu, hv);
+
+        bool hasHole = hole;
+        Rect2 inner = default;
+        float maxRound = Mathf.Min(hu, hv);
+        if (hasHole)
+        {
+            GetMargins(hu, hv, out float mL, out float mR, out float mB, out float mT);
+            inner = GetHoleRect(outer, mL, mR, mB, mT);
+            maxRound = Mathf.Min(maxRound, Mathf.Min(Mathf.Min(mL, mR), Mathf.Min(mB, mT)) * 0.5f);
+        }
+        GetEdgeRounds(maxRound, hw, out float roundBot, out float roundTopClamped);
         List<Station> stations = BuildStations(hw, roundBot, roundTopClamped);
 
         List<Vector3> verts = new List<Vector3>();
@@ -303,67 +386,48 @@ public class RoundedBlock : MonoBehaviour
         List<Vector2> uv0 = new List<Vector2>();
         List<Vector2> uv2 = new List<Vector2>();
         List<int> capTris = new List<int>();
-        List<int> sideTris = new List<int>();
+        List<int> outerTris = new List<int>();
+        List<int> innerTris = new List<int>();
 
-        // --- Tour : un contour par station, relies point a point. Normales lisses sur les arrondis.
-        // UV u = distance le long du contour non retreci, pour que les colonnes d'UV restent alignees d'une station a l'autre.
-        List<RingPoint> baseRing = BuildRing(hu, hv, radii, 0f);
-        int ringCount = baseRing.Count;
-        float[] dist = new float[ringCount];
-        for (int i = 1; i < ringCount; i++)
-            dist[i] = dist[i - 1] + Vector2.Distance(baseRing[i - 1].p, baseRing[i].p);
-        float perimeter = dist[ringCount - 1];
-        float profileLength = stations[stations.Count - 1].v;
+        // --- Tranches : exterieure (le contour se retrecit dans les arrondis), et celle du trou (il s'elargit)
+        AddWall(outer, stations, 1f, hv, hw, verts, normals, uv0, uv2, outerTris);
+        if (hasHole)
+            AddWall(inner, stations, -1f, hv, hw, verts, normals, uv0, uv2, innerTris);
 
-        int sideStart = verts.Count;
-        foreach (Station st in stations)
-        {
-            List<RingPoint> ring = st.inset > 0f ? BuildRing(hu, hv, radii, st.inset) : baseRing;
-            for (int i = 0; i < ringCount; i++)
-            {
-                Vector2 n2 = baseRing[i].n * st.inPlane;
-                verts.Add(ToLocal(ring[i].p.x, ring[i].p.y, st.w, hv, hw));
-                normals.Add(DirToLocal(n2.x, n2.y, st.wNormal).normalized);
-                uv0.Add(new Vector2(dist[i], st.v));
-                uv2.Add(new Vector2(dist[i] / perimeter, st.v / profileLength));
-            }
-        }
-        for (int j = 0; j < stations.Count - 1; j++)
-        {
-            for (int i = 0; i < ringCount - 1; i++)
-            {
-                int a = sideStart + j * ringCount + i;
-                int b = a + 1;
-                int c = b + ringCount;
-                int d = a + ringCount;
-                Vector3 n = (normals[a] + normals[b] + normals[c] + normals[d]).normalized;
-                AddQuad(verts, sideTris, a, b, c, d, n);
-            }
-        }
-
-        // --- Faces plates (avant = +w, arriere = -w) : eventail depuis le centre, sur le contour retreci
-        // par l'arrondi du pourtour. Le contour est convexe et UV / positions sont lineaires sur la face,
-        // donc l'eventail est exact.
+        // --- Faces plates (avant = +w, arriere = -w), sur les contours decales par l'arrondi du pourtour.
+        // Sans trou : eventail depuis le centre (contour convexe, UV / positions lineaires : exact).
+        // Avec trou : bande de quads entre le contour exterieur et celui du trou, relies point a point.
         for (int side = 0; side < 2; side++)
         {
             float w = side == 0 ? hw : -hw;
             float mirror = side == 0 ? 1f : -1f; // la face arriere vue de derriere n'est pas en miroir
             Vector3 n = DirToLocal(0f, 0f, side == 0 ? 1f : -1f);
-            List<RingPoint> ring = BuildRing(hu, hv, radii, side == 0 ? roundTopClamped : roundBot);
+            float round = side == 0 ? roundTopClamped : roundBot;
+            List<RingPoint> outerRing = BuildRing(outer, round);
+            int count = outerRing.Count - 1; // le dernier point double le premier : inutile sur une face
             int capStart = verts.Count;
 
-            AddCapVertex(verts, normals, uv0, uv2, 0f, 0f, w, hu, hv, hw, mirror, n);
-            // Le dernier point du contour double le premier : inutile ici. Les points superposes des coins vifs
-            // donnent des triangles degeneres sans consequence.
-            for (int i = 0; i < ring.Count - 1; i++)
-                AddCapVertex(verts, normals, uv0, uv2, ring[i].p.x, ring[i].p.y, w, hu, hv, hw, mirror, n);
-
-            int count = ring.Count - 1;
-            for (int i = 0; i < count; i++)
+            if (!hasHole)
             {
-                int b = capStart + 1 + i;
-                int c = capStart + 1 + (i + 1) % count;
-                AddTri(verts, capTris, capStart, b, c, n);
+                AddCapVertex(verts, normals, uv0, uv2, 0f, 0f, w, hu, hv, hw, mirror, n);
+                for (int i = 0; i < count; i++)
+                    AddCapVertex(verts, normals, uv0, uv2, outerRing[i].p.x, outerRing[i].p.y, w, hu, hv, hw, mirror, n);
+                // Les points superposes des coins vifs donnent des triangles degeneres sans consequence.
+                for (int i = 0; i < count; i++)
+                    AddTri(verts, capTris, capStart, capStart + 1 + i, capStart + 1 + (i + 1) % count, n);
+            }
+            else
+            {
+                List<RingPoint> innerRing = BuildRing(inner, -round);
+                for (int i = 0; i < count; i++)
+                    AddCapVertex(verts, normals, uv0, uv2, outerRing[i].p.x, outerRing[i].p.y, w, hu, hv, hw, mirror, n);
+                for (int i = 0; i < count; i++)
+                    AddCapVertex(verts, normals, uv0, uv2, innerRing[i].p.x, innerRing[i].p.y, w, hu, hv, hw, mirror, n);
+                for (int i = 0; i < count; i++)
+                {
+                    int next = (i + 1) % count;
+                    AddQuad(verts, capTris, capStart + i, capStart + next, capStart + count + next, capStart + count + i, n);
+                }
             }
         }
 
@@ -374,18 +438,62 @@ public class RoundedBlock : MonoBehaviour
         mesh.SetUVs(2, uv2);
         if (separateMaterials)
         {
-            mesh.subMeshCount = 2;
+            mesh.subMeshCount = hasHole ? 3 : 2;
             mesh.SetTriangles(capTris, 0);
-            mesh.SetTriangles(sideTris, 1);
+            mesh.SetTriangles(outerTris, 1);
+            if (hasHole) mesh.SetTriangles(innerTris, 2);
         }
         else
         {
-            capTris.AddRange(sideTris);
+            capTris.AddRange(outerTris);
+            capTris.AddRange(innerTris);
             mesh.subMeshCount = 1;
             mesh.SetTriangles(capTris, 0);
         }
         mesh.RecalculateTangents();
         mesh.RecalculateBounds();
+    }
+
+    // Une tranche : un contour par station, relies point a point. Normales lisses sur les arrondis.
+    // facing = 1 : tranche exterieure (normales vers l'exterieur, le contour se retrecit dans les arrondis).
+    // facing = -1 : tranche du trou (normales vers le centre du trou, le contour s'elargit dans les arrondis).
+    // UV u = distance le long du contour non decale, pour que les colonnes d'UV restent alignees d'une station a l'autre.
+    void AddWall(Rect2 rect, List<Station> stations, float facing, float hv, float hw,
+        List<Vector3> verts, List<Vector3> normals, List<Vector2> uv0, List<Vector2> uv2, List<int> tris)
+    {
+        List<RingPoint> baseRing = BuildRing(rect, 0f);
+        int ringCount = baseRing.Count;
+        float[] dist = new float[ringCount];
+        for (int i = 1; i < ringCount; i++)
+            dist[i] = dist[i - 1] + Vector2.Distance(baseRing[i - 1].p, baseRing[i].p);
+        float perimeter = Mathf.Max(0.0001f, dist[ringCount - 1]);
+        float profileLength = stations[stations.Count - 1].v;
+
+        int start = verts.Count;
+        foreach (Station st in stations)
+        {
+            List<RingPoint> ring = st.inset > 0f ? BuildRing(rect, st.inset * facing) : baseRing;
+            for (int i = 0; i < ringCount; i++)
+            {
+                Vector2 n2 = baseRing[i].n * (st.inPlane * facing);
+                verts.Add(ToLocal(ring[i].p.x, ring[i].p.y, st.w, hv, hw));
+                normals.Add(DirToLocal(n2.x, n2.y, st.wNormal).normalized);
+                uv0.Add(new Vector2(dist[i], st.v));
+                uv2.Add(new Vector2(dist[i] / perimeter, st.v / profileLength));
+            }
+        }
+        for (int j = 0; j < stations.Count - 1; j++)
+        {
+            for (int i = 0; i < ringCount - 1; i++)
+            {
+                int a = start + j * ringCount + i;
+                int b = a + 1;
+                int c = b + ringCount;
+                int d = a + ringCount;
+                Vector3 n = (normals[a] + normals[b] + normals[c] + normals[d]).normalized;
+                AddQuad(verts, tris, a, b, c, d, n);
+            }
+        }
     }
 
     void AddCapVertex(List<Vector3> verts, List<Vector3> normals, List<Vector2> uv0, List<Vector2> uv2,
@@ -409,8 +517,11 @@ public class RoundedBlock : MonoBehaviour
 
     static void AddQuad(List<Vector3> verts, List<int> tris, int a, int b, int c, int d, Vector3 outward)
     {
-        // Orientation decidee une fois pour le quad, pour que ses deux triangles restent coherents
+        // Orientation decidee une fois pour le quad, pour que ses deux triangles restent coherents.
+        // Le premier triangle peut etre degenere (points superposes des coins vifs) : on prend alors l'autre.
         Vector3 cross = Vector3.Cross(verts[b] - verts[a], verts[c] - verts[a]);
+        if (cross.sqrMagnitude < 1e-12f)
+            cross = Vector3.Cross(verts[c] - verts[a], verts[d] - verts[a]);
         if (Vector3.Dot(cross, outward) < 0f)
         {
             tris.Add(a); tris.Add(c); tris.Add(b);
@@ -424,18 +535,72 @@ public class RoundedBlock : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    // Lettres A-D sur la face qui porte le profil, pour savoir quel rayon touche quel coin
+    // Lettres A-D sur les coins (si non lies) et G/D/B/H sur les marges du trou (si non liees),
+    // sur la face qui porte le profil, pour savoir quel reglage touche quoi.
     void OnDrawGizmosSelected()
     {
-        if (linkCorners) return;
         GetExtents(out float hu, out float hv, out float hw);
-        string[] names = { "A", "B", "C", "D" };
-        Vector2[] corners = { new Vector2(-hu, -hv), new Vector2(hu, -hv), new Vector2(hu, hv), new Vector2(-hu, hv) };
-        for (int k = 0; k < 4; k++)
+
+        if (!linkCorners)
         {
-            Vector3 p = transform.TransformPoint(ToLocal(corners[k].x, corners[k].y, hw, hv, hw));
-            UnityEditor.Handles.Label(p, names[k], UnityEditor.EditorStyles.boldLabel);
+            string[] names = { "A", "B", "C", "D" };
+            Vector2[] corners = { new Vector2(-hu, -hv), new Vector2(hu, -hv), new Vector2(hu, hv), new Vector2(-hu, hv) };
+            for (int k = 0; k < 4; k++)
+                Label(corners[k], names[k], hv, hw);
         }
+
+        if (hole && !linkMargins)
+        {
+            GetMargins(hu, hv, out float mL, out float mR, out float mB, out float mT);
+            float cu = (mL - mR) * 0.5f;
+            float cv = (mB - mT) * 0.5f;
+            Label(new Vector2(-hu + mL * 0.5f, cv), "G", hv, hw);
+            Label(new Vector2(hu - mR * 0.5f, cv), "D", hv, hw);
+            Label(new Vector2(cu, -hv + mB * 0.5f), "B", hv, hw);
+            Label(new Vector2(cu, hv - mT * 0.5f), "H", hv, hw);
+        }
+    }
+
+    void Label(Vector2 p, string text, float hv, float hw)
+    {
+        Vector3 world = transform.TransformPoint(ToLocal(p.x, p.y, hw, hv, hw));
+        UnityEditor.Handles.Label(world, text, UnityEditor.EditorStyles.boldLabel);
     }
 #endif
 }
+
+#if UNITY_EDITOR
+// Inspecteur : n'affiche que les reglages utiles (rayons par coin si non lies, rubrique Trou si cochee...).
+[UnityEditor.CustomEditor(typeof(RoundedBlock))]
+[UnityEditor.CanEditMultipleObjects]
+public class RoundedBlockEditor : UnityEditor.Editor
+{
+    public override void OnInspectorGUI()
+    {
+        serializedObject.Update();
+        RoundedBlock block = (RoundedBlock)target;
+        List<string> hidden = new List<string>();
+
+        if (block.linkCorners)
+            hidden.AddRange(new[] { "radiusA", "radiusB", "radiusC", "radiusD" });
+        else
+            hidden.Add("radius");
+
+        if (!block.hole)
+            hidden.AddRange(new[] { "linkMargins", "margin", "marginLeft", "marginRight", "marginBottom", "marginTop",
+                                    "customHoleCorners", "holeRadius" });
+        else
+        {
+            if (block.linkMargins)
+                hidden.AddRange(new[] { "marginLeft", "marginRight", "marginBottom", "marginTop" });
+            else
+                hidden.Add("margin");
+            if (!block.customHoleCorners)
+                hidden.Add("holeRadius");
+        }
+
+        DrawPropertiesExcluding(serializedObject, hidden.ToArray());
+        serializedObject.ApplyModifiedProperties();
+    }
+}
+#endif
