@@ -62,6 +62,15 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     public PitContentType CurrentSplinePitContent =>
         isInSplinePit && currentSplinePitZone != null ? currentSplinePitZone.fillContentType : null;
 
+    // Hauteur de la surface du contenu de la fosse spline courante. Lu par PlayerDeathCause (effets a la surface).
+    public bool TryGetSplineFillSurfaceY(out float y)
+    {
+        y = 0f;
+        if (!isInSplinePit || currentSplinePitZone == null) return false;
+        y = GetSplineFillSurfaceHeight();
+        return true;
+    }
+
     // Wall contact detection (ancien systeme)
     private bool isCollidingWithPitWall = false;
     private Vector3 pitWallNormal;

@@ -82,8 +82,9 @@ public class GameOverUI : MonoBehaviour
             StartCoroutine(AnimateText());
         }
 
-        if (audioSource != null && gameOverSound != null)
-            audioSource.PlayOneShot(gameOverSound);
+        AudioClip sound = cause != null && cause.gameOverSound != null ? cause.gameOverSound : gameOverSound;
+        if (audioSource != null && sound != null)
+            audioSource.PlayOneShot(sound);
 
         Debug.Log("=== GAME OVER ===");
 

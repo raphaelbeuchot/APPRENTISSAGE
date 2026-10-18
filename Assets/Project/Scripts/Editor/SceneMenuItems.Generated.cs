@@ -181,8 +181,8 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Flower03.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_WesternFlow (Go with the flow III)", priority = 26)]
-    private static void Open_Solo_Level_WesternFlow__Go_with_the_flow_III_()
+    [MenuItem("Scene/Solo/Level_WesternFlow (Death Row I)", priority = 26)]
+    private static void Open_Solo_Level_WesternFlow__Death_Row_I_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_WesternFlow.unity");
