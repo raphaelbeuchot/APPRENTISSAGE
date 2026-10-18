@@ -486,6 +486,7 @@ GameObject:
   - component: {fileID: 4829273372821787564}
   - component: {fileID: 158569115125722414}
   - component: {fileID: 8814719026016554961}
+  - component: {fileID: 5160058798840972630}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -641,6 +642,7 @@ MonoBehaviour:
   grabState: 0
   grabProgress: 0
   isSweepImmune: 0
+  respawnImmune: 0
   isDashing: 0
   gameManager: {fileID: 0}
   isFrozen: 0
@@ -648,6 +650,8 @@ MonoBehaviour:
   normalMaterial: {fileID: 0}
   freezeMaterial: {fileID: 2100000, guid: 26b31e705b708e543922911c423d9d8f, type: 2}
   isInContactWithEnemy: 0
+  stunBySentinel: 0
+  playerAlarmTriggered: 0
 --- !u!114 &6799459239508200490
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -771,7 +775,6 @@ MonoBehaviour:
   whiteMaterial: {fileID: 2100000, guid: f0de86f2557323747b1bea6982df5e7c, type: 2}
   redMaterial: {fileID: 2100000, guid: 91de5bbeda2c9e34b8bd3af87554b8ae, type: 2}
   brightEyesMaterial: {fileID: 2100000, guid: 51b012879faaee443b64cc92adb2ac30, type: 2}
-  isCurrentlyDetected: 1
 --- !u!114 &6716210810580982141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -825,6 +828,7 @@ MonoBehaviour:
   ragdollTimeout: 5
   velocityThreshold: 0.1
   hipBone: {fileID: 0}
+  onlyOwnTargetGroups: 0
 --- !u!114 &4829273372821787564
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -873,6 +877,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TomatoThrowSystem
   stats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
   throwCooldown: 0.5
+--- !u!114 &5160058798840972630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5794444067654349612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 600ccd694f7659b44b72863c605e557f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KillBelowY
+  killY: -10
+  deathCause: {fileID: 0}
 --- !u!1001 &640906551379516490
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1963,6 +1981,7 @@ MonoBehaviour:
   - {r: 1, g: 0.91750526, b: 0.509434, a: 1}
   - {r: 1, g: 0.4039216, b: 0, a: 1}
   - {r: 0.3679245, g: 0, b: 0, a: 1}
+  skipGracePeriod: 0.3
 --- !u!4 &5969681608571144585 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6502182839619065283, guid: 4bdb850d593401a46822f25f152638d7, type: 3}

@@ -25,6 +25,11 @@ public class PlayerHealth : MonoBehaviour
     public event Action<float, float> OnHealthChanged;
     public event Action OnDeath;
     public event Action OnCriticalHealth;
+    // Au tout debut de la mort (OnDeath, lui, arrive a la fin de la DeathSequence). Parametre : LastDeathCause.
+    public event Action<DeathCause> OnDying;
+
+    // Cause du coup fatal (null = generique). Remise a null au Revive.
+    public DeathCause LastDeathCause { get; private set; }
 
     void Awake()
     {
@@ -61,10 +66,11 @@ public class PlayerHealth : MonoBehaviour
         return stats.maxHealth * multiplier;
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, DeathCause deathCause = null)
     {
         if (isDead) return;
         if (DevFlags.Invincible) return;
+        LastDeathCause = deathCause;
         currentHealth -= damage;
         currentHealth = Mathf.Max(0f, currentHealth);
         Debug.Log($"Player took {damage} damage! Health: {currentHealth}/{GetMaxHealth()}");
@@ -107,7 +113,14 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeHeadshot()
     {
+        Kill(null);
+    }
+
+    // Mort instantanee, ignore l'invincibilite (DevFlags) : chute hors limites, defaite en course...
+    public void Kill(DeathCause deathCause)
+    {
         if (isDead) return;
+        LastDeathCause = deathCause;
         currentHealth = 0f;
         Die();
     }
@@ -154,7 +167,8 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isDead) return;
         isDead = true;
-        Debug.Log("PLAYER IS DEAD!");
+        Debug.Log("PLAYER IS DEAD! Cause : " + (LastDeathCause != null ? LastDeathCause.name : "generique"));
+        OnDying?.Invoke(LastDeathCause);
 
         DeathSequence deathSequence = GetComponent<DeathSequence>();
         Debug.Log("DeathSequence found: " + (deathSequence != null ? "OUI" : "NON - FALLBACK"));
@@ -182,6 +196,7 @@ public class PlayerHealth : MonoBehaviour
     public void Revive()
     {
         isDead = false;
+        LastDeathCause = null;
         currentHealth = GetMaxHealth();
         ResetKnockbackGrace();
         if (movement != null)
