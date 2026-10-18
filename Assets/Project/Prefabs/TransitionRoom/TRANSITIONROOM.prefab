@@ -1750,7 +1750,8 @@ GameObject:
   - component: {fileID: 4607086777576100562}
   - component: {fileID: 8400850256596416415}
   - component: {fileID: 4163769552373743537}
-  - component: {fileID: 4439212465550264660}
+  - component: {fileID: 5260545131706344781}
+  - component: {fileID: 6965447297442169404}
   m_Layer: 0
   m_Name: TransitionRoom_Sol
   m_TagString: Untagged
@@ -1768,7 +1769,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 4.3841305, y: -0.59000003, z: -0.25756836}
-  m_LocalScale: {x: 8, y: 0.2, z: 3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3460630837457422976}
@@ -1780,7 +1781,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7992220721005180431}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 0}
 --- !u!23 &4163769552373743537
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1829,8 +1830,29 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &4439212465550264660
-BoxCollider:
+--- !u!114 &5260545131706344781
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7992220721005180431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8eb2889815838c44a9c5f590aa82dfc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoundedBlock
+  size: {x: 8, y: 0.2, z: 3}
+  profileFace: 0
+  linkCorners: 1
+  radius: 0.5
+  radiusA: 0.5
+  radiusB: 0.5
+  radiusC: 0.5
+  radiusD: 0.5
+  cornerSegments: 8
+--- !u!64 &6965447297442169404
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1847,9 +1869,10 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
 --- !u!1 &8373871300803036779
 GameObject:
   m_ObjectHideFlags: 0
