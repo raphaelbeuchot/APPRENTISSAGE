@@ -39,7 +39,12 @@ public class RoundedBlock : MonoBehaviour
     [Min(0f)] public float radiusD = 0.5f;
 
     [Tooltip("Nombre de segments par quart de rond.")]
-    [Range(1, 32)] public int cornerSegments = 8;
+    [Range(1, 32)] public int cornerSegments = 4;
+
+    [Header("Materiaux")]
+    [Tooltip("Decoche : un seul materiau pour tout le bloc. Coche : 2 materiaux sur le MeshRenderer, " +
+             "element 0 = faces (dessus / dessous du profil), element 1 = tranche (le tour, ex. guirlande lumineuse).")]
+    public bool separateMaterials = false;
 
     [System.NonSerialized] Mesh generatedMesh;
 
@@ -99,6 +104,7 @@ public class RoundedBlock : MonoBehaviour
         }
         BuildMesh(generatedMesh);
         mf.sharedMesh = generatedMesh;
+        MatchMaterialCount();
 
         MeshCollider mc = GetComponent<MeshCollider>();
         if (mc != null)
@@ -106,6 +112,22 @@ public class RoundedBlock : MonoBehaviour
             mc.sharedMesh = null; // force la mise a jour du collider
             mc.sharedMesh = generatedMesh;
         }
+    }
+
+    // Autant de materiaux que de sous-meshes : un materiau en trop serait redessine par-dessus le dernier
+    // sous-mesh, un materiau manquant laisserait la tranche invisible (on recopie alors celui des faces).
+    void MatchMaterialCount()
+    {
+        MeshRenderer mr = GetComponent<MeshRenderer>();
+        if (mr == null) return;
+        Material[] mats = mr.sharedMaterials;
+        int wanted = separateMaterials ? 2 : 1;
+        if (mats.Length == wanted || mats.Length == 0) return;
+
+        Material[] fixedMats = new Material[wanted];
+        for (int i = 0; i < wanted; i++)
+            fixedMats[i] = i < mats.Length ? mats[i] : mats[0];
+        mr.sharedMaterials = fixedMats;
     }
 
     // ---------------------------------------------------------------- Construction
@@ -204,7 +226,8 @@ public class RoundedBlock : MonoBehaviour
         List<Vector3> normals = new List<Vector3>();
         List<Vector2> uv0 = new List<Vector2>();
         List<Vector2> uv2 = new List<Vector2>();
-        List<int> tris = new List<int>();
+        List<int> capTris = new List<int>();
+        List<int> sideTris = new List<int>();
 
         // --- Tour : une bande de quads, normales lisses sur les arrondis
         float perimeter = 0f;
@@ -230,7 +253,7 @@ public class RoundedBlock : MonoBehaviour
         {
             int a = sideStart + i * 2;
             Vector3 n = (normals[a] + normals[a + 2]).normalized;
-            AddQuad(verts, tris, a, a + 2, a + 3, a + 1, n);
+            AddQuad(verts, sideTris, a, a + 2, a + 3, a + 1, n);
         }
 
         // --- Faces plates (avant = +w, arriere = -w) : eventail depuis le centre.
@@ -253,7 +276,7 @@ public class RoundedBlock : MonoBehaviour
             {
                 int b = capStart + 1 + i;
                 int c = capStart + 1 + (i + 1) % count;
-                AddTri(verts, tris, capStart, b, c, n);
+                AddTri(verts, capTris, capStart, b, c, n);
             }
         }
 
@@ -262,7 +285,18 @@ public class RoundedBlock : MonoBehaviour
         mesh.SetNormals(normals);
         mesh.SetUVs(0, uv0);
         mesh.SetUVs(2, uv2);
-        mesh.SetTriangles(tris, 0);
+        if (separateMaterials)
+        {
+            mesh.subMeshCount = 2;
+            mesh.SetTriangles(capTris, 0);
+            mesh.SetTriangles(sideTris, 1);
+        }
+        else
+        {
+            capTris.AddRange(sideTris);
+            mesh.subMeshCount = 1;
+            mesh.SetTriangles(capTris, 0);
+        }
         mesh.RecalculateTangents();
         mesh.RecalculateBounds();
     }
