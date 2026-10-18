@@ -73,6 +73,9 @@ public class LevelCatalogEditor : Editor
             if (string.IsNullOrEmpty(entry.launchText))
                 warnings.Add(label + " : pas de texte de lancement (rien ne s'affichera au demarrage du niveau).");
 
+            if (entry.hasBroom && CatalogChecks.HasBroomPickup(entry))
+                warnings.Add(label + " : Has Broom coche alors que la scene a un socle balai en mode Prise (le joueur arrive deja equipe, le socle ne sert a rien).");
+
             if (string.IsNullOrEmpty(entry.levelName))
                 continue;
             if (seenNames.ContainsKey(entry.levelName))

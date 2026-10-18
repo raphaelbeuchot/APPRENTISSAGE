@@ -183,10 +183,10 @@ public class GameCatalogWindow : EditorWindow
         // Colonnes centrees verticalement sur les 3 lignes du resume (= hauteur de la ligne 2)
         float columnsY = y + Line + Gap;
         float x = rect.x + levelWidth;
-        DrawCenteredToggle(new Rect(x, columnsY, ToggleColumnWidth, Line), entry.FindPropertyRelative("hasBroom"));
+        LevelCatalogEntry catalogEntry = index < catalog.levels.Count ? catalog.levels[index] : null;
+        DrawBroomToggle(new Rect(x, columnsY, ToggleColumnWidth, Line), entry.FindPropertyRelative("hasBroom"), catalogEntry);
         DrawCenteredToggle(new Rect(x + ToggleColumnWidth, columnsY, ToggleColumnWidth, Line), entry.FindPropertyRelative("hasSpray"));
         x += 2f * ToggleColumnWidth;
-        LevelCatalogEntry catalogEntry = index < catalog.levels.Count ? catalog.levels[index] : null;
         for (int i = 0; i < ObservedChecks.Count; i++)
             CatalogChecks.DrawCell(new Rect(x + i * ObservedColumnWidth, columnsY, ObservedColumnWidth, Line), catalogEntry, ObservedChecks[i]);
         x += ObservedChecks.Count * ObservedColumnWidth;
@@ -209,6 +209,31 @@ public class GameCatalogWindow : EditorWindow
         y += Line + Gap;
         float h = EditorGUI.GetPropertyHeight(collectibles, true);
         EditorGUI.PropertyField(new Rect(rect.x + 26f, y, levelWidth - 30f, h), collectibles, new GUIContent("Collectibles"), true);
+    }
+
+    // Case Balai = loadout de depart. Avec un socle de Prise dans la scene (derniere analyse) :
+    // decochee -> jaune (le niveau repose sur le balai, pris en cours de route) ; cochee -> orange (socle inutile).
+    private void DrawBroomToggle(Rect column, SerializedProperty property, LevelCatalogEntry catalogEntry)
+    {
+        if (!CatalogChecks.HasBroomPickup(catalogEntry))
+        {
+            DrawCenteredToggle(column, property);
+            return;
+        }
+
+        // Voile de couleur transparent par-dessus la case, comme un surlignage (une teinte GUI.color ne se voit pas
+        // sur une case decochee) ; la coche reste visible au travers
+        bool startsWithBroom = property.boolValue;
+        DrawCenteredToggle(column, property);
+        Color highlight = startsWithBroom ? new Color(1f, 0.55f, 0.1f, 0.35f) : new Color(1f, 0.85f, 0.1f, 0.35f);
+        const float boxSize = 14f;
+        Rect boxRect = new Rect(column.x + (column.width - boxSize) * 0.5f, column.y + (column.height - boxSize) * 0.5f, boxSize, boxSize);
+        EditorGUI.DrawRect(boxRect, highlight);
+
+        string tooltip = startsWithBroom
+            ? "Arrive avec le balai alors que la scene a un socle de Prise : le socle ne sert a rien"
+            : "Arrive sans balai, le prend sur un socle de Prise";
+        GUI.Label(column, new GUIContent("", tooltip));
     }
 
     private void DrawCenteredToggle(Rect column, SerializedProperty property)

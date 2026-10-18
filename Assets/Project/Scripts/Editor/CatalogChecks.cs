@@ -71,6 +71,8 @@ internal static class CatalogChecks
 {
     public const string GameCatalog = "Game";
     public const string LDCatalog = "LD";
+    // Verifications analysees mais sans colonne : lues par d'autres affichages (ex. couleur de la case Balai)
+    public const string HiddenCatalog = "Hidden";
 
     private const string OldStartZonePrefix = "Assets/Project/Prefabs/LevelEssentiels/StartZone_";
 
@@ -93,7 +95,20 @@ internal static class CatalogChecks
         new CatalogCheck("curtain", "Rideau", LDCatalog, CheckCurtain),
         new CatalogCheck("circles", "Cercles", LDCatalog, CheckCircles),
         new CatalogCheck("transitionRoom", "Transition Room", LDCatalog, s => s.Find(c => c is TransitionRoomDoor)),
+
+        // Sans colonne
+        new CatalogCheck("broomPickup", "Socle de Prise", HiddenCatalog,
+            s => s.Find(c => c is BroomPedestal p && p.Mode == BroomPedestal.PedestalMode.Pickup)),
     };
+
+    // Resultat d'une verification pour un niveau, tel que range par la derniere analyse (Absent si jamais analyse)
+    public static CheckStatus StatusOf(LevelCatalogEntry entry, string id)
+    {
+        ObservedCheck result = entry != null && entry.observed != null ? entry.observed.FirstOrDefault(o => o.id == id) : null;
+        return result != null ? (CheckStatus)result.status : CheckStatus.Absent;
+    }
+
+    public static bool HasBroomPickup(LevelCatalogEntry entry) => StatusOf(entry, "broomPickup") != CheckStatus.Absent;
 
     public static List<CatalogCheck> For(string catalog) => All.Where(c => c.Catalog == catalog).ToList();
 
