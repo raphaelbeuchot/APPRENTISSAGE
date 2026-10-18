@@ -284,7 +284,10 @@ public class LevelManager : MonoBehaviour
         gameOver = true;
         if (player != null) player.enabled = false;
         if (gameOverUI != null)
-            gameOverUI.Show();
+        {
+            PlayerDeathCause deathCause = playerHealth != null ? playerHealth.GetComponent<PlayerDeathCause>() : null;
+            gameOverUI.Show(deathCause != null ? deathCause.Current : null);
+        }
         else
             Invoke(nameof(RestartLevel), delayBeforeRestart);
     }

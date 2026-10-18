@@ -12,6 +12,8 @@ public class KillBelowY : MonoBehaviour
 
     private PlayerHealth health;
 
+    public float KillY => killY;
+
     private void Awake()
     {
         health = GetComponent<PlayerHealth>();

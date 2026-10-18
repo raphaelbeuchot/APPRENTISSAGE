@@ -54,7 +54,8 @@ public class GameOverUI : MonoBehaviour
             AutoRestart();
         }
     }
-    public void Show()
+    // cause : messages propres a la mort ; null ou sans messages -> liste deathMessages ci-dessus
+    public void Show(DeathCause cause = null)
     {
         isActive = true;
 
@@ -70,9 +71,13 @@ public class GameOverUI : MonoBehaviour
             gameOverCanvasGroup.blocksRaycasts = true;
         }
 
-        if (gameOverText != null && deathMessages.Length > 0)
+        string[] messages = cause != null && cause.gameOverMessages != null && cause.gameOverMessages.Length > 0
+            ? cause.gameOverMessages
+            : deathMessages;
+
+        if (gameOverText != null && messages.Length > 0)
         {
-            string randomMessage = deathMessages[Random.Range(0, deathMessages.Length)];
+            string randomMessage = messages[Random.Range(0, messages.Length)];
             gameOverText.text = randomMessage;
             StartCoroutine(AnimateText());
         }

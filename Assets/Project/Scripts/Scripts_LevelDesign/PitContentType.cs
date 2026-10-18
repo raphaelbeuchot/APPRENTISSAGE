@@ -19,6 +19,10 @@ public class PitContentType : ScriptableObject
     [Tooltip("Délai avant destruction du GameObject après la mort (en secondes)")]
     public float destroyDelay = 1.0f;
 
+    [Header("Death")]
+    [Tooltip("Mort du joueur dans ce contenu (textes de game over, plus tard sons / effets). Vide = mort generique. Lu par PlayerDeathCause.")]
+    public DeathCause deathCause;
+
     [Header("Damage Settings - InstantKill")]
     [Tooltip("Kill trigger point: where character dies (CenterImmersed or TouchBottom)")]
     public KillTrigger killTrigger = KillTrigger.CenterImmersed;

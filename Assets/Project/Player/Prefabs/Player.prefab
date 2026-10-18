@@ -487,6 +487,7 @@ GameObject:
   - component: {fileID: 158569115125722414}
   - component: {fileID: 8814719026016554961}
   - component: {fileID: 5160058798840972630}
+  - component: {fileID: 793563020870305080}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -891,6 +892,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::KillBelowY
   killY: -10
   deathCause: {fileID: 0}
+--- !u!114 &793563020870305080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5794444067654349612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d429ea3fbc124e74da338837a1119b1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeathCause
+  defaultCause: {fileID: 11400000, guid: aae1c8ea4a244e549dda4ebb6b62b01c, type: 2}
+  outOfBoundsCause: {fileID: 11400000, guid: d7285fd5f52b4f17a99b15bd1045124e, type: 2}
 --- !u!1001 &640906551379516490
 PrefabInstance:
   m_ObjectHideFlags: 0

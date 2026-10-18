@@ -58,6 +58,10 @@ public class PlayerPitInteractable : MonoBehaviour, IPitInteractable
     private bool isInSplinePit = false;
     private bool isInSplineFill = false;
 
+    // Contenu de la fosse spline ou se trouve le joueur (null hors fosse). Lu par PlayerDeathCause.
+    public PitContentType CurrentSplinePitContent =>
+        isInSplinePit && currentSplinePitZone != null ? currentSplinePitZone.fillContentType : null;
+
     // Wall contact detection (ancien systeme)
     private bool isCollidingWithPitWall = false;
     private Vector3 pitWallNormal;
