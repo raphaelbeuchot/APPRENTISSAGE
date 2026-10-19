@@ -29,6 +29,11 @@ public class PlayerStats : ScriptableObject
     public float moveSpeed = 5f;
     [Tooltip("Temps (s) pour passer de moveSpeed a l'arret quand on relache le stick (sol normal, freinage lineaire). 0 = arret instantane")]
     public float stopDuration = 0.35f;
+    [Tooltip("Temps (s) pour passer de l'arret a moveSpeed (sol normal, acceleration lineaire). 0 = vitesse atteinte instantanement")]
+    public float startDuration = 0.3f;
+    [Tooltip("Anti-rebond du stick : en mouvement, une inclinaison opposee (> 90 deg) plus faible que ce seuil est ignoree (rebond du ressort au relachement). 0 = desactive")]
+    [Range(0f, 1f)]
+    public float stickReboundThreshold = 0.6f;
 
 
     [Header("Dash")]

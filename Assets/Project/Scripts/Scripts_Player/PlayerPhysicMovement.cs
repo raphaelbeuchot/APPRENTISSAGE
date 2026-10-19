@@ -392,6 +392,17 @@ public class PlayerPhysicsMovement : MonoBehaviour
         // Multiplier par la magnitude originale pour garder l'intensit� du stick
         moveInput = direction * Mathf.Clamp01(inputMagnitude);
 
+        // Anti-rebond : au relachement brusque, le ressort du stick depasse le centre et donne une
+        // ou deux frames d'inclinaison faible dans la direction opposee -> le perso se retournait.
+        // En mouvement (sol normal), une inclinaison opposee sous le seuil est traitee comme un relachement.
+        if (!isSlippery && moveInput.magnitude < stats.stickReboundThreshold && moveInput.magnitude >= 0.1f
+            && currentVelocity.magnitude > 0.5f)
+        {
+            Vector3 inputWorldDir = GetCameraRelativeMovement(moveInput);
+            if (Vector3.Angle(inputWorldDir, currentVelocity) > 90f)
+                moveInput = Vector3.zero;
+        }
+
         // Dash
         if (InputSprintPressed && CanDash())
         {
@@ -665,7 +676,28 @@ public class PlayerPhysicsMovement : MonoBehaviour
             moveDirection = GetCameraRelativeMovement(moveInput);
             float targetSpeed = CalculateSpeed();
             Vector3 targetVelocity = moveDirection * targetSpeed;
-            currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, accelCoef * Time.fixedDeltaTime);
+            if (isSlippery)
+                currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, accelCoef * Time.fixedDeltaTime);
+            else if (stats.startDuration <= 0f)
+                currentVelocity = targetVelocity;
+            else
+            {
+                // Acceleration lineaire sur la norme seulement : pleine vitesse au bout de startDuration
+                // (depuis l'arret). La direction est lissee a part (rotation autour de Y, meme coef que
+                // l'ancien Lerp) : filtre les micro-tremblements du stick sans faire chuter la vitesse en virage
+                float accel = stats.moveSpeed / stats.startDuration;
+                float speed = Mathf.MoveTowards(currentVelocity.magnitude, targetSpeed, accel * Time.fixedDeltaTime);
+
+                Vector3 direction = moveDirection;
+                if (currentVelocity.sqrMagnitude > 0.0001f)
+                {
+                    Vector3 currentDir = currentVelocity.normalized;
+                    float angle = Vector3.SignedAngle(currentDir, moveDirection, Vector3.up);
+                    float t = Mathf.Clamp01(accelCoef * Time.fixedDeltaTime);
+                    direction = Quaternion.AngleAxis(angle * t, Vector3.up) * currentDir;
+                }
+                currentVelocity = direction * speed;
+            }
         }
 
         if (lockSystem != null && lockSystem.IsLocked)
