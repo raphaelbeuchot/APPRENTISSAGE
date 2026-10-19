@@ -27,6 +27,9 @@ public class BrightEyesController : MonoBehaviour
 
     private Material materialInstance;
 
+    // Boucle jouee tant que le joueur est capture (cree au besoin, non spatialise)
+    private AudioSource attractionAudio;
+
     private Dictionary<EnemyAI_AStar, Rigidbody> attractedEnemies = new Dictionary<EnemyAI_AStar, Rigidbody>();
 
     void Start()
@@ -202,6 +205,7 @@ public class BrightEyesController : MonoBehaviour
         PlayerPhysicsMovement movement = player.GetComponent<PlayerPhysicsMovement>();
         if (movement != null)
             movement.ApplyBrightEyesAttraction(transform, stats.attractionForce, stats.playerSlowdownMultiplier);
+        StartAttractionLoop();
     }
 
     void RemoveAttractionFromPlayer()
@@ -209,6 +213,35 @@ public class BrightEyesController : MonoBehaviour
         PlayerPhysicsMovement movement = player.GetComponent<PlayerPhysicsMovement>();
         if (movement != null)
             movement.RemoveBrightEyesAttraction();
+        StopAttractionLoop();
+    }
+
+    void StartAttractionLoop()
+    {
+        if (stats == null || stats.attractionLoopSound == null) return;
+
+        if (attractionAudio == null)
+        {
+            attractionAudio = gameObject.AddComponent<AudioSource>();
+            attractionAudio.playOnAwake = false;
+            attractionAudio.loop = true;
+            attractionAudio.spatialBlend = 0f;
+        }
+        attractionAudio.clip = stats.attractionLoopSound;
+        attractionAudio.volume = stats.attractionLoopVolume;
+        if (!attractionAudio.isPlaying) attractionAudio.Play();
+    }
+
+    void StopAttractionLoop()
+    {
+        if (attractionAudio != null && attractionAudio.isPlaying)
+            attractionAudio.Stop();
+    }
+
+    // Couvre aussi la victoire : FreezeEnemies (PostVictorySequencer) desactive ce script sans passer par RemoveAttractionFromPlayer
+    void OnDisable()
+    {
+        StopAttractionLoop();
     }
 
     public void TakeDamage(float damage)
