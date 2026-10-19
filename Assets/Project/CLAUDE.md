@@ -24,7 +24,9 @@ Langage : C#. Pas d'unicode dans le code.
 - Detection sentinelle : basee sur worldSpaceVelocity du Rigidbody. Cas speciaux :
   RotatingPlatform force isMoving si GetCurrentPlatform() != null sauf PlatformTrainCar.
   Island platform : isMoving = (zombieAI.targetHuman != null)
-- Animator : piloter par intention (input * vitesse cible), jamais par velocite physique reelle
+- Animator : piloter par intention, jamais par velocite physique reelle (Rigidbody : tapis, plateformes,
+  knockback fausseraient l'anim). Sol normal : currentVelocity (intention lissee par accel/freinage,
+  l'anim suit l'arret) ; sol glissant, dash, push, grab : input * vitesse cible
 - Pause : IsLocked = true au Resume, libere frame suivant via UnlockNextFrame()
 
 ## Systemes solides (ne pas refacto sans raison)

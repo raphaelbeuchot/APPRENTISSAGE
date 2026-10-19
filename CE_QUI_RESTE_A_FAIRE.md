@@ -58,6 +58,8 @@
 *(son, feel, visuel, animations, feedbacks)*
 
 - [ ] 🟡 **Player — animations tomates** : stance de visée (lock-on actif) + animation de lancer au moment du tir
+- [ ] 🟡 **Player — anim « cherche l'équilibre » sur sol glissant** (noté le 2026-10-19) : stick relâché, tant que le joueur glisse au-dessus d'une certaine vitesse, jouer une anim de recherche d'équilibre au lieu de l'idle (aujourd'hui : idle forcé, cf. `PlayerPhysicsMovement`, branche `isSlippery` de l'anim)
+- [ ] ⚪ **Player — crouch en marche à quatre pattes** (noté le 2026-10-19) : remplacer l'animation de crouch (état `Crouch Locomotion`) par une marche à quatre pattes
 - [ ] ⚪ **KeyCollectible — particules ramassage** : effet radial au pickup + petites étoiles qui suivent le joueur s'il se déplace après ramassage
 - [ ] 🟡 **KeyCollectible — pas assez visible dans les niveaux** (noté le 2026-10-15) : la clé se repère mal. État actuel (prefab `Prefabs/Collectibles/KeyCollectible`, utilisé dans 30 scènes) : modèle `Key_001.fbx` à l'échelle 0,5, matériau doré `Collectible_Test` + contour `OutlineSimple`, rotation sur elle-même ; particules de ramassage seulement (`DollarParticulesCollected`), rien en idle. Pistes (non tranchées) : la grossir, la faire flotter (bobbing), un halo ou des particules en idle, un faisceau lumineux vertical visible de loin, une émission qui pulse.
 - [ ] 🟡 **GoalDoor — animation au contact** : au lieu de disparaître dans la VictorySequence, déclencher une animation immédiate dès le OnTriggerEnter du collider (ouverture, explosion, feedback visuel fort)

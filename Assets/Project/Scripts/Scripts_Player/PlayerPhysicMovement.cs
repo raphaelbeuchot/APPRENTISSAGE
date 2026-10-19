@@ -74,6 +74,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private Rigidbody rb;
     private Vector3 moveInput;
     private Vector3 currentVelocity;
+    // Vrai si HandleMovement a tourne au dernier FixedUpdate (sinon currentVelocity est figee : dash, push, grab...)
+    private bool movementTicked = false;
     private float currentSpeed;
     private bool isGroggy = false;
     private Coroutine standUpCoroutine = null;
@@ -292,6 +294,12 @@ public class PlayerPhysicsMovement : MonoBehaviour
             {
                 animVelocity = Vector3.zero;
             }
+            else if (!isSlippery && movementTicked)
+            {
+                // Sol normal : vitesse de marche lissee (intention + accel/freinage, sans tapis,
+                // plateformes ni knockback) -> l'anim suit la deceleration a l'arret
+                animVelocity = transform.InverseTransformDirection(currentVelocity);
+            }
             else if (moveInput.magnitude < 0.1f)
             {
                 animVelocity = Vector3.zero;
@@ -338,6 +346,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        movementTicked = false;
         if (stats == null) return;
         if (grabState == GrabState.Recoil || grabState == GrabState.Knockdown) return;
         if (isFrozen) return;
@@ -348,6 +357,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         HandleStepClimb();
         HandleMovement();
+        movementTicked = true;
     }
 
     void HandleInput()
@@ -639,7 +649,16 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         if (moveInput.magnitude < 0.1f)
         {
-            currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, brakeCoef * Time.fixedDeltaTime);
+            if (isSlippery)
+                currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, brakeCoef * Time.fixedDeltaTime);
+            else if (stats.stopDuration <= 0f)
+                currentVelocity = Vector3.zero;
+            else
+            {
+                // Freinage lineaire : arret net au bout de stopDuration (depuis moveSpeed), sans traine residuelle
+                float decel = stats.moveSpeed / stats.stopDuration;
+                currentVelocity = Vector3.MoveTowards(currentVelocity, Vector3.zero, decel * Time.fixedDeltaTime);
+            }
         }
         else
         {

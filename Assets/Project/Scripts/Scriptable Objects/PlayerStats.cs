@@ -27,7 +27,9 @@ public class PlayerStats : ScriptableObject
     [Header("MOUVEMENT")]
     [Tooltip("Vitesse de deplacement normale")]
     public float moveSpeed = 5f;
-    
+    [Tooltip("Temps (s) pour passer de moveSpeed a l'arret quand on relache le stick (sol normal, freinage lineaire). 0 = arret instantane")]
+    public float stopDuration = 0.35f;
+
 
     [Header("Dash")]
     public float dashDistance = 1f;
