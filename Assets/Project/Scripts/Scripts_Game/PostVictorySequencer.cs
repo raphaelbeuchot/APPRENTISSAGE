@@ -383,6 +383,10 @@ public class PostVictorySequencer : MonoBehaviour
             Debug.LogWarning("[PostVictory] Player non assigne — reprise controle skippee.");
         }
 
+        // Pause a nouveau autorisee (bloquee depuis le contact de la GoalDoor)
+        LevelManager levelManager = FindObjectOfType<LevelManager>();
+        if (levelManager != null) levelManager.AllowPause();
+
         yield break;
     }
 

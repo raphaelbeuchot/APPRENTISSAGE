@@ -40,6 +40,12 @@ public class LevelManager : MonoBehaviour
     private bool gameOver = false;
     private bool doorHasBeenActivated = false;
 
+    // Pause interdite pendant la cinematique de victoire (contact GoalDoor -> reprise du controle,
+    // cf. PostVictorySequencer.Step5a) et pendant le game over.
+    private bool pauseBlocked = false;
+    public bool IsPauseBlocked => pauseBlocked;
+    public void AllowPause() { pauseBlocked = false; }
+
     void Awake()
     {
         if (ModifierApplier.Instance == null)
@@ -178,6 +184,7 @@ public class LevelManager : MonoBehaviour
         }
 
         levelCompleted = true;
+        pauseBlocked = true;
         LevelStatsTracker.Instance?.OnLevelCompleted();
 
         // Ennemis figes sur place (desactives ensuite sous l'ecran de victoire)
@@ -282,6 +289,7 @@ public class LevelManager : MonoBehaviour
         if (multiRaceMode) return; // multi : respawn gere par MultiRespawn
         if (gameOver || levelCompleted) return;
         gameOver = true;
+        pauseBlocked = true;
         if (player != null) player.enabled = false;
         if (gameOverUI != null)
         {

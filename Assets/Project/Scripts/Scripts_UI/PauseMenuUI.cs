@@ -36,9 +36,12 @@ public class PauseMenuUI : MonoBehaviour
     private float navigationCooldown = 0f;
     private float cooldownDuration = 0.2f;
 
+    private LevelManager levelManager;
+
     void Awake()
     {
         if (uiAudio == null) uiAudio = FindObjectOfType<UIAudioPlayer>();
+        levelManager = FindObjectOfType<LevelManager>();
     }
 
     void Start()
@@ -70,7 +73,13 @@ public class PauseMenuUI : MonoBehaviour
     void Update()
     {
         // Toggle pause avec Echap ou Start (manette)
-        if (Input.GetKeyDown(KeyCode.Escape) || PlayerInputManager.Instance.PausePressed)
+        bool pausePressed = Input.GetKeyDown(KeyCode.Escape) || PlayerInputManager.Instance.PausePressed;
+
+        // Cinematique de victoire / game over : pas d'ouverture de la pause
+        if (pausePressed && !isPaused && levelManager != null && levelManager.IsPauseBlocked)
+            pausePressed = false;
+
+        if (pausePressed)
         {
             if (isPaused)
                 Resume();
