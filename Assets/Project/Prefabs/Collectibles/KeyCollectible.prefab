@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 5646180007435508043}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.099999994, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -116,7 +116,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 3
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -287,7 +287,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.25
+      scalar: 0.15
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -751,7 +751,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 0.7
+      value: 0.2
       mode: 0
       spread: 0
       speed:
@@ -870,7 +870,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 2
+      scalar: 5
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -1548,7 +1548,7 @@ ParticleSystem:
     y:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.75
+      scalar: 0.5
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -1707,7 +1707,7 @@ ParticleSystem:
     orbitalY:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.25
+      scalar: 2
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -4782,7 +4782,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d54996a90d9736748ad8216b134ea5be, type: 2}
+  - {fileID: 2100000, guid: 9b66e38eaf1d02f4bbce9ed5695bd667, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4867,7 +4867,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 6298065901071126008}
+  m_Father: {fileID: 5352745385243329586}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!108 &4380118985420536064
 Light:
@@ -4992,7 +4992,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 560397475727620212}
   - {fileID: 5352745385243329586}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5075,8 +5074,29 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1f191e75cd0bf664f99549e392367b8d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7451344614321772140}
   m_SourcePrefab: {fileID: 100100000, guid: 1f191e75cd0bf664f99549e392367b8d, type: 3}
+--- !u!1 &2610200349835162631 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1f191e75cd0bf664f99549e392367b8d, type: 3}
+  m_PrefabInstance: {fileID: 2952147705260624214}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7451344614321772140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2610200349835162631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b5534f2a09cb85458f3c111ad192a63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RotatingPlatform
+  settings: {fileID: 11400000, guid: c5846154aeb4ea6408553210d452b88f, type: 2}
 --- !u!4 &3418966380995030717 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 1f191e75cd0bf664f99549e392367b8d, type: 3}
@@ -5164,13 +5184,13 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3362085006464004369, guid: 6d8461f54ddba7c4fbc1fa7fa7af95f7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8227925179357426828}
+    - targetCorrespondingSourceObject: {fileID: 3362085006464004369, guid: 6d8461f54ddba7c4fbc1fa7fa7af95f7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 560397475727620212}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 6717499732594758877, guid: 6d8461f54ddba7c4fbc1fa7fa7af95f7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4697873489628136436}
-    - targetCorrespondingSourceObject: {fileID: 6717499732594758877, guid: 6d8461f54ddba7c4fbc1fa7fa7af95f7, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 9131952733933823271}
   m_SourcePrefab: {fileID: 100100000, guid: 6d8461f54ddba7c4fbc1fa7fa7af95f7, type: 3}
 --- !u!1 &4168390947025576446 stripped
 GameObject:
@@ -5192,20 +5212,7 @@ MonoBehaviour:
   goalDoor: {fileID: 0}
   collectSound: {fileID: 8300000, guid: de9bdac4dcf69dd4698dbae45daf062c, type: 3}
   collectParticlesPrefab: {fileID: 1891228409623957889, guid: d8f714ce3c39b894c9ef9a648a04f8ac, type: 3}
-  rotationSpeed: 90
---- !u!114 &9131952733933823271
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4168390947025576446}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b5534f2a09cb85458f3c111ad192a63, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RotatingPlatform
-  settings: {fileID: 11400000, guid: c5846154aeb4ea6408553210d452b88f, type: 2}
+  rotationSpeed: 0
 --- !u!4 &5352745385243329586 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3362085006464004369, guid: 6d8461f54ddba7c4fbc1fa7fa7af95f7, type: 3}
