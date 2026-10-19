@@ -6418,6 +6418,8 @@ MonoBehaviour:
   doorRenderer: {fileID: 0}
   activeMaterial: {fileID: 2100000, guid: e9e73c7ed777b064d8861a8a0ed08d30, type: 2}
   inactiveMaterial: {fileID: 2100000, guid: cdc1119035bdb6b48873886c877be377, type: 2}
+  reachedFadeDuration: 1
+  reachedEmissionBoost: 5
   doorReachedSound: {fileID: 8300000, guid: 66f5647459bc04147be64765d5fd4af9, type: 3}
   doorUnlockedSound: {fileID: 8300000, guid: d7a73023f94824c4290ef18a5f0e42a7, type: 3}
   doorLockedSound: {fileID: 0}
@@ -8255,8 +8257,8 @@ MonoBehaviour:
   profileFace: 1
   linkCorners: 0
   radius: 0.5
-  radiusA: 0
-  radiusB: 0
+  radiusA: 0.5
+  radiusB: 0.5
   radiusC: 0.5
   radiusD: 0.5
   cornerSegments: 4
@@ -8337,7 +8339,7 @@ Transform:
   m_GameObject: {fileID: 1116448011}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.39999986, y: 0, z: -0.408741}
+  m_LocalPosition: {x: 0.39999986, y: -0.00000023841858, z: -0.408741}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15595,8 +15597,8 @@ Transform:
   m_GameObject: {fileID: 1993854445}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.8000002, y: 1.1, z: 21.7}
-  m_LocalScale: {x: 1, y: 0.7, z: 0.6}
+  m_LocalPosition: {x: 4, y: 1.1, z: 21.75}
+  m_LocalScale: {x: 2.4, y: 0.7, z: 0.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
