@@ -315,9 +315,9 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.1
+  m_TransitionDuration: 0.3
   m_TransitionOffset: 0
-  m_ExitTime: 0.9
+  m_ExitTime: 0.7
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
@@ -461,7 +461,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Rolling
-  m_Speed: 1.5
+  m_Speed: 1.25
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -1744726852912084244}
@@ -1048,23 +1048,23 @@ BlendTree:
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: -203655887218126122, guid: febf6c32abd885a4db07d1540e0f1c43, type: 3}
-    m_Threshold: 0
+    m_Threshold: 0.0041796626
     m_Position: {x: 0, y: 0}
     m_TimeScale: 2
     m_CycleOffset: 0
     m_DirectBlendParameter: SpeedX
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -203655887218126122, guid: e4f939c21cb31ce4fb00b323888d5f7a, type: 3}
+    m_Motion: {fileID: -203655887218126122, guid: 012c2ae0d31d6c84f8cb796306991bbd, type: 3}
     m_Threshold: 0.05
     m_Position: {x: 0, y: 1.5}
-    m_TimeScale: 2
+    m_TimeScale: 1
     m_CycleOffset: 0
     m_DirectBlendParameter: SpeedX
     m_Mirror: 0
   m_BlendParameter: SpeedZ
   m_BlendParameterY: SpeedZ
-  m_MinThreshold: 0
+  m_MinThreshold: 0.0041796626
   m_MaxThreshold: 0.05
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
