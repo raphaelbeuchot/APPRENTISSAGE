@@ -95,6 +95,7 @@ internal static class CatalogChecks
         new CatalogCheck("curtain", "Rideau", LDCatalog, CheckCurtain),
         new CatalogCheck("circles", "Cercles", LDCatalog, CheckCircles),
         new CatalogCheck("transitionRoom", "Transition Room", LDCatalog, s => s.Find(c => c is TransitionRoomDoor)),
+        new CatalogCheck("victoryBounds", "Bornes victoire", LDCatalog, CheckVictoryBounds),
 
         // Sans colonne
         new CatalogCheck("broomPickup", "Socle de Prise", HiddenCatalog,
@@ -237,6 +238,36 @@ internal static class CatalogChecks
         if (outside.Count > 0)
             return CheckResult.Warn("Hors des objets tagues Sentinel (montent grace a la rustine) : " + Describe(outside[0].gameObject, null, outside.Count) + ". Les taguer ou les ranger sous un objet tague.");
         return CheckResult.Ok(Describe(circles[0].gameObject, "sous un objet tague Sentinel", circles.Count));
+    }
+
+    // Boite qui retient le joueur apres la victoire (absente = a completer) : une seule, et elle doit contenir la GoalDoor et la porte
+    // de la salle de transition (sinon le joueur ne peut pas sortir du niveau). Controle en X/Z seulement.
+    private static CheckResult CheckVictoryBounds(SceneScan s)
+    {
+        List<PostVictoryBounds> boxes = s.Components.OfType<PostVictoryBounds>().ToList();
+        if (boxes.Count == 0)
+            return CheckResult.Warn("Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor apres la victoire");
+
+        List<string> problems = new List<string>();
+        if (boxes.Count > 1)
+            problems.Add(boxes.Count + " boites actives : une seule est utilisee, au hasard");
+
+        Bounds b = boxes[0].GetWorldBounds();
+        MonoBehaviour goal = s.Components.FirstOrDefault(c => c is GoalDoor || c is GoalDoorNew);
+        if (goal != null && !ContainsXZ(b, goal.transform.position))
+            problems.Add("la GoalDoor est hors de la boite");
+        MonoBehaviour door = s.Components.FirstOrDefault(c => c is TransitionRoomDoor);
+        if (door != null && !ContainsXZ(b, door.transform.position))
+            problems.Add("la porte de la salle de transition est hors de la boite : joueur bloque");
+
+        if (problems.Count > 0)
+            return CheckResult.Warn(Describe(boxes[0].gameObject, null, boxes.Count) + " : " + string.Join(" ; ", problems));
+        return CheckResult.Ok(Describe(boxes[0].gameObject, "contient GoalDoor et salle de transition", 1));
+    }
+
+    private static bool ContainsXZ(Bounds b, Vector3 p)
+    {
+        return p.x >= b.min.x && p.x <= b.max.x && p.z >= b.min.z && p.z <= b.max.z;
     }
 
     // L'objet lui-meme ou son premier parent tague Sentinel, null sinon

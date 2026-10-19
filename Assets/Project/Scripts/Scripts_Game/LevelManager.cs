@@ -190,6 +190,9 @@ public class LevelManager : MonoBehaviour
         // Ennemis figes sur place (desactives ensuite sous l'ecran de victoire)
         if (PostVictorySequencer.Instance != null)
             PostVictorySequencer.Instance.FreezeEnemies();
+
+        // Joueur retenu dans une boite jusqu'a la salle de transition (pas de chute hors du decor)
+        PostVictoryBounds.Activate(player);
         Debug.Log("=== NIVEAU COMPLETE! ===");
 
         // Plus de bascule vue basse jusqu'a la fin du niveau (le retour en vue normale

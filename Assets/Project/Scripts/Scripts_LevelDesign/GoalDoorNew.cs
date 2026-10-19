@@ -16,6 +16,11 @@ public class GoalDoorNew : MonoBehaviour
 
     public Material activeMaterial;
     public Material inactiveMaterial;
+    [Tooltip("Duree du fondu de l'alpha du materiau actif a zero quand le joueur atteint la porte (0 = pas de fondu). Materiau en Surface Transparent")]
+    [SerializeField] private float reachedFadeDuration = 1f;
+    [Tooltip("Bond de l'emission au contact, en intensite HDR (meme unite que le champ Intensity du selecteur de couleur : +1 = x2). Puis descente a zero pendant le fondu")]
+    [SerializeField] private float reachedEmissionBoost = 5f;
+    private Coroutine fadeRoutine;
 
     [Header("Audio")]
     public AudioClip doorReachedSound;
@@ -104,6 +109,9 @@ public class GoalDoorNew : MonoBehaviour
             if (audioSource != null && doorReachedSound != null)
                 audioSource.PlayOneShot(doorReachedSound);
 
+            if (reachedFadeDuration > 0f && doorRenderer != null)
+                fadeRoutine = StartCoroutine(FadeOutDoor());
+
             //if (victoryEffectPrefab != null)
               //  Instantiate(victoryEffectPrefab, transform.position, Quaternion.identity);
 
@@ -119,6 +127,39 @@ public class GoalDoorNew : MonoBehaviour
 
         //if (destroyPlayerOnReach)
             //Destroy(player, 2f);
+    }
+
+    // Alpha du materiau (instance propre a cette porte) ramene a zero : _BaseColor (URP Lit), sinon _Color.
+    // L'emission bondit (reachedEmissionBoost) puis baisse en meme temps : avec Preserve Specular Lighting (URP),
+    // elle n'est pas multipliee par l'alpha et la porte resterait lumineuse a alpha 0.
+    private IEnumerator FadeOutDoor()
+    {
+        Material mat = doorRenderer.material;
+        string colorProperty = mat.HasProperty("_BaseColor") ? "_BaseColor" : "_Color";
+        if (!mat.HasProperty(colorProperty)) yield break;
+
+        Color color = mat.GetColor(colorProperty);
+        float startAlpha = color.a;
+        bool hasEmission = mat.HasProperty("_EmissionColor");
+        // Bond immediat de l'emission, puis descente depuis cette valeur
+        Color startEmission = hasEmission ? mat.GetColor("_EmissionColor") * Mathf.Pow(2f, reachedEmissionBoost) : Color.black;
+        if (hasEmission) mat.SetColor("_EmissionColor", startEmission);
+        float elapsed = 0f;
+
+        while (elapsed < reachedFadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / reachedFadeDuration);
+            color.a = Mathf.Lerp(startAlpha, 0f, t);
+            mat.SetColor(colorProperty, color);
+            if (hasEmission) mat.SetColor("_EmissionColor", Color.Lerp(startEmission, Color.black, t));
+            yield return null;
+        }
+
+        color.a = 0f;
+        mat.SetColor(colorProperty, color);
+        if (hasEmission) mat.SetColor("_EmissionColor", Color.black);
+        fadeRoutine = null;
     }
 
     public void UnlockWithKey()
@@ -166,6 +207,8 @@ public class GoalDoorNew : MonoBehaviour
     {
         hasBeenReached = false;
         isActive = false;
+        // UpdateVisuals remet le materiau d'origine (alpha plein)
+        if (fadeRoutine != null) { StopCoroutine(fadeRoutine); fadeRoutine = null; }
         UpdateVisuals();
     }
 
