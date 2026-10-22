@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Bloc de decor parametrique : un rectangle aux coins arrondis (profil), extrude, eventuellement troue.
+// Bloc de decor parametrique : un rectangle aux coins arrondis (profil), extrude, eventuellement troue et evase.
 // Usage : poser sur un Cube (ou tout GO avec MeshFilter), regler, le mesh se met a jour en direct.
 // Le mesh n'est pas sauvegarde : il est reconstruit a partir des reglages a chaque chargement,
 // donc le composant marche tel quel dans un prefab.
@@ -49,6 +49,13 @@ public class RoundedBlock : MonoBehaviour
     [Tooltip("Quart de rond sur tout le bord de la face opposee : dessous (Dessus), arriere -Z (Avant), gauche -X (Cote). " +
              "S'applique aussi au bord du trou.")]
     [Min(0f)] public float roundBottom = 0f;
+
+    [Header("Evasement")]
+    [Tooltip("Echelle du profil sur la face 'haute' (dessus en Dessus, avant +Z en Avant, droite +X en Cote) par rapport " +
+             "a la face opposee, variation lineaire entre les deux. 1 = droit, < 1 = se resserre, > 1 = s'evase. " +
+             "Tout le profil suit (coins, trou, arrondis). En Dessus il se reduit autour de son centre ; " +
+             "en Avant/Cote autour du milieu de la base, pour rester pose au sol.")]
+    [Min(0.01f)] public float topScale = 1f;
 
     [Header("Trou")]
     [Tooltip("Perce le bloc de part en part. Le trou se declare par ses marges, vues dans le plan du profil " +
@@ -197,6 +204,29 @@ public class RoundedBlock : MonoBehaviour
             case ProfileFace.Cote: return new Vector3(w, v, u);
             default: return new Vector3(u, w, v);
         }
+    }
+
+    // ---------------------------------------------------------------- Evasement
+    // Le profil est mis a l'echelle autour d'un point fixe, d'un facteur qui va lineairement de 1 (w = -hw)
+    // a topScale (w = +hw). Un point (u, v) du profil en w devient anchor + ((u, v) - anchor) * ScaleAt(w).
+
+    float TopScale => Mathf.Max(0.01f, topScale);
+
+    // Point fixe dans le plan du profil : centre en Dessus, milieu de la base en Avant/Cote (le bloc reste au sol).
+    Vector2 GetScaleAnchor(float hv)
+    {
+        return profileFace == ProfileFace.Dessus ? Vector2.zero : new Vector2(0f, -hv);
+    }
+
+    float ScaleAt(float w, float hw)
+    {
+        return Mathf.Lerp(1f, TopScale, (w + hw) / (hw * 2f));
+    }
+
+    // Derivee de l'echelle selon w (constante : variation lineaire)
+    float ScaleSlope(float hw)
+    {
+        return (TopScale - 1f) / (hw * 2f);
     }
 
     Rect2 GetOuterRect(float hu, float hv)
@@ -397,9 +427,11 @@ public class RoundedBlock : MonoBehaviour
         // --- Faces plates (avant = +w, arriere = -w), sur les contours decales par l'arrondi du pourtour.
         // Sans trou : eventail depuis le centre (contour convexe, UV / positions lineaires : exact).
         // Avec trou : bande de quads entre le contour exterieur et celui du trou, relies point a point.
+        Vector2 anchor = GetScaleAnchor(hv);
         for (int side = 0; side < 2; side++)
         {
             float w = side == 0 ? hw : -hw;
+            float scale = ScaleAt(w, hw);
             float mirror = side == 0 ? 1f : -1f; // la face arriere vue de derriere n'est pas en miroir
             Vector3 n = DirToLocal(0f, 0f, side == 0 ? 1f : -1f);
             float round = side == 0 ? roundTopClamped : roundBot;
@@ -409,9 +441,9 @@ public class RoundedBlock : MonoBehaviour
 
             if (!hasHole)
             {
-                AddCapVertex(verts, normals, uv0, uv2, 0f, 0f, w, hu, hv, hw, mirror, n);
+                AddCapVertex(verts, normals, uv0, uv2, 0f, 0f, w, hu, hv, hw, mirror, n, anchor, scale);
                 for (int i = 0; i < count; i++)
-                    AddCapVertex(verts, normals, uv0, uv2, outerRing[i].p.x, outerRing[i].p.y, w, hu, hv, hw, mirror, n);
+                    AddCapVertex(verts, normals, uv0, uv2, outerRing[i].p.x, outerRing[i].p.y, w, hu, hv, hw, mirror, n, anchor, scale);
                 // Les points superposes des coins vifs donnent des triangles degeneres sans consequence.
                 for (int i = 0; i < count; i++)
                     AddTri(verts, capTris, capStart, capStart + 1 + i, capStart + 1 + (i + 1) % count, n);
@@ -420,9 +452,9 @@ public class RoundedBlock : MonoBehaviour
             {
                 List<RingPoint> innerRing = BuildRing(inner, -round);
                 for (int i = 0; i < count; i++)
-                    AddCapVertex(verts, normals, uv0, uv2, outerRing[i].p.x, outerRing[i].p.y, w, hu, hv, hw, mirror, n);
+                    AddCapVertex(verts, normals, uv0, uv2, outerRing[i].p.x, outerRing[i].p.y, w, hu, hv, hw, mirror, n, anchor, scale);
                 for (int i = 0; i < count; i++)
-                    AddCapVertex(verts, normals, uv0, uv2, innerRing[i].p.x, innerRing[i].p.y, w, hu, hv, hw, mirror, n);
+                    AddCapVertex(verts, normals, uv0, uv2, innerRing[i].p.x, innerRing[i].p.y, w, hu, hv, hw, mirror, n, anchor, scale);
                 for (int i = 0; i < count; i++)
                 {
                     int next = (i + 1) % count;
@@ -458,6 +490,7 @@ public class RoundedBlock : MonoBehaviour
     // facing = 1 : tranche exterieure (normales vers l'exterieur, le contour se retrecit dans les arrondis).
     // facing = -1 : tranche du trou (normales vers le centre du trou, le contour s'elargit dans les arrondis).
     // UV u = distance le long du contour non decale, pour que les colonnes d'UV restent alignees d'une station a l'autre.
+    // UV v = distance parcourue en remontant chaque colonne, evasement compris (sans evasement : Station.v).
     void AddWall(Rect2 rect, List<Station> stations, float facing, float hv, float hw,
         List<Vector3> verts, List<Vector3> normals, List<Vector2> uv0, List<Vector2> uv2, List<int> tris)
     {
@@ -467,22 +500,52 @@ public class RoundedBlock : MonoBehaviour
         for (int i = 1; i < ringCount; i++)
             dist[i] = dist[i - 1] + Vector2.Distance(baseRing[i - 1].p, baseRing[i].p);
         float perimeter = Mathf.Max(0.0001f, dist[ringCount - 1]);
-        float profileLength = stations[stations.Count - 1].v;
+
+        Vector2 anchor = GetScaleAnchor(hv);
+        float slope = ScaleSlope(hw);
+        int stationCount = stations.Count;
+        float[] scales = new float[stationCount];
+        for (int j = 0; j < stationCount; j++)
+            scales[j] = ScaleAt(stations[j].w, hw);
+
+        // Longueur de chaque colonne, station par station. Dans le profil non evase, une station decale le point de
+        // 'inset' le long de sa normale : on applique l'echelle a ce deplacement ideal.
+        float[] colV = new float[stationCount * ringCount];
+        for (int j = 1; j < stationCount; j++)
+        {
+            Station a = stations[j - 1], b = stations[j];
+            float s0 = scales[j - 1], s1 = scales[j];
+            for (int i = 0; i < ringCount; i++)
+            {
+                Vector2 d = (baseRing[i].p - anchor) * (s1 - s0) - baseRing[i].n * (facing * (b.inset * s1 - a.inset * s0));
+                float dw = b.w - a.w;
+                colV[j * ringCount + i] = colV[(j - 1) * ringCount + i] + Mathf.Sqrt(d.sqrMagnitude + dw * dw);
+            }
+        }
 
         int start = verts.Count;
-        foreach (Station st in stations)
+        for (int j = 0; j < stationCount; j++)
         {
+            Station st = stations[j];
+            float s = scales[j];
             List<RingPoint> ring = st.inset > 0f ? BuildRing(rect, st.inset * facing) : baseRing;
             for (int i = 0; i < ringCount; i++)
             {
+                Vector2 p = ring[i].p;
+                Vector2 ps = anchor + (p - anchor) * s;
+                // Normale deformee par la mise a l'echelle (transposee inverse, multipliee par s) : la composante
+                // en w s'incline selon la pente du flanc.
                 Vector2 n2 = baseRing[i].n * (st.inPlane * facing);
-                verts.Add(ToLocal(ring[i].p.x, ring[i].p.y, st.w, hv, hw));
-                normals.Add(DirToLocal(n2.x, n2.y, st.wNormal).normalized);
-                uv0.Add(new Vector2(dist[i], st.v));
-                uv2.Add(new Vector2(dist[i] / perimeter, st.v / profileLength));
+                float nw = s * st.wNormal - slope * Vector2.Dot(p - anchor, n2);
+                float v = colV[j * ringCount + i];
+                float columnLength = Mathf.Max(0.0001f, colV[(stationCount - 1) * ringCount + i]);
+                verts.Add(ToLocal(ps.x, ps.y, st.w, hv, hw));
+                normals.Add(DirToLocal(n2.x, n2.y, nw).normalized);
+                uv0.Add(new Vector2(dist[i], v));
+                uv2.Add(new Vector2(dist[i] / perimeter, v / columnLength));
             }
         }
-        for (int j = 0; j < stations.Count - 1; j++)
+        for (int j = 0; j < stationCount - 1; j++)
         {
             for (int i = 0; i < ringCount - 1; i++)
             {
@@ -497,12 +560,14 @@ public class RoundedBlock : MonoBehaviour
     }
 
     void AddCapVertex(List<Vector3> verts, List<Vector3> normals, List<Vector2> uv0, List<Vector2> uv2,
-        float u, float v, float w, float hu, float hv, float hw, float mirror, Vector3 n)
+        float u, float v, float w, float hu, float hv, float hw, float mirror, Vector3 n, Vector2 anchor, float scale)
     {
-        verts.Add(ToLocal(u, v, w, hv, hw));
+        Vector2 ps = anchor + (new Vector2(u, v) - anchor) * scale;
+        verts.Add(ToLocal(ps.x, ps.y, w, hv, hw));
         normals.Add(n);
+        // UV0 en metres sur la face mise a l'echelle, UV2 inchangees (0-1 sur la face)
         float uu = mirror > 0f ? u + hu : hu - u;
-        uv0.Add(new Vector2(uu, v + hv));
+        uv0.Add(new Vector2(uu * scale, (v + hv) * scale));
         uv2.Add(new Vector2(uu / (hu * 2f), (v + hv) / (hv * 2f)));
     }
 
@@ -563,6 +628,8 @@ public class RoundedBlock : MonoBehaviour
 
     void Label(Vector2 p, string text, float hv, float hw)
     {
+        Vector2 anchor = GetScaleAnchor(hv);
+        p = anchor + (p - anchor) * TopScale; // les lettres sont sur la face 'haute', a l'echelle topScale
         Vector3 world = transform.TransformPoint(ToLocal(p.x, p.y, hw, hv, hw));
         UnityEditor.Handles.Label(world, text, UnityEditor.EditorStyles.boldLabel);
     }
