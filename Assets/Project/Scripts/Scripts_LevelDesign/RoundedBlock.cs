@@ -56,6 +56,16 @@ public class RoundedBlock : MonoBehaviour
              "Tout le profil suit (coins, trou, arrondis). En Dessus il se reduit autour de son centre ; " +
              "en Avant/Cote autour du milieu de la base, pour rester pose au sol.")]
     [Min(0.01f)] public float topScale = 1f;
+    [Tooltip("Courbure du flanc entre le bas et le haut (sans effet si Echelle du haut = 1). " +
+             "0 = droit, < 0 = creuse (volcan, trompette), > 0 = bombe (dome, tulipe).")]
+    [Range(-1f, 1f)] public float flareBend = 0f;
+    [Tooltip("Bombement ajoute au flanc, nul en haut et en bas. > 0 = ventre (vase), < 0 = taille pincee (diabolo, colonne).")]
+    [Range(-1f, 1f)] public float flareBulge = 0f;
+    [Tooltip("Hauteur du ventre : 0 = pres du bas, 1 = pres du haut.")]
+    [Range(0.1f, 0.9f)] public float bulgePosition = 0.5f;
+    [Tooltip("Nombre d'etages sur le flanc pour suivre le galbe et le ventre (entre les arrondis du pourtour). " +
+             "Plus = plus lisse, plus de sommets.")]
+    [Range(1, 64)] public int heightSegments = 8;
 
     [Header("Trou")]
     [Tooltip("Perce le bloc de part en part. Le trou se declare par ses marges, vues dans le plan du profil " +
@@ -207,10 +217,13 @@ public class RoundedBlock : MonoBehaviour
     }
 
     // ---------------------------------------------------------------- Evasement
-    // Le profil est mis a l'echelle autour d'un point fixe, d'un facteur qui va lineairement de 1 (w = -hw)
-    // a topScale (w = +hw). Un point (u, v) du profil en w devient anchor + ((u, v) - anchor) * ScaleAt(w).
+    // Le profil est mis a l'echelle autour d'un point fixe, d'un facteur qui va de 1 (w = -hw) a topScale (w = +hw),
+    // en ligne droite ou galbe, avec un ventre eventuel. Un point (u, v) du profil en w devient
+    // anchor + ((u, v) - anchor) * ScaleAt(w).
 
     float TopScale => Mathf.Max(0.01f, topScale);
+
+    bool HasFlareShape => Mathf.Abs(flareBend) > 0.001f || Mathf.Abs(flareBulge) > 0.001f;
 
     // Point fixe dans le plan du profil : centre en Dessus, milieu de la base en Avant/Cote (le bloc reste au sol).
     Vector2 GetScaleAnchor(float hv)
@@ -220,13 +233,37 @@ public class RoundedBlock : MonoBehaviour
 
     float ScaleAt(float w, float hw)
     {
-        return Mathf.Lerp(1f, TopScale, (w + hw) / (hw * 2f));
+        return ScaleAtT((w + hw) / (hw * 2f));
     }
 
-    // Derivee de l'echelle selon w (constante : variation lineaire)
-    float ScaleSlope(float hw)
+    // t = hauteur relative 0-1. Jamais sous 0.01 : un ventre trop pince retournerait la forme.
+    float ScaleAtT(float t)
     {
-        return (TopScale - 1f) / (hw * 2f);
+        t = Mathf.Clamp01(t);
+
+        // Galbe : f = t^k. Pour un bloc qui se resserre, k < 1 fait chuter l'echelle tot (flanc creuse) ; pour un bloc
+        // qui s'evase, c'est k > 1 qui creuse. On inverse donc le sens selon topScale pour que "< 0" creuse toujours.
+        float direction = TopScale < 1f ? 1f : -1f;
+        float k = Mathf.Pow(3f, flareBend * direction);
+        float f = Mathf.Pow(t, k);
+        float s = Mathf.LerpUnclamped(1f, TopScale, f);
+
+        // Ventre : bosse en sinus, nulle aux deux bouts, maximale (et a pente nulle) en bulgePosition
+        float p = bulgePosition;
+        float g = t < p ? 0.5f * t / p : 0.5f + 0.5f * (t - p) / (1f - p);
+        s *= 1f + flareBulge * Mathf.Sin(Mathf.PI * g);
+
+        return Mathf.Max(0.01f, s);
+    }
+
+    // Derivee de l'echelle selon w (pente du flanc) : constante en lineaire, par difference finie sinon.
+    float ScaleSlope(float w, float hw)
+    {
+        if (!HasFlareShape) return (TopScale - 1f) / (hw * 2f);
+        float t = (w + hw) / (hw * 2f);
+        const float e = 0.001f;
+        float t0 = Mathf.Max(0f, t - e), t1 = Mathf.Min(1f, t + e);
+        return (ScaleAtT(t1) - ScaleAtT(t0)) / ((t1 - t0) * hw * 2f);
     }
 
     Rect2 GetOuterRect(float hu, float hv)
@@ -359,6 +396,18 @@ public class RoundedBlock : MonoBehaviour
         }
         else
             stations.Add(new Station { inset = 0f, w = -hw, inPlane = 1f, wNormal = 0f });
+
+        // Flanc : etages intermediaires pour suivre le galbe et le ventre (un seul etage en lineaire)
+        if (HasFlareShape)
+        {
+            float wFrom = stations[stations.Count - 1].w;
+            float wTo = top > 0.0001f ? hw - top : hw;
+            for (int s = 1; s < heightSegments; s++)
+                stations.Add(new Station
+                {
+                    inset = 0f, w = Mathf.Lerp(wFrom, wTo, (float)s / heightSegments), inPlane = 1f, wNormal = 0f
+                });
+        }
 
         // Haut : du flanc (theta = 0) a la face du dessus (theta = 90)
         if (top > 0.0001f)
@@ -502,11 +551,14 @@ public class RoundedBlock : MonoBehaviour
         float perimeter = Mathf.Max(0.0001f, dist[ringCount - 1]);
 
         Vector2 anchor = GetScaleAnchor(hv);
-        float slope = ScaleSlope(hw);
         int stationCount = stations.Count;
         float[] scales = new float[stationCount];
+        float[] slopes = new float[stationCount];
         for (int j = 0; j < stationCount; j++)
+        {
             scales[j] = ScaleAt(stations[j].w, hw);
+            slopes[j] = ScaleSlope(stations[j].w, hw);
+        }
 
         // Longueur de chaque colonne, station par station. Dans le profil non evase, une station decale le point de
         // 'inset' le long de sa normale : on applique l'echelle a ce deplacement ideal.
@@ -536,7 +588,7 @@ public class RoundedBlock : MonoBehaviour
                 // Normale deformee par la mise a l'echelle (transposee inverse, multipliee par s) : la composante
                 // en w s'incline selon la pente du flanc.
                 Vector2 n2 = baseRing[i].n * (st.inPlane * facing);
-                float nw = s * st.wNormal - slope * Vector2.Dot(p - anchor, n2);
+                float nw = s * st.wNormal - slopes[j] * Vector2.Dot(p - anchor, n2);
                 float v = colV[j * ringCount + i];
                 float columnLength = Mathf.Max(0.0001f, colV[(stationCount - 1) * ringCount + i]);
                 verts.Add(ToLocal(ps.x, ps.y, st.w, hv, hw));
@@ -629,7 +681,7 @@ public class RoundedBlock : MonoBehaviour
     void Label(Vector2 p, string text, float hv, float hw)
     {
         Vector2 anchor = GetScaleAnchor(hv);
-        p = anchor + (p - anchor) * TopScale; // les lettres sont sur la face 'haute', a l'echelle topScale
+        p = anchor + (p - anchor) * ScaleAt(hw, hw); // les lettres sont sur la face 'haute', a son echelle
         Vector3 world = transform.TransformPoint(ToLocal(p.x, p.y, hw, hv, hw));
         UnityEditor.Handles.Label(world, text, UnityEditor.EditorStyles.boldLabel);
     }
@@ -652,6 +704,12 @@ public class RoundedBlockEditor : UnityEditor.Editor
             hidden.AddRange(new[] { "radiusA", "radiusB", "radiusC", "radiusD" });
         else
             hidden.Add("radius");
+
+        bool noBulge = Mathf.Abs(block.flareBulge) <= 0.001f;
+        if (noBulge)
+            hidden.Add("bulgePosition");
+        if (noBulge && Mathf.Abs(block.flareBend) <= 0.001f)
+            hidden.Add("heightSegments");
 
         if (!block.hole)
             hidden.AddRange(new[] { "linkMargins", "margin", "marginLeft", "marginRight", "marginBottom", "marginTop",
