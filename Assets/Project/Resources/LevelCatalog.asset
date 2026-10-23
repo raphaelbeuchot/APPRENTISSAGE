@@ -290,9 +290,8 @@ MonoBehaviour:
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
+      status: 2
+      detail: PostVictoryBounds (contient GoalDoor et salle de transition)
     - id: broomPickup
       status: 0
       detail: 
@@ -347,9 +346,8 @@ MonoBehaviour:
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
+      status: 2
+      detail: POstVictoryBounds (contient GoalDoor et salle de transition)
     - id: broomPickup
       status: 0
       detail: 
@@ -496,8 +494,8 @@ MonoBehaviour:
       status: 2
       detail: LevelEssentiels (tague Sentinel)
     - id: startDoor
-      status: 1
-      detail: 'Ancienne start zone, sans porte d''entree : LevelEssentiels/StartZone_12m'
+      status: 2
+      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
     - id: pupitre
       status: 2
       detail: Pupitre
@@ -1445,9 +1443,8 @@ MonoBehaviour:
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
+      status: 2
+      detail: PostVictoryBounds (contient GoalDoor et salle de transition)
     - id: broomPickup
       status: 0
       detail: 
@@ -1510,4 +1507,61 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_WesternFlow.unity
     collectibleIDs: []
-  lastAnalysis: 19/10/2026 a 14:25
+  - scene: {fileID: 102900000, guid: ca6c5d17e7e4d594da65f4b427b1bd6e, type: 3}
+    levelName: Void I
+    launchText: Call of the Void
+    hasBroom: 0
+    hasSpray: 0
+    observed:
+    - id: tomatoCrate
+      status: 0
+      detail: 
+    - id: enemies
+      status: 0
+      detail: 
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: broomPedestal
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 2
+      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
+    - id: pupitre
+      status: 2
+      detail: ESTRADE PUPITRE/Pupitre
+    - id: goalDoor
+      status: 2
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
+    - id: key
+      status: 2
+      detail: KeyCollectible/Collectible (KeyCollectible)
+    - id: victory
+      status: 2
+      detail: VictoryManager (configuration complete)
+    - id: curtain
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
+    - id: transitionRoom
+      status: 2
+      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
+    - id: victoryBounds
+      status: 2
+      detail: PostVictoryBounds (contient GoalDoor et salle de transition)
+    - id: broomPickup
+      status: 0
+      detail: 
+    scenePath: Assets/Project/Scenes/Level_Casino.unity
+    collectibleIDs: []
+  lastAnalysis: 23/10/2026 a 22:20
