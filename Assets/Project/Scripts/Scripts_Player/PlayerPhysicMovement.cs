@@ -106,6 +106,9 @@ public class PlayerPhysicsMovement : MonoBehaviour
     // Dash
     [HideInInspector] public bool isDashing = false;
     private float lastDashTime = -999f;
+    // Dernier instant ou la capsule touchait un appui par en dessous (OnCollisionStay, tous layers) :
+    // autorise le lunge, avec un coyote time (stats.dashCoyoteTime)
+    private float lastSupportTime = -999f;
     private Vector3 dashDirection;
 
     // Reference
@@ -1076,6 +1079,8 @@ public class PlayerPhysicsMovement : MonoBehaviour
     bool CanDash()
     {
         if (isDashing) return false;
+        // Le lunge est un vrai saut : pas de relance en l'air (double saut), sauf coyote time apres un bord
+        if (Time.time - lastSupportTime > stats.dashCoyoteTime) return false;
         if (isClimbing) return false;
         if (isCrouching) return false;
         if (grabState != GrabState.None) return false;
@@ -1131,21 +1136,25 @@ public class PlayerPhysicsMovement : MonoBehaviour
 
         // Setup dash
         isDashing = true;
-        isDashing = true;
         lastDashTime = Time.time; // ICI au lieu de la fin
-        if (animator != null)
-            animator.SetTrigger("DoDash");
-
-        // AJOUTER CES 2 LIGNES :
+        lastSupportTime = -999f; // le coyote time ne doit pas rouvrir un lunge juste apres le decollage
         if (animator != null)
             animator.SetTrigger("DoDash");
 
         dashDirection = direction.normalized;
         float dashSpeed = stats.dashDistance / stats.dashDuration;
-        
 
         // Bloquer inputs normaux
         canMove = false;
+
+        // Vrai saut : impulsion verticale pour atteindre dashJumpHeight, la gravite fait la suite.
+        // La capsule decolle (petits vides, marches plus hautes, plateforme a plateforme).
+        if (stats.dashJumpHeight > 0f)
+        {
+            Vector3 v = rb.linearVelocity;
+            v.y = Mathf.Sqrt(2f * Physics.gravity.magnitude * stats.dashJumpHeight);
+            rb.linearVelocity = v;
+        }
 
         float elapsed = 0f;
         while (elapsed < stats.dashDuration)
@@ -1219,6 +1228,24 @@ public class PlayerPhysicsMovement : MonoBehaviour
         Rigidbody hitRb = collision.rigidbody;
         if (hitRb != null)
             hitRb.linearVelocity = Vector3.zero;
+    }
+
+    // Appui pour le lunge : un contact dont la normale pointe vers le haut (pente < ~45 deg), quel que soit
+    // le layer (sol, ile, fond de fosse, caisse, corps...). Pas d'appui sur un ennemi ni sur l'autre joueur.
+    void OnCollisionStay(Collision collision)
+    {
+        bool fromBelow = false;
+        for (int i = 0; i < collision.contactCount; i++)
+        {
+            if (collision.GetContact(i).normal.y > 0.7f) { fromBelow = true; break; }
+        }
+        if (!fromBelow) return;
+
+        if (collision.gameObject.GetComponentInParent<EnemyHealth>() != null) return;
+        PlayerPhysicsMovement otherPlayer = collision.gameObject.GetComponentInParent<PlayerPhysicsMovement>();
+        if (otherPlayer != null && otherPlayer != this) return;
+
+        lastSupportTime = Time.time;
     }
 
     void OnCollisionExit(Collision collision)

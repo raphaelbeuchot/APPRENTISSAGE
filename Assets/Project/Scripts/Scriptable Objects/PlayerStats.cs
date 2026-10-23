@@ -41,6 +41,10 @@ public class PlayerStats : ScriptableObject
     public float dashDuration = 0.35f;
     public float dashStaminaCost = 25f;
     public float dashCooldown = 2.5f;
+    [Tooltip("Hauteur du saut du lunge (m), donnee par la physique (l'anim n'a plus de hauteur : Bake Into Pose Y decoche). 0 = lunge au sol")]
+    public float dashJumpHeight = 0.36f;
+    [Tooltip("Delai apres avoir quitte un appui (bord de plateforme) pendant lequel le lunge reste possible (s)")]
+    public float dashCoyoteTime = 0.1f;
     public AudioClip dashSound;
 
 
