@@ -28,6 +28,14 @@ public class SplinePitZone : MonoBehaviour
     [Tooltip("Look de la surface, propre a cette fosse (le SO ne decide que du comportement)")]
     public Material fillMaterial;
 
+    // Reglages de la forme rapide "rectangle arrondi" (dessines par SplinePitZoneEditor) :
+    // memorises par fosse, ce sont ceux de la derniere creation, pas un reflet de la spline actuelle.
+    [HideInInspector] public float quickRectWidth = 6f;   // axe X local de la spline
+    [HideInInspector] public float quickRectLength = 4f;  // axe Z local de la spline
+    [HideInInspector] public float quickRectRadius = 1f;
+    [HideInInspector] public float quickRectBulgeX = 0f;  // fleche au milieu des cotes paralleles a X (gonflent vers -Z / +Z)
+    [HideInInspector] public float quickRectBulgeZ = 0f;  // fleche au milieu des cotes paralleles a Z (gonflent vers -X / +X)
+
     public PitContentType.ContentCategory FillCategory =>
         fillContentType != null ? fillContentType.category : PitContentType.ContentCategory.Empty;
 

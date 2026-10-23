@@ -263,22 +263,33 @@ public static class SplinePitMeshGenerator
         return sum > 0f;
     }
 
+    // Echantillonnage segment par segment (de noeud a noeud) : chaque noeud fait partie du contour,
+    // sinon un angle vif tombe entre deux points et se retrouve coupe en biseau.
+    // Les points sont repartis au prorata de la longueur de chaque segment (au moins 1 par segment).
     public static Vector3[] SampleSpline(SplineContainer splineContainer, int sampleCount)
     {
         Spline spline = splineContainer.Spline;
-        Vector3[] points = new Vector3[sampleCount];
+        int curveCount = spline.Closed ? spline.Count : spline.Count - 1;
+        float totalLength = spline.GetLength();
+        List<Vector3> points = new List<Vector3>(sampleCount + curveCount);
 
-        for (int i = 0; i < sampleCount; i++)
+        for (int c = 0; c < curveCount; c++)
         {
-            float t = (float)i / sampleCount;
-            float3 localPos = spline.EvaluatePosition(t);
-            Vector3 worldPos = splineContainer.transform.TransformPoint(
-                new Vector3(localPos.x, localPos.y, localPos.z));
-            worldPos.y = splineContainer.transform.position.y;
-            points[i] = worldPos;
+            BezierCurve curve = spline.GetCurve(c);
+            int n = totalLength > 0.0001f
+                ? Mathf.Max(1, Mathf.RoundToInt(sampleCount * spline.GetCurveLength(c) / totalLength))
+                : 1;
+            for (int j = 0; j < n; j++)
+            {
+                float3 localPos = CurveUtility.EvaluatePosition(curve, (float)j / n);
+                Vector3 worldPos = splineContainer.transform.TransformPoint(
+                    new Vector3(localPos.x, localPos.y, localPos.z));
+                worldPos.y = splineContainer.transform.position.y;
+                points.Add(worldPos);
+            }
         }
 
-        return points;
+        return points.ToArray();
     }
     public static Mesh GenerateFillMesh(Vector3[] contour, float depth, float fillLevel)
     {

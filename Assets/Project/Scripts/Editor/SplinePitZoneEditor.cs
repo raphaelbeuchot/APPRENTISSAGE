@@ -37,19 +37,10 @@ public class SplinePitZoneEditor : Editor
             }
         }
 
+        GUI.backgroundColor = Color.white;
         GUILayout.Space(5);
-        GUILayout.BeginVertical(EditorStyles.helpBox);
-        GUILayout.Label("A* Pathfinding", EditorStyles.boldLabel);
-        GUI.backgroundColor = Color.yellow;
-        if (GUILayout.Button("Apply A* Walkability", GUILayout.Height(30)))
-        {
-            zone.ApplyAStarWalkability();
-            EditorUtility.SetDirty(zone);
-        }
-        GUI.backgroundColor = Color.white;
-        GUILayout.EndVertical();
-
-        GUI.backgroundColor = Color.white;
+        // Pas de bouton : la grille est rescannee au lancement, la fosse se reapplique dans son Start()
+        GUILayout.Label("A* : la fosse rend la grille non marchable automatiquement au lancement.", EditorStyles.miniLabel);
         GUILayout.EndVertical();
 
         DrawRoundedRectSection(zone);
@@ -74,11 +65,7 @@ public class SplinePitZoneEditor : Editor
 
     // Forme rapide : reecrit la spline en rectangle aux coins arrondis (quarts de cercle).
     // La spline reste editable a la main ensuite ; on peut toujours dessiner d'autres formes.
-    static float rectWidth = 6f;   // axe X local de la spline
-    static float rectLength = 4f;  // axe Z local de la spline
-    static float cornerRadius = 1f;
-    static float bulgeX = 0f;      // fleche au milieu des cotes paralleles a X (gonflent vers -Z / +Z)
-    static float bulgeZ = 0f;      // fleche au milieu des cotes paralleles a Z (gonflent vers -X / +X)
+    // Les reglages sont memorises sur la fosse (champs quickRect* de SplinePitZone).
     const int pointsPerCorner = 8; // points d'echantillonnage vises par quart de tour
     const float maxTotalTilt = 89f; // inclinaison max cumulee des cotes : au-dela, un coin tournerait a l'envers
 
@@ -88,16 +75,27 @@ public class SplinePitZoneEditor : Editor
         GUILayout.BeginVertical(EditorStyles.helpBox);
         GUILayout.Label("Forme rapide : rectangle arrondi", EditorStyles.boldLabel);
 
-        rectWidth = Mathf.Max(0.1f, EditorGUILayout.FloatField("Largeur (X)", rectWidth));
-        rectLength = Mathf.Max(0.1f, EditorGUILayout.FloatField("Longueur (Z)", rectLength));
+        EditorGUI.BeginChangeCheck();
+        float rectWidth = Mathf.Max(0.1f, EditorGUILayout.FloatField("Largeur (X)", zone.quickRectWidth));
+        float rectLength = Mathf.Max(0.1f, EditorGUILayout.FloatField("Longueur (Z)", zone.quickRectLength));
         float maxRadius = Mathf.Min(rectWidth, rectLength) * 0.49f;
-        cornerRadius = EditorGUILayout.Slider("Rayon des coins", cornerRadius, 0f, maxRadius);
+        float cornerRadius = EditorGUILayout.Slider("Rayon des coins", zone.quickRectRadius, 0f, maxRadius);
 
         float chordX = rectWidth - 2f * cornerRadius;
         float chordZ = rectLength - 2f * cornerRadius;
         // Nommes selon la direction du gonflement : "Bombe X" pousse les cotes gauche/droite vers -X / +X
-        bulgeZ = EditorGUILayout.Slider(new GUIContent("Bombe X", "Gonflement vers -X / +X : milieu des cotes gauche et droite (m)"), bulgeZ, 0f, chordZ * 0.5f);
-        bulgeX = EditorGUILayout.Slider(new GUIContent("Bombe Z", "Gonflement vers -Z / +Z : milieu des cotes bas et haut (m)"), bulgeX, 0f, chordX * 0.5f);
+        float bulgeZ = EditorGUILayout.Slider(new GUIContent("Bombe X", "Gonflement vers -X / +X : milieu des cotes gauche et droite (m)"), zone.quickRectBulgeZ, 0f, chordZ * 0.5f);
+        float bulgeX = EditorGUILayout.Slider(new GUIContent("Bombe Z", "Gonflement vers -Z / +Z : milieu des cotes bas et haut (m)"), zone.quickRectBulgeX, 0f, chordX * 0.5f);
+        if (EditorGUI.EndChangeCheck())
+        {
+            Undo.RecordObject(zone, "Forme rapide");
+            zone.quickRectWidth = rectWidth;
+            zone.quickRectLength = rectLength;
+            zone.quickRectRadius = cornerRadius;
+            zone.quickRectBulgeX = bulgeX;
+            zone.quickRectBulgeZ = bulgeZ;
+            EditorUtility.SetDirty(zone);
+        }
 
         float tiltX = SideTilt(bulgeX, chordX);
         float tiltZ = SideTilt(bulgeZ, chordZ);
