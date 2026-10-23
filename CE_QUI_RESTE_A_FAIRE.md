@@ -87,5 +87,5 @@
 
 - [ ] 🟡 **Multijoueur local** — décisions actées, voir `MULTIJOUEUR_LOCAL.md` (mode séparé du solo, coop + versus, split-screen vertical, 2 manettes, IA à adapter)
 - [ ] 🟡 **Ennemi qui se balade dans les fosses d'eau** (idée ancienne, notée le 2026-10-15) — façon *Les Dents de la mer* : un ennemi qui patrouille dans les pits remplis d'eau (aileron visible ?). Les fosses d'eau et la nage existent déjà (`PitContentType` catégorie Water, `swimSpeedMultiplier`). Biome possible : la plage (voir `STRUCTURE_CAMPAGNE.md`).
-- [ ] ⚪ **Générateur de meshes** (idée du 2026-10-17, « on en reparle plus tard ») — outil éditeur inspiré du générateur de fosses (`SplinePitZoneEditor` : rectangle arrondi, bombé X / Z…) ou de formes façon sprites, pour fabriquer des formes de décor / LD sans passer par un logiciel 3D. Rien de défini.
+- [ ] 🟡 **Outils de formes** (idée du 2026-10-17, en cours) — composants éditeur de formes de décor / LD sans logiciel 3D. Faits : `RoundedBlock` (pavé arrondi, trou, évasement / galbe / ventre) et `CurvedWall` (mur courbe, arêtes des bouts). En réflexion : raccorder deux murs (« Mur suivant »), puis outil Tour à profil dessiné, balayage sur spline. Tout est dans `OUTILS_FORMES.md`.
 - [ ] ...

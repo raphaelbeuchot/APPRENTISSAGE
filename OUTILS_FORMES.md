@@ -1,0 +1,49 @@
+# Outils de formes (blocking / level art)
+
+Composants éditeur qui génèrent des formes de décor paramétriques sans passer par un logiciel 3D. Scripts dans `Assets/Project/Scripts/Scripts_LevelDesign/`.
+
+Principes communs :
+- se posent sur un Cube (ou tout GameObject avec MeshFilter) ; le BoxCollider est remplacé par un MeshCollider qui épouse la forme ;
+- mise à jour en direct ; le mesh n'est **pas sauvegardé**, il est reconstruit au chargement → marche tel quel dans un prefab ;
+- **UV0 en mètres** (densité constante quelle que soit la taille, le Tiling du matériau règle la répétition), **UV2 (TEXCOORD2) en 0-1** par face pour les shaders maison (dégradés, liserés) ;
+- option **Matériaux séparés** (faces / tranches), usage phare : shader guirlande lumineuse sur les tranches ;
+- limite acceptée : un Scale de Transform ≠ 1 étire texture et arrondis (régler la taille dans le composant, pas avec le Scale).
+
+---
+
+## RoundedBlock — pavé aux coins arrondis
+
+`RoundedBlock.cs`. Un rectangle aux coins arrondis (profil) extrudé. Point fort vs Blender : on redimensionne sans déformer les rayons.
+
+- **Profil** : face qui porte les coins (Dessus / Avant / Côté), rayons liés ou par coin (A-D affichés dans la scène).
+- **Arrondi du pourtour** : quart de rond sur tout le bord haut et/ou bas.
+- **Évasement** (2026-10-22) : *Échelle du haut* (1 = droit, < 1 se resserre, > 1 s'évase ; tout le profil suit, trou compris). En Dessus réduction autour du centre, en Avant/Côté autour du milieu de la base (le bloc reste au sol).
+  - *Galbe* (-1 creusé : volcan, trompette / +1 bombé : dôme, tulipe), *Ventre* (+ vase / − diabolo) et sa position, *Segments en hauteur*.
+  - Une AnimationCurve a été essayée puis abandonnée : « une courbe qui n'a rien à voir avec la forme ».
+  - Usage vu : cratères de Lava Train (évasement + trou + matériau lave sur la tranche du trou).
+- **Trou** : perce de part en part, marges liées ou G/D/B/H, coins déduits ou libres.
+
+## CurvedWall — mur courbe
+
+`CurvedWall.cs` (2026-10-22). Une section (épaisseur × hauteur) tournée autour de l'axe Y. Composant séparé de RoundedBlock : plier un RoundedBlock aurait demandé de remailler ses faces.
+
+- **Pivot = centre du cercle, au sol.** L'arc part de +X et tourne vers +Z. Deux murs de même rayon au même pivot se raccordent exactement en donnant au second une rotation Y = angle du premier.
+- **Arc** : angle (boutons 90 / 180 / 270 / 360 ; 360 = anneau fermé), rayon intérieur (l'épaisseur s'ajoute vers l'extérieur), facettes par quart de tour.
+- **Section** : coins arrondis liés ou par coin — A bas intérieur, B bas extérieur, C haut extérieur, D haut intérieur (lettres sur le bout de départ).
+- **Arêtes des bouts** : DC (haut du bout) et AB (bas du bout), en biseau ou arrondi, sur les deux bouts / départ / arrivée. Taille mesurée au milieu de l'épaisseur, bornée automatiquement.
+- **Matériaux séparés** : 0 = faces intérieure et extérieure, 1 = dessus, dessous, arrondis et bouts.
+- Limite connue : texture en miroir horizontal sur la face intérieure (invisible en aplats).
+
+---
+
+## En réflexion (pause du 2026-10-22)
+
+**Raccorder deux murs proprement** — l'équivalent du snap V (sommets), mais pour des faces. Aujourd'hui : par le pivot (cf. ci-dessus), ou V sur un coin si les deux bouts sont déjà orientés pareil. Piste proposée, **non tranchée** : boutons « Mur suivant » dans l'inspecteur de CurvedWall (même sens / sens inverse = virage en S), qui dupliquent et placent le mur à la suite. Question ouverte : couper automatiquement les arêtes de bout au raccord, ou laisser la main. Plus tard éventuellement : raccord RoundedBlock droit ↔ mur courbe.
+
+## Autres idées d'outils (non tranchées)
+
+- **Tour** : profil révolu autour d'un axe (colonnes, balustres, vases), angle partiel. L'utilisateur voudrait **dessiner le profil** (silhouette éditable dans la scène) plutôt que régler une courbe ; ce profil dessiné pourrait aussi servir à RoundedBlock.
+- **Balayage le long d'une spline** : murs sinueux, bordures de piste ; avec une section ronde, des tubes (néons, rampes, câbles). Pièges : virages plus serrés que la demi-épaisseur, torsion.
+- **Façades à trous** : en attendant, RoundedBlock troué case par case (fastidieux mais ça marche) ; piste d'une option « répéter N × M ».
+- **Gradins / podiums empilés**, **arches**, **plateformes bombées**.
+- À éviter : un outil booléen général (gouffre, et on perdrait le redimensionnement sans déformation).
