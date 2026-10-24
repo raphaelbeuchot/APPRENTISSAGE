@@ -33,11 +33,20 @@ public class MultiStartUI : MonoBehaviour
     [SerializeField] private int maxCustom = 20;
     [SerializeField] private int defaultCustom = 10;
 
+    // Scene par reference, comme le LevelCatalog : SceneAsset n'existe que dans l'editeur, le jeu
+    // lit scenePath (rempli par OnValidate). sceneName : ancien champ texte, garde pour reprendre
+    // les lignes existantes, puis tenu a jour depuis la reference.
     [System.Serializable]
     private class LevelEntry
     {
         public TextMeshProUGUI label;
-        public string sceneName;
+#if UNITY_EDITOR
+        [Tooltip("Glisser la scene depuis le Project")]
+        public UnityEditor.SceneAsset scene;
+#endif
+        [Tooltip("Rempli automatiquement depuis la scene (utilise en jeu)")]
+        public string scenePath;
+        [HideInInspector] public string sceneName;
     }
 
     [Header("Etape 2 (Race) : niveau (navigation verticale)")]
@@ -246,7 +255,7 @@ public class MultiStartUI : MonoBehaviour
         if (AnyFaceButtonPressed())
         {
             if (uiAudio != null) uiAudio.PlayLevelSelectedAndSurvive();
-            LaunchLevel(levelEntries[levelSelection].sceneName);
+            LaunchLevel(levelEntries[levelSelection]);
         }
 
         if (Input.GetButtonDown("Cancel"))
@@ -348,7 +357,7 @@ public class MultiStartUI : MonoBehaviour
         if (AnyFaceButtonPressed())
         {
             if (uiAudio != null) uiAudio.PlayLevelSelectedAndSurvive();
-            LaunchCoinLevel(coinLevelEntries[coinLevelSelection].sceneName);
+            LaunchCoinLevel(coinLevelEntries[coinLevelSelection]);
         }
 
         if (Input.GetButtonDown("Cancel"))
@@ -363,25 +372,31 @@ public class MultiStartUI : MonoBehaviour
     // connait qu'un index de build, pas un nom de scene, donc on resout l'index a la volee
     // plutot que de toucher a ce fichier partage. Si la scene n'est pas dans les Build Settings
     // (oubli), repli sur un chargement direct sans ecran de chargement plutot qu'un crash.
-    private void LaunchLevel(string sceneName)
+    private void LaunchLevel(LevelEntry entry)
     {
         MultiMatchScore.ResetMatch();
         MultiMatchScore.TargetScoreOverride = chosenTarget;
-        LoadLevelScene(sceneName);
+        LoadLevelScene(entry);
     }
 
-    private void LaunchCoinLevel(string sceneName)
+    private void LaunchCoinLevel(LevelEntry entry)
     {
         MultiCoinRaceManager.RoundDurationOverride = chosenDurationSeconds;
-        LoadLevelScene(sceneName);
+        LoadLevelScene(entry);
     }
 
-    private void LoadLevelScene(string sceneName)
+    private void LoadLevelScene(LevelEntry entry)
     {
         // Appele la frame de la validation : on sait encore quel appareil a appuye.
         MultiDeviceAssignment.AssignFromConfirm(MultiDeviceAssignment.DetectConfirmDevice());
 
-        int buildIndex = SceneUtility.GetBuildIndexByScenePath($"Assets/Project/Scenes/{sceneName}.unity");
+        if (string.IsNullOrEmpty(entry.scenePath))
+        {
+            Debug.LogError("[MultiStartUI] Ligne de niveau sans scene assignee.");
+            return;
+        }
+
+        int buildIndex = SceneUtility.GetBuildIndexByScenePath(entry.scenePath);
         if (buildIndex >= 0)
         {
             LoadingScreenManager.TargetSceneIndex = buildIndex;
@@ -389,10 +404,44 @@ public class MultiStartUI : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[MultiStartUI] '{sceneName}' absente des Build Settings, chargement direct sans loading screen.");
-            SceneManager.LoadScene(sceneName);
+            Debug.LogWarning($"[MultiStartUI] '{entry.scenePath}' absente des Build Settings, chargement direct sans loading screen.");
+            SceneManager.LoadScene(entry.scenePath);
         }
     }
+
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        SyncScenes(levelEntries);
+        SyncScenes(coinLevelEntries);
+    }
+
+    // Reprise des anciennes lignes (nom tape a la main -> reference), puis chemin et nom depuis la reference
+    private static void SyncScenes(List<LevelEntry> entries)
+    {
+        if (entries == null) return;
+        foreach (LevelEntry entry in entries)
+        {
+            if (entry == null) continue;
+            if (entry.scene == null && !string.IsNullOrEmpty(entry.sceneName))
+                entry.scene = FindSceneByName(entry.sceneName);
+
+            entry.scenePath = entry.scene != null ? UnityEditor.AssetDatabase.GetAssetPath(entry.scene) : "";
+            if (entry.scene != null) entry.sceneName = entry.scene.name;
+        }
+    }
+
+    private static UnityEditor.SceneAsset FindSceneByName(string sceneName)
+    {
+        foreach (string guid in UnityEditor.AssetDatabase.FindAssets("t:Scene " + sceneName))
+        {
+            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+            if (System.IO.Path.GetFileNameWithoutExtension(path) == sceneName)
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(path);
+        }
+        return null;
+    }
+#endif
 
     void UpdateVisuals()
     {

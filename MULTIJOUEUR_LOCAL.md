@@ -39,6 +39,37 @@
 
 ---
 
+## 📋 Ajouter un niveau multi (mémo, 2026-10-24)
+
+*Le multi est câblé à la main scène par scène (pas encore de prefab « rig multi »). Le plus simple : partir d'une scène multi qui marche et y amener le décor, plutôt que de convertir une scène solo.*
+
+### 1. Créer la scène
+- **Méthode conseillée** : dupliquer une scène multi existante du bon mode (`Level_Race_Lava` / `Level_Race_Slippery` pour une course, `Level_CoinRace_Lava` pour une Coin Race), supprimer son décor, puis amener celui du niveau solo.
+- **Amener le décor** : ouvrir les deux scènes ensemble (glisser la scène solo dans la Hiérarchie), copier-coller le décor → copie indépendante. Un prefab de décor partagerait le level art entre la version solo et la version multi (une retouche se propage) : à choisir en connaissance de cause, les deux versions ont tendance à diverger (même raison que `UI` / `UI_Multi`).
+- **Les liens vers des objets restés dans l'autre scène sont perdus.** À refaire dans la scène multi :
+  - porte `GoalDoorNew` (garder celle de la scène multi, déjà réglée : `Is Active`) placée à l'arrivée ;
+  - `respawnPoint` de `MultiRespawn` pour J1 / J2, position de départ des deux joueurs ;
+  - un seul rideau de départ, relié à `MultiLevelStart` ;
+  - sentinelle : position + cible de distance du `SentinelCycleManager` (pression) ;
+  - limites caméra (`CameraConfiner`), grille A\* si des ennemis s'en servent ;
+  - éclairage (skybox, ambiance, Global Volume) : réglages de scène, non copiés avec les objets ;
+  - supprimer pupitre et clé venus du solo.
+- **Ennemis** : seuls Hitter et Grabber gèrent deux joueurs ; Swarm, PitMode, BrightEyes, BombProjectile ne ciblent que J1.
+
+*Partir d'une scène solo est possible mais long : J2 (`PlayerLocalInput`, `PlayerScreenSide`, `MultiRespawn`, `DeathSequence.onlyOwnTargetGroups`), split-screen (`Cam_Player2`, `CM_Player2`, canaux Cinemachine, `CameraPanningExtension` ×2), `MultiLevelStart` à la place du pupitre, `multiRaceMode` + `MultiRaceManager`, `SentinelCycleManager.playerTransform2`, `UI_Multi` + ses références (voir « Prefab `UI_Multi` »). Détails dans les sections correspondantes plus bas.*
+
+### 2. L'ajouter au menu multi
+- **Build Settings** : ajouter la scène.
+- **Scène `MultiStart`**, composant `MultiStartUI` : dupliquer une ligne de texte sous `levelRoot` (Race) ou `coinLevelRoot` (Coin Race), puis ajouter un élément à `Level Entries` / `Coin Level Entries` : `Label` = ce texte, **`Scene` = glisser la scène depuis le Project** (`Scene Path` se remplit tout seul, c'est lui que le jeu lit). Sauvegarder `MultiStart`.
+- **Ne pas** l'ajouter au `LevelCatalog` : le catalogue, c'est la campagne solo uniquement.
+
+### 3. Menu « Scene » de l'éditeur
+`SceneMenuGenerator` range les scènes d'après des listes, pas d'après les Build Settings : **Solo** = `LevelCatalog`, **Multi/Race** = `levelEntries` de `MultiStartUI`, **Multi/Coin Race** = `coinLevelEntries`, **Out of Campaign** = scènes du build hors listes. Régénéré à la sauvegarde de la scène ou du catalogue, sinon `Scene > Refresh Scene List`.
+
+*Scène par référence depuis le 2026-10-24 (avant : nom tapé à la main dans `sceneName`, cassé par un renommage, cf. incident du 2026-10-04). Les anciennes lignes ont retrouvé leur référence automatiquement à partir de leur nom. Limite : après un renommage de scène, la référence reste bonne mais `Scene Path` n'est remis à jour qu'à la prochaine ouverture de `MultiStart` dans l'éditeur (à sauvegarder). Le menu Scene lit encore `sceneName`, tenu à jour depuis la référence ; étape 2 prévue : qu'il lise le chemin.*
+
+---
+
 ## Pourquoi split-screen plutôt que caméra partagée
 
 - Le script caméra existant (`CameraFollow.cs`) suit déjà une cible unique — en split-screen, il suffit de dupliquer ce script tel quel (2 instances, chacune avec son `target` et son `Rect` de viewport), sans logique nouvelle.
@@ -299,7 +330,7 @@ La liste ci-dessous (état au 2026-09-20) sert toujours à décider sur quoi tra
   - **Nouvelle scène `MultiStart.unity`** (dupliquée depuis `LevelSelect.unity` pour récupérer `PlayerInputManager`/`EventSystem`/`UIAudioPlayer` déjà configurés, script remplacé) + **`MultiStartUI.cs`** (`Scripts/Multi/`) : une seule scène, 3 étapes internes (pas de rechargement entre elles) :
     1. **Choix du nombre de manches** *(remplacé le 2026-10-05 par une liste verticale, voir « Mode Coin Race » → « Menus en listes verticales »)* : une seule ligne de texte (`countDisplayText`) dont le **contenu** change en se déplaçant horizontalement — cycle "First to 5" → "First to 10" → "Custom" → ... (pas trois textes séparés avec surlignage, juste un texte qui change). Navigation horizontale (`PlayerInputManager.Instance.MoveInput.x`), confirm = `Input.GetButtonDown("Submit")`, même pattern que `MainMenuUI`/`LevelSelectUI`.
     2. **Si "Custom" validé** : le même texte devient directement éditable, un nombre (1 à 20, `minCustom`/`maxCustom`) qu'on fait varier avec le stick gauche/droite. **Cancel ("B")** depuis ce mode revient à l'étape 1 directement sur la position "Custom" du cycle (pas de valeur mémorisée à part le cycle lui-même), d'où on peut redéfiler vers 5/10.
-    3. **Sélection du niveau** : liste simple, un texte TMP par niveau multi (`levelEntries`, `label` + `sceneName` en string), pas de système dynamique/pool pour l'instant — juste `Level_TestCameraMulti` et `Level_TestCameraMulti 2`. Navigation verticale, même pattern que `LevelSelectUI`. Cancel revient à l'étape 1.
+    3. **Sélection du niveau** : liste simple, un texte TMP par niveau multi (`levelEntries`, `label` + `sceneName` en string — remplacé le 2026-10-24 par une référence de scène, voir « Ajouter un niveau multi »), pas de système dynamique/pool pour l'instant — juste `Level_TestCameraMulti` et `Level_TestCameraMulti 2`. Navigation verticale, même pattern que `LevelSelectUI`. Cancel revient à l'étape 1.
   - **Porter le choix du nombre de manches jusqu'au niveau** : nouveau `MultiMatchScore.TargetScoreOverride` (`int?`, nullable), posé par `MultiStartUI` avant le chargement (avec `ResetMatch()`), lu par `MultiRaceManager.Start()` s'il est présent — sinon garde la valeur d'Inspector (`targetScore`) inchangée, donc le test direct d'une scène multi en éditeur (sans passer par le menu) continue de marcher comme avant.
   - **Chargement avec écran de chargement** : `LoadingScreenManager` (partagé avec le solo) ne connaît qu'un **index de build**, pas un nom de scène — `MultiStartUI.LaunchLevel()` résout l'index via `SceneUtility.GetBuildIndexByScenePath()` à la volée plutôt que de modifier ce fichier partagé, avec repli sur un chargement direct (sans écran de chargement) si la scène n'est pas dans les Build Settings.
   - **🐛 Piège rencontré et corrigé** : `SceneManager.LoadScene(string)` exige que la scène soit enregistrée dans les **Build Settings**, même en Play mode dans l'éditeur (pas seulement pour un vrai build) — contrairement à ce qu'on pensait au départ. Aucune des scènes (`MultiStart`, les 2 niveaux multi) n'y était enregistrée, donc le chargement échouait silencieusement. **Ajoutées à `ProjectSettings/EditorBuildSettings.asset`** (`Level_Multi_Test`, l'ancien niveau de test, volontairement laissé hors Build Settings).
