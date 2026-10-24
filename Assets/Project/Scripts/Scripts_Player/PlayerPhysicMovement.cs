@@ -1261,12 +1261,53 @@ public class PlayerPhysicsMovement : MonoBehaviour
         }
     }
 
+    // Remise a zero directe (MultiRespawn apres une mort : pas d'OnCollisionExit quand le collider est coupe).
+    // Oublie aussi les zones glissantes en cours.
     public void SetSlippery(bool state, float accel, float brake, float rotation)
     {
+        if (!state) slipperyContacts.Clear();
         isSlippery = state;
         slipperyAccel = accel;
         slipperyBrake = brake;
         slipperyRotation = rotation;
+    }
+
+    // Zones glissantes touchees (nombre de contacts par zone) : deux surfaces collees ne se marchent plus
+    // dessus, quel que soit l'ordre entree/sortie au passage de l'une a l'autre.
+    private readonly Dictionary<SlipperyZone, int> slipperyContacts = new Dictionary<SlipperyZone, int>();
+
+    public void EnterSlipperyZone(SlipperyZone zone)
+    {
+        slipperyContacts.TryGetValue(zone, out int count);
+        slipperyContacts[zone] = count + 1;
+        // Reglages de la derniere zone touchee
+        SetSlippery(true, zone.Accel, zone.Brake, zone.Rotation);
+    }
+
+    public void ExitSlipperyZone(SlipperyZone zone)
+    {
+        if (slipperyContacts.TryGetValue(zone, out int count))
+        {
+            if (count <= 1) slipperyContacts.Remove(zone);
+            else slipperyContacts[zone] = count - 1;
+        }
+
+        // Zone detruite ou desactivee entre-temps : on l'oublie
+        foreach (SlipperyZone z in new List<SlipperyZone>(slipperyContacts.Keys))
+            if (z == null || !z.isActiveAndEnabled) slipperyContacts.Remove(z);
+
+        if (slipperyContacts.Count == 0)
+        {
+            isSlippery = false;
+            return;
+        }
+
+        // Encore sur une autre zone : on garde ses reglages
+        foreach (SlipperyZone remaining in slipperyContacts.Keys)
+        {
+            SetSlippery(true, remaining.Accel, remaining.Brake, remaining.Rotation);
+            break;
+        }
     }
 
 }

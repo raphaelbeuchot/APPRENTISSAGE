@@ -9,6 +9,10 @@ public class SlipperyZone : MonoBehaviour
     [SerializeField] private float slipperyBrake = 1.5f;
     [SerializeField] private float slipperyRotation = 10f;
 
+    public float Accel => slipperyAccel;
+    public float Brake => slipperyBrake;
+    public float Rotation => slipperyRotation;
+
     [Header("Enemies")]
     [Range(0f, 1f)]
     [SerializeField] private float enemyDragMultiplier = 0.5f;
@@ -27,7 +31,7 @@ public class SlipperyZone : MonoBehaviour
         PlayerPhysicsMovement player = collision.gameObject.GetComponent<PlayerPhysicsMovement>();
         if (player != null)
         {
-            player.SetSlippery(true, slipperyAccel, slipperyBrake, slipperyRotation);
+            player.EnterSlipperyZone(this);
             return;
         }
 
@@ -62,7 +66,7 @@ public class SlipperyZone : MonoBehaviour
         PlayerPhysicsMovement player = collision.gameObject.GetComponent<PlayerPhysicsMovement>();
         if (player != null)
         {
-            player.SetSlippery(false, 0f, 0f, 0f);
+            player.ExitSlipperyZone(this);
             return;
         }
 
