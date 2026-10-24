@@ -70,62 +70,6 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_It's Show Time.unity
     collectibleIDs: []
-  - scene: {fileID: 102900000, guid: 0ca2f5020764ea445be9af52abfc3c7f, type: 3}
-    levelName: Go for a Spin !
-    launchText: Go for a Spin !
-    hasBroom: 0
-    hasSpray: 0
-    observed:
-    - id: tomatoCrate
-      status: 0
-      detail: 
-    - id: enemies
-      status: 0
-      detail: 
-    - id: brightEyes
-      status: 0
-      detail: 
-    - id: bombs
-      status: 0
-      detail: 
-    - id: broomPedestal
-      status: 0
-      detail: 
-    - id: levelEssentiels
-      status: 2
-      detail: LevelEssentiels (tague Sentinel)
-    - id: startDoor
-      status: 2
-      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
-    - id: pupitre
-      status: 2
-      detail: Pupitre
-    - id: goalDoor
-      status: 2
-      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
-    - id: key
-      status: 2
-      detail: KeyCollectible/Collectible (KeyCollectible)
-    - id: victory
-      status: 2
-      detail: VICTORY/VictoryManager (configuration complete)
-    - id: curtain
-      status: 2
-      detail: EndCurtain (EndCurtainRise)
-    - id: circles
-      status: 2
-      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
-    - id: transitionRoom
-      status: 2
-      detail: VICTORY/TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
-    - id: victoryBounds
-      status: 2
-      detail: PostVictoryBounds (contient GoalDoor et salle de transition)
-    - id: broomPickup
-      status: 0
-      detail: 
-    scenePath: Assets/Project/Scenes/Level_Go For a Spin.unity
-    collectibleIDs: []
   - scene: {fileID: 102900000, guid: 2a8700de5ad36204ab5bc71c7310805a, type: 3}
     levelName: Caution floor slippery
     launchText: Caution Wet Floor
@@ -182,6 +126,62 @@ MonoBehaviour:
       status: 0
       detail: 
     scenePath: Assets/Project/Scenes/Level_Ice.unity
+    collectibleIDs: []
+  - scene: {fileID: 102900000, guid: 0ca2f5020764ea445be9af52abfc3c7f, type: 3}
+    levelName: Go for a Spin !
+    launchText: Go for a Spin !
+    hasBroom: 0
+    hasSpray: 0
+    observed:
+    - id: tomatoCrate
+      status: 0
+      detail: 
+    - id: enemies
+      status: 0
+      detail: 
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: broomPedestal
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 2
+      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
+    - id: pupitre
+      status: 2
+      detail: Pupitre
+    - id: goalDoor
+      status: 2
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
+    - id: key
+      status: 2
+      detail: KeyCollectible/Collectible (KeyCollectible)
+    - id: victory
+      status: 2
+      detail: VICTORY/VictoryManager (configuration complete)
+    - id: curtain
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
+    - id: transitionRoom
+      status: 2
+      detail: VICTORY/TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
+    - id: victoryBounds
+      status: 2
+      detail: PostVictoryBounds (contient GoalDoor et salle de transition)
+    - id: broomPickup
+      status: 0
+      detail: 
+    scenePath: Assets/Project/Scenes/Level_Go For a Spin.unity
     collectibleIDs: []
   - scene: {fileID: 102900000, guid: 2c286deb4e1ba5e44888f88f4ba8b1fb, type: 3}
     levelName: Handle Hurdles
@@ -411,9 +411,9 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_TrafficJam_01.unity
     collectibleIDs: []
-  - scene: {fileID: 102900000, guid: 57a7c3a9739bced4b906364ca88b38b6, type: 3}
-    levelName: Bowling I
-    launchText: Right up your alley !
+  - scene: {fileID: 102900000, guid: 6de53fa4e01eec042ac844de228b3b40, type: 3}
+    levelName: Death Row I
+    launchText: Row Deal
     hasBroom: 0
     hasSpray: 0
     observed:
@@ -436,11 +436,11 @@ MonoBehaviour:
       status: 2
       detail: LevelEssentiels (tague Sentinel)
     - id: startDoor
-      status: 1
-      detail: 'Ancienne start zone, sans porte d''entree : LevelEssentiels/StartZone_12m'
+      status: 2
+      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
     - id: pupitre
       status: 2
-      detail: Pupitre
+      detail: ESTRADE PUPITRE/Pupitre
     - id: goalDoor
       status: 2
       detail: LevelEssentiels/GoalDoor (GoalDoorNew)
@@ -461,13 +461,69 @@ MonoBehaviour:
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     - id: victoryBounds
+      status: 2
+      detail: PostVictoryBounds (contient GoalDoor et salle de transition)
+    - id: broomPickup
+      status: 0
+      detail: 
+    scenePath: Assets/Project/Scenes/Level_WesternFlow.unity
+    collectibleIDs: []
+  - scene: {fileID: 102900000, guid: ecce9115cc2a1ac4ca1036e9dfe0d836, type: 3}
+    levelName: TomaThrow
+    launchText: TomaThrow
+    hasBroom: 0
+    hasSpray: 0
+    observed:
+    - id: tomatoCrate
+      status: 2
+      detail: TomatoCrate (TomatoCrate)
+    - id: enemies
+      status: 0
+      detail: 
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: broomPedestal
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 0
+      detail: 
+    - id: pupitre
+      status: 2
+      detail: Pupitre
+    - id: goalDoor
+      status: 2
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
+    - id: key
+      status: 2
+      detail: KeyCollectible (1)/Collectible (KeyCollectible)
+    - id: victory
+      status: 0
+      detail: 
+    - id: curtain
+      status: 0
+      detail: 
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
+    - id: transitionRoom
+      status: 0
+      detail: 
+    - id: victoryBounds
       status: 1
       detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
         apres la victoire'
     - id: broomPickup
       status: 0
       detail: 
-    scenePath: Assets/Project/Scenes/Level_Bowling_001.unity
+    scenePath: Assets/Project/Scenes/Level_TomatoFest_01.unity
     collectibleIDs: []
   - scene: {fileID: 102900000, guid: e5fcee82ce813134095961df2e699a19, type: 3}
     levelName: Lava Train I
@@ -526,6 +582,123 @@ MonoBehaviour:
       status: 0
       detail: 
     scenePath: Assets/Project/Scenes/Level_LavaTrain01.unity
+    collectibleIDs: []
+  - scene: {fileID: 102900000, guid: 1dd0dae0b79ede0418b1728fc71cfde2, type: 3}
+    levelName: Rush Hour III
+    launchText: Rush Hour !
+    hasBroom: 0
+    hasSpray: 0
+    observed:
+    - id: tomatoCrate
+      status: 0
+      detail: 
+    - id: enemies
+      status: 0
+      detail: 
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: broomPedestal
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 1
+      detail: 'Ancienne start zone, sans porte d''entree : StartZone_12m'
+    - id: pupitre
+      status: 2
+      detail: Pupitre
+    - id: goalDoor
+      status: 2
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
+    - id: key
+      status: 2
+      detail: KeyCollectible/Collectible (KeyCollectible)
+    - id: victory
+      status: 0
+      detail: 
+    - id: curtain
+      status: 0
+      detail: 
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
+    - id: transitionRoom
+      status: 0
+      detail: 
+    - id: victoryBounds
+      status: 1
+      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
+        apres la victoire'
+    - id: broomPickup
+      status: 0
+      detail: 
+    scenePath: Assets/Project/Scenes/Level_TrafficJam_03.unity
+    collectibleIDs:
+    - RushHour03
+  - scene: {fileID: 102900000, guid: 57a7c3a9739bced4b906364ca88b38b6, type: 3}
+    levelName: Bowling I
+    launchText: Right up your alley !
+    hasBroom: 0
+    hasSpray: 0
+    observed:
+    - id: tomatoCrate
+      status: 0
+      detail: 
+    - id: enemies
+      status: 0
+      detail: 
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: broomPedestal
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 1
+      detail: 'Ancienne start zone, sans porte d''entree : LevelEssentiels/StartZone_12m'
+    - id: pupitre
+      status: 2
+      detail: Pupitre
+    - id: goalDoor
+      status: 2
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
+    - id: key
+      status: 2
+      detail: KeyCollectible/Collectible (KeyCollectible)
+    - id: victory
+      status: 2
+      detail: VictoryManager (configuration complete)
+    - id: curtain
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
+    - id: transitionRoom
+      status: 2
+      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
+    - id: victoryBounds
+      status: 1
+      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
+        apres la victoire'
+    - id: broomPickup
+      status: 0
+      detail: 
+    scenePath: Assets/Project/Scenes/Level_Bowling_001.unity
     collectibleIDs: []
   - scene: {fileID: 102900000, guid: 1aa6150c19c146a42ad57a64a0db7a38, type: 3}
     levelName: Go with the Flow II
@@ -642,122 +815,6 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_TrafficJam_02.unity
     collectibleIDs: []
-  - scene: {fileID: 102900000, guid: 1dd0dae0b79ede0418b1728fc71cfde2, type: 3}
-    levelName: Rush Hour III
-    launchText: Rush Hour !
-    hasBroom: 0
-    hasSpray: 0
-    observed:
-    - id: tomatoCrate
-      status: 0
-      detail: 
-    - id: enemies
-      status: 0
-      detail: 
-    - id: brightEyes
-      status: 0
-      detail: 
-    - id: bombs
-      status: 0
-      detail: 
-    - id: broomPedestal
-      status: 0
-      detail: 
-    - id: levelEssentiels
-      status: 2
-      detail: LevelEssentiels (tague Sentinel)
-    - id: startDoor
-      status: 1
-      detail: 'Ancienne start zone, sans porte d''entree : StartZone_12m'
-    - id: pupitre
-      status: 2
-      detail: Pupitre
-    - id: goalDoor
-      status: 2
-      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
-    - id: key
-      status: 2
-      detail: KeyCollectible/Collectible (KeyCollectible)
-    - id: victory
-      status: 0
-      detail: 
-    - id: curtain
-      status: 0
-      detail: 
-    - id: circles
-      status: 2
-      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
-        tague Sentinel)
-    - id: transitionRoom
-      status: 0
-      detail: 
-    - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
-    - id: broomPickup
-      status: 0
-      detail: 
-    scenePath: Assets/Project/Scenes/Level_TrafficJam_03.unity
-    collectibleIDs:
-    - RushHour03
-  - scene: {fileID: 102900000, guid: ecce9115cc2a1ac4ca1036e9dfe0d836, type: 3}
-    levelName: TomaThrow
-    launchText: TomaThrow
-    hasBroom: 0
-    hasSpray: 0
-    observed:
-    - id: tomatoCrate
-      status: 2
-      detail: TomatoCrate (TomatoCrate)
-    - id: enemies
-      status: 0
-      detail: 
-    - id: brightEyes
-      status: 0
-      detail: 
-    - id: bombs
-      status: 0
-      detail: 
-    - id: broomPedestal
-      status: 0
-      detail: 
-    - id: levelEssentiels
-      status: 2
-      detail: LevelEssentiels (tague Sentinel)
-    - id: startDoor
-      status: 0
-      detail: 
-    - id: pupitre
-      status: 2
-      detail: Pupitre
-    - id: goalDoor
-      status: 2
-      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
-    - id: key
-      status: 2
-      detail: KeyCollectible (1)/Collectible (KeyCollectible)
-    - id: victory
-      status: 0
-      detail: 
-    - id: curtain
-      status: 0
-      detail: 
-    - id: circles
-      status: 2
-      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
-    - id: transitionRoom
-      status: 0
-      detail: 
-    - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
-    - id: broomPickup
-      status: 0
-      detail: 
-    scenePath: Assets/Project/Scenes/Level_TomatoFest_01.unity
-    collectibleIDs: []
   - scene: {fileID: 102900000, guid: 51ba1b6d72c312d4cb275a459493f26e, type: 3}
     levelName: Lava Train II
     launchText: Magma Mia !
@@ -816,68 +873,10 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_LavaTrain02.unity
     collectibleIDs: []
-  - scene: {fileID: 102900000, guid: 1a8ec41aab7f8ba41b4dcd52f40ca3e4, type: 3}
-    levelName: Meet the Staff
-    launchText: Not alone anymore !
-    hasBroom: 0
-    hasSpray: 0
-    observed:
-    - id: tomatoCrate
-      status: 2
-      detail: TomatoCrate (TomatoCrate)
-    - id: enemies
-      status: 2
-      detail: ENEMIES/ZombiePrisoner_02 (EnemyAI_AStar) + 5 autre(s)
-    - id: brightEyes
-      status: 0
-      detail: 
-    - id: bombs
-      status: 0
-      detail: 
-    - id: broomPedestal
-      status: 0
-      detail: 
-    - id: levelEssentiels
-      status: 2
-      detail: LevelEssentiels (tague Sentinel)
-    - id: startDoor
-      status: 1
-      detail: 'Ancienne start zone, sans porte d''entree : LevelEssentiels/StartZone_10m'
-    - id: pupitre
-      status: 2
-      detail: Pupitre
-    - id: goalDoor
-      status: 2
-      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
-    - id: key
-      status: 2
-      detail: KeyCollectible/Collectible (KeyCollectible)
-    - id: victory
-      status: 0
-      detail: 
-    - id: curtain
-      status: 0
-      detail: 
-    - id: circles
-      status: 2
-      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
-        tague Sentinel)
-    - id: transitionRoom
-      status: 0
-      detail: 
-    - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
-    - id: broomPickup
-      status: 0
-      detail: 
-    scenePath: Assets/Project/Scenes/Level_MeetTheEnemies.unity
-    collectibleIDs: []
-  - scene: {fileID: 102900000, guid: 0f2a62f871648ab47a0f3438d2c07a1a, type: 3}
-    levelName: Riff Raff
-    launchText: Riff Raff
-    hasBroom: 0
+  - scene: {fileID: 102900000, guid: 4573f525910770a4583bc1b6be9af952, type: 3}
+    levelName: Flower Power I
+    launchText: Flower Power !
+    hasBroom: 1
     hasSpray: 0
     observed:
     - id: tomatoCrate
@@ -885,10 +884,10 @@ MonoBehaviour:
       detail: 
     - id: enemies
       status: 2
-      detail: ZombieChaser (EnemyAI_AStar) + 5 autre(s)
+      detail: ENEMIES/ZombieChaser (EnemyAI_AStar) + 11 autre(s)
     - id: brightEyes
-      status: 2
-      detail: RotPlat 01/BrightEyesProto/Brain (BrightEyesController)
+      status: 0
+      detail: 
     - id: bombs
       status: 0
       detail: 
@@ -903,7 +902,7 @@ MonoBehaviour:
       detail: 'Ancienne start zone, sans porte d''entree : StartZone_8m'
     - id: pupitre
       status: 2
-      detail: "Pupitre carr\xE9"
+      detail: Pupitre
     - id: goalDoor
       status: 2
       detail: LevelEssentiels/GoalDoor (GoalDoorNew)
@@ -911,17 +910,17 @@ MonoBehaviour:
       status: 2
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
-      status: 0
-      detail: 
+      status: 2
+      detail: VictoryManager (configuration complete)
     - id: curtain
-      status: 0
-      detail: 
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
     - id: circles
       status: 2
       detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
     - id: transitionRoom
-      status: 0
-      detail: 
+      status: 2
+      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     - id: victoryBounds
       status: 1
       detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
@@ -929,7 +928,65 @@ MonoBehaviour:
     - id: broomPickup
       status: 0
       detail: 
-    scenePath: Assets/Project/Scenes/Level_Manage the Staff.unity
+    scenePath: Assets/Project/Scenes/Level_Flower01.unity
+    collectibleIDs: []
+  - scene: {fileID: 102900000, guid: 370f3d5912712e846bf9d3792223973f, type: 3}
+    levelName: Western Canyon
+    launchText: Wild Wild West !
+    hasBroom: 1
+    hasSpray: 0
+    observed:
+    - id: tomatoCrate
+      status: 0
+      detail: 
+    - id: enemies
+      status: 2
+      detail: ENEMIES/ZombieChaser_Cactus (2) (EnemyAI_AStar) + 9 autre(s)
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: broomPedestal
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 0
+      detail: 
+    - id: pupitre
+      status: 2
+      detail: Pupitre
+    - id: goalDoor
+      status: 2
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
+    - id: key
+      status: 2
+      detail: KeyCollectible/Collectible (KeyCollectible)
+    - id: victory
+      status: 2
+      detail: VictoryManager (configuration complete)
+    - id: curtain
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
+    - id: transitionRoom
+      status: 2
+      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
+    - id: victoryBounds
+      status: 1
+      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
+        apres la victoire'
+    - id: broomPickup
+      status: 0
+      detail: 
+    scenePath: Assets/Project/Scenes/Level_WesternCanyon.unity
     collectibleIDs: []
   - scene: {fileID: 102900000, guid: 832e351d556fbf8459a7810e3b1ccf1a, type: 3}
     levelName: Pit'em All
@@ -987,121 +1044,6 @@ MonoBehaviour:
       status: 0
       detail: 
     scenePath: Assets/Project/Scenes/Level_Pit'em All.unity
-    collectibleIDs: []
-  - scene: {fileID: 102900000, guid: 9157c41ce2e6da14888fe8fd6f1dee8a, type: 3}
-    levelName: Bowling II
-    launchText: Right up your alley !
-    hasBroom: 0
-    hasSpray: 0
-    observed:
-    - id: tomatoCrate
-      status: 2
-      detail: TomatoCrate (TomatoCrate) + 1 autre(s)
-    - id: enemies
-      status: 2
-      detail: ENEMIES/ZombieChaser_Quille (2) (EnemyAI_AStar) + 15 autre(s)
-    - id: brightEyes
-      status: 0
-      detail: 
-    - id: bombs
-      status: 0
-      detail: 
-    - id: broomPedestal
-      status: 0
-      detail: 
-    - id: levelEssentiels
-      status: 2
-      detail: LevelEssentiels (tague Sentinel)
-    - id: startDoor
-      status: 1
-      detail: 'Ancienne start zone, sans porte d''entree : LevelEssentiels/StartZone_12m'
-    - id: pupitre
-      status: 2
-      detail: Pupitre
-    - id: goalDoor
-      status: 2
-      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
-    - id: key
-      status: 2
-      detail: KeyCollectible/Collectible (KeyCollectible)
-    - id: victory
-      status: 0
-      detail: 
-    - id: curtain
-      status: 0
-      detail: 
-    - id: circles
-      status: 2
-      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
-        tague Sentinel)
-    - id: transitionRoom
-      status: 0
-      detail: 
-    - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
-    - id: broomPickup
-      status: 0
-      detail: 
-    scenePath: Assets/Project/Scenes/Level_Epervier01.unity
-    collectibleIDs: []
-  - scene: {fileID: 102900000, guid: 4573f525910770a4583bc1b6be9af952, type: 3}
-    levelName: Flower Power I
-    launchText: Flower Power !
-    hasBroom: 1
-    hasSpray: 0
-    observed:
-    - id: tomatoCrate
-      status: 0
-      detail: 
-    - id: enemies
-      status: 2
-      detail: ENEMIES/ZombieChaser (EnemyAI_AStar) + 11 autre(s)
-    - id: brightEyes
-      status: 0
-      detail: 
-    - id: bombs
-      status: 0
-      detail: 
-    - id: broomPedestal
-      status: 0
-      detail: 
-    - id: levelEssentiels
-      status: 2
-      detail: LevelEssentiels (tague Sentinel)
-    - id: startDoor
-      status: 1
-      detail: 'Ancienne start zone, sans porte d''entree : StartZone_8m'
-    - id: pupitre
-      status: 2
-      detail: Pupitre
-    - id: goalDoor
-      status: 2
-      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
-    - id: key
-      status: 2
-      detail: KeyCollectible/Collectible (KeyCollectible)
-    - id: victory
-      status: 2
-      detail: VictoryManager (configuration complete)
-    - id: curtain
-      status: 2
-      detail: EndCurtain (EndCurtainRise)
-    - id: circles
-      status: 2
-      detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
-    - id: transitionRoom
-      status: 2
-      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
-    - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
-    - id: broomPickup
-      status: 0
-      detail: 
-    scenePath: Assets/Project/Scenes/Level_Flower01.unity
     collectibleIDs: []
   - scene: {fileID: 102900000, guid: d528fe5549672c045a6440f21d1c1ffe, type: 3}
     levelName: Lava Train III
@@ -1162,122 +1104,6 @@ MonoBehaviour:
     scenePath: Assets/Project/Scenes/Level_LavaTrain03.unity
     collectibleIDs:
     - LavaTrain_03
-  - scene: {fileID: 102900000, guid: 22873819291645440a70bcaef0165b1e, type: 3}
-    levelName: Bowling III
-    launchText: Bowled Over !
-    hasBroom: 0
-    hasSpray: 0
-    observed:
-    - id: tomatoCrate
-      status: 0
-      detail: 
-    - id: enemies
-      status: 2
-      detail: ENEMIES/ZombieChaser_Quille (2) (EnemyAI_AStar) + 17 autre(s)
-    - id: brightEyes
-      status: 0
-      detail: 
-    - id: bombs
-      status: 0
-      detail: 
-    - id: broomPedestal
-      status: 0
-      detail: 
-    - id: levelEssentiels
-      status: 2
-      detail: LevelEssentiels (tague Sentinel)
-    - id: startDoor
-      status: 0
-      detail: 
-    - id: pupitre
-      status: 2
-      detail: Pupitre
-    - id: goalDoor
-      status: 0
-      detail: 
-    - id: key
-      status: 0
-      detail: 
-    - id: victory
-      status: 0
-      detail: 
-    - id: curtain
-      status: 0
-      detail: 
-    - id: circles
-      status: 2
-      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
-        tague Sentinel)
-    - id: transitionRoom
-      status: 0
-      detail: 
-    - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
-    - id: broomPickup
-      status: 0
-      detail: 
-    scenePath: Assets/Project/Scenes/Level_Epervier02.unity
-    collectibleIDs: []
-  - scene: {fileID: 102900000, guid: 370f3d5912712e846bf9d3792223973f, type: 3}
-    levelName: Western Canyon
-    launchText: Wild Wild West !
-    hasBroom: 1
-    hasSpray: 0
-    observed:
-    - id: tomatoCrate
-      status: 0
-      detail: 
-    - id: enemies
-      status: 2
-      detail: ENEMIES/ZombieChaser_Cactus (2) (EnemyAI_AStar) + 9 autre(s)
-    - id: brightEyes
-      status: 0
-      detail: 
-    - id: bombs
-      status: 0
-      detail: 
-    - id: broomPedestal
-      status: 0
-      detail: 
-    - id: levelEssentiels
-      status: 2
-      detail: LevelEssentiels (tague Sentinel)
-    - id: startDoor
-      status: 0
-      detail: 
-    - id: pupitre
-      status: 2
-      detail: Pupitre
-    - id: goalDoor
-      status: 2
-      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
-    - id: key
-      status: 2
-      detail: KeyCollectible/Collectible (KeyCollectible)
-    - id: victory
-      status: 2
-      detail: VictoryManager (configuration complete)
-    - id: curtain
-      status: 2
-      detail: EndCurtain (EndCurtainRise)
-    - id: circles
-      status: 2
-      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
-        tague Sentinel)
-    - id: transitionRoom
-      status: 2
-      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
-    - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
-    - id: broomPickup
-      status: 0
-      detail: 
-    scenePath: Assets/Project/Scenes/Level_WesternCanyon.unity
-    collectibleIDs: []
   - scene: {fileID: 102900000, guid: 2a87c7f2c174d4c40b36fdec7050ace0, type: 3}
     levelName: Flower Power II
     launchText: Flower Power !
@@ -1336,10 +1162,10 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_Flower02.unity
     collectibleIDs: []
-  - scene: {fileID: 102900000, guid: ad868371203801a41ae24c658fd59220, type: 3}
-    levelName: Rush Hour IV
-    launchText: Rush Hour !
-    hasBroom: 1
+  - scene: {fileID: 102900000, guid: 22873819291645440a70bcaef0165b1e, type: 3}
+    levelName: Bowling III
+    launchText: Bowled Over !
+    hasBroom: 0
     hasSpray: 0
     observed:
     - id: tomatoCrate
@@ -1347,7 +1173,7 @@ MonoBehaviour:
       detail: 
     - id: enemies
       status: 2
-      detail: ENEMIES/ZombieChaser01 (EnemyAI_AStar) + 25 autre(s)
+      detail: ENEMIES/ZombieChaser_Quille (2) (EnemyAI_AStar) + 17 autre(s)
     - id: brightEyes
       status: 0
       detail: 
@@ -1392,7 +1218,7 @@ MonoBehaviour:
     - id: broomPickup
       status: 0
       detail: 
-    scenePath: Assets/Project/Scenes/Level_TrafficJam_04.unity
+    scenePath: Assets/Project/Scenes/Level_Epervier02.unity
     collectibleIDs: []
   - scene: {fileID: 102900000, guid: 452db213822304249a0e5ac677faf8fd, type: 3}
     levelName: Flower Power III
@@ -1450,63 +1276,6 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_Flower03.unity
     collectibleIDs: []
-  - scene: {fileID: 102900000, guid: 6de53fa4e01eec042ac844de228b3b40, type: 3}
-    levelName: Death Row I
-    launchText: Row Deal
-    hasBroom: 0
-    hasSpray: 0
-    observed:
-    - id: tomatoCrate
-      status: 0
-      detail: 
-    - id: enemies
-      status: 0
-      detail: 
-    - id: brightEyes
-      status: 0
-      detail: 
-    - id: bombs
-      status: 0
-      detail: 
-    - id: broomPedestal
-      status: 0
-      detail: 
-    - id: levelEssentiels
-      status: 2
-      detail: LevelEssentiels (tague Sentinel)
-    - id: startDoor
-      status: 2
-      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
-    - id: pupitre
-      status: 2
-      detail: ESTRADE PUPITRE/Pupitre
-    - id: goalDoor
-      status: 2
-      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
-    - id: key
-      status: 2
-      detail: KeyCollectible/Collectible (KeyCollectible)
-    - id: victory
-      status: 2
-      detail: VictoryManager (configuration complete)
-    - id: curtain
-      status: 2
-      detail: EndCurtain (EndCurtainRise)
-    - id: circles
-      status: 2
-      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
-        tague Sentinel)
-    - id: transitionRoom
-      status: 2
-      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
-    - id: victoryBounds
-      status: 2
-      detail: PostVictoryBounds (contient GoalDoor et salle de transition)
-    - id: broomPickup
-      status: 0
-      detail: 
-    scenePath: Assets/Project/Scenes/Level_WesternFlow.unity
-    collectibleIDs: []
   - scene: {fileID: 102900000, guid: ca6c5d17e7e4d594da65f4b427b1bd6e, type: 3}
     levelName: Void I
     launchText: Call of the Void
@@ -1562,5 +1331,179 @@ MonoBehaviour:
       status: 0
       detail: 
     scenePath: Assets/Project/Scenes/Level_Casino.unity
+    collectibleIDs: []
+  - scene: {fileID: 102900000, guid: 1a8ec41aab7f8ba41b4dcd52f40ca3e4, type: 3}
+    levelName: Meet the Staff
+    launchText: Not alone anymore !
+    hasBroom: 0
+    hasSpray: 0
+    observed:
+    - id: tomatoCrate
+      status: 2
+      detail: TomatoCrate (TomatoCrate)
+    - id: enemies
+      status: 2
+      detail: ENEMIES/ZombiePrisoner_02 (EnemyAI_AStar) + 5 autre(s)
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: broomPedestal
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 1
+      detail: 'Ancienne start zone, sans porte d''entree : LevelEssentiels/StartZone_10m'
+    - id: pupitre
+      status: 2
+      detail: Pupitre
+    - id: goalDoor
+      status: 2
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
+    - id: key
+      status: 2
+      detail: KeyCollectible/Collectible (KeyCollectible)
+    - id: victory
+      status: 0
+      detail: 
+    - id: curtain
+      status: 0
+      detail: 
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
+    - id: transitionRoom
+      status: 0
+      detail: 
+    - id: victoryBounds
+      status: 1
+      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
+        apres la victoire'
+    - id: broomPickup
+      status: 0
+      detail: 
+    scenePath: Assets/Project/Scenes/Level_MeetTheEnemies.unity
+    collectibleIDs: []
+  - scene: {fileID: 102900000, guid: 9157c41ce2e6da14888fe8fd6f1dee8a, type: 3}
+    levelName: Bowling II
+    launchText: Right up your alley !
+    hasBroom: 0
+    hasSpray: 0
+    observed:
+    - id: tomatoCrate
+      status: 2
+      detail: TomatoCrate (TomatoCrate) + 1 autre(s)
+    - id: enemies
+      status: 2
+      detail: ENEMIES/ZombieChaser_Quille (2) (EnemyAI_AStar) + 15 autre(s)
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: broomPedestal
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 1
+      detail: 'Ancienne start zone, sans porte d''entree : LevelEssentiels/StartZone_12m'
+    - id: pupitre
+      status: 2
+      detail: Pupitre
+    - id: goalDoor
+      status: 2
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
+    - id: key
+      status: 2
+      detail: KeyCollectible/Collectible (KeyCollectible)
+    - id: victory
+      status: 0
+      detail: 
+    - id: curtain
+      status: 0
+      detail: 
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
+    - id: transitionRoom
+      status: 0
+      detail: 
+    - id: victoryBounds
+      status: 1
+      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
+        apres la victoire'
+    - id: broomPickup
+      status: 0
+      detail: 
+    scenePath: Assets/Project/Scenes/Level_Epervier01.unity
+    collectibleIDs: []
+  - scene: {fileID: 102900000, guid: ad868371203801a41ae24c658fd59220, type: 3}
+    levelName: Rush Hour IV
+    launchText: Rush Hour !
+    hasBroom: 1
+    hasSpray: 0
+    observed:
+    - id: tomatoCrate
+      status: 0
+      detail: 
+    - id: enemies
+      status: 2
+      detail: ENEMIES/ZombieChaser01 (EnemyAI_AStar) + 25 autre(s)
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: broomPedestal
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 0
+      detail: 
+    - id: pupitre
+      status: 2
+      detail: Pupitre
+    - id: goalDoor
+      status: 0
+      detail: 
+    - id: key
+      status: 0
+      detail: 
+    - id: victory
+      status: 0
+      detail: 
+    - id: curtain
+      status: 0
+      detail: 
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
+    - id: transitionRoom
+      status: 0
+      detail: 
+    - id: victoryBounds
+      status: 1
+      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
+        apres la victoire'
+    - id: broomPickup
+      status: 0
+      detail: 
+    scenePath: Assets/Project/Scenes/Level_TrafficJam_04.unity
     collectibleIDs: []
   lastAnalysis: 24/10/2026 a 16:08
