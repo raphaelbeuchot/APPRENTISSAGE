@@ -21,6 +21,13 @@ public class DeathCause : ScriptableObject
              "sinon a la position du joueur. Detruits tout seuls apres la duree de leurs particules.")]
     public GameObject[] deathEffects;
 
+    [Header("Ragdoll")]
+    [Tooltip("Coche : duree fixe (ragdollWait) avant game over / respawn, sans attendre que le corps s'immobilise " +
+             "(ex. chute hors limites : le corps tombe dans le vide et ne s'arrete jamais). Decoche : attente normale de DeathSequence.")]
+    public bool overrideRagdollWait = false;
+    [Tooltip("Secondes a regarder le corps avant game over / respawn, si overrideRagdollWait est coche.")]
+    public float ragdollWait = 1f;
+
     [Header("Game over")]
     [Tooltip("Messages de l'ecran de game over pour cette mort (un tire au hasard). Vide = messages generiques de GameOverUI.")]
     public string[] gameOverMessages;

@@ -82,15 +82,26 @@ public class DeathSequence : MonoBehaviour
 
         Debug.Log("ragdollTimeout runtime value: " + ragdollTimeout + " | hasRealRagdoll: " + hasRealRagdoll);
 
-        yield return new WaitForSeconds(0.3f);
+        // Cause deduite par PlayerDeathCause (resolue sur OnDying, juste avant Play) : elle peut imposer une duree fixe
+        PlayerDeathCause deathCause = GetComponent<PlayerDeathCause>();
+        DeathCause cause = deathCause != null ? deathCause.Current : playerHealth.LastDeathCause;
 
-        float elapsed = 0f;
-        while (elapsed < ragdollTimeout)
+        if (cause != null && cause.overrideRagdollWait)
         {
-            elapsed += Time.deltaTime;
-            if (hasRealRagdoll && hipRb.linearVelocity.magnitude < velocityThreshold)
-                break;
-            yield return null;
+            yield return new WaitForSeconds(cause.ragdollWait);
+        }
+        else
+        {
+            yield return new WaitForSeconds(0.3f);
+
+            float elapsed = 0f;
+            while (elapsed < ragdollTimeout)
+            {
+                elapsed += Time.deltaTime;
+                if (hasRealRagdoll && hipRb.linearVelocity.magnitude < velocityThreshold)
+                    break;
+                yield return null;
+            }
         }
 
         Debug.Log("DeathRoutine FIN - invocation OnDeath");
