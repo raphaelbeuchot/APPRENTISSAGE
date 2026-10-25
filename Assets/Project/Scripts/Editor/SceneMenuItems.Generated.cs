@@ -172,18 +172,18 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Pit'em All.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_LavaTrain03 (Lava Train III)", priority = 19)]
-    private static void Open_Solo_Level_LavaTrain03__Lava_Train_III_()
-    {
-        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_LavaTrain03.unity");
-    }
-
-    [MenuItem("Scene/Solo/Level_WesternCanyon (Western Canyon)", priority = 20)]
+    [MenuItem("Scene/Solo/Level_WesternCanyon (Western Canyon)", priority = 19)]
     private static void Open_Solo_Level_WesternCanyon__Western_Canyon_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_WesternCanyon.unity");
+    }
+
+    [MenuItem("Scene/Solo/Level_LavaTrain03 (Lava Train III)", priority = 20)]
+    private static void Open_Solo_Level_LavaTrain03__Lava_Train_III_()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_LavaTrain03.unity");
     }
 
     [MenuItem("Scene/Solo/Level_Flower02 (Flower Power II)", priority = 21)]

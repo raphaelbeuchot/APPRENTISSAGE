@@ -909,8 +909,8 @@ MonoBehaviour:
       status: 2
       detail: LevelEssentiels (tague Sentinel)
     - id: startDoor
-      status: 1
-      detail: 'Ancienne start zone, sans porte d''entree : StartZone_12m'
+      status: 2
+      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
     - id: pupitre
       status: 2
       detail: Pupitre
@@ -921,22 +921,21 @@ MonoBehaviour:
       status: 2
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
-      status: 0
-      detail: 
+      status: 2
+      detail: VictoryManager (configuration complete)
     - id: curtain
-      status: 0
-      detail: 
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
     - id: circles
       status: 2
       detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
         tague Sentinel)
     - id: transitionRoom
-      status: 0
-      detail: 
+      status: 2
+      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
+      status: 2
+      detail: PostVictoryBounds (contient GoalDoor et salle de transition)
     - id: broomPickup
       status: 0
       detail: 
@@ -1058,6 +1057,65 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_Pit'em All.unity
     collectibleIDs: []
+  - scene: {fileID: 102900000, guid: 370f3d5912712e846bf9d3792223973f, type: 3}
+    levelName: Western Canyon
+    launchText: Wild Wild West !
+    hasBroom: 1
+    hasSpray: 0
+    inDemo: 1
+    observed:
+    - id: tomatoCrate
+      status: 0
+      detail: 
+    - id: enemies
+      status: 2
+      detail: ENEMIES/ZombieChaser_Cactus (2) (EnemyAI_AStar) + 9 autre(s)
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: broomPedestal
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 0
+      detail: 
+    - id: pupitre
+      status: 2
+      detail: Pupitre
+    - id: goalDoor
+      status: 2
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
+    - id: key
+      status: 2
+      detail: KeyCollectible/Collectible (KeyCollectible)
+    - id: victory
+      status: 2
+      detail: VictoryManager (configuration complete)
+    - id: curtain
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
+    - id: transitionRoom
+      status: 2
+      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
+    - id: victoryBounds
+      status: 1
+      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
+        apres la victoire'
+    - id: broomPickup
+      status: 0
+      detail: 
+    scenePath: Assets/Project/Scenes/Level_WesternCanyon.unity
+    collectibleIDs: []
   - scene: {fileID: 102900000, guid: d528fe5549672c045a6440f21d1c1ffe, type: 3}
     levelName: Lava Train III
     launchText: Magma Mia !
@@ -1118,65 +1176,6 @@ MonoBehaviour:
     scenePath: Assets/Project/Scenes/Level_LavaTrain03.unity
     collectibleIDs:
     - LavaTrain_03
-  - scene: {fileID: 102900000, guid: 370f3d5912712e846bf9d3792223973f, type: 3}
-    levelName: Western Canyon
-    launchText: Wild Wild West !
-    hasBroom: 1
-    hasSpray: 0
-    inDemo: 1
-    observed:
-    - id: tomatoCrate
-      status: 0
-      detail: 
-    - id: enemies
-      status: 2
-      detail: ENEMIES/ZombieChaser_Cactus (2) (EnemyAI_AStar) + 9 autre(s)
-    - id: brightEyes
-      status: 0
-      detail: 
-    - id: bombs
-      status: 0
-      detail: 
-    - id: broomPedestal
-      status: 0
-      detail: 
-    - id: levelEssentiels
-      status: 2
-      detail: LevelEssentiels (tague Sentinel)
-    - id: startDoor
-      status: 0
-      detail: 
-    - id: pupitre
-      status: 2
-      detail: Pupitre
-    - id: goalDoor
-      status: 2
-      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
-    - id: key
-      status: 2
-      detail: KeyCollectible/Collectible (KeyCollectible)
-    - id: victory
-      status: 2
-      detail: VictoryManager (configuration complete)
-    - id: curtain
-      status: 2
-      detail: EndCurtain (EndCurtainRise)
-    - id: circles
-      status: 2
-      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
-        tague Sentinel)
-    - id: transitionRoom
-      status: 2
-      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
-    - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
-    - id: broomPickup
-      status: 0
-      detail: 
-    scenePath: Assets/Project/Scenes/Level_WesternCanyon.unity
-    collectibleIDs: []
   - scene: {fileID: 102900000, guid: 2a87c7f2c174d4c40b36fdec7050ace0, type: 3}
     levelName: Flower Power II
     launchText: Flower Power !
@@ -1298,7 +1297,7 @@ MonoBehaviour:
   - scene: {fileID: 102900000, guid: ca6c5d17e7e4d594da65f4b427b1bd6e, type: 3}
     levelName: Void I
     launchText: Call of the Void
-    hasBroom: 0
+    hasBroom: 1
     hasSpray: 0
     inDemo: 1
     observed:
@@ -1529,4 +1528,4 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_TrafficJam_04.unity
     collectibleIDs: []
-  lastAnalysis: 25/10/2026 a 13:40
+  lastAnalysis: 25/10/2026 a 20:12
