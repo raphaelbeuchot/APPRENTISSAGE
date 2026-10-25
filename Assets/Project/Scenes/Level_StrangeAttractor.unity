@@ -560,6 +560,11 @@ MonoBehaviour:
   fillLevel: 0.8
   fillContentType: {fileID: 11400000, guid: 4cdd0114f895ee444a4cadf30e99b37e, type: 2}
   fillMaterial: {fileID: 2100000, guid: 6f509301db35c974690f05670d6d428f, type: 2}
+  quickRectWidth: 6
+  quickRectLength: 4
+  quickRectRadius: 1
+  quickRectBulgeX: 0
+  quickRectBulgeZ: 0
 --- !u!4 &22788307
 Transform:
   m_ObjectHideFlags: 0
@@ -4613,6 +4618,11 @@ MonoBehaviour:
   cornerSegments: 4
   roundTop: 0
   roundBottom: 0
+  topScale: 1
+  flareBend: 0
+  flareBulge: 0
+  bulgePosition: 0.5
+  heightSegments: 8
   hole: 1
   linkMargins: 0
   margin: 0.3
@@ -7861,6 +7871,11 @@ MonoBehaviour:
   cornerSegments: 4
   roundTop: 0
   roundBottom: 0
+  topScale: 1
+  flareBend: 0
+  flareBulge: 0
+  bulgePosition: 0.5
+  heightSegments: 8
   hole: 1
   linkMargins: 0
   margin: 0.3
@@ -8163,6 +8178,11 @@ MonoBehaviour:
   cornerSegments: 4
   roundTop: 0
   roundBottom: 0
+  topScale: 1
+  flareBend: 0
+  flareBulge: 0
+  bulgePosition: 0.5
+  heightSegments: 8
   hole: 0
   linkMargins: 1
   margin: 0.3
@@ -9830,7 +9850,7 @@ PrefabInstance:
       objectReference: {fileID: 432456871}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: layersToHide.m_Bits
-      value: 0
+      value: 256
       objectReference: {fileID: 0}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: objectsToHide.Array.size
@@ -9858,7 +9878,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: objectsToHideOnVictory.Array.size
-      value: 5
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: 'objectsToHideOnVictory.Array.data[0]'
@@ -9871,11 +9891,11 @@ PrefabInstance:
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: 'objectsToHideOnVictory.Array.data[2]'
       value: 
-      objectReference: {fileID: 371021983}
+      objectReference: {fileID: 0}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: 'objectsToHideOnVictory.Array.data[3]'
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 508168376}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: 'objectsToHideOnVictory.Array.data[4]'
       value: 
@@ -12269,7 +12289,7 @@ GameObject:
   - component: {fileID: 1558432567}
   - component: {fileID: 1558432566}
   - component: {fileID: 1558432565}
-  m_Layer: 3
+  m_Layer: 8
   m_Name: FinalPlatform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -13102,6 +13122,11 @@ MonoBehaviour:
   cornerSegments: 4
   roundTop: 0
   roundBottom: 0
+  topScale: 1
+  flareBend: 0
+  flareBulge: 0
+  bulgePosition: 0.5
+  heightSegments: 8
   hole: 1
   linkMargins: 0
   margin: 0.3
@@ -13539,6 +13564,11 @@ MonoBehaviour:
   cornerSegments: 4
   roundTop: 0
   roundBottom: 0
+  topScale: 1
+  flareBend: 0
+  flareBulge: 0
+  bulgePosition: 0.5
+  heightSegments: 8
   hole: 0
   linkMargins: 1
   margin: 0.3
@@ -16125,6 +16155,11 @@ MonoBehaviour:
   cornerSegments: 4
   roundTop: 0
   roundBottom: 0
+  topScale: 1
+  flareBend: 0
+  flareBulge: 0
+  bulgePosition: 0.5
+  heightSegments: 8
   hole: 1
   linkMargins: 0
   margin: 0.3
@@ -16627,6 +16662,18 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5161211593474848724, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_fontColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5161211593474848724, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_fontColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5161211593474848724, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_fontColor.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5592999826705333007, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: titleMessage
       value: Strange Attractor
@@ -16691,6 +16738,18 @@ PrefabInstance:
       propertyPath: healthBarContainer
       value: 
       objectReference: {fileID: 22286328}
+    - target: {fileID: 6692689265201434890, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_Color.b
+      value: 0.122641504
+      objectReference: {fileID: 0}
+    - target: {fileID: 6692689265201434890, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_Color.g
+      value: 0.5441217
+      objectReference: {fileID: 0}
+    - target: {fileID: 6692689265201434890, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8078157457774688166, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: uiAudio
       value: 
