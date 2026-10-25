@@ -31,6 +31,7 @@ internal static class SceneMenuGenerator
     {
         public string MenuPath;
         public string ScenePath;
+        public bool OutOfDemo; // niveau de campagne non coche "In Demo" : grise quand DEMO_BUILD est actif
     }
 
     [InitializeOnLoadMethod]
@@ -89,13 +90,13 @@ internal static class SceneMenuGenerator
         var assigned = new HashSet<string>();
         var usedMenuPaths = new HashSet<string>();
 
-        void Add(string category, string label, string scenePath)
+        void Add(string category, string label, string scenePath, bool outOfDemo = false)
         {
             string menuPath = "Scene/" + category + "/" + label;
             string unique = menuPath;
             int n = 2;
             while (!usedMenuPaths.Add(unique)) unique = menuPath + " (" + n++ + ")";
-            entries.Add(new MenuEntry { MenuPath = unique, ScenePath = scenePath });
+            entries.Add(new MenuEntry { MenuPath = unique, ScenePath = scenePath, OutOfDemo = outOfDemo });
             assigned.Add(scenePath);
         }
 
@@ -107,7 +108,7 @@ internal static class SceneMenuGenerator
             if (!allScenePaths.Contains(scenePath)) continue;
             string sceneName = Path.GetFileNameWithoutExtension(scenePath);
             string label = string.IsNullOrEmpty(entry.levelName) ? sceneName : sceneName + " (" + entry.levelName + ")";
-            Add("Solo", label, scenePath);
+            Add("Solo", label, scenePath, !entry.inDemo);
         }
 
         // Multi : ordre des listes du menu multi
@@ -200,6 +201,21 @@ internal static class SceneMenuGenerator
             sb.AppendLine($"        EditorSceneManager.OpenScene(\"{EscapeForCSharpString(entry.ScenePath)}\");");
             sb.AppendLine("    }");
             sb.AppendLine();
+
+            // Hors demo : entree grisee quand le profil Demo (symbole DEMO_BUILD) est actif
+            if (entry.OutOfDemo)
+            {
+                sb.AppendLine($"    [MenuItem(\"{EscapeForCSharpString(entry.MenuPath)}\", true)]");
+                sb.AppendLine($"    private static bool {methodName}_Validate()");
+                sb.AppendLine("    {");
+                sb.AppendLine("#if DEMO_BUILD");
+                sb.AppendLine("        return false;");
+                sb.AppendLine("#else");
+                sb.AppendLine("        return true;");
+                sb.AppendLine("#endif");
+                sb.AppendLine("    }");
+                sb.AppendLine();
+            }
 
             priority++;
         }

@@ -62,67 +62,107 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_WesternFlow.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_TomatoFest_01 (TomaThrow)", priority = 9)]
+    [MenuItem("Scene/Solo/Level_Flower03 (Flower Power III)", priority = 9)]
+    private static void Open_Solo_Level_Flower03__Flower_Power_III_()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Flower03.unity");
+    }
+
+    [MenuItem("Scene/Solo/Level_TomatoFest_01 (TomaThrow)", priority = 10)]
     private static void Open_Solo_Level_TomatoFest_01__TomaThrow_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_TomatoFest_01.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_LavaTrain01 (Lava Train I)", priority = 10)]
+    [MenuItem("Scene/Solo/Level_LavaTrain01 (Lava Train I)", priority = 11)]
     private static void Open_Solo_Level_LavaTrain01__Lava_Train_I_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_LavaTrain01.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_TrafficJam_03 (Rush Hour III)", priority = 11)]
+    [MenuItem("Scene/Solo/Level_TrafficJam_03 (Rush Hour III)", priority = 12)]
     private static void Open_Solo_Level_TrafficJam_03__Rush_Hour_III_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_TrafficJam_03.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_Bowling_001 (Bowling I)", priority = 12)]
+    [MenuItem("Scene/Solo/Level_TrafficJam_03 (Rush Hour III)", true)]
+    private static bool Open_Solo_Level_TrafficJam_03__Rush_Hour_III__Validate()
+    {
+#if DEMO_BUILD
+        return false;
+#else
+        return true;
+#endif
+    }
+
+    [MenuItem("Scene/Solo/Level_Bowling_001 (Bowling I)", priority = 13)]
     private static void Open_Solo_Level_Bowling_001__Bowling_I_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Bowling_001.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_GoWithTheFlow02 (Go with the Flow II)", priority = 13)]
+    [MenuItem("Scene/Solo/Level_Bowling_001 (Bowling I)", true)]
+    private static bool Open_Solo_Level_Bowling_001__Bowling_I__Validate()
+    {
+#if DEMO_BUILD
+        return false;
+#else
+        return true;
+#endif
+    }
+
+    [MenuItem("Scene/Solo/Level_GoWithTheFlow02 (Go with the Flow II)", priority = 14)]
     private static void Open_Solo_Level_GoWithTheFlow02__Go_with_the_Flow_II_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_GoWithTheFlow02.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_TrafficJam_02 (Rush Hour II)", priority = 14)]
+    [MenuItem("Scene/Solo/Level_GoWithTheFlow02 (Go with the Flow II)", true)]
+    private static bool Open_Solo_Level_GoWithTheFlow02__Go_with_the_Flow_II__Validate()
+    {
+#if DEMO_BUILD
+        return false;
+#else
+        return true;
+#endif
+    }
+
+    [MenuItem("Scene/Solo/Level_TrafficJam_02 (Rush Hour II)", priority = 15)]
     private static void Open_Solo_Level_TrafficJam_02__Rush_Hour_II_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_TrafficJam_02.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_LavaTrain02 (Lava Train II)", priority = 15)]
+    [MenuItem("Scene/Solo/Level_TrafficJam_02 (Rush Hour II)", true)]
+    private static bool Open_Solo_Level_TrafficJam_02__Rush_Hour_II__Validate()
+    {
+#if DEMO_BUILD
+        return false;
+#else
+        return true;
+#endif
+    }
+
+    [MenuItem("Scene/Solo/Level_LavaTrain02 (Lava Train II)", priority = 16)]
     private static void Open_Solo_Level_LavaTrain02__Lava_Train_II_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_LavaTrain02.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_Flower01 (Flower Power I)", priority = 16)]
+    [MenuItem("Scene/Solo/Level_Flower01 (Flower Power I)", priority = 17)]
     private static void Open_Solo_Level_Flower01__Flower_Power_I_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Flower01.unity");
-    }
-
-    [MenuItem("Scene/Solo/Level_WesternCanyon (Western Canyon)", priority = 17)]
-    private static void Open_Solo_Level_WesternCanyon__Western_Canyon_()
-    {
-        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_WesternCanyon.unity");
     }
 
     [MenuItem("Scene/Solo/Level_Pit'em All (Pit'em All)", priority = 18)]
@@ -139,25 +179,35 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_LavaTrain03.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_Flower02 (Flower Power II)", priority = 20)]
+    [MenuItem("Scene/Solo/Level_WesternCanyon (Western Canyon)", priority = 20)]
+    private static void Open_Solo_Level_WesternCanyon__Western_Canyon_()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_WesternCanyon.unity");
+    }
+
+    [MenuItem("Scene/Solo/Level_Flower02 (Flower Power II)", priority = 21)]
     private static void Open_Solo_Level_Flower02__Flower_Power_II_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Flower02.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_Epervier02 (Bowling III)", priority = 21)]
+    [MenuItem("Scene/Solo/Level_Epervier02 (Bowling III)", priority = 22)]
     private static void Open_Solo_Level_Epervier02__Bowling_III_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Epervier02.unity");
     }
 
-    [MenuItem("Scene/Solo/Level_Flower03 (Flower Power III)", priority = 22)]
-    private static void Open_Solo_Level_Flower03__Flower_Power_III_()
+    [MenuItem("Scene/Solo/Level_Epervier02 (Bowling III)", true)]
+    private static bool Open_Solo_Level_Epervier02__Bowling_III__Validate()
     {
-        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-        EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Flower03.unity");
+#if DEMO_BUILD
+        return false;
+#else
+        return true;
+#endif
     }
 
     [MenuItem("Scene/Solo/Level_Casino (Void I)", priority = 23)]
@@ -174,11 +224,31 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_MeetTheEnemies.unity");
     }
 
+    [MenuItem("Scene/Solo/Level_MeetTheEnemies (Meet the Staff)", true)]
+    private static bool Open_Solo_Level_MeetTheEnemies__Meet_the_Staff__Validate()
+    {
+#if DEMO_BUILD
+        return false;
+#else
+        return true;
+#endif
+    }
+
     [MenuItem("Scene/Solo/Level_Epervier01 (Bowling II)", priority = 25)]
     private static void Open_Solo_Level_Epervier01__Bowling_II_()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.OpenScene("Assets/Project/Scenes/Level_Epervier01.unity");
+    }
+
+    [MenuItem("Scene/Solo/Level_Epervier01 (Bowling II)", true)]
+    private static bool Open_Solo_Level_Epervier01__Bowling_II__Validate()
+    {
+#if DEMO_BUILD
+        return false;
+#else
+        return true;
+#endif
     }
 
     [MenuItem("Scene/Solo/Level_TrafficJam_04 (Rush Hour IV)", priority = 26)]
