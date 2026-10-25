@@ -94,6 +94,11 @@ public class LevelProgressionManager : MonoBehaviour
                 continue;
             }
 
+#if DEMO_BUILD
+            // Build demo : seulement les niveaux coches "In Demo"
+            if (!entry.inDemo) continue;
+#endif
+
             int buildIndex = SceneUtility.GetBuildIndexByScenePath(entry.scenePath);
             if (buildIndex < 0)
             {

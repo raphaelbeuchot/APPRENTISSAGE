@@ -53,6 +53,9 @@ public class LevelCatalogEntryDrawer : PropertyDrawer
         string title = scene != null && scene.objectReferenceValue != null ? scene.objectReferenceValue.name : "(aucune scene)";
         if (levelName != null && !string.IsNullOrEmpty(levelName.stringValue))
             title += "   —   " + levelName.stringValue;
+        SerializedProperty inDemo = property.FindPropertyRelative("inDemo");
+        if (inDemo != null && inDemo.boolValue)
+            title += "   [demo]";
         return title;
     }
 }

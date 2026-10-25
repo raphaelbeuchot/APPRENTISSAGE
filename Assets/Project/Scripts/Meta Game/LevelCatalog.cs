@@ -33,6 +33,9 @@ public class LevelCatalogEntry
     public bool hasBroom = true;
     public bool hasSpray = true;
 
+    [Tooltip("Niveau joue dans la demo (build avec le symbole DEMO_BUILD : seules ces lignes sont gardees, dans le meme ordre)")]
+    public bool inDemo;
+
 #if UNITY_EDITOR
     // Observe dans la scene par "Analyser les scenes" (Game Catalog / LD Catalog) : affichage seulement, jamais lu en jeu
     [HideInInspector] public List<ObservedCheck> observed = new List<ObservedCheck>();
