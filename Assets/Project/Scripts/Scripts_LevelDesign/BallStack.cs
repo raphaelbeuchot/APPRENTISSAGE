@@ -38,6 +38,24 @@ public class BallStack : MonoBehaviour
     [Tooltip("Rotation aleatoire de chaque boule autour de Y, de -X a +X degres (change l'orientation des facettes et des bosses).")]
     [Range(0f, 180f)] public float ballYRotation = 180f;
 
+    [Header("Pousse")]
+    [Tooltip("Inclinaison de la pile au sommet (degres). 0 = verticale.")]
+    [Range(0f, 90f)] public float leanAngle = 0f;
+    [Tooltip("Vers ou penche la pile, vue de dessus (0 = +Z, 90 = +X).")]
+    [Range(0f, 360f)] public float leanDirection = 0f;
+    [Tooltip("0 = droite mais penchee des la base ; 1 = part verticale et ploie de plus en plus en montant (tige).")]
+    [Range(0f, 1f)] public float curvature = 1f;
+    [Tooltip("Ondulation de part et d'autre de la pousse (degres). 0 = pas d'ondulation.")]
+    [Range(0f, 60f)] public float waveAmplitude = 0f;
+    [Tooltip("Nombre d'ondulations sur la hauteur de la pile.")]
+    [Range(0f, 5f)] public float waveCount = 1f;
+
+    [Header("Pointe")]
+    [Tooltip("Etire la moitie haute de la derniere boule en pointe (en rayons). 0 = pas de pointe.")]
+    [Range(0f, 3f)] public float tipLength = 0f;
+    [Tooltip("0 = bout arrondi (bulbe), 1 = bout aigu.")]
+    [Range(0f, 1f)] public float tipSharpness = 0.5f;
+
     [Header("Boules")]
     [Tooltip("Finesse : 0 = tres facette (20 faces), 3 = presque rond (1280 faces).")]
     [Range(0, 3)] public int detail = 1;
@@ -158,23 +176,31 @@ public class BallStack : MonoBehaviour
             }
             else
             {
+                // Pas vers la boule suivante dans la direction de pousse a mi-chemin,
+                // decalage aleatoire dans le plan perpendiculaire (a plat si la pile est droite)
+                float tStep = (i - 0.5f) / (ballCount - 1);
+                Vector3 step = GrowthDirection(tStep);
+                Quaternion toStep = Quaternion.FromToRotation(Vector3.up, step);
                 float angle = Range(rng, 0f, Mathf.PI * 2f);
                 float offset = Range(rng, 0f, horizontalOffset) * radius;
-                center.x += Mathf.Cos(angle) * offset;
-                center.z += Mathf.Sin(angle) * offset;
-                center.y += (prevRadius + radius) * (1f - overlap);
+                center += (toStep * Vector3.right * Mathf.Cos(angle) + toStep * Vector3.forward * Mathf.Sin(angle)) * offset;
+                center += step * ((prevRadius + radius) * (1f - overlap));
             }
 
             ballCenters.Add(center);
             ballRadii.Add(radius);
             prevRadius = radius;
 
-            Quaternion rotation = Quaternion.Euler(0f, Range(rng, -ballYRotation, ballYRotation), 0f);
+            // La boule suit la pousse (sa pointe aussi), plus sa rotation aleatoire autour de son axe
+            Quaternion rotation = Quaternion.FromToRotation(Vector3.up, GrowthDirection(t))
+                                * Quaternion.Euler(0f, Range(rng, -ballYRotation, ballYRotation), 0f);
+            bool isTip = i == ballCount - 1 && tipLength > 0f;
             int baseIndex = vertices.Count;
             foreach (Vector3 dir in sphereVerts)
             {
                 float bump = 1f + Range(rng, -bumpiness, bumpiness);
-                vertices.Add(center + rotation * (dir * radius * bump));
+                Vector3 p = isTip ? TipShape(dir) : dir;
+                vertices.Add(center + rotation * (p * radius * bump));
             }
             foreach (int index in sphereTris)
                 triangles.Add(baseIndex + index);
@@ -206,6 +232,25 @@ public class BallStack : MonoBehaviour
         mesh.RecalculateNormals();
         mesh.RecalculateTangents();
         mesh.RecalculateBounds();
+    }
+
+    // Direction de pousse a la hauteur t (0 = base, 1 = sommet) : inclinaison vers leanDirection
+    // (constante si courbure 0, croissante si courbure 1), plus ondulation de part et d'autre
+    Vector3 GrowthDirection(float t)
+    {
+        Vector3 toward = Quaternion.Euler(0f, leanDirection, 0f) * Vector3.forward;
+        float tilt = leanAngle * Mathf.Lerp(1f, t, curvature);
+        float side = waveAmplitude * Mathf.Sin(t * waveCount * Mathf.PI * 2f);
+        return Quaternion.AngleAxis(side, toward) * Quaternion.AngleAxis(tilt, Vector3.Cross(Vector3.up, toward)) * Vector3.up;
+    }
+
+    // Derniere boule en goutte : la moitie haute s'etire et se resserre vers le haut
+    Vector3 TipShape(Vector3 dir)
+    {
+        if (dir.y <= 0f) return dir;
+        float h = dir.y;
+        float shrink = Mathf.Lerp(1f, 1f - h, tipSharpness);
+        return new Vector3(dir.x * shrink, h * (1f + tipLength), dir.z * shrink);
     }
 
     // UV0 en metres (projection grossiere x+z / y) : densite constante, le Tiling du materiau regle la repetition
