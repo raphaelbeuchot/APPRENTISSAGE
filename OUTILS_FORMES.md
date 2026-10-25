@@ -36,12 +36,12 @@ Principes communs :
 
 ---
 
-## BallStack — pile de boules grossières (discuté le 2026-10-25, pas codé)
+## BallStack — pile de boules grossières (codé et validé le 2026-10-25)
 
-Nom de travail. Besoin : formes bizarres et rudimentaires (ceps de vigne, concrétions, rochers empilés, cactus) sans logiciel 3D. Pistes écartées : Tree Editor d'Unity (ancien, mal supporté en URP, fait pour des arbres feuillus réalistes), Spline Extrude + Spline Instantiate (échelle aléatoire **ajoutée** et tirée axe par axe → objets déformés ; matériau non modifiable sur un modèle importé ; instances recréées en permanence).
+`BallStack.cs` (+ bouton Relancer dans `Editor/BallStackEditor.cs`). Se pose sur un GameObject vide (MeshFilter + MeshRenderer ajoutés), matériau sur le MeshRenderer. Besoin : formes bizarres et rudimentaires (ceps de vigne, concrétions, rochers empilés, cactus) sans logiciel 3D. Pistes écartées : Tree Editor d'Unity (ancien, mal supporté en URP, fait pour des arbres feuillus réalistes), Spline Extrude + Spline Instantiate (échelle aléatoire **ajoutée** et tirée axe par axe → objets déformés ; matériau non modifiable sur un modèle importé ; instances recréées en permanence).
 
 - **Forme** : des boules empilées en Y, **un seul mesh** fusionné (comme RoundedBlock), reconstruit au chargement.
-- **Réglages envisagés** : nombre de boules, taille de base, variation d'échelle par boule, **effilement** (les boules rétrécissent en montant), **chevauchement** (boules soudées, pas posées), **décalage horizontal** aléatoire d'une boule à l'autre (casse l'alignement), rotation aléatoire autour de Y (par boule et/ou globale), **graine** + bouton Relancer (même résultat tant qu'on ne relance pas), matériau.
+- **Réglages** : nombre de boules, taille de base, variation d'échelle par boule, **effilement** (les boules rétrécissent en montant), **chevauchement** (boules soudées, pas posées), **décalage horizontal** aléatoire d'une boule à l'autre (casse l'alignement), rotation aléatoire autour de Y (par boule et/ou globale), **graine** + bouton Relancer (même résultat tant qu'on ne relance pas), matériau.
 - **Boules grossières** : low-poly facettées générées dans le code, réglage de finesse (peu de faces = très facetté) + léger bosselage (chaque boule cabossée, unique).
 - **Collider** (décidé) : les piles sont **dans l'aire de jeu**, sur le layer **Obstacle** (vu par la grille A* des ennemis). Choix dans le composant : Aucun / **Sphères** (une par boule, sur le même objet ; défaut, le moins coûteux et le plus fidèle) / Capsule englobante. Exception au principe commun (pas de MeshCollider : inutilement précis et plus lourd). Pavés plus tard si un usage demande un dessus plat (sur des sphères, le joueur glisse).
 - **Plus tard, si ça plaît** : la pile qui suit une spline au lieu de l'axe Y (cep tordu, branche inclinée).
