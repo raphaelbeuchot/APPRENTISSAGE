@@ -21,7 +21,7 @@ public class BallStack : MonoBehaviour
     }
 
     [Header("Pile")]
-    [Range(1, 20)] public int ballCount = 5;
+    [Range(1, 50)] public int ballCount = 5;
     [Tooltip("Rayon de la boule du bas (metres).")]
     [Min(0.01f)] public float baseRadius = 0.5f;
     [Tooltip("Taille de la boule du haut par rapport a celle du bas. 1 = toutes pareilles, 0.5 = la derniere fait moitie.")]
@@ -39,8 +39,8 @@ public class BallStack : MonoBehaviour
     [Range(0f, 180f)] public float ballYRotation = 180f;
 
     [Header("Pousse")]
-    [Tooltip("Inclinaison de la pile au sommet (degres). 0 = verticale.")]
-    [Range(0f, 90f)] public float leanAngle = 0f;
+    [Tooltip("Inclinaison de la pile au sommet (degres). 0 = verticale, 90 = horizontale, 180 = retombe vers le bas (crosse).")]
+    [Range(0f, 180f)] public float leanAngle = 0f;
     [Tooltip("Vers ou penche la pile, vue de dessus (0 = +Z, 90 = +X).")]
     [Range(0f, 360f)] public float leanDirection = 0f;
     [Tooltip("0 = droite mais penchee des la base ; 1 = part verticale et ploie de plus en plus en montant (tige).")]
