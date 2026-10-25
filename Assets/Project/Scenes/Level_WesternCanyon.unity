@@ -729,6 +729,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: TRANSITIONROOM
       objectReference: {fileID: 0}
+    - target: {fileID: 6965447297442169404, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400850256596416415, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6470,6 +6478,8 @@ MonoBehaviour:
   sinkDuration: 3
   interactionRange: 1
   restartSpawnDistance: 1
+  mustPutAwayBroom: 0
+  putAwayBroomMessage: Pour continuer, merci de deposer votre balai.
 --- !u!136 &503121591
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -32253,6 +32263,8 @@ MonoBehaviour:
   doorRenderer: {fileID: 0}
   activeMaterial: {fileID: 2100000, guid: e9e73c7ed777b064d8861a8a0ed08d30, type: 2}
   inactiveMaterial: {fileID: 2100000, guid: cdc1119035bdb6b48873886c877be377, type: 2}
+  reachedFadeDuration: 1
+  reachedEmissionBoost: 5
   doorReachedSound: {fileID: 8300000, guid: 66f5647459bc04147be64765d5fd4af9, type: 3}
   doorUnlockedSound: {fileID: 8300000, guid: d7a73023f94824c4290ef18a5f0e42a7, type: 3}
   doorLockedSound: {fileID: 0}
