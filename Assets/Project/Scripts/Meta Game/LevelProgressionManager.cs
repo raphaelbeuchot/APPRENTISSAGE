@@ -160,6 +160,9 @@ public class LevelProgressionManager : MonoBehaviour
             CollectibleManager.Instance.ResetAllCollectibles();
         if (CleaningCreditManager.Instance != null)
             CleaningCreditManager.Instance.ResetCredits();
+        foreach (var level in levels)
+            LevelStatsTracker.ResetAttempts(level.sceneIndex);
+        PlayerPrefs.Save();
         lastUnlockedLevelIndex = -1;
     }
 

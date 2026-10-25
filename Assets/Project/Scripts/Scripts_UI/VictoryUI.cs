@@ -20,6 +20,16 @@ public class VictoryUI : MonoBehaviour
     [SerializeField] private string levelCompleteMessage = "LEVEL COMPLETE";
     [SerializeField] private string attemptsPrefix = "Essais : ";
 
+    [Header("Premier essai")]
+    [Tooltip("Remplace le texte des essais quand le niveau est reussi du premier coup")]
+    [SerializeField] private string firstTryMessage = "First try !";
+    [SerializeField] private Color firstTryColorA = Color.white;
+    [SerializeField] private Color firstTryColorB = Color.yellow;
+    [Tooltip("Duree d'une couleur avant de passer a l'autre (temps reel)")]
+    [SerializeField] private float firstTryBlinkInterval = 0.2f;
+    private Coroutine firstTryBlink;
+    private Color attemptsBaseColor;
+
     [Header("Timings")]
     [Tooltip("Duree du fade-in du fond sur les ghosts")]
     [SerializeField] private float bgFadeDuration = 0.4f;
@@ -73,6 +83,9 @@ public class VictoryUI : MonoBehaviour
             if (go != null) cm_victory = go.GetComponent<CinemachineCamera>();
         }
 
+        if (attemptsText != null)
+            attemptsBaseColor = attemptsText.color;
+
         Hide();
     }
 
@@ -120,7 +133,18 @@ public class VictoryUI : MonoBehaviour
         {
             int attempts = LevelStatsTracker.Instance != null
                 ? LevelStatsTracker.Instance.AttemptCount : 1;
-            attemptsText.text = attemptsPrefix + attempts;
+            if (firstTryBlink != null) StopCoroutine(firstTryBlink);
+            attemptsText.color = attemptsBaseColor;
+
+            if (attempts <= 1)
+            {
+                attemptsText.text = firstTryMessage;
+                firstTryBlink = StartCoroutine(FirstTryBlinkCoroutine());
+            }
+            else
+            {
+                attemptsText.text = attemptsPrefix + attempts;
+            }
         }
 
         StartCoroutine(ShowCoroutine());
@@ -223,6 +247,18 @@ public class VictoryUI : MonoBehaviour
         Debug.Log("[VictoryUI] Pret — appuyer sur un bouton pour continuer");
     }
 
+    // Clignotement de "First try !" : temps reel, le jeu est en pause (timeScale 0) pendant l'ecran
+    private IEnumerator FirstTryBlinkCoroutine()
+    {
+        bool useA = true;
+        while (true)
+        {
+            attemptsText.color = useA ? firstTryColorA : firstTryColorB;
+            useA = !useA;
+            yield return new WaitForSecondsRealtime(firstTryBlinkInterval);
+        }
+    }
+
     // ============================================
     // WIPE
     // ============================================
@@ -265,6 +301,14 @@ public class VictoryUI : MonoBehaviour
     public void Hide()
     {
         isActive = false;
+
+        if (firstTryBlink != null)
+        {
+            StopCoroutine(firstTryBlink);
+            firstTryBlink = null;
+        }
+        if (attemptsText != null)
+            attemptsText.color = attemptsBaseColor;
 
         if (colorBackground != null)
             colorBackground.alpha = 0f;

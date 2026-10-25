@@ -34,7 +34,23 @@ public class LevelStatsTracker : MonoBehaviour
     private bool timerRunning = false;
     private PlayerHealth trackedHealth;
 
-    private string AttemptKey => "Attempts_" + SceneManager.GetActiveScene().buildIndex;
+    private string AttemptKey => AttemptKeyFor(SceneManager.GetActiveScene().buildIndex);
+    private static string AttemptKeyFor(int buildIndex) => "Attempts_" + buildIndex;
+
+    /// <summary>Efface le compteur d'essais d'un niveau (nouvelle partie).</summary>
+    public static void ResetAttempts(int buildIndex)
+    {
+        PlayerPrefs.DeleteKey(AttemptKeyFor(buildIndex));
+    }
+
+    /// <summary>DevPanel : la tentative en cours redevient la premiere (pour tester "First try !").</summary>
+    public void SetCurrentRunAsFirstAttempt()
+    {
+        AttemptCount = 1;
+        PlayerPrefs.SetInt(AttemptKey, AttemptCount);
+        PlayerPrefs.Save();
+        Debug.Log($"[LevelStats] Essais remis a 1 — scene {SceneManager.GetActiveScene().name}");
+    }
 
     // ============================================
     // UNITY LIFECYCLE

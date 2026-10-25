@@ -144,6 +144,14 @@ public class DevPanel : MonoBehaviour
         GUILayout.Label("— Niveau —");
         bool newOpenDoor = GUILayout.Toggle(openDoor, " Porte ouverte (sans cle)");
 
+        // Action ponctuelle, pas une option retenue
+        LevelStatsTracker stats = LevelStatsTracker.Instance;
+        GUI.enabled = stats != null;
+        string attemptsLabel = stats != null ? " (actuel : " + stats.AttemptCount + ")" : "";
+        if (GUILayout.Button("Essais remis a 1" + attemptsLabel))
+            stats.SetCurrentRunAsFirstAttempt();
+        GUI.enabled = true;
+
         if (newInvincible != invincible || newNoDetection != noDetection || newOpenDoor != openDoor)
         {
             bool doorJustOpened = newOpenDoor && !openDoor;
