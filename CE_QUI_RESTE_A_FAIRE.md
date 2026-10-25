@@ -63,6 +63,13 @@
 
 - [ ] 🟡 **Player — animations tomates** : stance de visée (lock-on actif) + animation de lancer au moment du tir + **animation de strafe** pendant la visée (rappel du 2026-10-25)
 - [ ] 🟡 **SlipperyZone — corps du joueur glissant à la mort** (noté le 2026-10-25) : quand le joueur meurt sur une surface glissante, son corps (ragdoll) doit glisser lui aussi au lieu de s'arrêter net
+- [ ] 🟡 **Effet de lave dans tous les niveaux à lave** (noté le 2026-10-25). **Comment c'est fait** (relevé dans `Level_Race_Lava`, la scène la plus complète) — trois couches, toutes posées à la main dans la scène (pas de prefab, sauf les particules de LavaTrain01) :
+  1. **Remplissage de la fosse** : matériau `Materials/Magma_001` (shader `Shaders/Magma001.shadergraph`), apporté automatiquement par `LavaContentType` → `LavaFillContent` ; variante `Magma_001_Transparent` posée à la main sur certains `SplinePit_Fill`.
+  2. **Halo de chaleur `LAVA_Fresnel`** : des **Quads** (échelle 3) au bord des fosses, matériau `Shaders/Apprentissage Shaders/Lava_Temp.mat` (shader `Lava_Temp.shadergraph` : fresnel, voronoi animé, couleurs lave / glow). Variante `Lava_Temp2` dans Coin Race Lava.
+  3. **Particules de chaleur** : `Particle System Left/Right` avec le matériau `HeatParticles.mat` ; prefab équivalent `Prefabs/Particles/LavaPit_Particles` (utilisé seulement dans LavaTrain01).
+  - **État par scène** (d'après les références dans les fichiers, pas vérifié à l'œil) : halo + particules dans LavaTrain01, Race Lava, Coin Race Lava, Race Slippery. **Remplissage seul** (halo et particules manquants) : LavaTrain02, LavaTrain03, Pit'em All, Go with the Flow II, Western Canyon.
+  - Piste (non tranchée) : faire un prefab « bord de lave » (quad halo + particules) pour ne pas tout refaire à la main dans chaque scène.
+- [ ] 🟡 **Modéliser le coffre à tomates** (noté le 2026-10-25) : `Prefabs/TomatoSystem/TomatoCrate` est encore un **cube primitif** (script `TomatoCrate`), utilisé dans 5 scènes → remplacer le visuel par un vrai modèle dans le prefab (les scènes suivront)
 - [ ] 🟡 **Player — anim « cherche l'équilibre » sur sol glissant** (noté le 2026-10-19) : stick relâché, tant que le joueur glisse au-dessus d'une certaine vitesse, jouer une anim de recherche d'équilibre au lieu de l'idle (aujourd'hui : idle forcé, cf. `PlayerPhysicsMovement`, branche `isSlippery` de l'anim)
 - [ ] ⚪ **Player — crouch en marche à quatre pattes** (noté le 2026-10-19) : remplacer l'animation de crouch (état `Crouch Locomotion`) par une marche à quatre pattes
 - [ ] ⚪ **KeyCollectible — particules ramassage** : effet radial au pickup + petites étoiles qui suivent le joueur s'il se déplace après ramassage
