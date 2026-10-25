@@ -235,7 +235,7 @@
 - **Vignette rouge de dégâts** (`GameUIManager.damageVignette`) : overlay plein écran, écoute un seul `PlayerHealth` (`FindObjectOfType` si champ vide, donc arbitraire avec deux joueurs : c'était le joueur 2, et `Revive()` la déclenchait). **Décision : désactivée en multi** (GameObject de l'image décoché dans la scène, pas de code). Un feedback de dégâts par joueur reste dans la partie HUD par joueur.
 - **✅ Validé (2026-09-20)** : respawn des deux joueurs, ragdoll, caméra, immunité, glace et accroupi. Solo testé sans anomalie.
 - **Caméra de mort (corrigé, commit `20167676`)** : `DeathSequence` remplaçait la cible 0 de tous les target groups de la scène par les hanches du mort, donc chaque moitié d'écran basculait sur le cadavre de l'autre joueur. Option `onlyOwnTargetGroups` (décochée par défaut = solo inchangé, à cocher sur les deux joueurs en multi) : seuls les groupes dont la cible 0 est ce joueur ou un de ses enfants sont touchés. Validé.
-- **Reste** : `LevelStatsTracker` et `PlayerHealthUI` (barre de vie, trouvée par `FindObjectOfType`) suivent un seul joueur.
+- **Reste** : `LevelStatsTracker` suit un seul joueur. (`PlayerHealthUI` : une barre par joueur depuis le 2026-10-25, `GameUIManager` gère `healthBar2` comme `staminaBar2`.)
 
 ## Caméras et début de niveau en multi — décisions (2026-09-20)
 
@@ -319,7 +319,7 @@ La liste ci-dessous (état au 2026-09-20) sert toujours à décider sur quoi tra
 
 ### Respawn : à surveiller
 - Le solo recharge la scène, donc tout état que la mort n'annule pas survit au respawn multi (déjà corrigés : glace, accroupi). **Restent à vérifier en test** : dash, balayage, poussée, groggy / groggy-stun, escalade, grab, gel, ralentissements d'eau / essaim / Bright Eyes, contact ennemi. **Si la liste grossit vite, passer à la recréation du joueur depuis le prefab (spawner).**
-- Suivent encore un seul joueur : `PlayerHealthUI` (barre de vie, `FindObjectOfType`), `LevelStatsTracker`, `GameUIManager` (vignette rouge, désactivée en multi).
+- Suivent encore un seul joueur : `LevelStatsTracker`, `GameUIManager` (vignette rouge, désactivée en multi).
 
 ### Structure et flux de jeu
 
@@ -394,7 +394,7 @@ La liste ci-dessous (état au 2026-09-20) sert toujours à décider sur quoi tra
 - **Décision** : les trois scènes multi (`Level_Race_Lava`, `Level_Race_Slippery`, `Level_CoinRace_Lava`) utilisent un nouveau prefab `UI_Prefabs/UI_Multi.prefab` au lieu du prefab `UI` partagé avec le solo. **Copie indépendante, pas un Prefab Variant** : un Variant interdit de déplacer les objets hérités dans la hiérarchie (il fallait passer `OptionsPanel` au-dessus des vignettes multi), et l'UI multi va de toute façon diverger du solo. **Conséquence : plus aucune propagation `UI` → `UI_Multi`** — un correctif fait dans l'UI solo est à reporter à la main côté multi si besoin. Le prefab `UI` (solo) n'a pas été touché.
 - **Création** : depuis l'instance `UI` de `Level_CoinRace_Lava` (Unpack d'un niveau, pour garder les prefabs imbriqués `OptionsPanel`, `CommentManager`, `EnemyIconsContainer` liés → Original Prefab). Le prefab contient donc ce qui était avant en overrides de scène : `Score_Player1/2`, `StaminaBar_Player2`, `PressureGauge_Player2`, `ScreenFX`, `TimerText` ×2, + `TomatoUI_P2` (repris de `Level_Race_Lava`). Mise en page de la Coin Race adoptée par les courses (jauges en bas, 150×150).
 - **États par défaut dans `UI_Multi`** : titre du compte à rebours **vide** (voulu pour tout le multi), `DamageVignette` **désactivée** (en attendant le chantier vignettes mi-écran, cf. « Vignette rouge de dégâts par joueur »), `TimerText` ×2 **désactivés** (réactivés en override seulement dans `Level_CoinRace_Lava`), `VignetteTest`, `CadreTV`, `CreditBar`, `LockPipContainer` actifs.
-- **Références de scène, à réassigner si on pose `UI_Multi` dans une nouvelle scène multi** (un prefab ne peut pas référencer des objets de scène) : `StaminaBar` / `StaminaBar_Player2.playerMovement` (J1/J2), `PlayerHealthBar.playerHealth` (J1 — sinon `FindObjectOfType`, joueur au hasard), `PressureGauge` / `PressureGauge_Player2.cycleManager`, `TomatoUI` / `TomatoUI_P2.throwSystem` (J1/J2) ; dans l'autre sens, `MultiScoreDisplay` ou `CoinWalletDisplay` (`leftText`/`rightText` → `Score_Player1/2`) et `MultiCoinRaceManager.timerTexts`. Vérifié sur les trois scènes.
+- **Références de scène, à réassigner si on pose `UI_Multi` dans une nouvelle scène multi** (un prefab ne peut pas référencer des objets de scène) : `StaminaBar` / `StaminaBar_Player2.playerMovement` (J1/J2), `PlayerHealthBar` / `PlayerHealthBar_Player2.playerHealth` (J1/J2 — sinon `FindObjectOfType`, joueur au hasard ; **`PlayerHealthBar_Player2` est un objet ajouté dans la scène, pas dans le prefab** : à recréer dans chaque nouvelle scène multi, présent dans Race Lava et Coin Race Lava au 2026-10-25), `PressureGauge` / `PressureGauge_Player2.cycleManager`, `TomatoUI` / `TomatoUI_P2.throwSystem` (J1/J2) ; dans l'autre sens, `MultiScoreDisplay` ou `CoinWalletDisplay` (`leftText`/`rightText` → `Score_Player1/2`) et `MultiCoinRaceManager.timerTexts`. Vérifié sur les trois scènes.
 - **Inchangé** : la bulle d'interaction (`InteractBubble`) reste affichée sur l'écran J1 (bug ouvert, voir « Bugs »).
 - **Revert** : `git revert b6392841 366beea6 8bf3ce8e` (dans cet ordre) ramène les trois scènes sur `UI`.
 

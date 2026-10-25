@@ -30,6 +30,7 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private GameObject enemyIconsContainer;
 
     private GameObject healthBar;
+    private GameObject healthBar2;
     private GameObject staminaBar;
     private GameObject staminaBar2;
     private GameObject sprayBar;
@@ -39,6 +40,7 @@ public class GameUIManager : MonoBehaviour
     public void HideGameplayBars()
     {
         if (healthBar != null) healthBar.SetActive(false);
+        if (healthBar2 != null) healthBar2.SetActive(false);
         if (staminaBar != null) staminaBar.SetActive(false);
         if (staminaBar2 != null) staminaBar2.SetActive(false);
         if (sprayBar != null) sprayBar.SetActive(false);
@@ -50,16 +52,20 @@ public class GameUIManager : MonoBehaviour
 
     public void ShowGameplayBars()
     {
-        if (healthBar != null)
-        {
-            PlayerHealthUI phui = healthBar.GetComponent<PlayerHealthUI>();
-            if (phui == null || phui.ShouldShow) healthBar.SetActive(true);
-        }
+        ShowHealthBar(healthBar);
+        ShowHealthBar(healthBar2);
         if (staminaBar != null) staminaBar.SetActive(true);
         if (staminaBar2 != null) staminaBar2.SetActive(true);
         if (pressureGauge != null) pressureGauge.SetActive(true);
         if (pressureGauge2 != null) pressureGauge2.SetActive(true);
         if (enemyIconsContainer != null) enemyIconsContainer.SetActive(true);
+    }
+
+    private void ShowHealthBar(GameObject bar)
+    {
+        if (bar == null) return;
+        PlayerHealthUI phui = bar.GetComponent<PlayerHealthUI>();
+        if (phui == null || phui.ShouldShow) bar.SetActive(true);
     }
 
     void Start()
@@ -72,8 +78,10 @@ public class GameUIManager : MonoBehaviour
         if (staminaBarFollowers.Length > 0) staminaBar = staminaBarFollowers[0].gameObject;
         if (staminaBarFollowers.Length > 1) staminaBar2 = staminaBarFollowers[1].gameObject;
 
-        PlayerHealthUI playerHealthUI = FindObjectOfType<PlayerHealthUI>(true);
-        if (playerHealthUI != null) healthBar = playerHealthUI.gameObject;
+        // Multi : 2e barre de vie (joueur 2) ; solo : une seule, healthBar2 reste null
+        PlayerHealthUI[] playerHealthUIs = FindObjectsOfType<PlayerHealthUI>(true);
+        if (playerHealthUIs.Length > 0) healthBar = playerHealthUIs[0].gameObject;
+        if (playerHealthUIs.Length > 1) healthBar2 = playerHealthUIs[1].gameObject;
 
         // === FIX : Trouver PlayerHealth automatiquement si non assign� ===
         if (playerHealth == null)

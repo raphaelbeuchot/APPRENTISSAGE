@@ -2131,7 +2131,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 450, y: -450}
+  m_AnchoredPosition: {x: 151.39743, y: -450}
   m_SizeDelta: {x: 150, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1634944238315510725
@@ -2147,10 +2147,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StaminaBarFollower
   playerMovement: {fileID: 0}
-  pipDiameter: 40
+  pipDiameter: 30
   outlineExtra: 4
   overlapRatio: 0.5
-  staminaPerPip: 12.5
+  staminaPerPip: 25
   pipSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   pipColorActive: {r: 0.654902, g: 0.7529412, b: 0.31764707, a: 1}
   bonusColorActive: {r: 1, g: 0.7411765, b: 0, a: 1}
@@ -3061,9 +3061,9 @@ RectTransform:
   - {fileID: 7311692551129243285}
   m_Father: {fileID: 627791541737380860}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: -250, y: 150}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -250, y: -425}
   m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &5780898238209635587
@@ -3081,7 +3081,7 @@ MonoBehaviour:
   cycleManager: {fileID: 0}
   pipSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   pipCount: 24
-  radius: 50
+  radius: 40
   releaseFillDuration: 0.5
   pipDiameterMin: 10
   pipDiameterMax: 45
@@ -3901,9 +3901,9 @@ RectTransform:
   - {fileID: 1063782700471634465}
   m_Father: {fileID: 627791541737380860}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 320, y: -170}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -817.2274, y: -400}
   m_SizeDelta: {x: 150, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2330060130319201980
@@ -3927,11 +3927,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealthUI
   playerHealth: {fileID: 0}
-  showHealthBar: 0
-  pipDiameter: 40
+  showHealthBar: 1
+  pipDiameter: 30
   outlineExtra: 4
-  overlapRatio: 1.5
-  healthPerPip: 50
+  overlapRatio: 0.5
+  healthPerPip: 25
   pipSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   pipColorActive: {r: 1, g: 0.44046083, b: 0, a: 1}
   bonusColorActive: {r: 1, g: 0.6401813, b: 0, a: 1}
@@ -5346,9 +5346,9 @@ RectTransform:
   - {fileID: 3343261869200243873}
   m_Father: {fileID: 627791541737380860}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 750, y: 150}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 750, y: -425}
   m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &8595133572325849413
@@ -5366,7 +5366,7 @@ MonoBehaviour:
   cycleManager: {fileID: 0}
   pipSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   pipCount: 24
-  radius: 50
+  radius: 40
   releaseFillDuration: 0.5
   pipDiameterMin: 10
   pipDiameterMax: 45
@@ -6754,7 +6754,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -525, y: -450}
+  m_AnchoredPosition: {x: -817.22736, y: -450}
   m_SizeDelta: {x: 150, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2374540405834367695
@@ -6770,10 +6770,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StaminaBarFollower
   playerMovement: {fileID: 0}
-  pipDiameter: 40
+  pipDiameter: 30
   outlineExtra: 4
   overlapRatio: 0.5
-  staminaPerPip: 12.5
+  staminaPerPip: 25
   pipSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   pipColorActive: {r: 0.654902, g: 0.7529412, b: 0.31764707, a: 1}
   bonusColorActive: {r: 1, g: 0.7411765, b: 0, a: 1}
@@ -6868,6 +6868,10 @@ PrefabInstance:
     - target: {fileID: 3770048622991627839, guid: 0e99d5a2c767cf541a151313c686dba0, type: 3}
       propertyPath: m_Name
       value: CommentManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 4931734271627791128, guid: 0e99d5a2c767cf541a151313c686dba0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7780932887270023222, guid: 0e99d5a2c767cf541a151313c686dba0, type: 3}
       propertyPath: m_Pivot.x
