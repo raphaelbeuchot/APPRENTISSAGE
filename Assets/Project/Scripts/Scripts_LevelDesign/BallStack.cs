@@ -28,8 +28,9 @@ public class BallStack : MonoBehaviour
     [Range(0.1f, 1.5f)] public float taper = 0.6f;
     [Tooltip("Variation aleatoire du rayon de chaque boule (0.2 = +/- 20 %).")]
     [Range(0f, 0.8f)] public float scaleVariation = 0.2f;
-    [Tooltip("Enfoncement de chaque boule dans la precedente. 0 = posees, 0.5 = soudees a mi-rayon.")]
-    [Range(0f, 0.9f)] public float overlap = 0.35f;
+    [Tooltip("Enfoncement de chaque boule dans la precedente. 0 = posees, 0.5 = soudees a mi-rayon, " +
+             "< 0 = espacees (boules separees, en chapelet), -1 = ecart egal a la somme des deux rayons.")]
+    [Range(-1f, 0.9f)] public float overlap = 0.35f;
 
     [Header("Desordre")]
     [Tooltip("Decalage horizontal aleatoire de chaque boule par rapport a la precedente, en fraction de son rayon. " +
