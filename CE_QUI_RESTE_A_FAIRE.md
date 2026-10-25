@@ -34,6 +34,11 @@
 - [ ] 🟡 **Fixer le nombre de niveaux et s'y tenir** (noté le 2026-10-25) : arrêter un nombre de niveaux pour la campagne et ne plus en dévier (lien avec `STRUCTURE_CAMPAGNE.md` et le `LevelCatalog`)
 - [ ] 🟡 **Remettre un écran de sélection de niveau** (noté le 2026-10-25, **à étudier**) : à mettre en regard de l'idée « accès dev aux niveaux » (DevPanel + `LevelCatalog`) et de l'ancien LevelSelect
 - [ ] 🟡 **Démo — essayer de fixer les choses** (noté le 2026-10-25) : à préciser (contenu, niveaux inclus, problèmes constatés)
+  - **Décidé le 2026-10-25 : d'abord une démo de playtest fermé** (joueurs choisis). Publique, éditeur ou autoédition : plus tard, à la lumière du playtest (risque de clonage IA discuté : le concept 1, 2, 3 Soleil n'est pas protégeable, la valeur est dans le contenu ; pour une démo publique, montrer moins de mécaniques, sortir tard, build IL2CPP).
+  - **Multi : tout montrer** (Race Lava, Race Slippery, Race Void, Coin Race Lava). Manques pour un playtest : barre de vie J2 absente de Race Slippery / Race Void, pas de pause ni de retour menu en multi, pas d'écran d'assignation des manettes.
+  - **Solo : 20 niveaux retenus** (tous « à retravailler ») — numéros de l'ordre actuel du catalogue : 1 It's Show Time, 2 Caution floor slippery, 3 Go for a Spin, 4 Handle Hurdles, 5 Strange Attractor, 6 Go with the flow, 7 Rush Hour I, 8 Death Row I, 9 TomaThrow, 10 Lava Train I, 13 Go with the Flow II, 15 Lava Train II, 16 Flower Power I, 17 Western Canyon, 18 Pit'em All, 19 Lava Train III, 20 Flower Power II, 22 Flower Power III, 23 Void I, 26 Rush Hour IV.
+  - **Écartés** : 11 Rush Hour III, 12 Bowling I, 14 Rush Hour II, 21 Bowling III, 24 Meet the Staff, 25 Bowling II.
+  - À faire ensuite : comment la démo connaît sa liste (catalogue « Démo » séparé ou case par niveau), écran de fin de démo, build ne contenant que les scènes de la démo.
 - [ ] 🔴 **Boss final** — ajouter un boss de fin de jeu : à définir (arène, pattern d'attaques, phases, mise en scène d'intro/mort, musique dédiée)
 
 ---
