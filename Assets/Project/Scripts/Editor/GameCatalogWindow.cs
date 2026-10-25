@@ -16,7 +16,7 @@ public class GameCatalogWindow : EditorWindow
     private const float ObservedColumnWidth = 75f;
     private static readonly List<CatalogCheck> ObservedChecks = CatalogChecks.For(CatalogChecks.GameCatalog);
     // Colonnes a droite de la colonne Niveau : Balai, Spray, observees, Collectibles
-    private static float ColumnsWidth => 2f * ToggleColumnWidth + ObservedChecks.Count * ObservedColumnWidth + CollectiblesWidth;
+    private static float ColumnsWidth => 3f * ToggleColumnWidth + ObservedChecks.Count * ObservedColumnWidth + CollectiblesWidth;
     private const float FieldLabelWidth = 125f;
 
     private LevelCatalog catalog;
@@ -148,7 +148,8 @@ public class GameCatalogWindow : EditorWindow
         EditorGUI.LabelField(new Rect(rect.x + 14f, rect.y, levelWidth - 14f, rect.height), "Niveau", EditorStyles.boldLabel);
         EditorGUI.LabelField(new Rect(x, rect.y, ToggleColumnWidth, rect.height), "Balai", centeredLabel);
         EditorGUI.LabelField(new Rect(x + ToggleColumnWidth, rect.y, ToggleColumnWidth, rect.height), "Spray", centeredLabel);
-        x += 2f * ToggleColumnWidth;
+        EditorGUI.LabelField(new Rect(x + 2f * ToggleColumnWidth, rect.y, ToggleColumnWidth, rect.height), "Demo", centeredLabel);
+        x += 3f * ToggleColumnWidth;
         for (int i = 0; i < ObservedChecks.Count; i++)
             CatalogChecks.DrawHeaderCell(new Rect(x + i * ObservedColumnWidth, rect.y, ObservedColumnWidth, rect.height), ObservedChecks[i], centeredLabel);
         x += ObservedChecks.Count * ObservedColumnWidth;
@@ -186,7 +187,8 @@ public class GameCatalogWindow : EditorWindow
         LevelCatalogEntry catalogEntry = index < catalog.levels.Count ? catalog.levels[index] : null;
         DrawBroomToggle(new Rect(x, columnsY, ToggleColumnWidth, Line), entry.FindPropertyRelative("hasBroom"), catalogEntry);
         DrawCenteredToggle(new Rect(x + ToggleColumnWidth, columnsY, ToggleColumnWidth, Line), entry.FindPropertyRelative("hasSpray"));
-        x += 2f * ToggleColumnWidth;
+        DrawCenteredToggle(new Rect(x + 2f * ToggleColumnWidth, columnsY, ToggleColumnWidth, Line), entry.FindPropertyRelative("inDemo"));
+        x += 3f * ToggleColumnWidth;
         for (int i = 0; i < ObservedChecks.Count; i++)
             CatalogChecks.DrawCell(new Rect(x + i * ObservedColumnWidth, columnsY, ObservedColumnWidth, Line), catalogEntry, ObservedChecks[i]);
         x += ObservedChecks.Count * ObservedColumnWidth;
