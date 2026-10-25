@@ -30,6 +30,9 @@
 - [ ] 🟡 **Ramassage du balai (narratif)** — InteractBubble sur le balai en StartRoom → appel `EquipBroom()` à ajouter dans `PlayerLoadout` (faisable à la volée : `SetLoadout` est déjà publique, il suffit d'activer le GO + notifier `PlayerInputManager`)
   - **Direction du 2026-10-15** : le balai devient un accessoire d'épisode, comme les tomates → **socle de prise** placé selon le niveau (début ou milieu) + **socle de dépôt** en sortie (« Pour continuer, merci de déposer votre balai », hyper rapide et arcade) ; en multi, balai toujours équipé. Voir `STRUCTURE_CAMPAGNE.md`.
 - [ ] ⚪ **EnemyAI_Astar** — revoir le comportement après hit raté : garder l'ennemi en Chase plutôt que retomber en Idle
+- [ ] 🟡 **Fixer le nombre de niveaux et s'y tenir** (noté le 2026-10-25) : arrêter un nombre de niveaux pour la campagne et ne plus en dévier (lien avec `STRUCTURE_CAMPAGNE.md` et le `LevelCatalog`)
+- [ ] 🟡 **Remettre un écran de sélection de niveau** (noté le 2026-10-25, **à étudier**) : à mettre en regard de l'idée « accès dev aux niveaux » (DevPanel + `LevelCatalog`) et de l'ancien LevelSelect
+- [ ] 🟡 **Démo — essayer de fixer les choses** (noté le 2026-10-25) : à préciser (contenu, niveaux inclus, problèmes constatés)
 - [ ] 🔴 **Boss final** — ajouter un boss de fin de jeu : à définir (arène, pattern d'attaques, phases, mise en scène d'intro/mort, musique dédiée)
 
 ---
@@ -58,7 +61,8 @@
 
 *(son, feel, visuel, animations, feedbacks)*
 
-- [ ] 🟡 **Player — animations tomates** : stance de visée (lock-on actif) + animation de lancer au moment du tir
+- [ ] 🟡 **Player — animations tomates** : stance de visée (lock-on actif) + animation de lancer au moment du tir + **animation de strafe** pendant la visée (rappel du 2026-10-25)
+- [ ] 🟡 **SlipperyZone — corps du joueur glissant à la mort** (noté le 2026-10-25) : quand le joueur meurt sur une surface glissante, son corps (ragdoll) doit glisser lui aussi au lieu de s'arrêter net
 - [ ] 🟡 **Player — anim « cherche l'équilibre » sur sol glissant** (noté le 2026-10-19) : stick relâché, tant que le joueur glisse au-dessus d'une certaine vitesse, jouer une anim de recherche d'équilibre au lieu de l'idle (aujourd'hui : idle forcé, cf. `PlayerPhysicsMovement`, branche `isSlippery` de l'anim)
 - [ ] ⚪ **Player — crouch en marche à quatre pattes** (noté le 2026-10-19) : remplacer l'animation de crouch (état `Crouch Locomotion`) par une marche à quatre pattes
 - [ ] ⚪ **KeyCollectible — particules ramassage** : effet radial au pickup + petites étoiles qui suivent le joueur s'il se déplace après ramassage
