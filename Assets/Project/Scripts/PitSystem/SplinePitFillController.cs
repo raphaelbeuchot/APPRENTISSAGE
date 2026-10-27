@@ -18,7 +18,17 @@ public class SplinePitFillController : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         IPitInteractable interactable = other.GetComponent<IPitInteractable>();
-        if (interactable == null) return;
+        if (interactable == null)
+        {
+            // Cadavre en ragdoll pousse dans la fosse (meme cas que PitFillDamageController)
+            if (other.gameObject.name.Contains("Hips"))
+            {
+                CorpsePitHandler corpse = other.GetComponentInParent<CorpsePitHandler>();
+                if (corpse != null && fillContentType != null)
+                    corpse.OnEnterPit(fillContentType.category);
+            }
+            return;
+        }
         if (!interactable.CanTakePitDamage()) return;
 
         GameObject go = interactable.GetGameObject();
