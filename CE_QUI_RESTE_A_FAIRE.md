@@ -97,6 +97,10 @@
 - [ ] 🟡 **Multi — sons de victoire et de défaite** (noté le 2026-10-25) : un son pour le gagnant et un pour le perdant (écrans YOU WIN / YOU LOSE)
 - [ ] ⚪ **Effet « vieil écran » (TV cathodique)** (noté le 2026-10-25) : un premier jet existe, surtout en multi, mais il ne convainc qu'à moitié. Dans `UI_Multi` : `ScreenFX` (image plein écran, matériau `Shaders/Apprentissage Shaders/ScreenFX.mat`, shader graph `ScreenFX`), `CadreTV` (cadre de télé, matériau `Materials/TVFrame_StencilWrite`, shader `Shaders/TVFrame_StencilMask.shader`) et `VignetteTest` (sprite). Le prefab solo `UI` en reprend une partie. À retravailler (direction à définir), puis à mettre aussi en solo.
 - [ ] ⚪ **Audio — BroomAttack sur Prop** : bruitage au hit d'un GO layer "Prop" — champ à assigner dans l'inspecteur de `PhysicsProp`. Backlog : envisager des ScriptableObjects par type de prop pour varier les sons
+- [ ] ⚪ **Surfaces — ultra polish** (noté le 2026-10-27) : le système de surfaces existe (SO `SurfaceType` + composant `Surface`, lus par `FootstepController`, commit `fc838bc5`) ; chaque idée = un champ de plus dans `SurfaceType`.
+  - **Sons** : atterrissage du lunge selon la surface ; boucle de glisse (glace, flaque) ; pas accroupi plus feutrés ; pas des ennemis ; impacts (tomate écrasée, chute de ragdoll, bouteille) selon la surface touchée.
+  - **Visuel** : petites bouffées aux pas (poussière sur le béton, peluches sur la moquette, éclaboussures dans l'eau) ; empreintes pendant quelques mètres après une flaque, de l'acide ou du sang (le nettoyeur salit en nettoyant).
+  - Principe suggéré, non tranché : `SurfaceType` = habillage seulement (son, effets, traces), le gameplay reste aux systèmes existants (`SlipperyZone`, `PitContentType`, tapis).
 
 ---
 
