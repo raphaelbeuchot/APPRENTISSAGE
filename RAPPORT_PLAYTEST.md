@@ -12,11 +12,11 @@
 - [ ] Murs, marquee lights et caméra ne disparaissent pas après la victoire
 
 ### Go for a Spin
-- [ ] Sol de la cabine de StartRoom un peu surélevé par rapport à la StartZone (regarder les overrides du prefab)
+- [x] Sol de la cabine de StartRoom un peu surélevé par rapport à la StartZone (regarder les overrides du prefab)
 - [ ] Murs latéraux : épaisseur à 0,2 et hauteur à baisser
 
 ### Handle Hurdles
-- [ ] Sol de la cabine de StartRoom surélevé, comme Go for a Spin (overrides ?)
+- [x] Sol de la cabine de StartRoom surélevé, comme Go for a Spin (overrides ?)
 
 ### Strange Attractor
 - [ ] Le joueur apparaît dans la salle StartRoom, pas dans la cabine
@@ -39,13 +39,13 @@
 - [ ] Pas de VictoryManager ni de TransitionRoom ? (à vérifier)
 
 ### Lava Train I
-- [ ] Cercles concentriques de la sentinelle un peu bas au-dessus de la porte
+- [x] Cercles concentriques de la sentinelle un peu bas au-dessus de la porte
 - [ ] Le ground et les marquee lights ne disparaissent pas à la victoire
 - [ ] TransitionRoom trop haute
 - [ ] Pas de `PostVictoryBounds`
 
 ### Lava Train II
-- [ ] Cercles concentriques trop bas
+- [x] Cercles concentriques trop bas
 - [ ] La TomatoUI ne disparaît pas à la victoire
 
 ### Trou normand (`Level_TrouNormand`, hors catalogue)
