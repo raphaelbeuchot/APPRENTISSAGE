@@ -52,6 +52,18 @@ Principes communs :
 
 **Raccorder deux murs proprement** — l'équivalent du snap V (sommets), mais pour des faces. Aujourd'hui : par le pivot (cf. ci-dessus), ou V sur un coin si les deux bouts sont déjà orientés pareil. Piste proposée, **non tranchée** : boutons « Mur suivant » dans l'inspecteur de CurvedWall (même sens / sens inverse = virage en S), qui dupliquent et placent le mur à la suite. Question ouverte : couper automatiquement les arêtes de bout au raccord, ou laisser la main. Plus tard éventuellement : raccord RoundedBlock droit ↔ mur courbe.
 
+## PerforatedWall — mur droit à ouvertures (discuté le 2026-10-28, pas codé)
+
+Portes, fenêtres et niches dans des murs, sans ProBuilder (« détestable sur le nouveau Unity »). Sur nos propres blocs seulement.
+
+- **Composant à part** (nom provisoire `PerforatedWall`), comme CurvedWall : le trou actuel de RoundedBlock relie contour et trou point à point (un seul trou intérieur), ce qui ne permet ni plusieurs trous, ni une porte qui mange le bord, ni une niche. RoundedBlock n'est pas touché.
+- **Mur** : largeur, hauteur, épaisseur ; **mêmes options que les autres blocs**, surtout les coins arrondis.
+- **Ouvertures** : position, largeur, hauteur, coins arrondis ; traversante ou **niche** (profondeur) ; une ouverture qui touche un bord le **mange** (porte = hauteur 0) ; plus tard **plusieurs**, puis **répétées** en ligne ou en trame N × M.
+- **Bord des ouvertures** : **biseau droit**, taille **par arête (haut, bas, gauche, droite)**.
+- Matériau séparé pour la tranche des ouvertures.
+- Contexte perf : voir `CE_QUI_RESTE_A_FAIRE.md` (pas de bake, mesh reconstruit au chargement comme les autres outils).
+- Non tranché : arche (haut en demi-cercle).
+
 ## Autres idées d'outils (non tranchées)
 
 - **Tour** : profil révolu autour d'un axe (colonnes, balustres, vases), angle partiel. L'utilisateur voudrait **dessiner le profil** (silhouette éditable dans la scène) plutôt que régler une courbe ; ce profil dessiné pourrait aussi servir à RoundedBlock.
