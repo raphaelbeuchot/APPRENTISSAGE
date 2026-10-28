@@ -52,7 +52,7 @@ Principes communs :
 
 **Raccorder deux murs proprement** — l'équivalent du snap V (sommets), mais pour des faces. Aujourd'hui : par le pivot (cf. ci-dessus), ou V sur un coin si les deux bouts sont déjà orientés pareil. Piste proposée, **non tranchée** : boutons « Mur suivant » dans l'inspecteur de CurvedWall (même sens / sens inverse = virage en S), qui dupliquent et placent le mur à la suite. Question ouverte : couper automatiquement les arêtes de bout au raccord, ou laisser la main. Plus tard éventuellement : raccord RoundedBlock droit ↔ mur courbe.
 
-## PerforatedWall — mur droit à ouvertures (étapes 1 à 3 validées le 2026-10-28)
+## PerforatedWall — mur droit à ouvertures (étapes 1 à 4 validées, 2026-10-28 et 29)
 
 **Étape 1 faite** (`PerforatedWall.cs`) : mur droit (coins arrondis liés ou A-D), une ouverture (position, taille, coins liés ou A-D), Bord = Aucun / Bas (porte) / Haut / Gauche / Droite, niche (profondeur, face avant ou arrière), matériaux séparés (0 faces, 1 tranche extérieure, 2 intérieur de l'ouverture), MeshCollider. Ouverture qui déborde ou tombe dans un arrondi du mur : non percée, message dans l'Inspector. Arche = porte avec coins C et D à la demi-largeur.
 - Faces triangulées par oreilles (trou relié au contour par un pont) : topologie en longs triangles fins, **sans effet** sur l'éclairage ni les textures (normales et UV projetés). À revoir seulement si on veut un jour déformer le mur ou peindre des couleurs par sommet.
@@ -61,7 +61,8 @@ Principes communs :
 - Idées en attente, non tranchées : emplacement de matériau à part pour l'ébrasement (aujourd’hui avec la tranche de l’ouverture, élément 2 ; le fond de niche a son propre élément 3 depuis le 2026-10-28) ; **vitre** (panneau qui bouche l'ouverture, position dans l'épaisseur, matériau propre, bloque ou non le joueur).
 - Inspector entièrement en français (2026-10-28) ; noms des champs restés en anglais dans le code.
 - **Étape 3 faite (2026-10-28) : plusieurs ouvertures** — liste repliable (Ajouter, Dupliquer décalé à côté, Supprimer), chaque ouverture avec tous ses réglages (bord mangé, niche avant/arrière, ébrasement) ; plusieurs portes sur un même bord, niche qui mange un bord. Chevauchement (rectangles englobants à moins de 1 cm) refusé, message avec le numéro. Ancienne ouverture unique reprise automatiquement en « Ouverture 1 ». Triangulation : ponts trou → contour par rayon horizontal vers la droite (l’ancienne recherche du point visible le plus proche cassait avec des trous alignés verticalement).
-- **Suite** : étape 4 répétition en ligne / trame (réglage « Répéter » par ouverture, à discuter).
+- **Étape 4 faite (2026-10-29) : répétition** — case Répéter par ouverture : Nombre en X / Y, Écart X / Y (mur plein entre deux copies). Groupe centré sur Position X, rangée du bas à Position Y ; porte (Bas/Haut) répétée en X seulement, Gauche/Droite en Y seulement. Chaque copie vérifiée seule (« Ouverture 1, copie 4 : sort du mur »). Dupliquer décale de tout le groupe. Idée gardée, pas rejetée : bouton « Remplir » (nombre de copies calculé pour un écart donné).
+- Idées en attente pour la suite, non tranchées : matériau à part pour l’ébrasement, vitre, bouton Remplir.
 
 Notes de conception (discussion du 2026-10-28) :
 
