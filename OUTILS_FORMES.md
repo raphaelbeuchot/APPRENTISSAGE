@@ -56,7 +56,10 @@ Principes communs :
 
 **Étape 1 faite** (`PerforatedWall.cs`) : mur droit (coins arrondis liés ou A-D), une ouverture (position, taille, coins liés ou A-D), Bord = Aucun / Bas (porte) / Haut / Gauche / Droite, niche (profondeur, face avant ou arrière), matériaux séparés (0 faces, 1 tranche extérieure, 2 intérieur de l'ouverture), MeshCollider. Ouverture qui déborde ou tombe dans un arrondi du mur : non percée, message dans l'Inspector. Arche = porte avec coins C et D à la demi-largeur.
 - Faces triangulées par oreilles (trou relié au contour par un pont) : topologie en longs triangles fins, **sans effet** sur l'éclairage ni les textures (normales et UV projetés). À revoir seulement si on veut un jour déformer le mur ou peindre des couleurs par sommet.
-- **Suite** : étape 2 biseau droit par arête des ouvertures, étape 3 plusieurs ouvertures, étape 4 répétition en ligne / trame.
+- **Étape 2 faite (2026-10-28) : ébrasement** — après essai d'un biseau d'arête (pas ce que voulait l'utilisateur), les faces intérieures de l'ouverture sont inclinées sur toute l'épaisseur (ou toute la profondeur d'une niche) : taille de base au fond, élargie côté face, comme une meurtrière. Lié ou par côté (haut, bas, gauche, droite) ; le côté d'un bord mangé reste droit. L'ouverture élargie doit tenir dans le mur.
+- Revues de l'utilisateur intégrées : **face avant = -Z** (celle que voit une caméra tournée vers +Z) ; taille du mur en un seul champ **Size X, Y, Z** comme RoundedBlock.
+- Idées en attente, non tranchées : emplacement de matériau à part pour l'ébrasement (aujourd'hui avec le fond de niche, élément 2) ; **vitre** (panneau qui bouche l'ouverture, position dans l'épaisseur, matériau propre, bloque ou non le joueur).
+- **Suite** : étape 3 plusieurs ouvertures, étape 4 répétition en ligne / trame.
 
 Notes de conception (discussion du 2026-10-28) :
 
