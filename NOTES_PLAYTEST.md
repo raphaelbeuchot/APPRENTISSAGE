@@ -52,3 +52,5 @@
   tomatoUI disaprait pas a victory ?
 - [x] **Level_TrouNormand** — 2026-10-27 23:01 — pos (23.1, -0.1, 28.5)
   j'ia reussi a echapper de l'ascensuer pdt la montee ? i la ts les colldiers ?
+- [ ] **Level_TrouNormand** — 2026-10-28 18:54 — pos (11.6, -0.2, -2.1)
+  si je restart, j'entends le curtainrise, ce qu ine devrait pas etre le cas ds ce niveau car j'ai pas de curtain rise. faut il juste desacyiver un component qque part ?

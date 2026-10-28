@@ -57,8 +57,38 @@ public class PerforatedWall : MonoBehaviour
         [Min(0f)] public float splayBottom = 0.1f;
         [Min(0f)] public float splayLeft = 0.1f;
         [Min(0f)] public float splayRight = 0.1f;
+        [Tooltip("Repete l'ouverture en rangee ou en trame : copies identiques, groupe centre sur Position X, " +
+                 "rangee du bas a Position Y. Une porte ne se repete qu'en X, une ouverture a gauche ou a droite qu'en Y.")]
+        public bool repeat = false;
+        [Range(1, 50)] public int countX = 3;
+        [Range(1, 50)] public int countY = 1;
+        [Tooltip("Mur plein entre deux copies, en metres (au moins 1 cm).")]
+        [Min(0.01f)] public float gapX = 0.5f;
+        [Min(0.01f)] public float gapY = 0.5f;
 
         public Opening Clone() => (Opening)MemberwiseClone();
+
+        // Nombres de copies effectifs (1 sans repetition, ou dans le sens interdit par le bord mange)
+        public int CopiesX => repeat && edge != OpeningEdge.Gauche && edge != OpeningEdge.Droite ? Mathf.Clamp(countX, 1, 50) : 1;
+        public int CopiesY => repeat && edge != OpeningEdge.Bas && edge != OpeningEdge.Haut ? Mathf.Clamp(countY, 1, 50) : 1;
+
+        // Les copies, ligne par ligne depuis le bas gauche, chacune comme une ouverture simple
+        public List<Opening> Expand()
+        {
+            List<Opening> list = new List<Opening>();
+            int nx = CopiesX, ny = CopiesY;
+            float stepX = width + Mathf.Max(0.01f, gapX), stepY = height + Mathf.Max(0.01f, gapY);
+            for (int cy = 0; cy < ny; cy++)
+                for (int cx = 0; cx < nx; cx++)
+                {
+                    Opening c = Clone();
+                    c.repeat = false;
+                    c.x = x + (cx - (nx - 1) * 0.5f) * stepX;
+                    c.y = y + cy * stepY;
+                    list.Add(c);
+                }
+            return list;
+        }
 
         // Cote mange : 0 = bas (A-B), 1 = droite (B-C), 2 = haut (C-D), 3 = gauche (D-A), -1 = aucun
         public int EdgeSide
@@ -505,39 +535,56 @@ public class PerforatedWall : MonoBehaviour
 
         for (int i = 0; i < openings.Count; i++)
         {
-            Opening o = openings[i];
-            if (o == null) continue;
-            string name = "Ouverture " + (i + 1);
-            int side = o.EdgeSide;
-            RRect hole = GetOpeningRect(wall, o, side);
-            RRect face = GetSplayRect(o, hole, side, out bool hasSplay);
-
-            if (!OpeningFits(wall, hole, side))
+            if (openings[i] == null) continue;
+            List<Opening> copies = openings[i].Expand();
+            for (int c = 0; c < copies.Count; c++)
             {
-                warnings.Add(side >= 0
-                    ? name + " : tombe dans un arrondi du mur (ou en déborde), pas percée. Déplacez-la ou réduisez les rayons des coins du mur."
-                    : name + " : déborde du mur ou d'un de ses arrondis, pas percée. Déplacez-la, réduisez-la ou choisissez un bord à manger.");
-                continue;
+                string name = "Ouverture " + (i + 1) + (copies.Count > 1 ? ", copie " + (c + 1) : "");
+                TryAddOpening(copies[c], copies.Count > 1, name, wall, hz, geos, warnings);
             }
-            if (hasSplay && !OpeningFits(wall, face, side))
-            {
-                warnings.Add(name + " : l'ébrasement déborde du mur ou d'un de ses arrondis, pas percée. Réduisez l'ébrasement ou éloignez l'ouverture du bord.");
-                continue;
-            }
-            if (geos.Exists(g => Overlaps(g.face, face)))
-            {
-                warnings.Add(name + " : chevauche une autre ouverture (ou en est à moins de 1 cm), pas percée.");
-                continue;
-            }
-
-            OpeningGeo geo = new OpeningGeo { side = side, hole = hole, face = face, isNiche = o.niche };
-            float depth = Mathf.Clamp(o.nicheDepth, 0.005f, Thickness - 0.01f);
-            if (!o.niche) { geo.zDug = -hz; geo.zBottom = hz; }
-            else if (!o.nicheOnBack) { geo.zDug = -hz; geo.zBottom = -hz + depth; }
-            else { geo.zDug = hz; geo.zBottom = hz - depth; }
-            geos.Add(geo);
         }
         return geos;
+    }
+
+    // Une ouverture simple (ou une copie d'une ouverture repetee) : retenue si elle tient dans le mur sans chevaucher.
+    void TryAddOpening(Opening o, bool isCopy, string name, RRect wall, float hz, List<OpeningGeo> geos, List<string> warnings)
+    {
+        int side = o.EdgeSide;
+        RRect hole = GetOpeningRect(wall, o, side);
+        RRect face = GetSplayRect(o, hole, side, out bool hasSplay);
+
+        // Une copie qui sort du mur serait ramenee dedans par le bornage : on la refuse plutot que de l'empiler
+        bool pushedX = side != 1 && side != 3 && Mathf.Abs(hole.minX - (o.x - (hole.maxX - hole.minX) * 0.5f)) > 0.0001f;
+        bool pushedY = side != 0 && side != 2 && Mathf.Abs(hole.minY - o.y) > 0.0001f;
+        if (isCopy && (pushedX || pushedY))
+        {
+            warnings.Add(name + " : sort du mur, pas percée. Réduisez le nombre de copies ou l'écart.");
+            return;
+        }
+        if (!OpeningFits(wall, hole, side))
+        {
+            warnings.Add(side >= 0
+                ? name + " : tombe dans un arrondi du mur (ou en déborde), pas percée. Déplacez-la ou réduisez les rayons des coins du mur."
+                : name + " : déborde du mur ou d'un de ses arrondis, pas percée. Déplacez-la, réduisez-la ou choisissez un bord à manger.");
+            return;
+        }
+        if (hasSplay && !OpeningFits(wall, face, side))
+        {
+            warnings.Add(name + " : l'ébrasement déborde du mur ou d'un de ses arrondis, pas percée. Réduisez l'ébrasement ou éloignez l'ouverture du bord.");
+            return;
+        }
+        if (geos.Exists(g => Overlaps(g.face, face)))
+        {
+            warnings.Add(name + " : chevauche une autre ouverture (ou en est à moins de 1 cm), pas percée.");
+            return;
+        }
+
+        OpeningGeo geo = new OpeningGeo { side = side, hole = hole, face = face, isNiche = o.niche };
+        float depth = Mathf.Clamp(o.nicheDepth, 0.005f, Thickness - 0.01f);
+        if (!o.niche) { geo.zDug = -hz; geo.zBottom = hz; }
+        else if (!o.nicheOnBack) { geo.zDug = -hz; geo.zBottom = -hz + depth; }
+        else { geo.zDug = hz; geo.zBottom = hz - depth; }
+        geos.Add(geo);
     }
 
     // Faces avant et arriere, tranche exterieure, interieur des ouvertures et fonds de niche.
@@ -903,8 +950,8 @@ public class PerforatedWall : MonoBehaviour
         if (openings == null) return;
         for (int i = 0; i < openings.Count; i++)
         {
-            Opening o = openings[i];
-            if (o == null) continue;
+            if (openings[i] == null) continue;
+            Opening o = openings[i].Expand()[0]; // une ouverture repetee : etiquettes sur la premiere copie
             float z = o.niche && o.nicheOnBack ? hz : -hz;
             RRect hole = GetOpeningRect(wall, o, o.EdgeSide);
             Vector2 center = new Vector2((hole.minX + hole.maxX) * 0.5f, (hole.minY + hole.maxY) * 0.5f);
@@ -954,6 +1001,9 @@ public class PerforatedWallEditor : UnityEditor.Editor
         { "linkSplay", "Ébrasement lié" },
         { "splaySize", "Élargissement" },
         { "splayTop", "Haut" }, { "splayBottom", "Bas" }, { "splayLeft", "Gauche" }, { "splayRight", "Droite" },
+        { "repeat", "Répéter" },
+        { "countX", "Nombre en X" }, { "countY", "Nombre en Y" },
+        { "gapX", "Écart X" }, { "gapY", "Écart Y" },
         { "separateMaterials", "Matériaux séparés" },
     };
 
@@ -963,6 +1013,7 @@ public class PerforatedWallEditor : UnityEditor.Editor
         "linkCorners", "radius", "radiusA", "radiusB", "radiusC", "radiusD",
         "niche", "nicheDepth", "nicheOnBack",
         "splay", "linkSplay", "splaySize", "splayTop", "splayBottom", "splayLeft", "splayRight",
+        "repeat", "countX", "countY", "gapX", "gapY",
     };
 
     public override void OnInspectorGUI()
@@ -1007,10 +1058,11 @@ public class PerforatedWallEditor : UnityEditor.Editor
                 {
                     // La copie est decalee a cote de l'original (sinon elle le chevaucherait)
                     PerforatedWall.Opening copy = w.openings[duplicate].Clone();
+                    // (de tout le groupe pour une ouverture repetee)
                     if (copy.edge == PerforatedWall.OpeningEdge.Gauche || copy.edge == PerforatedWall.OpeningEdge.Droite)
-                        copy.y += copy.height + 0.3f;
+                        copy.y += copy.CopiesY * (copy.height + copy.gapY) - copy.gapY + 0.3f;
                     else
-                        copy.x += copy.width + 0.3f;
+                        copy.x += copy.CopiesX * (copy.width + copy.gapX) - copy.gapX + 0.3f;
                     w.openings.Insert(duplicate + 1, copy);
                 }
                 else if (addAt >= 0)
@@ -1048,7 +1100,7 @@ public class PerforatedWallEditor : UnityEditor.Editor
             foreach (string name in OpeningFields)
             {
                 if (hidden.Contains(name)) continue;
-                if (name == "linkCorners" || name == "niche" || name == "splay") UnityEditor.EditorGUILayout.Space(2);
+                if (name == "linkCorners" || name == "niche" || name == "splay" || name == "repeat") UnityEditor.EditorGUILayout.Space(2);
                 UnityEditor.SerializedProperty p = o.FindPropertyRelative(name);
                 UnityEditor.EditorGUILayout.PropertyField(p, new GUIContent(Label(p), p.tooltip), true);
             }
@@ -1062,8 +1114,15 @@ public class PerforatedWallEditor : UnityEditor.Editor
 
     static string Kind(UnityEditor.SerializedProperty o)
     {
-        if (o.FindPropertyRelative("niche").boolValue) return "niche";
-        return o.FindPropertyRelative("edge").enumValueIndex == (int)PerforatedWall.OpeningEdge.Bas ? "porte" : "fenêtre";
+        string kind = o.FindPropertyRelative("niche").boolValue ? "niche"
+            : o.FindPropertyRelative("edge").enumValueIndex == (int)PerforatedWall.OpeningEdge.Bas ? "porte" : "fenêtre";
+        if (!o.FindPropertyRelative("repeat").boolValue) return kind;
+        PerforatedWall.OpeningEdge edge = (PerforatedWall.OpeningEdge)o.FindPropertyRelative("edge").enumValueIndex;
+        bool vertical = edge == PerforatedWall.OpeningEdge.Gauche || edge == PerforatedWall.OpeningEdge.Droite;
+        bool horizontal = edge == PerforatedWall.OpeningEdge.Bas || edge == PerforatedWall.OpeningEdge.Haut;
+        int nx = vertical ? 1 : o.FindPropertyRelative("countX").intValue;
+        int ny = horizontal ? 1 : o.FindPropertyRelative("countY").intValue;
+        return kind + " × " + (nx * ny);
     }
 
     static List<string> HiddenOpeningFields(UnityEditor.SerializedProperty o)
@@ -1098,6 +1157,13 @@ public class PerforatedWallEditor : UnityEditor.Editor
                 case PerforatedWall.OpeningEdge.Droite: hidden.Add("splayRight"); break;
             }
         }
+
+        if (!o.FindPropertyRelative("repeat").boolValue)
+            hidden.AddRange(new[] { "countX", "countY", "gapX", "gapY" });
+        else if (edge == PerforatedWall.OpeningEdge.Bas || edge == PerforatedWall.OpeningEdge.Haut)
+            hidden.AddRange(new[] { "countY", "gapY" });
+        else if (edge == PerforatedWall.OpeningEdge.Gauche || edge == PerforatedWall.OpeningEdge.Droite)
+            hidden.AddRange(new[] { "countX", "gapX" });
         return hidden;
     }
 }
