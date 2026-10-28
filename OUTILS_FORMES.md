@@ -58,7 +58,7 @@ Principes communs :
 - Faces triangulées par oreilles (trou relié au contour par un pont) : topologie en longs triangles fins, **sans effet** sur l'éclairage ni les textures (normales et UV projetés). À revoir seulement si on veut un jour déformer le mur ou peindre des couleurs par sommet.
 - **Étape 2 faite (2026-10-28) : ébrasement** — après essai d'un biseau d'arête (pas ce que voulait l'utilisateur), les faces intérieures de l'ouverture sont inclinées sur toute l'épaisseur (ou toute la profondeur d'une niche) : taille de base au fond, élargie côté face, comme une meurtrière. Lié ou par côté (haut, bas, gauche, droite) ; le côté d'un bord mangé reste droit. L'ouverture élargie doit tenir dans le mur.
 - Revues de l'utilisateur intégrées : **face avant = -Z** (celle que voit une caméra tournée vers +Z) ; taille du mur en un seul champ **Size X, Y, Z** comme RoundedBlock.
-- Idées en attente, non tranchées : emplacement de matériau à part pour l'ébrasement (aujourd'hui avec le fond de niche, élément 2) ; **vitre** (panneau qui bouche l'ouverture, position dans l'épaisseur, matériau propre, bloque ou non le joueur).
+- Idées en attente, non tranchées : emplacement de matériau à part pour l'ébrasement (aujourd’hui avec la tranche de l’ouverture, élément 2 ; le fond de niche a son propre élément 3 depuis le 2026-10-28) ; Inspector en français ; **vitre** (panneau qui bouche l'ouverture, position dans l'épaisseur, matériau propre, bloque ou non le joueur).
 - **Suite** : étape 3 plusieurs ouvertures, étape 4 répétition en ligne / trame.
 
 Notes de conception (discussion du 2026-10-28) :
