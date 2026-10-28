@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Mur droit parametrique avec une ouverture : fenetre, porte (ouverture qui mange un bord) ou niche (creusee sans traverser),
-// avec un ebrasement eventuel (faces interieures inclinees : etroite au fond, plus large cote face, comme une meurtriere).
+// Mur droit parametrique perce d'ouvertures : fenetres, portes (ouverture qui mange un bord) ou niches (creusees sans traverser),
+// chacune avec un ebrasement eventuel (faces interieures inclinees : etroite au fond, plus large cote face, comme une meurtriere).
 // Usage : poser sur un Cube (ou tout GO avec MeshFilter), regler, le mesh se met a jour en direct.
 // Le mesh n'est pas sauvegarde : il est reconstruit a partir des reglages a chaque chargement (comme RoundedBlock).
 // Repere : mur dans le plan XY (largeur X, hauteur Y), epaisseur en Z, pivot au milieu de la base.
@@ -11,12 +11,71 @@ using UnityEngine;
 // UV0 : en metres. Faces : projection dans le plan du mur. Tranches : u = distance le long du contour, v = profondeur.
 // UV2 (canal TEXCOORD2) : 0-1 sur chaque face.
 //
-// Coins A-D (mur et ouverture) : A bas gauche, B bas droite, C haut droite, D haut gauche, vus de face.
+// Coins A-D (mur et ouvertures) : A bas gauche, B bas droite, C haut droite, D haut gauche, vus de face.
+// Deux ouvertures qui se chevauchent (ou se touchent presque) : la seconde n'est pas percee.
 [ExecuteAlways]
 [RequireComponent(typeof(MeshFilter))]
 public class PerforatedWall : MonoBehaviour
 {
     public enum OpeningEdge { Aucun, Bas, Haut, Gauche, Droite }
+
+    [System.Serializable]
+    public class Opening
+    {
+        [Tooltip("Bord mange par l'ouverture. Bas = porte (posee au sol). Aucun = fenetre ou niche entierement dans le mur.")]
+        public OpeningEdge edge = OpeningEdge.Aucun;
+        [Tooltip("Position horizontale du centre de l'ouverture (0 = milieu du mur).")]
+        public float x = 0f;
+        [Tooltip("Hauteur du bas de l'ouverture depuis le sol.")]
+        [Min(0f)] public float y = 0.9f;
+        [Min(0.01f)] public float width = 1f;
+        [Min(0.01f)] public float height = 1.2f;
+        [Tooltip("Un seul rayon pour les coins de l'ouverture. Les coins poses sur un bord mange restent vifs.")]
+        public bool linkCorners = true;
+        [Min(0f)] public float radius = 0.1f;
+        [Tooltip("Rayons par coin de l'ouverture (si decoche). Rayon = demi-largeur en haut d'une ouverture assez haute : arche.")]
+        [Min(0f)] public float radiusA = 0.1f;
+        [Min(0f)] public float radiusB = 0.1f;
+        [Min(0f)] public float radiusC = 0.1f;
+        [Min(0f)] public float radiusD = 0.1f;
+        [Tooltip("Coche : creuse sans traverser (niche). Decoche : perce de part en part.")]
+        public bool niche = false;
+        [Tooltip("Profondeur de la niche (bornee : il reste au moins 1 cm de mur derriere).")]
+        [Min(0.01f)] public float nicheDepth = 0.1f;
+        [Tooltip("Coche : la niche est creusee dans la face arriere (+Z) au lieu de la face avant (-Z).")]
+        public bool nicheOnBack = false;
+        [Tooltip("Incline les faces interieures de l'ouverture : elle garde sa taille au fond (face arriere, ou fond de niche) " +
+                 "et s'elargit vers la face avant (ou la face creusee d'une niche), comme une meurtriere. " +
+                 "Le cote d'un bord mange (bas d'une porte) reste droit.")]
+        public bool splay = false;
+        [Tooltip("Un seul elargissement pour les 4 cotes.")]
+        public bool linkSplay = true;
+        [Tooltip("Elargissement de chaque cote, mesure sur la face (metres).")]
+        [Min(0f)] public float splaySize = 0.1f;
+        [Tooltip("Elargissements par cote (si Ebrasement lie est decoche), vus de face.")]
+        [Min(0f)] public float splayTop = 0.1f;
+        [Min(0f)] public float splayBottom = 0.1f;
+        [Min(0f)] public float splayLeft = 0.1f;
+        [Min(0f)] public float splayRight = 0.1f;
+
+        public Opening Clone() => (Opening)MemberwiseClone();
+
+        // Cote mange : 0 = bas (A-B), 1 = droite (B-C), 2 = haut (C-D), 3 = gauche (D-A), -1 = aucun
+        public int EdgeSide
+        {
+            get
+            {
+                switch (edge)
+                {
+                    case OpeningEdge.Bas: return 0;
+                    case OpeningEdge.Droite: return 1;
+                    case OpeningEdge.Haut: return 2;
+                    case OpeningEdge.Gauche: return 3;
+                    default: return -1;
+                }
+            }
+        }
+    }
 
     [Header("Mur (mètres)")]
     [Tooltip("X = largeur, Y = hauteur, Z = epaisseur. Pivot au milieu de la base.")]
@@ -31,60 +90,47 @@ public class PerforatedWall : MonoBehaviour
     [Min(0f)] public float radiusB = 0f;
     [Min(0f)] public float radiusC = 0f;
     [Min(0f)] public float radiusD = 0f;
-    [Tooltip("Nombre de segments par quart de rond (coins du mur et de l'ouverture).")]
+    [Tooltip("Nombre de segments par quart de rond (coins du mur et des ouvertures).")]
     [Range(1, 16)] public int cornerSegments = 4;
 
-    [Header("Ouverture")]
-    public bool opening = true;
-    [Tooltip("Bord mange par l'ouverture. Bas = porte (posee au sol). Aucun = fenetre ou niche entierement dans le mur.")]
-    public OpeningEdge edge = OpeningEdge.Aucun;
-    [Tooltip("Position horizontale du centre de l'ouverture (0 = milieu du mur).")]
-    public float openingX = 0f;
-    [Tooltip("Hauteur du bas de l'ouverture depuis le sol.")]
-    [Min(0f)] public float openingY = 0.9f;
-    [Min(0.01f)] public float openingWidth = 1f;
-    [Min(0.01f)] public float openingHeight = 1.2f;
-    [Tooltip("Un seul rayon pour les coins de l'ouverture. Les coins poses sur un bord mange restent vifs.")]
-    public bool linkOpeningCorners = true;
-    [Min(0f)] public float openingRadius = 0.1f;
-    [Tooltip("Rayons par coin de l'ouverture (si decoche). Rayon = demi-largeur en haut d'une ouverture assez haute : arche.")]
-    [Min(0f)] public float openingRadiusA = 0.1f;
-    [Min(0f)] public float openingRadiusB = 0.1f;
-    [Min(0f)] public float openingRadiusC = 0.1f;
-    [Min(0f)] public float openingRadiusD = 0.1f;
-    [Tooltip("Coche : creuse sans traverser (niche). Decoche : perce de part en part.")]
-    public bool niche = false;
-    [Tooltip("Profondeur de la niche (bornee : il reste au moins 1 cm de mur derriere).")]
-    [Min(0.01f)] public float nicheDepth = 0.1f;
-    [Tooltip("Coche : la niche est creusee dans la face arriere (+Z) au lieu de la face avant (-Z).")]
-    public bool nicheOnBack = false;
-
-    [Header("Ébrasement")]
-    [Tooltip("Incline les faces interieures de l'ouverture : elle garde sa taille au fond (face arriere, ou fond de niche) " +
-             "et s'elargit vers la face avant (ou la face creusee d'une niche), comme une meurtriere. " +
-             "Le cote d'un bord mange (bas d'une porte) reste droit.")]
-    public bool splay = false;
-    [Tooltip("Un seul elargissement pour les 4 cotes.")]
-    public bool linkSplay = true;
-    [Tooltip("Elargissement de chaque cote, mesure sur la face (metres).")]
-    [Min(0f)] public float splaySize = 0.1f;
-    [Tooltip("Elargissements par cote (si Ebrasement lie est decoche), vus de face.")]
-    [Min(0f)] public float splayTop = 0.1f;
-    [Min(0f)] public float splayBottom = 0.1f;
-    [Min(0f)] public float splayLeft = 0.1f;
-    [Min(0f)] public float splayRight = 0.1f;
+    public List<Opening> openings = new List<Opening>();
 
     [Header("Matériaux")]
     [Tooltip("Decoche : un seul materiau. Coche : un materiau par partie sur le MeshRenderer, " +
-             "element 0 = faces, 1 = tranche exterieure, 2 = interieur de l'ouverture (tranche ou ebrasement), 3 = fond de niche.")]
+             "element 0 = faces, 1 = tranche exterieure, 2 = interieur des ouvertures (tranche ou ebrasement), 3 = fonds de niche.")]
     public bool separateMaterials = false;
 
+    // Ancienne ouverture unique (avant la liste) : relue une seule fois puis recopiee dans 'openings'.
+    [SerializeField, HideInInspector] bool openingsMigrated;
+    [SerializeField, HideInInspector] bool opening = true;
+    [SerializeField, HideInInspector] OpeningEdge edge = OpeningEdge.Aucun;
+    [SerializeField, HideInInspector] float openingX = 0f;
+    [SerializeField, HideInInspector] float openingY = 0.9f;
+    [SerializeField, HideInInspector] float openingWidth = 1f;
+    [SerializeField, HideInInspector] float openingHeight = 1.2f;
+    [SerializeField, HideInInspector] bool linkOpeningCorners = true;
+    [SerializeField, HideInInspector] float openingRadius = 0.1f;
+    [SerializeField, HideInInspector] float openingRadiusA = 0.1f;
+    [SerializeField, HideInInspector] float openingRadiusB = 0.1f;
+    [SerializeField, HideInInspector] float openingRadiusC = 0.1f;
+    [SerializeField, HideInInspector] float openingRadiusD = 0.1f;
+    [SerializeField, HideInInspector] bool niche = false;
+    [SerializeField, HideInInspector] float nicheDepth = 0.1f;
+    [SerializeField, HideInInspector] bool nicheOnBack = false;
+    [SerializeField, HideInInspector] bool splay = false;
+    [SerializeField, HideInInspector] bool linkSplay = true;
+    [SerializeField, HideInInspector] float splaySize = 0.1f;
+    [SerializeField, HideInInspector] float splayTop = 0.1f;
+    [SerializeField, HideInInspector] float splayBottom = 0.1f;
+    [SerializeField, HideInInspector] float splayLeft = 0.1f;
+    [SerializeField, HideInInspector] float splayRight = 0.1f;
+
     [System.NonSerialized] Mesh generatedMesh;
-    // Message affiche dans l'inspecteur quand l'ouverture ne peut pas etre percee (le mur reste plein)
+    // Message affiche dans l'inspecteur quand une ouverture ne peut pas etre percee
     [System.NonSerialized] public string warning;
 
     // Point d'un contour : position, normale lisse sur les arrondis (zero = coin vif, normale du segment),
-    // et nature du segment qui part de ce point (tranche de l'ouverture ou tranche exterieure).
+    // et nature du segment qui part de ce point (tranche d'une ouverture ou tranche exterieure).
     struct CPoint
     {
         public Vector2 p;
@@ -99,11 +145,41 @@ public class PerforatedWall : MonoBehaviour
         public float[] r;
     }
 
+    // Une ouverture retenue (percee) : son rectangle au fond et au ras de la face creusee, et ses profondeurs.
+    class OpeningGeo
+    {
+        public int side;
+        public RRect hole;      // au fond (face arriere d'une ouverture traversante, ou fond de niche)
+        public RRect face;      // au ras de la face creusee (elargi par l'ebrasement)
+        public bool isNiche;
+        public float zBottom;   // profondeur du fond
+        public float zDug;      // profondeur de la face creusee
+
+        public bool Present(float z) =>
+            z >= Mathf.Min(zBottom, zDug) - 0.00001f && z <= Mathf.Max(zBottom, zDug) + 0.00001f;
+
+        // Le rectangle a la profondeur z : du fond (hole) a la face (face), lineairement
+        public RRect At(float z)
+        {
+            float span = zDug - zBottom;
+            float t = Mathf.Abs(span) < 0.000001f ? 1f : Mathf.Clamp01((z - zBottom) / span);
+            RRect r = new RRect
+            {
+                minX = Mathf.Lerp(hole.minX, face.minX, t), maxX = Mathf.Lerp(hole.maxX, face.maxX, t),
+                minY = Mathf.Lerp(hole.minY, face.minY, t), maxY = Mathf.Lerp(hole.maxY, face.maxY, t),
+                r = new float[4]
+            };
+            for (int k = 0; k < 4; k++) r.r[k] = Mathf.Lerp(hole.r[k], face.r[k], t);
+            return r;
+        }
+    }
+
     static readonly Vector2[] Signs = { new Vector2(-1, -1), new Vector2(1, -1), new Vector2(1, 1), new Vector2(-1, 1) };
     static readonly float[] StartAngles = { 180f, 270f, 0f, 90f };
 
     void OnEnable()
     {
+        MigrateLegacyOpening();
         Rebuild();
     }
 
@@ -112,6 +188,29 @@ public class PerforatedWall : MonoBehaviour
         if (generatedMesh == null) return;
         if (Application.isPlaying) Destroy(generatedMesh);
         else DestroyImmediate(generatedMesh);
+    }
+
+    // Recopie l'ancienne ouverture unique en tete de liste (une seule fois). Un composant neuf y gagne une fenetre par defaut.
+    void MigrateLegacyOpening()
+    {
+        if (openingsMigrated) return;
+        openingsMigrated = true;
+        if (openings == null) openings = new List<Opening>();
+        if (opening)
+        {
+            openings.Insert(0, new Opening
+            {
+                edge = edge, x = openingX, y = openingY, width = openingWidth, height = openingHeight,
+                linkCorners = linkOpeningCorners, radius = openingRadius,
+                radiusA = openingRadiusA, radiusB = openingRadiusB, radiusC = openingRadiusC, radiusD = openingRadiusD,
+                niche = niche, nicheDepth = nicheDepth, nicheOnBack = nicheOnBack,
+                splay = splay, linkSplay = linkSplay, splaySize = splaySize,
+                splayTop = splayTop, splayBottom = splayBottom, splayLeft = splayLeft, splayRight = splayRight
+            });
+        }
+#if UNITY_EDITOR
+        if (!Application.isPlaying) UnityEditor.EditorUtility.SetDirty(this);
+#endif
     }
 
 #if UNITY_EDITOR
@@ -124,6 +223,7 @@ public class PerforatedWall : MonoBehaviour
             BoxCollider box = GetComponent<BoxCollider>();
             if (box != null) UnityEditor.Undo.DestroyObjectImmediate(box);
             if (GetComponent<MeshCollider>() == null) UnityEditor.Undo.AddComponent<MeshCollider>(gameObject);
+            MigrateLegacyOpening(); // Reset remet les champs a zero : un composant neuf repart avec une fenetre
             Rebuild();
         };
     }
@@ -131,6 +231,7 @@ public class PerforatedWall : MonoBehaviour
     // Toucher au MeshCollider pendant OnValidate provoque des avertissements : on decale d'une frame d'editeur.
     void OnValidate()
     {
+        MigrateLegacyOpening();
         UnityEditor.EditorApplication.delayCall += () =>
         {
             if (this != null) Rebuild();
@@ -194,30 +295,14 @@ public class PerforatedWall : MonoBehaviour
 
     float Thickness => Mathf.Max(0.01f, size.z);
 
-    // Cote mange : 0 = bas (A-B), 1 = droite (B-C), 2 = haut (C-D), 3 = gauche (D-A), -1 = aucun
-    int EdgeSide
-    {
-        get
-        {
-            switch (edge)
-            {
-                case OpeningEdge.Bas: return 0;
-                case OpeningEdge.Droite: return 1;
-                case OpeningEdge.Haut: return 2;
-                case OpeningEdge.Gauche: return 3;
-                default: return -1;
-            }
-        }
-    }
-
     // Rectangle de l'ouverture, borne dans le mur (1 cm de marge, ou colle au bord mange).
-    RRect GetOpeningRect(RRect wall, int side)
+    static RRect GetOpeningRect(RRect wall, Opening o, int side)
     {
         float W = wall.maxX - wall.minX, H = wall.maxY - wall.minY;
-        float w = Mathf.Clamp(openingWidth, 0.01f, W - 0.02f);
-        float h = Mathf.Clamp(openingHeight, 0.01f, H - 0.02f);
-        float x0 = openingX - w * 0.5f;
-        float y0 = openingY;
+        float w = Mathf.Clamp(o.width, 0.01f, W - 0.02f);
+        float h = Mathf.Clamp(o.height, 0.01f, H - 0.02f);
+        float x0 = o.x - w * 0.5f;
+        float y0 = o.y;
 
         if (side == 1) x0 = wall.maxX - w;
         else if (side == 3) x0 = wall.minX;
@@ -228,9 +313,9 @@ public class PerforatedWall : MonoBehaviour
         else y0 = Mathf.Clamp(y0, wall.minY + 0.01f, wall.maxY - 0.01f - h);
 
         RRect rect = new RRect { minX = x0, maxX = x0 + w, minY = y0, maxY = y0 + h };
-        float[] r = linkOpeningCorners
-            ? new[] { openingRadius, openingRadius, openingRadius, openingRadius }
-            : new[] { openingRadiusA, openingRadiusB, openingRadiusC, openingRadiusD };
+        float[] r = o.linkCorners
+            ? new[] { o.radius, o.radius, o.radius, o.radius }
+            : new[] { o.radiusA, o.radiusB, o.radiusC, o.radiusD };
         // Les coins poses sur le bord mange sont vifs : leurs voisins peuvent alors aller jusqu'a toute la longueur du cote
         float max;
         if (side == 0 || side == 2) max = Mathf.Min(w * 0.5f, h);
@@ -250,16 +335,16 @@ public class PerforatedWall : MonoBehaviour
     // Contour de l'ouverture au ras de la face, elargi par l'ebrasement (cote par cote). Les coins vifs restent vifs
     // (aretes en onglet), les arrondis grandissent de la moyenne des deux cotes voisins.
     // hasSplay = faux : pas d'ebrasement, le rectangle de l'ouverture est renvoye tel quel.
-    RRect GetSplayRect(RRect hole, int side, out bool hasSplay)
+    static RRect GetSplayRect(Opening o, RRect hole, int side, out bool hasSplay)
     {
         // Cotes : 0 = bas, 1 = droite, 2 = haut, 3 = gauche
-        float[] bw = linkSplay
-            ? new[] { splaySize, splaySize, splaySize, splaySize }
-            : new[] { splayBottom, splayRight, splayTop, splayLeft };
+        float[] bw = o.linkSplay
+            ? new[] { o.splaySize, o.splaySize, o.splaySize, o.splaySize }
+            : new[] { o.splayBottom, o.splayRight, o.splayTop, o.splayLeft };
         for (int k = 0; k < 4; k++) bw[k] = Mathf.Max(0f, bw[k]);
         if (side >= 0) bw[side] = 0f;
 
-        hasSplay = splay && Mathf.Max(Mathf.Max(bw[0], bw[1]), Mathf.Max(bw[2], bw[3])) >= 0.0001f;
+        hasSplay = o.splay && Mathf.Max(Mathf.Max(bw[0], bw[1]), Mathf.Max(bw[2], bw[3])) >= 0.0001f;
         if (!hasSplay) return hole;
 
         RRect rect = new RRect
@@ -285,6 +370,13 @@ public class PerforatedWall : MonoBehaviour
             if (!InsideWall(cp.p, wall, onEdge ? -0.0001f : 0.005f)) return false;
         }
         return true;
+    }
+
+    // Chevauchement (ou presque contact, moins de 1 cm) des rectangles englobants de deux ouvertures
+    static bool Overlaps(RRect a, RRect b)
+    {
+        const float gap = 0.01f;
+        return a.minX < b.maxX + gap && b.minX < a.maxX + gap && a.minY < b.maxY + gap && b.minY < a.maxY + gap;
     }
 
     static bool IsOnSide(Vector2 p, RRect r, int side)
@@ -366,19 +458,32 @@ public class PerforatedWall : MonoBehaviour
         return list;
     }
 
-    // Contour du mur entaille par une ouverture qui mange le cote 'side' : en longeant ce cote (sens trigo),
-    // on remonte le long de l'ouverture (sens horaire autour d'elle) avant de reprendre le bord du mur.
-    List<CPoint> BuildNotchedRing(RRect wall, RRect hole, int side)
+    // Contour du mur a la profondeur z, entaille par les ouvertures qui mangent un bord et existent a cette profondeur.
+    // En longeant un cote (sens trigo), on contourne chaque entaille (sens horaire autour d'elle) dans l'ordre du parcours.
+    List<CPoint> BuildNotchedRing(RRect wall, List<OpeningGeo> notches, float z)
     {
         List<CPoint> list = new List<CPoint>();
-        int[] notch = { side, (side + 3) % 4, (side + 2) % 4, (side + 1) % 4 };
         for (int k = 0; k < 4; k++)
         {
             AppendCorner(list, wall, k, false, 1f, false);
-            if (k != side) continue;
-            // Le dernier coin de l'entaille est sur le bord du mur : le segment qui en part est de la tranche exterieure
-            for (int i = 0; i < 4; i++)
-                AppendCorner(list, hole, notch[i], true, -1f, i < 3);
+
+            List<OpeningGeo> onSide = notches.FindAll(g => g.side == k);
+            // Ordre du parcours : bas vers +X, droite vers +Y, haut vers -X, gauche vers -Y
+            onSide.Sort((a, b) =>
+            {
+                float ka = k == 0 || k == 2 ? a.hole.minX : a.hole.minY;
+                float kb = k == 0 || k == 2 ? b.hole.minX : b.hole.minY;
+                return k <= 1 ? ka.CompareTo(kb) : kb.CompareTo(ka);
+            });
+
+            int[] notch = { k, (k + 3) % 4, (k + 2) % 4, (k + 1) % 4 };
+            foreach (OpeningGeo g in onSide)
+            {
+                RRect r = g.At(z);
+                // Le dernier coin de l'entaille est sur le bord du mur : le segment qui en part est de la tranche exterieure
+                for (int i = 0; i < 4; i++)
+                    AppendCorner(list, r, notch[i], true, -1f, i < 3);
+            }
         }
         return list;
     }
@@ -392,92 +497,114 @@ public class PerforatedWall : MonoBehaviour
 
     // ---------------------------------------------------------------- Construction
 
-    // Faces avant et arriere, tranches, et pour une niche son fond.
-    // Renvoie le nombre de parties (materiaux separes) : 2 mur plein, 3 ouverture percee, 4 niche.
-    // Calcul dans un repere ou la face avant (ou creusee) est en +hz ; zSign la ramene en -Z (en +Z pour une niche a l'arriere).
+    // Retient les ouvertures percables (dans le mur, sans chevauchement avec une ouverture precedente de la liste).
+    List<OpeningGeo> CollectOpenings(RRect wall, float hz, List<string> warnings)
+    {
+        List<OpeningGeo> geos = new List<OpeningGeo>();
+        if (openings == null) return geos;
+
+        for (int i = 0; i < openings.Count; i++)
+        {
+            Opening o = openings[i];
+            if (o == null) continue;
+            string name = "Ouverture " + (i + 1);
+            int side = o.EdgeSide;
+            RRect hole = GetOpeningRect(wall, o, side);
+            RRect face = GetSplayRect(o, hole, side, out bool hasSplay);
+
+            if (!OpeningFits(wall, hole, side))
+            {
+                warnings.Add(side >= 0
+                    ? name + " : tombe dans un arrondi du mur (ou en déborde), pas percée. Déplacez-la ou réduisez les rayons des coins du mur."
+                    : name + " : déborde du mur ou d'un de ses arrondis, pas percée. Déplacez-la, réduisez-la ou choisissez un bord à manger.");
+                continue;
+            }
+            if (hasSplay && !OpeningFits(wall, face, side))
+            {
+                warnings.Add(name + " : l'ébrasement déborde du mur ou d'un de ses arrondis, pas percée. Réduisez l'ébrasement ou éloignez l'ouverture du bord.");
+                continue;
+            }
+            if (geos.Exists(g => Overlaps(g.face, face)))
+            {
+                warnings.Add(name + " : chevauche une autre ouverture (ou en est à moins de 1 cm), pas percée.");
+                continue;
+            }
+
+            OpeningGeo geo = new OpeningGeo { side = side, hole = hole, face = face, isNiche = o.niche };
+            float depth = Mathf.Clamp(o.nicheDepth, 0.005f, Thickness - 0.01f);
+            if (!o.niche) { geo.zDug = -hz; geo.zBottom = hz; }
+            else if (!o.nicheOnBack) { geo.zDug = -hz; geo.zBottom = -hz + depth; }
+            else { geo.zDug = hz; geo.zBottom = hz - depth; }
+            geos.Add(geo);
+        }
+        return geos;
+    }
+
+    // Faces avant et arriere, tranche exterieure, interieur des ouvertures et fonds de niche.
+    // Renvoie le nombre de parties (materiaux separes) : 2 mur plein, 3 avec ouvertures, 4 avec au moins une niche.
     int BuildMesh(Mesh mesh)
     {
         RRect wall = GetWallRect();
         float hz = Thickness * 0.5f;
-        float zSign = niche && nicheOnBack ? 1f : -1f;
-        int side = EdgeSide;
 
-        float nicheD = Mathf.Clamp(nicheDepth, 0.005f, Thickness - 0.01f);
-        float zPlate = hz - nicheD;
+        List<string> warnings = new List<string>();
+        List<OpeningGeo> geos = CollectOpenings(wall, hz, warnings);
+        warning = warnings.Count > 0 ? string.Join("\n", warnings) : null;
 
-        warning = null;
-        bool hasOpening = opening;
-        RRect hole = default;   // l'ouverture au fond (face arriere, ou fond de niche)
-        RRect face = default;   // l'ouverture au ras de la face avant (elargie par l'ebrasement)
-        bool hasSplay = false;
-        if (hasOpening)
-        {
-            hole = GetOpeningRect(wall, side);
-            face = GetSplayRect(hole, side, out hasSplay);
-            if (!OpeningFits(wall, hole, side))
-            {
-                hasOpening = false;
-                warning = side >= 0
-                    ? "L'ouverture tombe dans un arrondi du mur (ou en déborde) : elle n'est pas percée. Déplacez-la ou réduisez les rayons des coins du mur."
-                    : "L'ouverture déborde du mur ou d'un de ses arrondis : elle n'est pas percée. Déplacez-la, réduisez-la ou choisissez un bord à manger.";
-            }
-            else if (hasSplay && !OpeningFits(wall, face, side))
-            {
-                hasOpening = false;
-                warning = "L'ébrasement déborde du mur ou d'un de ses arrondis : l'ouverture n'est pas percée. Réduisez l'ébrasement ou éloignez l'ouverture du bord.";
-            }
-        }
-        bool isNiche = hasOpening && niche;
+        MeshData data = new MeshData { wall = wall, thickness = Thickness };
 
-        MeshData data = new MeshData { zSign = zSign, wall = wall, thickness = Thickness };
-        List<CPoint> fullRing = BuildRing(wall);
-        float zBottom = isNiche ? zPlate : -hz; // fond de l'ouverture : fond de niche, ou face arriere
+        // Faces avant (-Z) et arriere (+Z)
+        AddWallFace(data, wall, geos, -hz, -1f);
+        AddWallFace(data, wall, geos, hz, 1f);
 
-        if (!hasOpening)
+        // Tranche exterieure, entailles des bords manges comprises, par tranches d'epaisseur : une entaille de niche
+        // ne va que de la face creusee au fond de niche.
+        List<float> levels = new List<float> { -hz, hz };
+        foreach (OpeningGeo g in geos)
+            if (g.isNiche && g.side >= 0) levels.Add(g.zBottom);
+        levels.Sort();
+        for (int i = 0; i + 1 < levels.Count; i++)
         {
-            data.AddCap(fullRing, null, hz, 1f, data.capTris);
-            data.AddCap(fullRing, null, -hz, -1f, data.capTris);
-            data.AddBand(fullRing, -hz, hz, false);
-        }
-        else if (side < 0)
-        {
-            // Ouverture dans le mur : faces percees, tranche exterieure pleine, faces interieures (droites, ou
-            // inclinees du contour du fond a celui de la face avant)
-            List<CPoint> holeIn = BuildHoleRing(hole);
-            List<CPoint> holeFace = hasSplay ? BuildHoleRing(face) : holeIn;
-            data.AddCap(fullRing, holeFace, hz, 1f, data.capTris);
-            data.AddCap(fullRing, isNiche ? null : holeIn, -hz, -1f, data.capTris);
-            data.AddBand(fullRing, -hz, hz, false);
-            if (hasSplay) data.AddLoft(holeIn, zBottom, holeFace, hz, true);
-            else data.AddBand(holeIn, zBottom, hz, true);
-        }
-        else
-        {
-            // Ouverture qui mange un bord : le contour exterieur est entaille (ses segments d'entaille vont dans
-            // l'interieur de l'ouverture). L'ebrasement relie le contour entaille du fond a celui de la face avant.
-            List<CPoint> notchIn = BuildNotchedRing(wall, hole, side);
-            List<CPoint> notchFace = hasSplay ? BuildNotchedRing(wall, face, side) : notchIn;
-            data.AddCap(notchFace, null, hz, 1f, data.capTris);
-            data.AddCap(isNiche ? fullRing : notchIn, null, -hz, -1f, data.capTris);
-            // Niche : contour plein derriere le fond de niche
-            if (isNiche) data.AddBand(fullRing, -hz, zPlate, false);
-            if (hasSplay) data.AddLoft(notchIn, zBottom, notchFace, hz, false);
-            else data.AddBand(notchIn, zBottom, hz, false);
+            float za = levels[i], zb = levels[i + 1];
+            if (zb - za < 0.00001f) continue;
+            float mid = (za + zb) * 0.5f;
+            List<OpeningGeo> notches = geos.FindAll(g => g.side >= 0 && g.Present(mid));
+            data.AddLoft(BuildNotchedRing(wall, notches, za), za, BuildNotchedRing(wall, notches, zb), zb, false);
         }
 
-        // Fond de niche, tourne vers l'avant
-        if (isNiche)
-            data.AddCap(BuildRing(hole), null, zPlate, 1f, data.plateTris);
+        // Interieur des ouvertures dans le mur (droit, ou incline du fond a la face creusee)
+        foreach (OpeningGeo g in geos)
+            if (g.side < 0)
+                data.AddLoft(BuildHoleRing(g.hole), g.zBottom, BuildHoleRing(g.face), g.zDug, true);
 
-        int parts = isNiche ? 4 : hasOpening ? 3 : 2;
+        // Fonds de niche, tournes vers la face creusee
+        bool anyNiche = false;
+        foreach (OpeningGeo g in geos)
+        {
+            if (!g.isNiche) continue;
+            anyNiche = true;
+            data.AddCap(BuildRing(g.hole), null, g.zBottom, Mathf.Sign(g.zDug - g.zBottom), data.plateTris);
+        }
+
+        int parts = anyNiche ? 4 : geos.Count > 0 ? 3 : 2;
         data.Apply(mesh, separateMaterials, parts);
         return parts;
     }
 
-    // Accumule sommets et triangles (positions en Z multipliees par zSign pour une niche a l'arriere).
+    // Une face du mur en z : contour entaille par les bords manges, percee par les ouvertures interieures presentes a z.
+    void AddWallFace(MeshData data, RRect wall, List<OpeningGeo> geos, float z, float nz)
+    {
+        List<OpeningGeo> present = geos.FindAll(g => g.Present(z));
+        List<CPoint> outer = BuildNotchedRing(wall, present.FindAll(g => g.side >= 0), z);
+        List<List<CPoint>> holes = new List<List<CPoint>>();
+        foreach (OpeningGeo g in present)
+            if (g.side < 0) holes.Add(BuildHoleRing(g.At(z)));
+        data.AddCap(outer, holes, z, nz, data.capTris);
+    }
+
+    // Accumule sommets et triangles.
     class MeshData
     {
-        public float zSign;
         public RRect wall;
         public float thickness;
         public List<Vector3> verts = new List<Vector3>();
@@ -491,23 +618,28 @@ public class PerforatedWall : MonoBehaviour
 
         void AddVertex(Vector2 p, float z, Vector3 n, Vector2 uvA, Vector2 uvB)
         {
-            verts.Add(new Vector3(p.x, p.y, z * zSign));
-            normals.Add(new Vector3(n.x, n.y, n.z * zSign));
+            verts.Add(new Vector3(p.x, p.y, z));
+            normals.Add(n);
             uv0.Add(uvA);
             uv2.Add(uvB);
         }
 
-        // Face plate en z : contour (sens trigo) eventuellement perce d'un trou (sens horaire), triangulee par oreilles.
-        public void AddCap(List<CPoint> outer, List<CPoint> hole, float z, float nz, List<int> tris)
+        // Face plate en z : contour (sens trigo) eventuellement perce de trous (sens horaire), triangulee par oreilles.
+        public void AddCap(List<CPoint> outer, List<List<CPoint>> holes, float z, float nz, List<int> tris)
         {
             List<Vector2> poly = Positions(outer);
-            if (hole != null) poly = MergeHole(poly, Positions(hole));
+            if (holes != null && holes.Count > 0)
+            {
+                List<List<Vector2>> holePts = new List<List<Vector2>>();
+                foreach (List<CPoint> h in holes) holePts.Add(Positions(h));
+                poly = MergeHoles(poly, holePts);
+            }
             List<int> local = new List<int>();
             Triangulate(poly, local);
 
             Vector3 n = new Vector3(0f, 0f, nz);
             // u croit vers la droite de celui qui regarde la face : vers -X pour une face tournee vers +Z
-            bool facesPlusZ = nz * zSign > 0f;
+            bool facesPlusZ = nz > 0f;
             float W = wall.maxX - wall.minX, H = wall.maxY - wall.minY;
             int start = verts.Count;
             foreach (Vector2 p in poly)
@@ -516,55 +648,22 @@ public class PerforatedWall : MonoBehaviour
                 float v = p.y - wall.minY;
                 AddVertex(p, z, n, new Vector2(u, v), new Vector2(u / W, v / H));
             }
-            Vector3 outward = new Vector3(0f, 0f, nz * zSign);
             for (int i = 0; i < local.Count; i += 3)
-                AddTri(verts, tris, start + local[i], start + local[i + 1], start + local[i + 2], outward);
+                AddTri(verts, tris, start + local[i], start + local[i + 1], start + local[i + 2], n);
         }
 
-        // Tranche : le contour extrude de z0 a z1. Normales lisses sur les arrondis, nettes aux coins vifs.
-        public void AddBand(List<CPoint> ring, float z0, float z1, bool allOpening)
-        {
-            int n = ring.Count;
-            float perimeter = 0f;
-            for (int i = 0; i < n; i++) perimeter += Vector2.Distance(ring[i].p, ring[(i + 1) % n].p);
-            perimeter = Mathf.Max(0.0001f, perimeter);
-
-            float dist = 0f;
-            for (int i = 0; i < n; i++)
-            {
-                CPoint a = ring[i], b = ring[(i + 1) % n];
-                Vector2 d = b.p - a.p;
-                float len = d.magnitude;
-                if (len < 0.000001f) continue;
-                Vector2 segN = new Vector2(d.y, -d.x) / len;
-                Vector2 na = a.n.sqrMagnitude > 0f ? a.n : segN;
-                Vector2 nb = b.n.sqrMagnitude > 0f ? b.n : segN;
-                float v0 = z0 + thickness * 0.5f, v1 = z1 + thickness * 0.5f;
-
-                int start = verts.Count;
-                AddVertex(a.p, z0, na, new Vector2(dist, v0), new Vector2(dist / perimeter, v0 / thickness));
-                AddVertex(b.p, z0, nb, new Vector2(dist + len, v0), new Vector2((dist + len) / perimeter, v0 / thickness));
-                AddVertex(b.p, z1, nb, new Vector2(dist + len, v1), new Vector2((dist + len) / perimeter, v1 / thickness));
-                AddVertex(a.p, z1, na, new Vector2(dist, v1), new Vector2(dist / perimeter, v1 / thickness));
-                AddQuad(verts, allOpening || a.openingSeg ? openTris : outerTris, start, start + 1, start + 2, start + 3,
-                    new Vector3(segN.x, segN.y, 0f));
-                dist += len;
-            }
-        }
-
-        // Ebrasement : relie point a point deux contours de meme structure (ringA en zA au fond, ringB en zB au ras de la face).
-        // Les points du mur communs aux deux contours donnent des quads verticaux (tranche exterieure), ceux de
-        // l'ouverture des quads inclines. Normales lisses sur les arrondis, nettes ailleurs.
+        // Relie point a point deux contours de meme structure (ringA en zA, ringB en zB) : tranche droite si les deux
+        // contours sont identiques, ebrasement sinon. Les points du mur communs aux deux contours donnent des quads
+        // verticaux (tranche exterieure), ceux d'une ouverture qui s'elargit des quads inclines.
+        // Normales lisses sur les arrondis, nettes ailleurs.
         public void AddLoft(List<CPoint> ringA, float zA, List<CPoint> ringB, float zB, bool allOpening)
         {
             int n = ringA.Count;
             if (ringB.Count != n)
             {
-                Debug.LogWarning("[PerforatedWall] Ebrasement : contours de tailles differentes, ebrasement ignore.");
+                Debug.LogWarning("[PerforatedWall] Contours de tailles differentes, tranche ignoree.");
                 return;
             }
-            float dz = Mathf.Abs(zB - zA);
-            float zDir = Mathf.Sign(zB - zA); // vers la face
             float perimeter = 0f;
             for (int i = 0; i < n; i++) perimeter += Vector2.Distance(ringA[i].p, ringA[(i + 1) % n].p);
             perimeter = Mathf.Max(0.0001f, perimeter);
@@ -592,30 +691,30 @@ public class PerforatedWall : MonoBehaviour
                 float aLen = Vector2.Distance(a0.p, a1.p);
                 float v0 = zA + thickness * 0.5f, v1 = zB + thickness * 0.5f;
                 int start = verts.Count;
-                AddVertex(a0.p, zA, LoftNormal(a0, b0, dz, zDir, flat), new Vector2(dist, v0), new Vector2(dist / perimeter, v0 / thickness));
-                AddVertex(a1.p, zA, LoftNormal(a1, b1, dz, zDir, flat), new Vector2(dist + aLen, v0), new Vector2((dist + aLen) / perimeter, v0 / thickness));
-                AddVertex(b1.p, zB, LoftNormal(a1, b1, dz, zDir, flat), new Vector2(dist + aLen, v1), new Vector2((dist + aLen) / perimeter, v1 / thickness));
-                AddVertex(b0.p, zB, LoftNormal(a0, b0, dz, zDir, flat), new Vector2(dist, v1), new Vector2(dist / perimeter, v1 / thickness));
-                // Les sommets ont deja ete retournes par zSign : la normale de reference doit l'etre aussi
-                AddQuad(verts, allOpening || a0.openingSeg ? openTris : outerTris, start, start + 1, start + 2, start + 3,
-                    new Vector3(flat.x, flat.y, flat.z * zSign));
+                AddVertex(a0.p, zA, LoftNormal(a0, b0, zB - zA, flat), new Vector2(dist, v0), new Vector2(dist / perimeter, v0 / thickness));
+                AddVertex(a1.p, zA, LoftNormal(a1, b1, zB - zA, flat), new Vector2(dist + aLen, v0), new Vector2((dist + aLen) / perimeter, v0 / thickness));
+                AddVertex(b1.p, zB, LoftNormal(a1, b1, zB - zA, flat), new Vector2(dist + aLen, v1), new Vector2((dist + aLen) / perimeter, v1 / thickness));
+                AddVertex(b0.p, zB, LoftNormal(a0, b0, zB - zA, flat), new Vector2(dist, v1), new Vector2(dist / perimeter, v1 / thickness));
+                AddQuad(verts, allOpening || a0.openingSeg ? openTris : outerTris, start, start + 1, start + 2, start + 3, flat);
                 dist += aLen;
             }
         }
 
-        // Sur un arrondi : la pente de l'ebrasement en ce point (largeur w = ecart entre les deux contours, profondeur dz),
-        // inclinee vers la face. Ailleurs (coin vif, segment droit) : la normale plate du quad.
-        static Vector3 LoftNormal(CPoint a, CPoint b, float dz, float zDir, Vector3 flat)
+        // Sur un arrondi : perpendiculaire a la pente (de a en zA vers b en zB) et a l'arrondi, du cote de la normale du contour.
+        // Ailleurs (coin vif, segment droit) : la normale plate du quad.
+        static Vector3 LoftNormal(CPoint a, CPoint b, float dz, Vector3 flat)
         {
             if (a.n.sqrMagnitude <= 0f) return flat;
-            float w = Vector2.Distance(a.p, b.p);
-            return new Vector3(a.n.x * dz, a.n.y * dz, zDir * w).normalized;
+            float s = dz < 0f ? -1f : 1f;
+            float spread = Vector2.Dot(b.p - a.p, a.n);
+            return new Vector3(a.n.x * dz * s, a.n.y * dz * s, -spread * s).normalized;
         }
 
-        // parts = nombre de parties : 2 (mur plein), 3 (ouverture), 4 (niche : son fond a part)
+        // parts = nombre de parties : 2 (mur plein), 3 (ouvertures), 4 (niches : leur fond a part)
         public void Apply(Mesh mesh, bool separate, int parts)
         {
             mesh.Clear();
+            mesh.indexFormat = verts.Count > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16;
             mesh.SetVertices(verts);
             mesh.SetNormals(normals);
             mesh.SetUVs(0, uv0);
@@ -646,64 +745,74 @@ public class PerforatedWall : MonoBehaviour
 
     static float Cross(Vector2 a, Vector2 b) => a.x * b.y - a.y * b.x;
 
-    // Relie le trou (sens horaire) au contour (sens trigo) par un pont : un seul polygone, triangulable par oreilles.
-    // Pont = du point le plus a droite du trou vers le point du contour le plus proche qui le voit sans rien croiser.
+    // Relie les trous un par un au contour, du plus a droite au plus a gauche : un seul polygone, triangulable par oreilles.
+    // Dans cet ordre, tout ce qui est a droite d'un trou est deja dans le contour.
+    static List<Vector2> MergeHoles(List<Vector2> outer, List<List<Vector2>> holes)
+    {
+        List<List<Vector2>> sorted = new List<List<Vector2>>(holes);
+        sorted.Sort((a, b) => MaxX(b).CompareTo(MaxX(a)));
+        List<Vector2> poly = outer;
+        foreach (List<Vector2> hole in sorted) poly = MergeHole(poly, hole);
+        return poly;
+    }
+
+    static float MaxX(List<Vector2> loop)
+    {
+        float m = float.MinValue;
+        foreach (Vector2 p in loop) m = Mathf.Max(m, p.x);
+        return m;
+    }
+
+    // Pont : depuis le point le plus a droite du trou, un rayon horizontal vers la droite ; le pont va jusqu'au premier
+    // bord touche (point ajoute sur ce bord). Rien ne peut croiser ce pont, et deux ponts ne partagent jamais un point.
     static List<Vector2> MergeHole(List<Vector2> outer, List<Vector2> hole)
     {
         int hi = 0;
         for (int i = 1; i < hole.Count; i++)
             if (hole[i].x > hole[hi].x) hi = i;
-        Vector2 h = hole[hi];
+        Vector2 m = hole[hi];
 
-        List<int> order = new List<int>();
-        for (int j = 0; j < outer.Count; j++) order.Add(j);
-        order.Sort((a, b) => (outer[a] - h).sqrMagnitude.CompareTo((outer[b] - h).sqrMagnitude));
-
-        int oj = order[0];
-        foreach (int j in order)
+        float best = float.MaxValue;
+        int edge = -1;
+        for (int i = 0; i < outer.Count; i++)
         {
-            if (!SegmentClear(h, outer[j], outer) || !SegmentClear(h, outer[j], hole)) continue;
-            if (PointInPolygon((h + outer[j]) * 0.5f, hole)) continue;
-            oj = j;
-            break;
+            Vector2 p = outer[i], q = outer[(i + 1) % outer.Count];
+            if ((p.y > m.y) == (q.y > m.y)) continue;
+            float x = p.x + (m.y - p.y) * (q.x - p.x) / (q.y - p.y);
+            if (x < m.x - 0.000001f || x >= best) continue;
+            best = x;
+            edge = i;
+        }
+        if (edge < 0)
+        {
+            Debug.LogWarning("[PerforatedWall] Trou sans bord a sa droite : non relie, face non percee.");
+            return outer;
         }
 
-        List<Vector2> merged = new List<Vector2>(outer.Count + hole.Count + 2);
-        for (int j = 0; j <= oj; j++) merged.Add(outer[j]);
-        for (int i = 0; i <= hole.Count; i++) merged.Add(hole[(hi + i) % hole.Count]);
-        for (int j = oj; j < outer.Count; j++) merged.Add(outer[j]);
+        List<Vector2> loop = new List<Vector2>(hole.Count + 1);
+        for (int i = 0; i <= hole.Count; i++) loop.Add(hole[(hi + i) % hole.Count]);
+
+        // Le rayon touche un sommet existant : on s'y accroche ; sinon on coupe le bord au point touche
+        int next = (edge + 1) % outer.Count;
+        Vector2 hit = new Vector2(best, m.y);
+        int at = edge;
+        bool insert = true;
+        if (Same(hit, outer[edge])) insert = false;
+        else if (Same(hit, outer[next])) { at = next; insert = false; }
+        if (!insert) hit = outer[at];
+
+        List<Vector2> merged = new List<Vector2>(outer.Count + hole.Count + 3);
+        for (int j = 0; j <= at; j++) merged.Add(outer[j]);
+        if (insert) merged.Add(hit);
+        merged.AddRange(loop);
+        merged.Add(hit);
+        for (int j = at + 1; j < outer.Count; j++) merged.Add(outer[j]);
         return merged;
-    }
-
-    static bool SegmentClear(Vector2 a, Vector2 b, List<Vector2> loop)
-    {
-        for (int i = 0; i < loop.Count; i++)
-        {
-            Vector2 p = loop[i], q = loop[(i + 1) % loop.Count];
-            if (Same(p, a) || Same(p, b) || Same(q, a) || Same(q, b)) continue;
-            float d1 = Cross(q - p, a - p), d2 = Cross(q - p, b - p);
-            float d3 = Cross(b - a, p - a), d4 = Cross(b - a, q - a);
-            if (((d1 > 0f && d2 < 0f) || (d1 < 0f && d2 > 0f)) && ((d3 > 0f && d4 < 0f) || (d3 < 0f && d4 > 0f)))
-                return false;
-        }
-        return true;
     }
 
     static bool Same(Vector2 a, Vector2 b) => (a - b).sqrMagnitude < 1e-12f;
 
-    static bool PointInPolygon(Vector2 p, List<Vector2> poly)
-    {
-        bool inside = false;
-        for (int i = 0, j = poly.Count - 1; i < poly.Count; j = i++)
-        {
-            if ((poly[i].y > p.y) != (poly[j].y > p.y) &&
-                p.x < (poly[j].x - poly[i].x) * (p.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)
-                inside = !inside;
-        }
-        return inside;
-    }
-
-    // Triangulation par oreilles d'un polygone simple en sens trigo (les points doubles du pont sont toleres).
+    // Triangulation par oreilles d'un polygone simple en sens trigo (les points doubles des ponts sont toleres).
     static void Triangulate(List<Vector2> poly, List<int> result)
     {
         List<int> idx = new List<int>(poly.Count);
@@ -780,21 +889,27 @@ public class PerforatedWall : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    // Lettres A-D sur les coins du mur et de l'ouverture (si leurs rayons ne sont pas lies), sur la face avant.
+    // Numero de chaque ouverture (s'il y en a plusieurs) et lettres A-D des coins non lies, sur la face creusee.
     void OnDrawGizmosSelected()
     {
         RRect wall = GetWallRect();
-        float z = Thickness * 0.5f * (niche && nicheOnBack ? 1f : -1f);
+        float hz = Thickness * 0.5f;
         string[] names = { "A", "B", "C", "D" };
 
         if (!linkCorners)
             for (int k = 0; k < 4; k++)
-                Label(CornerPoint(wall, k), z, names[k]);
+                Label(CornerPoint(wall, k), -hz, names[k]);
 
-        if (opening && !linkOpeningCorners)
+        if (openings == null) return;
+        for (int i = 0; i < openings.Count; i++)
         {
-            RRect hole = GetOpeningRect(wall, EdgeSide);
+            Opening o = openings[i];
+            if (o == null) continue;
+            float z = o.niche && o.nicheOnBack ? hz : -hz;
+            RRect hole = GetOpeningRect(wall, o, o.EdgeSide);
             Vector2 center = new Vector2((hole.minX + hole.maxX) * 0.5f, (hole.minY + hole.maxY) * 0.5f);
+            if (openings.Count > 1) Label(center, z, (i + 1).ToString());
+            if (o.linkCorners) continue;
             for (int k = 0; k < 4; k++)
             {
                 // Un peu vers l'interieur de l'ouverture, pour ne pas chevaucher les lettres du mur
@@ -813,7 +928,8 @@ public class PerforatedWall : MonoBehaviour
 }
 
 #if UNITY_EDITOR
-// Inspecteur : n'affiche que les reglages utiles, et previent quand l'ouverture ne peut pas etre percee.
+// Inspecteur : n'affiche que les reglages utiles, liste des ouvertures repliables, et previent quand une ouverture
+// ne peut pas etre percee.
 [UnityEditor.CustomEditor(typeof(PerforatedWall))]
 [UnityEditor.CanEditMultipleObjects]
 public class PerforatedWallEditor : UnityEditor.Editor
@@ -826,15 +942,11 @@ public class PerforatedWallEditor : UnityEditor.Editor
         { "radius", "Rayon" },
         { "radiusA", "Rayon A" }, { "radiusB", "Rayon B" }, { "radiusC", "Rayon C" }, { "radiusD", "Rayon D" },
         { "cornerSegments", "Segments par arrondi" },
-        { "opening", "Ouverture" },
         { "edge", "Bord mangé" },
-        { "openingX", "Position X" },
-        { "openingY", "Position Y" },
-        { "openingWidth", "Largeur" },
-        { "openingHeight", "Hauteur" },
-        { "linkOpeningCorners", "Coins liés" },
-        { "openingRadius", "Rayon" },
-        { "openingRadiusA", "Rayon A" }, { "openingRadiusB", "Rayon B" }, { "openingRadiusC", "Rayon C" }, { "openingRadiusD", "Rayon D" },
+        { "x", "Position X" },
+        { "y", "Position Y" },
+        { "width", "Largeur" },
+        { "height", "Hauteur" },
         { "niche", "Niche" },
         { "nicheDepth", "Profondeur" },
         { "nicheOnBack", "Niche à l'arrière" },
@@ -843,6 +955,14 @@ public class PerforatedWallEditor : UnityEditor.Editor
         { "splaySize", "Élargissement" },
         { "splayTop", "Haut" }, { "splayBottom", "Bas" }, { "splayLeft", "Gauche" }, { "splayRight", "Droite" },
         { "separateMaterials", "Matériaux séparés" },
+    };
+
+    static readonly string[] OpeningFields =
+    {
+        "edge", "x", "y", "width", "height",
+        "linkCorners", "radius", "radiusA", "radiusB", "radiusC", "radiusD",
+        "niche", "nicheDepth", "nicheOnBack",
+        "splay", "linkSplay", "splaySize", "splayTop", "splayBottom", "splayLeft", "splayRight",
     };
 
     public override void OnInspectorGUI()
@@ -856,56 +976,129 @@ public class PerforatedWallEditor : UnityEditor.Editor
         else
             hidden.Add("radius");
 
-        if (!wall.opening)
-            hidden.AddRange(new[] { "edge", "openingX", "openingY", "openingWidth", "openingHeight", "linkOpeningCorners",
-                                    "openingRadius", "openingRadiusA", "openingRadiusB", "openingRadiusC", "openingRadiusD",
-                                    "niche", "nicheDepth", "nicheOnBack",
-                                    "splay", "linkSplay", "splaySize", "splayTop", "splayBottom", "splayLeft", "splayRight" });
-        else
-        {
-            if (!wall.splay)
-                hidden.AddRange(new[] { "linkSplay", "splaySize", "splayTop", "splayBottom", "splayLeft", "splayRight" });
-            else if (wall.linkSplay)
-                hidden.AddRange(new[] { "splayTop", "splayBottom", "splayLeft", "splayRight" });
-            else
-            {
-                hidden.Add("splaySize");
-                // Le cote d'un bord mange reste droit
-                switch (wall.edge)
-                {
-                    case PerforatedWall.OpeningEdge.Bas: hidden.Add("splayBottom"); break;
-                    case PerforatedWall.OpeningEdge.Haut: hidden.Add("splayTop"); break;
-                    case PerforatedWall.OpeningEdge.Gauche: hidden.Add("splayLeft"); break;
-                    case PerforatedWall.OpeningEdge.Droite: hidden.Add("splayRight"); break;
-                }
-            }
+        int addAt = -1, duplicate = -1, remove = -1;
 
-            if (wall.edge == PerforatedWall.OpeningEdge.Gauche || wall.edge == PerforatedWall.OpeningEdge.Droite)
-                hidden.Add("openingX");
-            if (wall.edge == PerforatedWall.OpeningEdge.Bas || wall.edge == PerforatedWall.OpeningEdge.Haut)
-                hidden.Add("openingY");
-            if (wall.linkOpeningCorners)
-                hidden.AddRange(new[] { "openingRadiusA", "openingRadiusB", "openingRadiusC", "openingRadiusD" });
-            else
-                hidden.Add("openingRadius");
-            if (!wall.niche)
-                hidden.AddRange(new[] { "nicheDepth", "nicheOnBack" });
-        }
-
-        // Comme DrawPropertiesExcluding, avec les libelles en francais
+        // Comme DrawPropertiesExcluding, avec les libelles en francais et la liste des ouvertures dessinee a part
         UnityEditor.SerializedProperty prop = serializedObject.GetIterator();
         bool enterChildren = true;
         while (prop.NextVisible(enterChildren))
         {
             enterChildren = false;
             if (prop.name == "m_Script" || hidden.Contains(prop.name)) continue;
-            string label = Labels.TryGetValue(prop.name, out string fr) ? fr : prop.displayName;
-            UnityEditor.EditorGUILayout.PropertyField(prop, new GUIContent(label, prop.tooltip), true);
+            if (prop.name == "openings")
+            {
+                DrawOpenings(prop, ref addAt, ref duplicate, ref remove);
+                continue;
+            }
+            UnityEditor.EditorGUILayout.PropertyField(prop, new GUIContent(Label(prop), prop.tooltip), true);
         }
         serializedObject.ApplyModifiedProperties();
 
+        // Ajout, duplication, suppression : directement sur les composants (valeurs par defaut d'une ouverture neuve)
+        if (addAt >= 0 || duplicate >= 0 || remove >= 0)
+        {
+            UnityEditor.Undo.RecordObjects(targets, "Ouvertures du mur");
+            foreach (Object t in targets)
+            {
+                PerforatedWall w = (PerforatedWall)t;
+                if (remove >= 0 && remove < w.openings.Count)
+                    w.openings.RemoveAt(remove);
+                else if (duplicate >= 0 && duplicate < w.openings.Count)
+                {
+                    // La copie est decalee a cote de l'original (sinon elle le chevaucherait)
+                    PerforatedWall.Opening copy = w.openings[duplicate].Clone();
+                    if (copy.edge == PerforatedWall.OpeningEdge.Gauche || copy.edge == PerforatedWall.OpeningEdge.Droite)
+                        copy.y += copy.height + 0.3f;
+                    else
+                        copy.x += copy.width + 0.3f;
+                    w.openings.Insert(duplicate + 1, copy);
+                }
+                else if (addAt >= 0)
+                    w.openings.Add(new PerforatedWall.Opening());
+                w.Rebuild();
+                UnityEditor.EditorUtility.SetDirty(w);
+            }
+            serializedObject.Update();
+        }
+
         if (!string.IsNullOrEmpty(wall.warning))
             UnityEditor.EditorGUILayout.HelpBox(wall.warning, UnityEditor.MessageType.Warning);
+    }
+
+    static string Label(UnityEditor.SerializedProperty prop) =>
+        Labels.TryGetValue(prop.name, out string fr) ? fr : prop.displayName;
+
+    void DrawOpenings(UnityEditor.SerializedProperty list, ref int addAt, ref int duplicate, ref int remove)
+    {
+        UnityEditor.EditorGUILayout.Space(8);
+        UnityEditor.EditorGUILayout.LabelField("Ouvertures", UnityEditor.EditorStyles.boldLabel);
+
+        for (int i = 0; i < list.arraySize; i++)
+        {
+            UnityEditor.SerializedProperty o = list.GetArrayElementAtIndex(i);
+            UnityEditor.EditorGUILayout.BeginHorizontal();
+            o.isExpanded = UnityEditor.EditorGUILayout.Foldout(o.isExpanded, "Ouverture " + (i + 1) + " — " + Kind(o), true);
+            if (GUILayout.Button("Dupliquer", GUILayout.Width(75))) duplicate = i;
+            if (GUILayout.Button("Supprimer", GUILayout.Width(75))) remove = i;
+            UnityEditor.EditorGUILayout.EndHorizontal();
+            if (!o.isExpanded) continue;
+
+            List<string> hidden = HiddenOpeningFields(o);
+            UnityEditor.EditorGUI.indentLevel++;
+            foreach (string name in OpeningFields)
+            {
+                if (hidden.Contains(name)) continue;
+                if (name == "linkCorners" || name == "niche" || name == "splay") UnityEditor.EditorGUILayout.Space(2);
+                UnityEditor.SerializedProperty p = o.FindPropertyRelative(name);
+                UnityEditor.EditorGUILayout.PropertyField(p, new GUIContent(Label(p), p.tooltip), true);
+            }
+            UnityEditor.EditorGUI.indentLevel--;
+            UnityEditor.EditorGUILayout.Space(4);
+        }
+
+        if (GUILayout.Button("Ajouter une ouverture")) addAt = list.arraySize;
+        UnityEditor.EditorGUILayout.Space(4);
+    }
+
+    static string Kind(UnityEditor.SerializedProperty o)
+    {
+        if (o.FindPropertyRelative("niche").boolValue) return "niche";
+        return o.FindPropertyRelative("edge").enumValueIndex == (int)PerforatedWall.OpeningEdge.Bas ? "porte" : "fenêtre";
+    }
+
+    static List<string> HiddenOpeningFields(UnityEditor.SerializedProperty o)
+    {
+        List<string> hidden = new List<string>();
+        PerforatedWall.OpeningEdge edge = (PerforatedWall.OpeningEdge)o.FindPropertyRelative("edge").enumValueIndex;
+
+        if (edge == PerforatedWall.OpeningEdge.Gauche || edge == PerforatedWall.OpeningEdge.Droite) hidden.Add("x");
+        if (edge == PerforatedWall.OpeningEdge.Bas || edge == PerforatedWall.OpeningEdge.Haut) hidden.Add("y");
+
+        if (o.FindPropertyRelative("linkCorners").boolValue)
+            hidden.AddRange(new[] { "radiusA", "radiusB", "radiusC", "radiusD" });
+        else
+            hidden.Add("radius");
+
+        if (!o.FindPropertyRelative("niche").boolValue)
+            hidden.AddRange(new[] { "nicheDepth", "nicheOnBack" });
+
+        if (!o.FindPropertyRelative("splay").boolValue)
+            hidden.AddRange(new[] { "linkSplay", "splaySize", "splayTop", "splayBottom", "splayLeft", "splayRight" });
+        else if (o.FindPropertyRelative("linkSplay").boolValue)
+            hidden.AddRange(new[] { "splayTop", "splayBottom", "splayLeft", "splayRight" });
+        else
+        {
+            hidden.Add("splaySize");
+            // Le cote d'un bord mange reste droit
+            switch (edge)
+            {
+                case PerforatedWall.OpeningEdge.Bas: hidden.Add("splayBottom"); break;
+                case PerforatedWall.OpeningEdge.Haut: hidden.Add("splayTop"); break;
+                case PerforatedWall.OpeningEdge.Gauche: hidden.Add("splayLeft"); break;
+                case PerforatedWall.OpeningEdge.Droite: hidden.Add("splayRight"); break;
+            }
+        }
+        return hidden;
     }
 }
 #endif
