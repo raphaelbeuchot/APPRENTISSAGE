@@ -18,7 +18,7 @@ public class PerforatedWall : MonoBehaviour
 {
     public enum OpeningEdge { Aucun, Bas, Haut, Gauche, Droite }
 
-    [Header("Mur (metres)")]
+    [Header("Mur (mètres)")]
     [Tooltip("X = largeur, Y = hauteur, Z = epaisseur. Pivot au milieu de la base.")]
     public Vector3 size = new Vector3(3f, 2.5f, 0.2f);
 
@@ -59,7 +59,7 @@ public class PerforatedWall : MonoBehaviour
     [Tooltip("Coche : la niche est creusee dans la face arriere (+Z) au lieu de la face avant (-Z).")]
     public bool nicheOnBack = false;
 
-    [Header("Ebrasement")]
+    [Header("Ébrasement")]
     [Tooltip("Incline les faces interieures de l'ouverture : elle garde sa taille au fond (face arriere, ou fond de niche) " +
              "et s'elargit vers la face avant (ou la face creusee d'une niche), comme une meurtriere. " +
              "Le cote d'un bord mange (bas d'une porte) reste droit.")]
@@ -74,9 +74,9 @@ public class PerforatedWall : MonoBehaviour
     [Min(0f)] public float splayLeft = 0.1f;
     [Min(0f)] public float splayRight = 0.1f;
 
-    [Header("Materiaux")]
+    [Header("Matériaux")]
     [Tooltip("Decoche : un seul materiau. Coche : un materiau par partie sur le MeshRenderer, " +
-             "element 0 = faces, 1 = tranche exterieure, 2 = interieur de l'ouverture (tranche et fond de niche).")]
+             "element 0 = faces, 1 = tranche exterieure, 2 = interieur de l'ouverture (tranche ou ebrasement), 3 = fond de niche.")]
     public bool separateMaterials = false;
 
     [System.NonSerialized] Mesh generatedMesh;
@@ -149,9 +149,9 @@ public class PerforatedWall : MonoBehaviour
             generatedMesh.name = "PerforatedWall";
             generatedMesh.hideFlags = HideFlags.DontSave;
         }
-        bool hasOpening = BuildMesh(generatedMesh);
+        int parts = BuildMesh(generatedMesh);
         mf.sharedMesh = generatedMesh;
-        MatchMaterialCount(hasOpening);
+        MatchMaterialCount(parts);
 
         MeshCollider mc = GetComponent<MeshCollider>();
         if (mc != null)
@@ -162,12 +162,12 @@ public class PerforatedWall : MonoBehaviour
     }
 
     // Autant de materiaux que de sous-meshes (meme regle que RoundedBlock)
-    void MatchMaterialCount(bool hasOpening)
+    void MatchMaterialCount(int parts)
     {
         MeshRenderer mr = GetComponent<MeshRenderer>();
         if (mr == null) return;
         Material[] mats = mr.sharedMaterials;
-        int wanted = separateMaterials ? (hasOpening ? 3 : 2) : 1;
+        int wanted = separateMaterials ? parts : 1;
         if (mats.Length == wanted || mats.Length == 0) return;
 
         Material[] fixedMats = new Material[wanted];
@@ -392,9 +392,10 @@ public class PerforatedWall : MonoBehaviour
 
     // ---------------------------------------------------------------- Construction
 
-    // Faces avant et arriere, tranches, et pour une niche son fond. Renvoie vrai si l'ouverture est percee.
+    // Faces avant et arriere, tranches, et pour une niche son fond.
+    // Renvoie le nombre de parties (materiaux separes) : 2 mur plein, 3 ouverture percee, 4 niche.
     // Calcul dans un repere ou la face avant (ou creusee) est en +hz ; zSign la ramene en -Z (en +Z pour une niche a l'arriere).
-    bool BuildMesh(Mesh mesh)
+    int BuildMesh(Mesh mesh)
     {
         RRect wall = GetWallRect();
         float hz = Thickness * 0.5f;
@@ -417,13 +418,13 @@ public class PerforatedWall : MonoBehaviour
             {
                 hasOpening = false;
                 warning = side >= 0
-                    ? "L'ouverture tombe dans un arrondi du mur (ou en deborde) : elle n'est pas percee. Deplacez-la ou reduisez les rayons des coins du mur."
-                    : "L'ouverture deborde du mur ou d'un de ses arrondis : elle n'est pas percee. Deplacez-la, reduisez-la ou choisissez un bord a manger.";
+                    ? "L'ouverture tombe dans un arrondi du mur (ou en déborde) : elle n'est pas percée. Déplacez-la ou réduisez les rayons des coins du mur."
+                    : "L'ouverture déborde du mur ou d'un de ses arrondis : elle n'est pas percée. Déplacez-la, réduisez-la ou choisissez un bord à manger.";
             }
             else if (hasSplay && !OpeningFits(wall, face, side))
             {
                 hasOpening = false;
-                warning = "L'ebrasement deborde du mur ou d'un de ses arrondis : l'ouverture n'est pas percee. Reduisez l'ebrasement ou eloignez l'ouverture du bord.";
+                warning = "L'ébrasement déborde du mur ou d'un de ses arrondis : l'ouverture n'est pas percée. Réduisez l'ébrasement ou éloignez l'ouverture du bord.";
             }
         }
         bool isNiche = hasOpening && niche;
@@ -466,10 +467,11 @@ public class PerforatedWall : MonoBehaviour
 
         // Fond de niche, tourne vers l'avant
         if (isNiche)
-            data.AddCap(BuildRing(hole), null, zPlate, 1f, data.openTris);
+            data.AddCap(BuildRing(hole), null, zPlate, 1f, data.plateTris);
 
-        data.Apply(mesh, separateMaterials, hasOpening);
-        return hasOpening;
+        int parts = isNiche ? 4 : hasOpening ? 3 : 2;
+        data.Apply(mesh, separateMaterials, parts);
+        return parts;
     }
 
     // Accumule sommets et triangles (positions en Z multipliees par zSign pour une niche a l'arriere).
@@ -485,6 +487,7 @@ public class PerforatedWall : MonoBehaviour
         public List<int> capTris = new List<int>();
         public List<int> outerTris = new List<int>();
         public List<int> openTris = new List<int>();
+        public List<int> plateTris = new List<int>();
 
         void AddVertex(Vector2 p, float z, Vector3 n, Vector2 uvA, Vector2 uvB)
         {
@@ -609,7 +612,8 @@ public class PerforatedWall : MonoBehaviour
             return new Vector3(a.n.x * dz, a.n.y * dz, zDir * w).normalized;
         }
 
-        public void Apply(Mesh mesh, bool separate, bool hasOpening)
+        // parts = nombre de parties : 2 (mur plein), 3 (ouverture), 4 (niche : son fond a part)
+        public void Apply(Mesh mesh, bool separate, int parts)
         {
             mesh.Clear();
             mesh.SetVertices(verts);
@@ -618,16 +622,18 @@ public class PerforatedWall : MonoBehaviour
             mesh.SetUVs(2, uv2);
             if (separate)
             {
-                mesh.subMeshCount = hasOpening ? 3 : 2;
+                mesh.subMeshCount = parts;
                 mesh.SetTriangles(capTris, 0);
                 mesh.SetTriangles(outerTris, 1);
-                if (hasOpening) mesh.SetTriangles(openTris, 2);
+                if (parts > 2) mesh.SetTriangles(openTris, 2);
+                if (parts > 3) mesh.SetTriangles(plateTris, 3);
             }
             else
             {
                 List<int> all = new List<int>(capTris);
                 all.AddRange(outerTris);
                 all.AddRange(openTris);
+                all.AddRange(plateTris);
                 mesh.subMeshCount = 1;
                 mesh.SetTriangles(all, 0);
             }
@@ -812,6 +818,33 @@ public class PerforatedWall : MonoBehaviour
 [UnityEditor.CanEditMultipleObjects]
 public class PerforatedWallEditor : UnityEditor.Editor
 {
+    // Libelles affiches dans l'inspecteur (les noms des champs restent en anglais dans le code)
+    static readonly Dictionary<string, string> Labels = new Dictionary<string, string>
+    {
+        { "size", "Taille" },
+        { "linkCorners", "Coins liés" },
+        { "radius", "Rayon" },
+        { "radiusA", "Rayon A" }, { "radiusB", "Rayon B" }, { "radiusC", "Rayon C" }, { "radiusD", "Rayon D" },
+        { "cornerSegments", "Segments par arrondi" },
+        { "opening", "Ouverture" },
+        { "edge", "Bord mangé" },
+        { "openingX", "Position X" },
+        { "openingY", "Position Y" },
+        { "openingWidth", "Largeur" },
+        { "openingHeight", "Hauteur" },
+        { "linkOpeningCorners", "Coins liés" },
+        { "openingRadius", "Rayon" },
+        { "openingRadiusA", "Rayon A" }, { "openingRadiusB", "Rayon B" }, { "openingRadiusC", "Rayon C" }, { "openingRadiusD", "Rayon D" },
+        { "niche", "Niche" },
+        { "nicheDepth", "Profondeur" },
+        { "nicheOnBack", "Niche à l'arrière" },
+        { "splay", "Ébrasement" },
+        { "linkSplay", "Ébrasement lié" },
+        { "splaySize", "Élargissement" },
+        { "splayTop", "Haut" }, { "splayBottom", "Bas" }, { "splayLeft", "Gauche" }, { "splayRight", "Droite" },
+        { "separateMaterials", "Matériaux séparés" },
+    };
+
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
@@ -859,7 +892,16 @@ public class PerforatedWallEditor : UnityEditor.Editor
                 hidden.AddRange(new[] { "nicheDepth", "nicheOnBack" });
         }
 
-        DrawPropertiesExcluding(serializedObject, hidden.ToArray());
+        // Comme DrawPropertiesExcluding, avec les libelles en francais
+        UnityEditor.SerializedProperty prop = serializedObject.GetIterator();
+        bool enterChildren = true;
+        while (prop.NextVisible(enterChildren))
+        {
+            enterChildren = false;
+            if (prop.name == "m_Script" || hidden.Contains(prop.name)) continue;
+            string label = Labels.TryGetValue(prop.name, out string fr) ? fr : prop.displayName;
+            UnityEditor.EditorGUILayout.PropertyField(prop, new GUIContent(label, prop.tooltip), true);
+        }
         serializedObject.ApplyModifiedProperties();
 
         if (!string.IsNullOrEmpty(wall.warning))
