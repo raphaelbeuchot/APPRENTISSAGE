@@ -50,6 +50,7 @@
   - **Fait le 2026-10-25** : case « In Demo » par ligne du catalogue (colonne Demo dans Game Catalog) + build profile `Assets/Settings/Build Profiles/Demo Playtest` avec le symbole `DEMO_BUILD` (seules les lignes cochées sont jouées). Même liste de scènes que le jeu complet (des numéros de build sont écrits en dur dans le code : une liste réduite les décalerait).
   - [ ] **Avant d'envoyer un build démo aux testeurs** : dans le profil Demo Playtest, override du **Product Name** (ex. « … Demo ») → sinon la démo partage sa sauvegarde (PlayerPrefs) avec le jeu complet. Pas encore fait (`m_Settings` vide).
   - [ ] Écran de fin de démo (après Rush Hour IV, le jeu renvoie aujourd'hui vers l'ancien LevelSelect).
+  - **Testeurs pressentis** (noté le 2026-10-28) : Maxime, Florent, Aurélien, Simon (Redondo), éventuellement Johan (Corgié).
   - [ ] Pour une démo publique : nettoyer les numéros de build en dur (`LoadScene(0/1/2/19)`, cas des builds 3 et 4 dans `LevelManager`) avant de réduire la liste de scènes.
 - [ ] 🔴 **Boss final** — ajouter un boss de fin de jeu : à définir (arène, pattern d'attaques, phases, mise en scène d'intro/mort, musique dédiée)
 

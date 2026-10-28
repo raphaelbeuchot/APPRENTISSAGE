@@ -57,5 +57,7 @@ Principes communs :
 - **Tour** : profil révolu autour d'un axe (colonnes, balustres, vases), angle partiel. L'utilisateur voudrait **dessiner le profil** (silhouette éditable dans la scène) plutôt que régler une courbe ; ce profil dessiné pourrait aussi servir à RoundedBlock.
 - **Balayage le long d'une spline** : murs sinueux, bordures de piste ; avec une section ronde, des tubes (néons, rampes, câbles). Pièges : virages plus serrés que la demi-épaisseur, torsion.
 - **Façades à trous** : en attendant, RoundedBlock troué case par case (fastidieux mais ça marche) ; piste d'une option « répéter N × M ».
+- **Rampes** (idée du 2026-10-28) : construire des rampes rapidement.
+- **Percer des trous dans un mesh sans casser sa topologie** (idée du 2026-10-28, vue passer par l'utilisateur, « me rendrait énormément service ») : portes et fenêtres dans les murs. À regarder de près le moment venu : ce n'est pas l'outil booléen général écarté ci-dessous, mais un perçage ciblé ; à comparer avec le trou de RoundedBlock et la piste « Façades à trous ».
 - **Gradins / podiums empilés**, **arches**, **plateformes bombées**.
 - À éviter : un outil booléen général (gouffre, et on perdrait le redimensionnement sans déformation).
