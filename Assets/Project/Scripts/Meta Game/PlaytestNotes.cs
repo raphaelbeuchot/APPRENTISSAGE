@@ -93,7 +93,7 @@ public class PlaytestNotes : MonoBehaviour
         string path = GetFilePath();
         StringBuilder sb = new StringBuilder();
         if (!File.Exists(path))
-            sb.Append("# Notes de playtest\n\n> Prises en jeu avec F2 (PlaytestNotes). A trier dans CE_QUI_RESTE_A_FAIRE.md.\n\n");
+            sb.Append("# Notes de playtest\n\n> Prises en jeu avec F2 (PlaytestNotes). Boite de reception : a trier dans RAPPORT_PLAYTEST.md.\n\n");
         sb.Append("- [ ] **").Append(noteScene).Append("** — ").Append(noteDate).Append(" — ").Append(notePosition).Append('\n');
         sb.Append("  ").Append(note).Append('\n');
 

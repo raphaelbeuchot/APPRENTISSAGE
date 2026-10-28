@@ -1,0 +1,61 @@
+# Rapport de playtest
+
+> Liste d'actions tirée des notes prises en jeu avec F2 (`NOTES_PLAYTEST.md`, boîte de réception brute).
+> Une session par section, niveaux dans l'ordre du catalogue. On coche dans Unity au fil des corrections ; une session entièrement cochée peut être archivée ou supprimée.
+> Ce qui dépasse un niveau (bug d'un système, idée de design, chantier technique) va dans `CE_QUI_RESTE_A_FAIRE.md`.
+
+---
+
+## Session du 2026-10-27
+
+### It's Show Time
+- [ ] Murs, marquee lights et caméra ne disparaissent pas après la victoire
+
+### Go for a Spin
+- [ ] Sol de la cabine de StartRoom un peu surélevé par rapport à la StartZone (regarder les overrides du prefab)
+- [ ] Murs latéraux : épaisseur à 0,2 et hauteur à baisser
+
+### Handle Hurdles
+- [ ] Sol de la cabine de StartRoom surélevé, comme Go for a Spin (overrides ?)
+
+### Strange Attractor
+- [ ] Le joueur apparaît dans la salle StartRoom, pas dans la cabine
+
+### Go with the flow (`Level_GoWithTheFlow01`)
+- [ ] Les deux murets finaux ne disparaissent pas à la victoire
+
+### Rush Hour I (`Level_TrafficJam_01`)
+- [ ] Les murs latéraux ne disparaissent pas à la victoire
+- [ ] Son final plus fort ou différent des autres scènes : pourquoi ?
+
+### Death Row I (`Level_WesternFlow`)
+- [ ] Lumières : éclairent bien le décor mais trop violemment le joueur
+
+### Flower Power III (`Level_Flower03`)
+- [ ] Mur de gauche mal placé par rapport à l'EndCurtain
+- [ ] Mesh gris clair visible tout à la fin dans le couloir de sortie (corrigé dans le prefab TransitionRoom ? → override dans la scène)
+
+### TomaThrow (`Level_TomatoFest_01`)
+- [ ] Pas de VictoryManager ni de TransitionRoom ? (à vérifier)
+
+### Lava Train I
+- [ ] Cercles concentriques de la sentinelle un peu bas au-dessus de la porte
+- [ ] Le ground et les marquee lights ne disparaissent pas à la victoire
+- [ ] TransitionRoom trop haute
+- [ ] Pas de `PostVictoryBounds`
+
+### Lava Train II
+- [ ] Cercles concentriques trop bas
+- [ ] La TomatoUI ne disparaît pas à la victoire
+
+### Trou normand (`Level_TrouNormand`, hors catalogue)
+- [ ] On peut s'échapper de l'ascenseur pendant la montée : vérifier les colliders de la cabine
+
+### Lava Train III
+- [ ] EndCurtain coché `Static` → ne monte pas : décocher Static
+
+### Renvoyé dans `CE_QUI_RESTE_A_FAIRE.md`
+- Porte de StartRoom qui rejoue son animation au redémarrage (BUGS)
+- Spot rouge resté allumé après la victoire + vérifier sa présence dans tous les niveaux de la démo (BUGS, TECH)
+- Bake des lumières pendant le dev (TECH, avec le static batching)
+- Décor de « niche » de la StartRoom, BrightEyes à revoir (GAME DESIGN) ; shader « paillettes » (POLISH)

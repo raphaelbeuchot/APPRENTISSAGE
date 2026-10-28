@@ -1,8 +1,8 @@
 # Notes de playtest
 
-> Prises en jeu avec F2 (PlaytestNotes). A trier dans CE_QUI_RESTE_A_FAIRE.md (case cochee = triee).
+> Prises en jeu avec F2 (PlaytestNotes). Boite de reception brute : triee dans RAPPORT_PLAYTEST.md (case cochee = triee).
 
-**Tri du 2026-10-28** : les 24 notes du 2026-10-27 sont rangees dans CE_QUI_RESTE_A_FAIRE.md.
+**Tri du 2026-10-28** : les 24 notes du 2026-10-27 sont rangees dans RAPPORT_PLAYTEST.md.
 
 - [x] **Level_It's Show Time** — 2026-10-27 22:36 — pos (-2.9, 0.0, -3.5)
   ajouter du decor ds la salle de depart ? lit de camp, etc. ds le lore, le player rentre "ds sa niche" et ressort pour "l'emission"
