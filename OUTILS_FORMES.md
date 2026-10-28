@@ -52,7 +52,13 @@ Principes communs :
 
 **Raccorder deux murs proprement** — l'équivalent du snap V (sommets), mais pour des faces. Aujourd'hui : par le pivot (cf. ci-dessus), ou V sur un coin si les deux bouts sont déjà orientés pareil. Piste proposée, **non tranchée** : boutons « Mur suivant » dans l'inspecteur de CurvedWall (même sens / sens inverse = virage en S), qui dupliquent et placent le mur à la suite. Question ouverte : couper automatiquement les arêtes de bout au raccord, ou laisser la main. Plus tard éventuellement : raccord RoundedBlock droit ↔ mur courbe.
 
-## PerforatedWall — mur droit à ouvertures (discuté le 2026-10-28, pas codé)
+## PerforatedWall — mur droit à ouvertures (étape 1 codée et validée le 2026-10-28)
+
+**Étape 1 faite** (`PerforatedWall.cs`) : mur droit (coins arrondis liés ou A-D), une ouverture (position, taille, coins liés ou A-D), Bord = Aucun / Bas (porte) / Haut / Gauche / Droite, niche (profondeur, face avant ou arrière), matériaux séparés (0 faces, 1 tranche extérieure, 2 intérieur de l'ouverture), MeshCollider. Ouverture qui déborde ou tombe dans un arrondi du mur : non percée, message dans l'Inspector. Arche = porte avec coins C et D à la demi-largeur.
+- Faces triangulées par oreilles (trou relié au contour par un pont) : topologie en longs triangles fins, **sans effet** sur l'éclairage ni les textures (normales et UV projetés). À revoir seulement si on veut un jour déformer le mur ou peindre des couleurs par sommet.
+- **Suite** : étape 2 biseau droit par arête des ouvertures, étape 3 plusieurs ouvertures, étape 4 répétition en ligne / trame.
+
+Notes de conception (discussion du 2026-10-28) :
 
 Portes, fenêtres et niches dans des murs, sans ProBuilder (« détestable sur le nouveau Unity »). Sur nos propres blocs seulement.
 
