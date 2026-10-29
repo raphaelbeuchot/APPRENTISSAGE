@@ -52,6 +52,7 @@
 ### Trou normand (`Level_TrouNormand`, hors catalogue)
 - [ ] On peut s'échapper de l'ascenseur pendant la montée : vérifier les colliders de la cabine
   - 2026-10-29 : confirmé, il suffit de bouger dans la cabine pendant la montée, alors que **tous les meshes ont des colliders**. Piste (non vérifiée) : la Timeline déplace la cabine par son Transform, hors physique ; ses colliders « sautent » d'une position à l'autre à chaque image, et le Rigidbody du joueur, qui bouge, passe à travers ou se fait éjecter. Pistes de correction à discuter : Rigidbody kinematic sur la cabine (déplacé en physique), joueur rattaché à la cabine pendant la montée, ou murs invisibles plus épais.
+- [ ] Au restart, on entend le son de montée du rideau (curtain rise) alors que ce niveau n'a pas de rideau : trouver quel composant le joue (note du 2026-10-28)
 
 ### Lava Train III
 - [x] EndCurtain coché `Static` → ne monte pas : décocher Static (2026-10-29)

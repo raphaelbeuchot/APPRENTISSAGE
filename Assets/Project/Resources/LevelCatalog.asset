@@ -498,8 +498,8 @@ MonoBehaviour:
       status: 2
       detail: LevelEssentiels (tague Sentinel)
     - id: startDoor
-      status: 1
-      detail: 'Ancienne start zone, sans porte d''entree : StartZone_8m'
+      status: 2
+      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
     - id: pupitre
       status: 2
       detail: Pupitre
@@ -555,8 +555,8 @@ MonoBehaviour:
       status: 2
       detail: LevelEssentiels (tague Sentinel)
     - id: startDoor
-      status: 0
-      detail: 
+      status: 2
+      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
     - id: pupitre
       status: 2
       detail: Pupitre
@@ -567,21 +567,20 @@ MonoBehaviour:
       status: 2
       detail: KeyCollectible (1)/Collectible (KeyCollectible)
     - id: victory
-      status: 0
-      detail: 
+      status: 2
+      detail: VictoryManager (configuration complete)
     - id: curtain
-      status: 0
-      detail: 
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
     - id: circles
       status: 2
       detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
     - id: transitionRoom
-      status: 0
-      detail: 
+      status: 2
+      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
+      status: 2
+      detail: PostVictoryBounds (contient GoalDoor et salle de transition)
     - id: broomPickup
       status: 0
       detail: 
@@ -1583,4 +1582,4 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_TrafficJam_04.unity
     collectibleIDs: []
-  lastAnalysis: 29/10/2026 a 17:52
+  lastAnalysis: 29/10/2026 a 22:17
