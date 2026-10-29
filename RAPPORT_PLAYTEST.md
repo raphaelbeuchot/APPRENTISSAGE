@@ -25,8 +25,8 @@
 - [ ] Les deux murets finaux ne disparaissent pas à la victoire
 
 ### Rush Hour I (`Level_TrafficJam_01`)
-- [ ] Les murs latéraux ne disparaissent pas à la victoire
-- [ ] Son final plus fort ou différent des autres scènes : pourquoi ?
+- [x] Les murs latéraux ne disparaissent pas à la victoire (2026-10-29)
+- [ ] Son final plus fort ou différent des autres scènes : **trouvé** (2026-10-29), override de `Lights Off Sound` sur le VictoryManager (`TransitionRoom_VolumeSwitch_02` au lieu du `_03` du prefab). Reste à faire : clic droit sur le champ → Revert. (It's Show Time a aussi un override, `Interrupteur.wav` : voulu ?)
 
 ### Death Row I (`Level_WesternFlow`)
 - [ ] Lumières : éclairent bien le décor mais trop violemment le joueur
@@ -41,6 +41,7 @@
 ### Lava Train I
 - [x] Cercles concentriques de la sentinelle un peu bas au-dessus de la porte
 - [ ] Le ground et les marquee lights ne disparaissent pas à la victoire
+  - 2026-10-29 : le VictoryManager n'a ni `Layers To Hide On Victory` ni `Objects To Hide On Victory` (vides dans le prefab). Reprendre le réglage de TomaThrow (Obstacle, Ground, Lockable, MarqueeLights). À préciser : ground visible sous l'écran de victoire ou à la toute fin ?
 - [ ] TransitionRoom trop haute
 - [ ] Pas de `PostVictoryBounds`
 
