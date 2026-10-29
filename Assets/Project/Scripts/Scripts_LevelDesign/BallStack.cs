@@ -132,10 +132,15 @@ public class BallStack : MonoBehaviour
         MeshFilter mf = GetComponent<MeshFilter>();
         if (mf == null) return;
 
+        // Apres un rechargement du code, la reference est perdue mais le mesh existe encore (DontSave : jamais nettoye
+        // par Unity) : on reprend le sien, reconnu a son nom, au lieu d en creer un de plus a chaque rechargement.
+        string meshName = "BallStack_" + GetInstanceID();
+        if (generatedMesh == null && mf.sharedMesh != null && mf.sharedMesh.name == meshName)
+            generatedMesh = mf.sharedMesh;
         if (generatedMesh == null)
         {
             generatedMesh = new Mesh();
-            generatedMesh.name = "BallStack";
+            generatedMesh.name = meshName;
             generatedMesh.hideFlags = HideFlags.DontSave;
         }
         BuildMesh(generatedMesh);

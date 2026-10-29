@@ -321,10 +321,15 @@ public class PerforatedWall : MonoBehaviour
         MeshFilter mf = GetComponent<MeshFilter>();
         if (mf == null) return;
 
+        // Apres un rechargement du code, la reference est perdue mais le mesh existe encore (DontSave : jamais nettoye
+        // par Unity) : on reprend le sien, reconnu a son nom, au lieu d en creer un de plus a chaque rechargement.
+        string meshName = "PerforatedWall_" + GetInstanceID();
+        if (generatedMesh == null && mf.sharedMesh != null && mf.sharedMesh.name == meshName)
+            generatedMesh = mf.sharedMesh;
         if (generatedMesh == null)
         {
             generatedMesh = new Mesh();
-            generatedMesh.name = "PerforatedWall";
+            generatedMesh.name = meshName;
             generatedMesh.hideFlags = HideFlags.DontSave;
         }
         int parts = BuildMesh(generatedMesh, out List<Material> backs);
