@@ -18,6 +18,7 @@ using UnityEngine;
 public class PerforatedWall : MonoBehaviour
 {
     public enum OpeningEdge { Aucun, Bas, Haut, Gauche, Droite }
+    public enum BackMode { Uniforme, [InspectorName("Aléatoire")] Aleatoire }
 
     [System.Serializable]
     public class Opening
@@ -44,6 +45,14 @@ public class PerforatedWall : MonoBehaviour
         [Min(0.01f)] public float nicheDepth = 0.1f;
         [Tooltip("Coche : la niche est creusee dans la face arriere (+Z) au lieu de la face avant (-Z).")]
         public bool nicheOnBack = false;
+        [Tooltip("Materiaux possibles pour le fond de niche. Vide : le fond prend le materiau des fonds de niche du mur (element 3, ou le materiau unique). " +
+                 "Les materiaux utilises sont ajoutes automatiquement a la suite sur le MeshRenderer.")]
+        public List<Material> backMaterials = new List<Material>();
+        [Tooltip("Uniforme : toutes les copies prennent le premier materiau. Aleatoire : chaque copie tire le sien dans la liste (tirage memorise).")]
+        public BackMode backMode = BackMode.Uniforme;
+        [HideInInspector] public int backSeed = 1;
+        // Fond retenu pour cette copie (rempli par Expand, null = materiau des fonds de niche du mur)
+        [System.NonSerialized] public Material backMaterial;
         [Tooltip("Incline les faces interieures de l'ouverture : elle garde sa taille au fond (face arriere, ou fond de niche) " +
                  "et s'elargit vers la face avant (ou la face creusee d'une niche), comme une meurtriere. " +
                  "Le cote d'un bord mange (bas d'une porte) reste droit.")]
@@ -65,7 +74,22 @@ public class PerforatedWall : MonoBehaviour
         [Tooltip("Mur plein entre deux copies, en metres (au moins 1 cm).")]
         [Min(0.01f)] public float gapX = 0.5f;
         [Min(0.01f)] public float gapY = 0.5f;
-        public Opening Clone() => (Opening)MemberwiseClone();
+        public Opening Clone()
+        {
+            Opening c = (Opening)MemberwiseClone();
+            c.backMaterials = backMaterials != null ? new List<Material>(backMaterials) : new List<Material>();
+            return c;
+        }
+
+        // Fond de la copie (cx, cy) : un tirage par case, stable quand on ajoute ou retire des copies
+        Material PickBack(int cx, int cy)
+        {
+            if (!niche || backMaterials == null || backMaterials.Count == 0) return null;
+            if (backMode == BackMode.Uniforme) return backMaterials[0];
+            uint h = (uint)backSeed * 2654435761u ^ (uint)(cx + 1) * 2246822519u ^ (uint)(cy + 1) * 3266489917u;
+            h ^= h >> 15; h *= 2246822519u; h ^= h >> 13;
+            return backMaterials[(int)(h % (uint)backMaterials.Count)];
+        }
 
         float SplaySide(float side) => splay ? (linkSplay ? splaySize : side) : 0f;
 
@@ -96,10 +120,11 @@ public class PerforatedWall : MonoBehaviour
             for (int cy = 0; cy < ny; cy++)
                 for (int cx = 0; cx < nx; cx++)
                 {
-                    Opening c = Clone();
+                    Opening c = (Opening)MemberwiseClone();
                     c.repeat = false;
                     c.x = x + (cx - (nx - 1) * 0.5f) * stepX;
                     c.y = y + cy * stepY;
+                    c.backMaterial = PickBack(cx, cy);
                     list.Add(c);
                 }
             return list;
@@ -141,9 +166,12 @@ public class PerforatedWall : MonoBehaviour
     public List<Opening> openings = new List<Opening>();
 
     [Header("Matériaux")]
-    [Tooltip("Decoche : un seul materiau. Coche : un materiau par partie sur le MeshRenderer, " +
-             "element 0 = faces, 1 = tranche exterieure, 2 = interieur des ouvertures (tranche ou ebrasement), 3 = fonds de niche.")]
+    [Tooltip("Decoche : un seul materiau. Coche : un materiau par partie (faces, tranche exterieure, interieur des ouvertures, fonds de niche), " +
+             "regles juste en dessous ; ce sont les elements 0 a 3 du MeshRenderer, les fonds de palette suivent.")]
     public bool separateMaterials = false;
+    // Nombre de materiaux "du mur" en tete du MeshRenderer au dernier passage ; les fonds de palette suivent
+    // (0 = mur d'avant les palettes : tous les materiaux presents sont ceux du mur)
+    [SerializeField, HideInInspector] int wallMaterialCount;
 
     // Ancienne ouverture unique (avant la liste) : relue une seule fois puis recopiee dans 'openings'.
     [SerializeField, HideInInspector] bool openingsMigrated;
@@ -173,6 +201,9 @@ public class PerforatedWall : MonoBehaviour
     [System.NonSerialized] Mesh generatedMesh;
     // Message affiche dans l'inspecteur quand une ouverture ne peut pas etre percee
     [System.NonSerialized] public string warning;
+    // Dernier passage : nombre de parties du mur et fonds de palette utilises (pour la section Materiaux de l'inspecteur)
+    [System.NonSerialized] public int lastParts;
+    [System.NonSerialized] public List<Material> lastBacks = new List<Material>();
 
     // Point d'un contour : position, normale lisse sur les arrondis (zero = coin vif, normale du segment),
     // et nature du segment qui part de ce point (tranche d'une ouverture ou tranche exterieure).
@@ -197,6 +228,7 @@ public class PerforatedWall : MonoBehaviour
         public RRect hole;      // au fond (face arriere d'une ouverture traversante, ou fond de niche)
         public RRect face;      // au ras de la face creusee (elargi par l'ebrasement)
         public bool isNiche;
+        public Material back;   // fond de niche pris dans la palette (null = materiau des fonds de niche du mur)
         public float zBottom;   // profondeur du fond
         public float zDug;      // profondeur de la face creusee
 
@@ -295,9 +327,11 @@ public class PerforatedWall : MonoBehaviour
             generatedMesh.name = "PerforatedWall";
             generatedMesh.hideFlags = HideFlags.DontSave;
         }
-        int parts = BuildMesh(generatedMesh);
+        int parts = BuildMesh(generatedMesh, out List<Material> backs);
         mf.sharedMesh = generatedMesh;
-        MatchMaterialCount(parts);
+        MatchMaterialCount(parts, backs);
+        lastParts = parts;
+        lastBacks = backs;
 
         MeshCollider mc = GetComponent<MeshCollider>();
         if (mc != null)
@@ -307,19 +341,27 @@ public class PerforatedWall : MonoBehaviour
         }
     }
 
-    // Autant de materiaux que de sous-meshes (meme regle que RoundedBlock)
-    void MatchMaterialCount(int parts)
+    // Autant de materiaux que de sous-meshes (meme regle que RoundedBlock) : ceux du mur (regles a la main),
+    // puis les fonds de palette utilises (geres par le script, dans l'ordre des sous-meshes).
+    void MatchMaterialCount(int parts, List<Material> backs)
     {
         MeshRenderer mr = GetComponent<MeshRenderer>();
         if (mr == null) return;
         Material[] mats = mr.sharedMaterials;
         int wanted = separateMaterials ? parts : 1;
-        if (mats.Length == wanted || mats.Length == 0) return;
+        int known = wallMaterialCount > 0 ? Mathf.Min(wallMaterialCount, mats.Length) : mats.Length;
+        if (known == 0) return;
 
-        Material[] fixedMats = new Material[wanted];
+        Material[] fixedMats = new Material[wanted + backs.Count];
         for (int i = 0; i < wanted; i++)
-            fixedMats[i] = i < mats.Length ? mats[i] : mats[mats.Length - 1];
-        mr.sharedMaterials = fixedMats;
+            fixedMats[i] = i < known ? mats[i] : mats[known - 1];
+        for (int i = 0; i < backs.Count; i++)
+            fixedMats[wanted + i] = backs[i];
+        wallMaterialCount = wanted;
+
+        bool same = fixedMats.Length == mats.Length;
+        for (int i = 0; same && i < mats.Length; i++) same = fixedMats[i] == mats[i];
+        if (!same) mr.sharedMaterials = fixedMats;
     }
 
     // ---------------------------------------------------------------- Dimensions
@@ -594,7 +636,7 @@ public class PerforatedWall : MonoBehaviour
             return;
         }
 
-        OpeningGeo geo = new OpeningGeo { side = side, hole = hole, face = face, isNiche = o.niche };
+        OpeningGeo geo = new OpeningGeo { side = side, hole = hole, face = face, isNiche = o.niche, back = o.backMaterial };
         float depth = Mathf.Clamp(o.nicheDepth, 0.005f, Thickness - 0.01f);
         if (!o.niche) { geo.zDug = -hz; geo.zBottom = hz; }
         else if (!o.nicheOnBack) { geo.zDug = -hz; geo.zBottom = -hz + depth; }
@@ -604,7 +646,8 @@ public class PerforatedWall : MonoBehaviour
 
     // Faces avant et arriere, tranche exterieure, interieur des ouvertures et fonds de niche.
     // Renvoie le nombre de parties (materiaux separes) : 2 mur plein, 3 avec ouvertures, 4 avec au moins une niche.
-    int BuildMesh(Mesh mesh)
+    // backs : fonds de palette utilises, un sous-mesh chacun apres les parties.
+    int BuildMesh(Mesh mesh, out List<Material> backs)
     {
         RRect wall = GetWallRect();
         float hz = Thickness * 0.5f;
@@ -645,11 +688,12 @@ public class PerforatedWall : MonoBehaviour
         {
             if (!g.isNiche) continue;
             anyNiche = true;
-            data.AddCap(BuildRing(g.hole), null, g.zBottom, Mathf.Sign(g.zDug - g.zBottom), data.plateTris);
+            data.AddCap(BuildRing(g.hole), null, g.zBottom, Mathf.Sign(g.zDug - g.zBottom), data.BackTris(g.back));
         }
 
         int parts = anyNiche ? 4 : geos.Count > 0 ? 3 : 2;
         data.Apply(mesh, separateMaterials, parts);
+        backs = data.backMats;
         return parts;
     }
 
@@ -677,6 +721,17 @@ public class PerforatedWall : MonoBehaviour
         public List<int> outerTris = new List<int>();
         public List<int> openTris = new List<int>();
         public List<int> plateTris = new List<int>();
+        // Fonds de palette : un materiau = une liste de triangles (un sous-mesh), dans l'ordre d'apparition
+        public List<Material> backMats = new List<Material>();
+        public List<List<int>> backTris = new List<List<int>>();
+
+        public List<int> BackTris(Material m)
+        {
+            if (m == null) return plateTris;
+            int i = backMats.IndexOf(m);
+            if (i < 0) { backMats.Add(m); backTris.Add(new List<int>()); i = backMats.Count - 1; }
+            return backTris[i];
+        }
 
         void AddVertex(Vector2 p, float z, Vector3 n, Vector2 uvA, Vector2 uvB)
         {
@@ -781,9 +836,10 @@ public class PerforatedWall : MonoBehaviour
             mesh.SetNormals(normals);
             mesh.SetUVs(0, uv0);
             mesh.SetUVs(2, uv2);
+            int baseParts = separate ? parts : 1;
+            mesh.subMeshCount = baseParts + backTris.Count;
             if (separate)
             {
-                mesh.subMeshCount = parts;
                 mesh.SetTriangles(capTris, 0);
                 mesh.SetTriangles(outerTris, 1);
                 if (parts > 2) mesh.SetTriangles(openTris, 2);
@@ -795,9 +851,10 @@ public class PerforatedWall : MonoBehaviour
                 all.AddRange(outerTris);
                 all.AddRange(openTris);
                 all.AddRange(plateTris);
-                mesh.subMeshCount = 1;
                 mesh.SetTriangles(all, 0);
             }
+            for (int i = 0; i < backTris.Count; i++)
+                mesh.SetTriangles(backTris[i], baseParts + i);
             mesh.RecalculateTangents();
             mesh.RecalculateBounds();
         }
@@ -999,6 +1056,8 @@ public class PerforatedWallEditor : UnityEditor.Editor
     // Bouton Centrer clique pendant ce dessin : index de l'ouverture (-1 = aucun) et sens
     int center = -1;
     bool centerY;
+    // Bouton Nouveau tirage clique : index de l'ouverture (-1 = aucun)
+    int reroll = -1;
 
     // Libelles affiches dans l'inspecteur (les noms des champs restent en anglais dans le code)
     static readonly Dictionary<string, string> Labels = new Dictionary<string, string>
@@ -1016,6 +1075,8 @@ public class PerforatedWallEditor : UnityEditor.Editor
         { "niche", "Niche" },
         { "nicheDepth", "Profondeur" },
         { "nicheOnBack", "Niche à l'arrière" },
+        { "backMaterials", "Fonds (palette)" },
+        { "backMode", "Répartition" },
         { "splay", "Ébrasement" },
         { "linkSplay", "Ébrasement lié" },
         { "splaySize", "Élargissement" },
@@ -1030,7 +1091,7 @@ public class PerforatedWallEditor : UnityEditor.Editor
     {
         "edge", "x", "y", "width", "height",
         "linkCorners", "radius", "radiusA", "radiusB", "radiusC", "radiusD",
-        "niche", "nicheDepth", "nicheOnBack",
+        "niche", "nicheDepth", "nicheOnBack", "backMaterials", "backMode",
         "splay", "linkSplay", "splaySize", "splayTop", "splayBottom", "splayLeft", "splayRight",
         "repeat", "countX", "countY", "gapX", "gapY",
     };
@@ -1048,6 +1109,7 @@ public class PerforatedWallEditor : UnityEditor.Editor
 
         int addAt = -1, duplicate = -1, remove = -1;
         center = -1;
+        reroll = -1;
 
         // Comme DrawPropertiesExcluding, avec les libelles en francais et la liste des ouvertures dessinee a part
         UnityEditor.SerializedProperty prop = serializedObject.GetIterator();
@@ -1062,6 +1124,7 @@ public class PerforatedWallEditor : UnityEditor.Editor
                 continue;
             }
             UnityEditor.EditorGUILayout.PropertyField(prop, new GUIContent(Label(prop), prop.tooltip), true);
+            if (prop.name == "separateMaterials") DrawMaterialSlots(wall);
         }
         serializedObject.ApplyModifiedProperties();
 
@@ -1093,6 +1156,21 @@ public class PerforatedWallEditor : UnityEditor.Editor
             serializedObject.Update();
         }
 
+        // Nouveau tirage des fonds : nouvelle graine
+        if (reroll >= 0)
+        {
+            UnityEditor.Undo.RecordObjects(targets, "Nouveau tirage des fonds");
+            foreach (Object t in targets)
+            {
+                PerforatedWall w = (PerforatedWall)t;
+                if (reroll >= w.openings.Count) continue;
+                w.openings[reroll].backSeed = Random.Range(1, int.MaxValue);
+                w.Rebuild();
+                UnityEditor.EditorUtility.SetDirty(w);
+            }
+            serializedObject.Update();
+        }
+
         // Centrer : position recalculee sur chaque mur selectionne (sa propre taille)
         if (center >= 0)
         {
@@ -1111,6 +1189,45 @@ public class PerforatedWallEditor : UnityEditor.Editor
 
         if (!string.IsNullOrEmpty(wall.warning))
             UnityEditor.EditorGUILayout.HelpBox(wall.warning, UnityEditor.MessageType.Warning);
+    }
+
+    static readonly string[] SlotNames = { "Faces", "Tranche extérieure", "Intérieur des ouvertures", "Fonds de niche" };
+
+    // Slots du MeshRenderer sous leur nom (modifies directement sur le renderer) ; fonds de palette en lecture seule
+    void DrawMaterialSlots(PerforatedWall wall)
+    {
+        MeshRenderer mr = wall.GetComponent<MeshRenderer>();
+        if (mr == null) return;
+        UnityEditor.EditorGUI.indentLevel++;
+        if (targets.Length > 1)
+        {
+            UnityEditor.EditorGUILayout.HelpBox("Plusieurs murs sélectionnés : régler les matériaux mur par mur (ou sur le MeshRenderer).", UnityEditor.MessageType.None);
+            UnityEditor.EditorGUI.indentLevel--;
+            return;
+        }
+
+        Material[] mats = mr.sharedMaterials;
+        int count = Mathf.Min(wall.separateMaterials ? wall.lastParts : 1, mats.Length);
+        for (int i = 0; i < count; i++)
+        {
+            string label = wall.separateMaterials ? SlotNames[Mathf.Min(i, SlotNames.Length - 1)] : "Matériau";
+            UnityEditor.EditorGUI.BeginChangeCheck();
+            Material m = (Material)UnityEditor.EditorGUILayout.ObjectField(label, mats[i], typeof(Material), false);
+            if (UnityEditor.EditorGUI.EndChangeCheck())
+            {
+                UnityEditor.Undo.RecordObject(mr, "Matériau du mur");
+                mats[i] = m;
+                mr.sharedMaterials = mats;
+            }
+        }
+
+        if (wall.lastBacks != null && wall.lastBacks.Count > 0)
+        {
+            List<string> names = wall.lastBacks.ConvertAll(b => b != null ? b.name : "?");
+            UnityEditor.EditorGUILayout.LabelField("Fonds de palette", string.Join(", ", names) + " (réglés dans les ouvertures)",
+                UnityEditor.EditorStyles.wordWrappedMiniLabel);
+        }
+        UnityEditor.EditorGUI.indentLevel--;
     }
 
     static string Label(UnityEditor.SerializedProperty prop) =>
@@ -1139,6 +1256,14 @@ public class PerforatedWallEditor : UnityEditor.Editor
                 if (name == "linkCorners" || name == "niche" || name == "splay" || name == "repeat") UnityEditor.EditorGUILayout.Space(2);
                 UnityEditor.SerializedProperty p = o.FindPropertyRelative(name);
                 UnityEditor.EditorGUILayout.PropertyField(p, new GUIContent(Label(p), p.tooltip), true);
+                if (name == "backMode" && p.enumValueIndex == (int)PerforatedWall.BackMode.Aleatoire)
+                {
+                    UnityEditor.EditorGUILayout.BeginHorizontal();
+                    GUILayout.Space(UnityEditor.EditorGUI.indentLevel * 15f);
+                    if (GUILayout.Button(new GUIContent("Nouveau tirage", "Tire a nouveau un materiau de fond pour chaque copie.")))
+                        reroll = i;
+                    UnityEditor.EditorGUILayout.EndHorizontal();
+                }
             }
             if (o.FindPropertyRelative("repeat").boolValue)
             {
@@ -1186,7 +1311,9 @@ public class PerforatedWallEditor : UnityEditor.Editor
             hidden.Add("radius");
 
         if (!o.FindPropertyRelative("niche").boolValue)
-            hidden.AddRange(new[] { "nicheDepth", "nicheOnBack" });
+            hidden.AddRange(new[] { "nicheDepth", "nicheOnBack", "backMaterials", "backMode" });
+        else if (o.FindPropertyRelative("backMaterials").arraySize == 0)
+            hidden.Add("backMode");
 
         if (!o.FindPropertyRelative("splay").boolValue)
             hidden.AddRange(new[] { "linkSplay", "splaySize", "splayTop", "splayBottom", "splayLeft", "splayRight" });
