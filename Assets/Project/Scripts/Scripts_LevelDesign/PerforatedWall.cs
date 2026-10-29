@@ -65,38 +65,22 @@ public class PerforatedWall : MonoBehaviour
         [Tooltip("Mur plein entre deux copies, en metres (au moins 1 cm).")]
         [Min(0.01f)] public float gapX = 0.5f;
         [Min(0.01f)] public float gapY = 0.5f;
-        [Tooltip("Pour le bouton Remplir : mur plein minimum entre le groupe et les bords gauche/droite du mur " +
-                 "(ebrasement compris). Le reste de la place s'ajoute aux marges, l'ecart ne change pas.")]
-        [Min(0f)] public float marginX = 0.3f;
-        [Tooltip("Pour le bouton Remplir : mur plein minimum entre le groupe et le bas/haut du mur (ebrasement compris).")]
-        [Min(0f)] public float marginY = 0.3f;
-
         public Opening Clone() => (Opening)MemberwiseClone();
 
         float SplaySide(float side) => splay ? (linkSplay ? splaySize : side) : 0f;
 
-        // Remplir : autant de copies que la place le permet (ecart fixe), groupe recentre. Faux si aucune ne tient.
-        public bool FillX(float wallWidth)
+        // Centrer : meme mur plein a gauche et a droite du groupe (ebrasement compris), nombre et ecart inchanges
+        public void CenterX()
         {
-            float sL = SplaySide(splayLeft), sR = SplaySide(splayRight);
-            float gap = Mathf.Max(0.01f, gapX);
-            int n = Mathf.FloorToInt((wallWidth - 2f * marginX - sL - sR + gap) / (width + gap) + 1e-4f);
-            if (n < 1) return false;
-            countX = Mathf.Min(n, 50);
-            x = (sL - sR) * 0.5f;
-            return true;
+            x = (SplaySide(splayLeft) - SplaySide(splayRight)) * 0.5f;
         }
 
-        public bool FillY(float wallHeight)
+        // Centrer : meme mur plein sous et au-dessus du groupe (ebrasement compris)
+        public void CenterY(float wallHeight)
         {
-            float sB = SplaySide(splayBottom), sT = SplaySide(splayTop);
-            float gap = Mathf.Max(0.01f, gapY);
-            int n = Mathf.FloorToInt((wallHeight - 2f * marginY - sB - sT + gap) / (height + gap) + 1e-4f);
-            if (n < 1) return false;
-            countY = Mathf.Min(n, 50);
-            float total = countY * height + (countY - 1) * gap;
-            y = Mathf.Max(0f, (wallHeight - total + sB - sT) * 0.5f);
-            return true;
+            int n = CopiesY;
+            float total = n * height + (n - 1) * Mathf.Max(0.01f, gapY);
+            y = Mathf.Max(0f, (wallHeight - total + SplaySide(splayBottom) - SplaySide(splayTop)) * 0.5f);
         }
 
         // Nombres de copies effectifs (1 sans repetition, ou dans le sens interdit par le bord mange)
@@ -1012,9 +996,9 @@ public class PerforatedWall : MonoBehaviour
 [UnityEditor.CanEditMultipleObjects]
 public class PerforatedWallEditor : UnityEditor.Editor
 {
-    // Bouton Remplir clique pendant ce dessin : index de l'ouverture (-1 = aucun) et sens
-    int fill = -1;
-    bool fillY;
+    // Bouton Centrer clique pendant ce dessin : index de l'ouverture (-1 = aucun) et sens
+    int center = -1;
+    bool centerY;
 
     // Libelles affiches dans l'inspecteur (les noms des champs restent en anglais dans le code)
     static readonly Dictionary<string, string> Labels = new Dictionary<string, string>
@@ -1039,7 +1023,6 @@ public class PerforatedWallEditor : UnityEditor.Editor
         { "repeat", "Répéter" },
         { "countX", "Nombre en X" }, { "countY", "Nombre en Y" },
         { "gapX", "Écart X" }, { "gapY", "Écart Y" },
-        { "marginX", "Marge X" }, { "marginY", "Marge Y" },
         { "separateMaterials", "Matériaux séparés" },
     };
 
@@ -1049,7 +1032,7 @@ public class PerforatedWallEditor : UnityEditor.Editor
         "linkCorners", "radius", "radiusA", "radiusB", "radiusC", "radiusD",
         "niche", "nicheDepth", "nicheOnBack",
         "splay", "linkSplay", "splaySize", "splayTop", "splayBottom", "splayLeft", "splayRight",
-        "repeat", "countX", "countY", "gapX", "gapY", "marginX", "marginY",
+        "repeat", "countX", "countY", "gapX", "gapY",
     };
 
     public override void OnInspectorGUI()
@@ -1064,7 +1047,7 @@ public class PerforatedWallEditor : UnityEditor.Editor
             hidden.Add("radius");
 
         int addAt = -1, duplicate = -1, remove = -1;
-        fill = -1;
+        center = -1;
 
         // Comme DrawPropertiesExcluding, avec les libelles en francais et la liste des ouvertures dessinee a part
         UnityEditor.SerializedProperty prop = serializedObject.GetIterator();
@@ -1110,18 +1093,16 @@ public class PerforatedWallEditor : UnityEditor.Editor
             serializedObject.Update();
         }
 
-        // Remplir : calcule Nombre et Position sur chaque mur selectionne (sa propre taille)
-        if (fill >= 0)
+        // Centrer : position recalculee sur chaque mur selectionne (sa propre taille)
+        if (center >= 0)
         {
-            UnityEditor.Undo.RecordObjects(targets, fillY ? "Remplir en Y" : "Remplir en X");
+            UnityEditor.Undo.RecordObjects(targets, centerY ? "Centrer en Y" : "Centrer en X");
             foreach (Object t in targets)
             {
                 PerforatedWall w = (PerforatedWall)t;
-                if (fill >= w.openings.Count) continue;
-                PerforatedWall.Opening o = w.openings[fill];
-                bool ok = fillY ? o.FillY(w.size.y) : o.FillX(w.size.x);
-                if (!ok)
-                    Debug.LogWarning($"[PerforatedWall] {w.name}, ouverture {fill + 1} : aucune copie ne tient entre les marges, rien n'a change.", w);
+                if (center >= w.openings.Count) continue;
+                if (centerY) w.openings[center].CenterY(w.size.y);
+                else w.openings[center].CenterX();
                 w.Rebuild();
                 UnityEditor.EditorUtility.SetDirty(w);
             }
@@ -1164,10 +1145,10 @@ public class PerforatedWallEditor : UnityEditor.Editor
                 bool canX = !hidden.Contains("countX"), canY = !hidden.Contains("countY");
                 UnityEditor.EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(UnityEditor.EditorGUI.indentLevel * 15f);
-                if (canX && GUILayout.Button(new GUIContent("Remplir en X", "Nombre en X = le maximum qui tient entre les marges, a Ecart X fixe ; groupe recentre sur le mur.")))
-                { fill = i; fillY = false; }
-                if (canY && GUILayout.Button(new GUIContent("Remplir en Y", "Nombre en Y = le maximum qui tient entre les marges, a Ecart Y fixe ; groupe recentre sur la hauteur.")))
-                { fill = i; fillY = true; }
+                if (canX && GUILayout.Button(new GUIContent("Centrer en X", "Centre la trame sur la largeur du mur (ebrasement compris). Nombre et ecart inchanges.")))
+                { center = i; centerY = false; }
+                if (canY && GUILayout.Button(new GUIContent("Centrer en Y", "Centre la trame sur la hauteur du mur (ebrasement compris). Nombre et ecart inchanges.")))
+                { center = i; centerY = true; }
                 UnityEditor.EditorGUILayout.EndHorizontal();
             }
             UnityEditor.EditorGUI.indentLevel--;
@@ -1225,11 +1206,11 @@ public class PerforatedWallEditor : UnityEditor.Editor
         }
 
         if (!o.FindPropertyRelative("repeat").boolValue)
-            hidden.AddRange(new[] { "countX", "countY", "gapX", "gapY", "marginX", "marginY" });
+            hidden.AddRange(new[] { "countX", "countY", "gapX", "gapY" });
         else if (edge == PerforatedWall.OpeningEdge.Bas || edge == PerforatedWall.OpeningEdge.Haut)
-            hidden.AddRange(new[] { "countY", "gapY", "marginY" });
+            hidden.AddRange(new[] { "countY", "gapY" });
         else if (edge == PerforatedWall.OpeningEdge.Gauche || edge == PerforatedWall.OpeningEdge.Droite)
-            hidden.AddRange(new[] { "countX", "gapX", "marginX" });
+            hidden.AddRange(new[] { "countX", "gapX" });
         return hidden;
     }
 }
