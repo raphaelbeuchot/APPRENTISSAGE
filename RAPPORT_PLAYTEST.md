@@ -22,7 +22,7 @@
 - [x] Le joueur apparaît dans la salle StartRoom, pas dans la cabine (2026-10-29)
 
 ### Go with the flow (`Level_GoWithTheFlow01`)
-- [ ] Les deux murets finaux ne disparaissent pas à la victoire
+- [x] Les deux murets finaux ne disparaissent pas à la victoire (2026-10-29)
 
 ### Rush Hour I (`Level_TrafficJam_01`)
 - [x] Les murs latéraux ne disparaissent pas à la victoire (2026-10-29)
