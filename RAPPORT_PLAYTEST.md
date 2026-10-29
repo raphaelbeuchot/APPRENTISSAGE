@@ -26,7 +26,7 @@
 
 ### Rush Hour I (`Level_TrafficJam_01`)
 - [x] Les murs latéraux ne disparaissent pas à la victoire (2026-10-29)
-- [ ] Son final plus fort ou différent des autres scènes : **trouvé** (2026-10-29), override de `Lights Off Sound` sur le VictoryManager (`TransitionRoom_VolumeSwitch_02` au lieu du `_03` du prefab). Reste à faire : clic droit sur le champ → Revert. (It's Show Time a aussi un override, `Interrupteur.wav` : voulu ?)
+- [ ] Son final plus fort ou différent des autres scènes : **trouvé** (2026-10-29), override de `Lights Off Sound` sur le VictoryManager (`TransitionRoom_VolumeSwitch_02` au lieu du `_03` du prefab). Reste à faire : clic droit sur le champ → Revert. **Mis de côté pour le moment (2026-10-29).** (It's Show Time a aussi un override, `Interrupteur.wav` : voulu ?)
 
 ### Death Row I (`Level_WesternFlow`)
 - [ ] Lumières : éclairent bien le décor mais trop violemment le joueur
