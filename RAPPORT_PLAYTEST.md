@@ -19,7 +19,7 @@
 - [x] Sol de la cabine de StartRoom surélevé, comme Go for a Spin (overrides ?)
 
 ### Strange Attractor
-- [ ] Le joueur apparaît dans la salle StartRoom, pas dans la cabine
+- [x] Le joueur apparaît dans la salle StartRoom, pas dans la cabine (2026-10-29)
 
 ### Go with the flow (`Level_GoWithTheFlow01`)
 - [ ] Les deux murets finaux ne disparaissent pas à la victoire
