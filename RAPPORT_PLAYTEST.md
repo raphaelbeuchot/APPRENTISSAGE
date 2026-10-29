@@ -54,7 +54,8 @@
   - 2026-10-29 : confirmé, il suffit de bouger dans la cabine pendant la montée, alors que **tous les meshes ont des colliders**. Piste (non vérifiée) : la Timeline déplace la cabine par son Transform, hors physique ; ses colliders « sautent » d'une position à l'autre à chaque image, et le Rigidbody du joueur, qui bouge, passe à travers ou se fait éjecter. Pistes de correction à discuter : Rigidbody kinematic sur la cabine (déplacé en physique), joueur rattaché à la cabine pendant la montée, ou murs invisibles plus épais.
 
 ### Lava Train III
-- [ ] EndCurtain coché `Static` → ne monte pas : décocher Static
+- [x] EndCurtain coché `Static` → ne monte pas : décocher Static (2026-10-29)
+- [ ] Level art à faire (noté le 2026-10-29)
 
 ### Renvoyé dans `CE_QUI_RESTE_A_FAIRE.md`
 - Porte de StartRoom qui rejoue son animation au redémarrage (BUGS)
