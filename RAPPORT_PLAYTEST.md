@@ -32,18 +32,18 @@
 - [ ] Lumières : éclairent bien le décor mais trop violemment le joueur
 
 ### Flower Power III (`Level_Flower03`)
-- [ ] Mur de gauche mal placé par rapport à l'EndCurtain
-- [ ] Mesh gris clair visible tout à la fin dans le couloir de sortie (corrigé dans le prefab TransitionRoom ? → override dans la scène)
+- [x] Mur de gauche mal placé par rapport à l'EndCurtain (2026-10-29)
+- [x] Mesh gris clair visible tout à la fin dans le couloir de sortie (corrigé dans le prefab TransitionRoom ? → override dans la scène) (2026-10-29)
 
 ### TomaThrow (`Level_TomatoFest_01`)
 - [x] Pas de VictoryManager ni de TransitionRoom : confirmé et équipé le 2026-10-29 (VictoryManager, TRANSITIONROOM, rideau, bornes)
 
 ### Lava Train I
 - [x] Cercles concentriques de la sentinelle un peu bas au-dessus de la porte
-- [ ] Le ground et les marquee lights ne disparaissent pas à la victoire
+- [x] Le ground et les marquee lights ne disparaissent pas à la victoire (2026-10-29)
   - 2026-10-29 : le VictoryManager n'a ni `Layers To Hide On Victory` ni `Objects To Hide On Victory` (vides dans le prefab). Reprendre le réglage de TomaThrow (Obstacle, Ground, Lockable, MarqueeLights). À préciser : ground visible sous l'écran de victoire ou à la toute fin ?
-- [ ] TransitionRoom trop haute
-- [ ] Pas de `PostVictoryBounds`
+- [x] TransitionRoom trop haute (2026-10-29)
+- [x] Pas de `PostVictoryBounds` (2026-10-29)
 
 ### Lava Train II
 - [x] Cercles concentriques trop bas
