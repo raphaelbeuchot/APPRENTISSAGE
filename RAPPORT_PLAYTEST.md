@@ -9,7 +9,7 @@
 ## Session du 2026-10-27
 
 ### It's Show Time
-- [ ] Murs, marquee lights et caméra ne disparaissent pas après la victoire
+- [x] Murs, marquee lights et caméra ne disparaissent pas après la victoire (2026-10-29 : calques Obstacle + MarqueeLights, 1 objet)
 
 ### Go for a Spin
 - [x] Sol de la cabine de StartRoom un peu surélevé par rapport à la StartZone (regarder les overrides du prefab)
