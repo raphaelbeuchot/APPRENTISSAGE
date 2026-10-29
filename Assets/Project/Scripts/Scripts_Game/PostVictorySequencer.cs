@@ -374,7 +374,9 @@ public class PostVictorySequencer : MonoBehaviour
             PlayerVictoryScale pvs = player.GetComponentInChildren<PlayerVictoryScale>();
             if (pvs != null) pvs.ShowPlayerMesh();
 
-            // Reprise du controle immediate
+            // Reprise du controle immediate. ForceStop : la vitesse de course au contact de la GoalDoor
+            // est restee en memoire (script desactive) et produirait une glissade a la reactivation.
+            player.ForceStop();
             player.enabled = true;
             Debug.Log("[PostVictory] Joueur visible + controle rendu.");
         }
