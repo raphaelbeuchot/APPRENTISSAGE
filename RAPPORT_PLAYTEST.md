@@ -36,7 +36,7 @@
 - [ ] Mesh gris clair visible tout à la fin dans le couloir de sortie (corrigé dans le prefab TransitionRoom ? → override dans la scène)
 
 ### TomaThrow (`Level_TomatoFest_01`)
-- [ ] Pas de VictoryManager ni de TransitionRoom ? (à vérifier)
+- [x] Pas de VictoryManager ni de TransitionRoom : confirmé et équipé le 2026-10-29 (VictoryManager, TRANSITIONROOM, rideau, bornes)
 
 ### Lava Train I
 - [x] Cercles concentriques de la sentinelle un peu bas au-dessus de la porte
@@ -46,7 +46,7 @@
 
 ### Lava Train II
 - [x] Cercles concentriques trop bas
-- [ ] La TomatoUI ne disparaît pas à la victoire
+- [x] La TomatoUI ne disparaît pas à la victoire : `GameUIManager.HideGameplayBars` cache maintenant les TomatoUI, J2 comprise (2026-10-29)
 
 ### Trou normand (`Level_TrouNormand`, hors catalogue)
 - [ ] On peut s'échapper de l'ascenseur pendant la montée : vérifier les colliders de la cabine

@@ -34,6 +34,9 @@ public class GameUIManager : MonoBehaviour
     private GameObject staminaBar;
     private GameObject staminaBar2;
     private GameObject sprayBar;
+    // Compteurs de tomates (un par joueur en multi). Caches a la victoire, jamais reaffiches ici :
+    // TomatoUI gere seule son apparition (cachee tant qu'aucune tomate n'a ete ramassee).
+    private TomatoUI[] tomatoUIs;
 
     private bool isGrabbed = false;
 
@@ -48,6 +51,9 @@ public class GameUIManager : MonoBehaviour
         if (pressureGauge2 != null) pressureGauge2.SetActive(false);
         if (creditBar != null) creditBar.SetActive(false);
         if (enemyIconsContainer != null) enemyIconsContainer.SetActive(false);
+        if (tomatoUIs != null)
+            foreach (TomatoUI t in tomatoUIs)
+                if (t != null) t.gameObject.SetActive(false);
     }
 
     public void ShowGameplayBars()
@@ -73,6 +79,7 @@ public class GameUIManager : MonoBehaviour
         zombies = FindObjectsOfType<GrabAttack>();
         SprayAmmoUI sprayAmmoUI = FindObjectOfType<SprayAmmoUI>(true);
         if (sprayAmmoUI != null) sprayBar = sprayAmmoUI.gameObject;
+        tomatoUIs = FindObjectsOfType<TomatoUI>(true);
 
         StaminaBarFollower[] staminaBarFollowers = FindObjectsOfType<StaminaBarFollower>(true);
         if (staminaBarFollowers.Length > 0) staminaBar = staminaBarFollowers[0].gameObject;
