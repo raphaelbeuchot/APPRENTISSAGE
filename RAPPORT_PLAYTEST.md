@@ -13,7 +13,7 @@
 
 ### Go for a Spin
 - [x] Sol de la cabine de StartRoom un peu surélevé par rapport à la StartZone (regarder les overrides du prefab)
-- [ ] Murs latéraux : épaisseur à 0,2 et hauteur à baisser
+- [x] Murs latéraux : épaisseur à 0,2 et hauteur à baisser (2026-10-29)
 
 ### Handle Hurdles
 - [x] Sol de la cabine de StartRoom surélevé, comme Go for a Spin (overrides ?)
