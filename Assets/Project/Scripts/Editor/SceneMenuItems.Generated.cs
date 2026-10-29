@@ -440,7 +440,14 @@ internal static class SceneMenuItems
         EditorSceneManager.OpenScene("Assets/Project/Scenes/OLD/Level_Tuto01.unity");
     }
 
-    [MenuItem("Scene/Other/TutoChoice", priority = 53)]
+    [MenuItem("Scene/Other/ReservoirMeshes", priority = 53)]
+    private static void Open_Other_ReservoirMeshes()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        EditorSceneManager.OpenScene("Assets/Project/Scenes/ReservoirMeshes.unity");
+    }
+
+    [MenuItem("Scene/Other/TutoChoice", priority = 54)]
     private static void Open_Other_TutoChoice()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
