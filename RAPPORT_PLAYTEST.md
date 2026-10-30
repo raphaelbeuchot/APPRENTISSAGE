@@ -62,3 +62,15 @@
 - Spot rouge resté allumé après la victoire + vérifier sa présence dans tous les niveaux de la démo (BUGS, TECH)
 - Bake des lumières pendant le dev (TECH, avec le static batching)
 - Décor de « niche » de la StartRoom, BrightEyes à revoir (GAME DESIGN) ; shader « paillettes » (POLISH)
+
+---
+
+## Session du 2026-10-30
+
+### Tous niveaux
+- [ ] Coup de balai à vide : plus aucun son. **Cause trouvée** : ce n'est pas un réglage d'Inspector, le code « AUDIO MISS » (`stats.broomSound` joué si le coup ne touche rien) a été retiré de `BroomAttackSystem.OnBroomHit` le 2026-04-02 (commit 756447ff « bomb »). Le clip `broomSound` est toujours renseigné dans `HammerGirl`, il n'est plus lu nulle part.
+- [ ] Coup de balai sur les cubes explosables (`PhysicsProp`, Flower Power II) : pas de son. Les props n'ont jamais eu de son au coup de balai : avant avril, c'était sans doute le son « à vide » qu'on entendait (le prop ne compte pas comme une touche).
+- [ ] Blinder sans animations (niveau à préciser). Prefab `ZombieBlinder` inchangé depuis le 2026-04-08 : modèle `TPose_BLDR` avec l'Animator `ZombieChaserController` (et pas `BlinderController`). À vérifier en jeu : Animator actif, état courant, paramètres reçus.
+
+### Void I (`Level_Casino`, « Call of the Void »)
+- [ ] Ajouter des ennemis
