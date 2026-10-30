@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Splines;
 using System.Collections.Generic;
 
-// ESSAI R&D : une roue crantee (etoile extrudee, mesh genere) a chaque knot de la spline du train,
+// Une roue crantee (gearPrefab, en general un GearShape) a chaque knot de la spline du train,
 // a la hauteur de la chaine. Elles tournent a la vitesse reelle du train (s'arretent au frein).
 // Reglages dans LavaTrainSettings, rien a remplir dans l'Inspector.
 [RequireComponent(typeof(PlatformTrainManager))]
@@ -12,7 +12,9 @@ public class LavaTrainGears : MonoBehaviour
     private LavaTrainSettings settings;
     private List<Transform> gears = new List<Transform>();
     private List<Vector3> basePositions = new List<Vector3>();
-    private Mesh gearMesh;
+
+    // Rayon servant a caler la rotation sur la chaine : celui du GearShape du prefab
+    private float gearRadius = 0.5f;
 
     // -1 ou 1 : sens de rotation, deduit du sens de la boucle vue de dessus
     private float spinSign = 1f;
@@ -30,8 +32,15 @@ public class LavaTrainGears : MonoBehaviour
             return;
         }
 
-        Material material = settings.gearMaterial != null ? settings.gearMaterial : settings.lavaTrainBasic;
-        gearMesh = BuildStarMesh(settings.gearTeeth, settings.gearOuterRadius, settings.gearInnerRadius, settings.gearThickness);
+        if (settings.gearPrefab == null)
+        {
+            Debug.LogWarning("[LavaTrainGears] Pas de gearPrefab dans " + settings.name + ", pas de roues.");
+            enabled = false;
+            return;
+        }
+
+        GearShape shape = settings.gearPrefab.GetComponent<GearShape>();
+        if (shape != null) gearRadius = shape.outerRadius;
 
         List<Vector3> knots = new List<Vector3>();
         foreach (BezierKnot knot in splineContainer.Spline.Knots)
@@ -50,20 +59,18 @@ public class LavaTrainGears : MonoBehaviour
 
         for (int i = 0; i < knots.Count; i++)
         {
-            GameObject go = new GameObject("Gear (" + i + ")");
-            go.transform.SetParent(transform, false);
-            go.transform.position = knots[i] + Vector3.up * settings.gearHeightOffset;
-            basePositions.Add(knots[i]);
-            go.AddComponent<MeshFilter>().sharedMesh = gearMesh;
-            go.AddComponent<MeshRenderer>().sharedMaterial = material;
+            GameObject go = Instantiate(settings.gearPrefab, knots[i] + Vector3.up * settings.gearHeightOffset,
+                settings.gearPrefab.transform.rotation, transform);
+            go.name = settings.gearPrefab.name + " (" + i + ")";
             gears.Add(go.transform);
+            basePositions.Add(knots[i]);
         }
     }
 
     void Update()
     {
         // Vitesse angulaire = vitesse lineaire de la chaine / rayon
-        float degreesPerSecond = manager.CurrentSpeed / Mathf.Max(0.01f, settings.gearOuterRadius) * Mathf.Rad2Deg;
+        float degreesPerSecond = manager.CurrentSpeed / Mathf.Max(0.01f, gearRadius) * Mathf.Rad2Deg;
         float angle = spinSign * degreesPerSecond * settings.gearSpinFactor * Time.deltaTime;
         Vector3 offset = Vector3.up * settings.gearHeightOffset;
         for (int i = 0; i < gears.Count; i++)
@@ -71,66 +78,5 @@ public class LavaTrainGears : MonoBehaviour
             gears[i].position = basePositions[i] + offset;
             gears[i].Rotate(0f, angle, 0f, Space.World);
         }
-    }
-
-    void OnDestroy()
-    {
-        if (gearMesh != null) Destroy(gearMesh);
-    }
-
-    // Etoile a "teeth" branches, extrudee sur "thickness" (centree en Y). Faces separees = aretes nettes.
-    private static Mesh BuildStarMesh(int teeth, float outerRadius, float innerRadius, float thickness)
-    {
-        int ringCount = teeth * 2;
-        Vector3[] ring = new Vector3[ringCount];
-        for (int i = 0; i < ringCount; i++)
-        {
-            float angle = Mathf.PI * 2f * i / ringCount;
-            float radius = (i % 2 == 0) ? outerRadius : innerRadius;
-            ring[i] = new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
-        }
-
-        Vector3 up = Vector3.up * thickness * 0.5f;
-        List<Vector3> vertices = new List<Vector3>();
-        List<int> triangles = new List<int>();
-
-        // Dessus (vu d'en haut) et dessous
-        int topCenter = vertices.Count;
-        vertices.Add(up);
-        for (int i = 0; i < ringCount; i++) vertices.Add(ring[i] + up);
-        for (int i = 0; i < ringCount; i++)
-        {
-            int next = (i + 1) % ringCount;
-            triangles.Add(topCenter); triangles.Add(topCenter + 1 + next); triangles.Add(topCenter + 1 + i);
-        }
-
-        int bottomCenter = vertices.Count;
-        vertices.Add(-up);
-        for (int i = 0; i < ringCount; i++) vertices.Add(ring[i] - up);
-        for (int i = 0; i < ringCount; i++)
-        {
-            int next = (i + 1) % ringCount;
-            triangles.Add(bottomCenter); triangles.Add(bottomCenter + 1 + i); triangles.Add(bottomCenter + 1 + next);
-        }
-
-        // Cotes
-        for (int i = 0; i < ringCount; i++)
-        {
-            int next = (i + 1) % ringCount;
-            int start = vertices.Count;
-            vertices.Add(ring[i] + up);
-            vertices.Add(ring[next] + up);
-            vertices.Add(ring[next] - up);
-            vertices.Add(ring[i] - up);
-            triangles.Add(start); triangles.Add(start + 1); triangles.Add(start + 2);
-            triangles.Add(start); triangles.Add(start + 2); triangles.Add(start + 3);
-        }
-
-        Mesh mesh = new Mesh { name = "LavaTrainGear" };
-        mesh.SetVertices(vertices);
-        mesh.SetTriangles(triangles, 0);
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
-        return mesh;
     }
 }
