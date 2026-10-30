@@ -195,8 +195,10 @@ public class BroomAttackSystem : MonoBehaviour
         // Reset SEULEMENT si n�cessaire pour �viter conflits spray
         if (animator != null)
         {
-            animator.Rebind();
-            animator.Update(0f);
+            // Pas de Rebind : il relancait la locomotion du Base Layer (saccade en marchant).
+            // Broom -> Empty revient seul ; on oublie juste les triggers restes armes pendant le coup.
+            animator.ResetTrigger("BroomAttack");
+            animator.ResetTrigger("SprayAttack");
         }
     }
 
