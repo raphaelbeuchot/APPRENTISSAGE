@@ -2,7 +2,8 @@ using UnityEngine;
 using UnityEngine.Splines;
 
 // Chaine dessinee le long de la spline du train (LineRenderer cree au Start).
-// Creux sous le wagon du joueur (chainSagDepth, 0 = chaine immobile).
+// Creux sous le wagon du joueur (chainSagDepth, 0 = pas de creux).
+// Les maillons defilent a la vitesse du train (decalage de texture sur une copie du materiau, l'asset n'est pas touche).
 // Tous les reglages viennent de LavaTrainSettings, rien a remplir dans l'Inspector.
 [RequireComponent(typeof(PlatformTrainManager))]
 public class LavaTrainChain : MonoBehaviour
@@ -10,6 +11,8 @@ public class LavaTrainChain : MonoBehaviour
     private PlatformTrainManager manager;
     private LavaTrainSettings settings;
     private LineRenderer line;
+    private Material chainMaterialInstance;
+    private float scrollOffset = 0f;
 
     private Vector3[] basePoints;
     private float[] pointProgress;
@@ -59,7 +62,9 @@ public class LavaTrainChain : MonoBehaviour
         }
 
         line = gameObject.AddComponent<LineRenderer>();
-        line.sharedMaterial = settings.chainMaterial;
+        chainMaterialInstance = new Material(settings.chainMaterial);
+        chainMaterialInstance.name = settings.chainMaterial.name + " (LavaTrainChain)";
+        line.sharedMaterial = chainMaterialInstance;
         line.widthMultiplier = settings.chainWidth;
         line.textureMode = LineTextureMode.Tile;
         line.textureScale = new Vector2(settings.chainTextureScale, 1f);
@@ -70,9 +75,20 @@ public class LavaTrainChain : MonoBehaviour
         line.SetPositions(points);
     }
 
+    // Defilement au meme rythme que les wagons (FixedUpdate du manager), sinon les maillons glissent
+    // en continu sous un creux qui avance par a-coups.
+    // En mode Tile la texture se repete chainTextureScale fois par metre : avancer de d metres = decaler de d * chainTextureScale
+    void FixedUpdate()
+    {
+        float travelled = manager.CurrentSpeed * settings.chainScrollFactor * Time.fixedDeltaTime;
+        scrollOffset = Mathf.Repeat(scrollOffset - travelled * settings.chainTextureScale, 1f);
+    }
+
     // LateUpdate : les wagons ont deja bouge (FixedUpdate du manager)
     void LateUpdate()
     {
+        chainMaterialInstance.mainTextureOffset = new Vector2(scrollOffset, 0f);
+
         PlatformTrainCar playerCar = manager.PlayerCar;
         if (playerCar != null)
             sagProgress = playerCar.currentProgress;
@@ -101,5 +117,10 @@ public class LavaTrainChain : MonoBehaviour
         }
         line.SetPositions(points);
         sagApplied = currentSagDepth > 0f;
+    }
+
+    void OnDestroy()
+    {
+        if (chainMaterialInstance != null) Destroy(chainMaterialInstance);
     }
 }

@@ -49,6 +49,8 @@ public class LavaTrainSettings : ScriptableObject
     public float chainSagHalfWidth = 1.5f;
     [Tooltip("Vitesse d'apparition / disparition du creux (metres par seconde)")]
     public float chainSagSpeed = 0.5f;
+    [Tooltip("Defilement des maillons : 1 = suivent exactement le train, 0 = immobiles, negatif = sens inverse. Reglable en Play")]
+    public float chainScrollFactor = 1f;
 
     [Header("Gears (LavaTrainGears)")]
     [Tooltip("Prefab de la roue posee a chaque knot (GearShape : forme et materiaux). Vide = pas de roues")]
