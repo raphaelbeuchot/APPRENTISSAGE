@@ -33,6 +33,10 @@ public class PlatformTrainManager : MonoBehaviour
     private PlayerPhysicsMovement player;
     private bool hasStarted = false;
 
+    // Lecture seule pour LavaTrainChain
+    public SplineContainer SplineContainer => splineContainer;
+    public LavaTrainSettings Settings => settings;
+
     void Start()
     {
         if (splineContainer == null)

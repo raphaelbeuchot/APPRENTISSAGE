@@ -32,4 +32,15 @@ public class LavaTrainSettings : ScriptableObject
     public float discScaleOnPlatform = 0.7f;
     public float discScaleHoldingX = 0.5f;
     public float discLerpSpeed = 3.5f;
+
+    [Header("Chain (LavaTrainChain)")]
+    [Tooltip("Materiau de la chaine dessinee le long de la spline (Maillon_04). Vide = pas de chaine")]
+    public Material chainMaterial;
+    public float chainWidth = 0.22f;
+    [Tooltip("Decalage vertical par rapport a la spline (negatif = sous les wagons)")]
+    public float chainHeightOffset = -0.3f;
+    [Tooltip("Repetition de la texture (mode Tile), comme les chaines de zombies")]
+    public float chainTextureScale = 4f;
+    [Tooltip("Ecart entre deux points de la ligne, en metres")]
+    public float chainPointSpacing = 0.25f;
 }
