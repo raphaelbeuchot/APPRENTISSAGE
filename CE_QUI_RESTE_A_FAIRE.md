@@ -131,6 +131,7 @@
 
 *(pas encore décidé, "un jour peut-être")*
 
+- [ ] 🟡 **Musique — pistes de samples** (mémo du 2026-10-30) : sampler *L'Homme orchestre* et *Ocean's Eleven* pour des loops de batterie et autres
 - [ ] 🟡 **Multijoueur local** — décisions actées, voir `MULTIJOUEUR_LOCAL.md` (mode séparé du solo, coop + versus, split-screen vertical, 2 manettes, IA à adapter)
 - [ ] 🟡 **Ennemi qui se balade dans les fosses d'eau** (idée ancienne, notée le 2026-10-15) — façon *Les Dents de la mer* : un ennemi qui patrouille dans les pits remplis d'eau (aileron visible ?). Les fosses d'eau et la nage existent déjà (`PitContentType` catégorie Water, `swimSpeedMultiplier`). Biome possible : la plage (voir `STRUCTURE_CAMPAGNE.md`).
 - [ ] ⚪ **Marquee lights des cercles concentriques façon PressureGauge** (piste du 2026-10-25, à explorer) : faire réagir les marquee lights des `ConcentricCirclesSpawner` pour qu'elles reproduisent plus ou moins ce qu'affiche la PressureGauge (lien visuel entre le décor et la jauge). Voir `MARQUEE_LIGHTS.md`.
