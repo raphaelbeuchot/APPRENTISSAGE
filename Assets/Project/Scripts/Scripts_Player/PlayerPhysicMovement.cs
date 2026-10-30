@@ -111,6 +111,13 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private float lastSupportTime = -999f;
     private Vector3 dashDirection;
 
+    // Murs touches au dernier pas physique (normales horizontales, OnCollisionStay) : en l'air, on retire
+    // la part de vitesse qui pousse dedans, sinon le frottement du mur retient la chute (perso colle au mur)
+    private const int maxWallNormals = 4;
+    private readonly Vector3[] wallNormals = new Vector3[maxWallNormals];
+    private int wallNormalCount = 0;
+    private float wallNormalsTime = -999f;
+
     // Reference
     public GameManager gameManager;
 
@@ -799,7 +806,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             }
         }
 
-        rb.linearVelocity = finalVelocity;
+        rb.linearVelocity = RemoveWallPush(finalVelocity);
     }
     float CalculateSpeed()
     {
@@ -1162,7 +1169,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
             // Forcer velocity dans dashDirection
             Vector3 dashVelocity = dashDirection * dashSpeed;
             dashVelocity.y = rb.linearVelocity.y; // Garder gravit�
-            rb.linearVelocity = dashVelocity;
+            rb.linearVelocity = RemoveWallPush(dashVelocity);
 
             elapsed += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
@@ -1235,17 +1242,59 @@ public class PlayerPhysicsMovement : MonoBehaviour
     void OnCollisionStay(Collision collision)
     {
         bool fromBelow = false;
+        bool fromSide = false;
         for (int i = 0; i < collision.contactCount; i++)
         {
-            if (collision.GetContact(i).normal.y > 0.7f) { fromBelow = true; break; }
+            float ny = collision.GetContact(i).normal.y;
+            if (ny > 0.7f) fromBelow = true;
+            else if (Mathf.Abs(ny) < 0.3f) fromSide = true;
         }
-        if (!fromBelow) return;
+        if (!fromBelow && !fromSide) return;
 
         if (collision.gameObject.GetComponentInParent<EnemyHealth>() != null) return;
         PlayerPhysicsMovement otherPlayer = collision.gameObject.GetComponentInParent<PlayerPhysicsMovement>();
         if (otherPlayer != null && otherPlayer != this) return;
 
-        lastSupportTime = Time.time;
+        if (fromBelow)
+            lastSupportTime = Time.time;
+
+        if (fromSide)
+        {
+            // Nouveau pas physique : on oublie les murs du pas precedent
+            if (wallNormalsTime != Time.fixedTime)
+            {
+                wallNormalCount = 0;
+                wallNormalsTime = Time.fixedTime;
+            }
+            for (int i = 0; i < collision.contactCount && wallNormalCount < maxWallNormals; i++)
+            {
+                Vector3 n = collision.GetContact(i).normal;
+                if (Mathf.Abs(n.y) >= 0.3f) continue;
+                n.y = 0f;
+                wallNormals[wallNormalCount++] = n.normalized;
+            }
+        }
+    }
+
+    // En l'air (aucun appui dessous depuis wallSlideSupportGrace), retire la part horizontale de la vitesse
+    // qui rentre dans un mur touche au dernier pas physique. Au sol, rien ne change (gamefeel du frottement).
+    private const float wallSlideSupportGrace = 0.05f;
+    Vector3 RemoveWallPush(Vector3 velocity)
+    {
+        if (wallNormalCount == 0) return velocity;
+        if (Time.fixedTime - wallNormalsTime > Time.fixedDeltaTime * 1.5f) return velocity;
+        if (Time.time - lastSupportTime < wallSlideSupportGrace) return velocity;
+
+        for (int i = 0; i < wallNormalCount; i++)
+        {
+            float into = velocity.x * wallNormals[i].x + velocity.z * wallNormals[i].z;
+            if (into < 0f)
+            {
+                velocity.x -= wallNormals[i].x * into;
+                velocity.z -= wallNormals[i].z * into;
+            }
+        }
+        return velocity;
     }
 
     void OnCollisionExit(Collision collision)
