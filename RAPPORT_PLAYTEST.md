@@ -50,8 +50,7 @@
 - [x] La TomatoUI ne disparaît pas à la victoire : `GameUIManager.HideGameplayBars` cache maintenant les TomatoUI, J2 comprise (2026-10-29)
 
 ### Trou normand (`Level_TrouNormand`, hors catalogue)
-- [ ] On peut s'échapper de l'ascenseur pendant la montée : vérifier les colliders de la cabine
-  - 2026-10-29 : confirmé, il suffit de bouger dans la cabine pendant la montée, alors que **tous les meshes ont des colliders**. Piste (non vérifiée) : la Timeline déplace la cabine par son Transform, hors physique ; ses colliders « sautent » d'une position à l'autre à chaque image, et le Rigidbody du joueur, qui bouge, passe à travers ou se fait éjecter. Pistes de correction à discuter : Rigidbody kinematic sur la cabine (déplacé en physique), joueur rattaché à la cabine pendant la montée, ou murs invisibles plus épais.
+- [x] On peut s'échapper de l'ascenseur pendant la montée : **résolu** (commit ff764b82). Cause : le MeshCollider d'un mesh de décor placé en plein dans le passage de la montée ; retiré de la cage d'ascenseur. (La piste Timeline / Transform hors physique était fausse.)
 - [ ] Au restart, on entend le son de montée du rideau (curtain rise) alors que ce niveau n'a pas de rideau : trouver quel composant le joue (note du 2026-10-28)
 
 ### Lava Train III
