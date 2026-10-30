@@ -36,6 +36,7 @@ public class PlatformTrainManager : MonoBehaviour
     // Lecture seule pour LavaTrainChain
     public SplineContainer SplineContainer => splineContainer;
     public LavaTrainSettings Settings => settings;
+    public PlatformTrainCar PlayerCar => IsPlayerOnTrain() ? player.GetCurrentPlatform() as PlatformTrainCar : null;
 
     void Start()
     {

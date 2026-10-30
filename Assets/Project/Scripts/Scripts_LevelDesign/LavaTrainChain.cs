@@ -1,45 +1,64 @@
 using UnityEngine;
 using UnityEngine.Splines;
 
-// Chaine immobile dessinee le long de la spline du train (LineRenderer cree au Start).
+// Chaine dessinee le long de la spline du train (LineRenderer cree au Start).
+// Creux sous le wagon du joueur (chainSagDepth, 0 = chaine immobile).
 // Tous les reglages viennent de LavaTrainSettings, rien a remplir dans l'Inspector.
 [RequireComponent(typeof(PlatformTrainManager))]
 public class LavaTrainChain : MonoBehaviour
 {
+    private PlatformTrainManager manager;
+    private LavaTrainSettings settings;
+    private LineRenderer line;
+
+    private Vector3[] basePoints;
+    private float[] pointProgress;
+    private Vector3[] points;
+    private float splineLength;
+    private bool closed;
+
+    private float currentSagDepth = 0f;
+    private float sagProgress = 0f;
+    private bool sagApplied = false;
+
     void Start()
     {
-        PlatformTrainManager manager = GetComponent<PlatformTrainManager>();
+        manager = GetComponent<PlatformTrainManager>();
         SplineContainer splineContainer = manager.SplineContainer;
-        LavaTrainSettings settings = manager.Settings;
+        settings = manager.Settings;
 
         if (splineContainer == null || settings == null)
         {
             Debug.LogWarning("[LavaTrainChain] Spline ou LavaTrainSettings manquant sur le PlatformTrainManager, pas de chaine.");
+            enabled = false;
             return;
         }
 
         if (settings.chainMaterial == null)
         {
             Debug.LogWarning("[LavaTrainChain] Pas de chainMaterial dans " + settings.name + ", pas de chaine.");
+            enabled = false;
             return;
         }
 
-        Spline spline = splineContainer.Spline;
-        float length = splineContainer.CalculateLength();
-        int pointCount = Mathf.Max(2, Mathf.CeilToInt(length / Mathf.Max(0.01f, settings.chainPointSpacing)));
-        bool closed = spline.Closed;
+        splineLength = splineContainer.CalculateLength();
+        int pointCount = Mathf.Max(2, Mathf.CeilToInt(splineLength / Mathf.Max(0.01f, settings.chainPointSpacing)));
+        closed = splineContainer.Spline.Closed;
 
         // Spline fermee : le dernier point rejoint le premier via loop, on ne le duplique pas
         int segments = closed ? pointCount : pointCount - 1;
-        Vector3[] points = new Vector3[pointCount];
+        basePoints = new Vector3[pointCount];
+        pointProgress = new float[pointCount];
+        points = new Vector3[pointCount];
         Vector3 offset = Vector3.up * settings.chainHeightOffset;
         for (int i = 0; i < pointCount; i++)
         {
-            float t = (float)i / segments;
-            points[i] = (Vector3)splineContainer.EvaluatePosition(t) + offset;
+            pointProgress[i] = (float)i / segments;
+            basePoints[i] = (Vector3)splineContainer.EvaluatePosition(pointProgress[i]) + offset;
+            points[i] = basePoints[i];
         }
 
-        LineRenderer line = gameObject.AddComponent<LineRenderer>();
+        line = gameObject.AddComponent<LineRenderer>();
         line.sharedMaterial = settings.chainMaterial;
         line.widthMultiplier = settings.chainWidth;
         line.textureMode = LineTextureMode.Tile;
@@ -49,5 +68,38 @@ public class LavaTrainChain : MonoBehaviour
         line.loop = closed;
         line.positionCount = pointCount;
         line.SetPositions(points);
+    }
+
+    // LateUpdate : les wagons ont deja bouge (FixedUpdate du manager)
+    void LateUpdate()
+    {
+        PlatformTrainCar playerCar = manager.PlayerCar;
+        if (playerCar != null)
+            sagProgress = playerCar.currentProgress;
+
+        float targetDepth = playerCar != null ? settings.chainSagDepth : 0f;
+        currentSagDepth = Mathf.MoveTowards(currentSagDepth, targetDepth, settings.chainSagSpeed * Time.deltaTime);
+
+        // Rien a faire tant que la chaine est au repos et deja a plat
+        if (currentSagDepth <= 0f && !sagApplied) return;
+
+        float halfWidth = Mathf.Max(0.01f, settings.chainSagHalfWidth);
+        for (int i = 0; i < points.Length; i++)
+        {
+            float delta = Mathf.Abs(pointProgress[i] - sagProgress);
+            if (closed) delta = Mathf.Min(delta, 1f - delta);
+            float distance = delta * splineLength;
+
+            Vector3 p = basePoints[i];
+            if (distance < halfWidth)
+            {
+                // Creux arrondi : maximum sous le wagon, nul a halfWidth
+                float weight = 0.5f * (1f + Mathf.Cos(Mathf.PI * distance / halfWidth));
+                p.y -= currentSagDepth * weight;
+            }
+            points[i] = p;
+        }
+        line.SetPositions(points);
+        sagApplied = currentSagDepth > 0f;
     }
 }

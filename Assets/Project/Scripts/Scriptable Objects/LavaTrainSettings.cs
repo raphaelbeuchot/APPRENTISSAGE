@@ -43,4 +43,10 @@ public class LavaTrainSettings : ScriptableObject
     public float chainTextureScale = 4f;
     [Tooltip("Ecart entre deux points de la ligne, en metres")]
     public float chainPointSpacing = 0.25f;
+    [Tooltip("Profondeur du creux de la chaine sous le wagon du joueur. 0 = pas de creux")]
+    public float chainSagDepth = 0.15f;
+    [Tooltip("Distance de chaque cote du wagon sur laquelle la chaine descend, en metres")]
+    public float chainSagHalfWidth = 1.5f;
+    [Tooltip("Vitesse d'apparition / disparition du creux (metres par seconde)")]
+    public float chainSagSpeed = 0.5f;
 }
