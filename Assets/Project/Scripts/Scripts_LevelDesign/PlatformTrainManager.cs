@@ -37,6 +37,7 @@ public class PlatformTrainManager : MonoBehaviour
     public SplineContainer SplineContainer => splineContainer;
     public LavaTrainSettings Settings => settings;
     public PlatformTrainCar PlayerCar => IsPlayerOnTrain() ? player.GetCurrentPlatform() as PlatformTrainCar : null;
+    public float CurrentSpeed => currentSpeed;
 
     void Start()
     {

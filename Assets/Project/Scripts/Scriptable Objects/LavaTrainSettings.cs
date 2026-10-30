@@ -49,4 +49,16 @@ public class LavaTrainSettings : ScriptableObject
     public float chainSagHalfWidth = 1.5f;
     [Tooltip("Vitesse d'apparition / disparition du creux (metres par seconde)")]
     public float chainSagSpeed = 0.5f;
+
+    [Header("Gears (LavaTrainGears)")]
+    [Tooltip("Materiau des roues crantees posees a chaque knot. Vide = lavaTrainBasic")]
+    public Material gearMaterial;
+    [Min(3)] public int gearTeeth = 8;
+    public float gearOuterRadius = 0.5f;
+    public float gearInnerRadius = 0.35f;
+    public float gearThickness = 0.1f;
+    [Tooltip("Decalage vertical des roues par rapport a la chaine (positif = au-dessus). Reglable en Play")]
+    public float gearHeightOffset = 0f;
+    [Tooltip("Multiplicateur de la vitesse de rotation des roues (1 = calee sur la chaine, 0.5 = deux fois plus lent). Reglable en Play")]
+    public float gearSpinFactor = 0.5f;
 }
