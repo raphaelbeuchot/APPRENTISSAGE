@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class BroomAttackSystem : MonoBehaviour
 {
@@ -521,6 +522,11 @@ public class BroomAttackSystem : MonoBehaviour
             LayerMask.GetMask("Prop")
         );
 
+        // Un prop compose (Rigidbody + PhysicsProp sur le parent, colliders sur les enfants) peut etre
+        // touche par plusieurs colliders : une seule poussee, au point touche le plus proche du balai
+        Vector3 broomOrigin = transform.position + Vector3.up * 1f;
+        Dictionary<PhysicsProp, Vector3> propHitPoints = new Dictionary<PhysicsProp, Vector3>();
+
         foreach (Collider hit in propHits)
         {
             Vector3 dir = (hit.transform.position - transform.position).normalized;
@@ -528,11 +534,21 @@ public class BroomAttackSystem : MonoBehaviour
             float angle = Vector3.Angle(transform.forward, dir);
             if (angle > stats.broomConeAngle / 2f) continue;
 
-            PhysicsProp prop = hit.GetComponent<PhysicsProp>();
-            if (prop != null)
-                prop.ReceiveImpact(transform.position, stats.broomKnockbackForce, ImpactSource.Broom);
+            PhysicsProp prop = hit.GetComponentInParent<PhysicsProp>();
+            if (prop == null) continue;
+
+            Vector3 point = hit.ClosestPoint(broomOrigin);
+            if (!propHitPoints.TryGetValue(prop, out Vector3 best) ||
+                (point - broomOrigin).sqrMagnitude < (best - broomOrigin).sqrMagnitude)
+                propHitPoints[prop] = point;
         }
 
+        foreach (KeyValuePair<PhysicsProp, Vector3> entry in propHitPoints)
+            entry.Key.ReceiveImpact(transform.position, stats.broomKnockbackForce, ImpactSource.Broom, entry.Value);
+
+        // AUDIO MISS : rien de touche (les props ne comptent pas, ils n'ont pas de son a eux)
+        if (!hitSomething && audioSource != null && stats.broomSound != null)
+            audioSource.PlayOneShot(stats.broomSound);
     }
     // Meme knockback + cooldown qu'un coup de balai normal sur un zombie (extrait de
     // OnBroomHit), pour le cas ou le collider touche par le balai est celui du joueur

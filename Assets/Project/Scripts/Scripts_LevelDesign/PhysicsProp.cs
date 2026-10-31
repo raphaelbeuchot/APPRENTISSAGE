@@ -15,6 +15,8 @@ public class PhysicsProp : MonoBehaviour
     [Header("Impact Multipliers")]
     [SerializeField] private float broomMultiplier = 1f;
     [SerializeField] private float broomTorque = 3f;
+    [Tooltip("Coup de balai pousse au point touche (le prop bascule selon l'endroit frappe) au lieu du centre + Broom Torque fixe")]
+    [SerializeField] private bool pushAtHitPoint = false;
     [SerializeField] private float collisionMultiplier = 0.6f;
 
     [Header("Impact")]
@@ -55,7 +57,8 @@ public class PhysicsProp : MonoBehaviour
         rb.AddExplosionForce(force * explosionForceMultiplier, center, radius, explosionUpwardModifier, ForceMode.Impulse);
     }
 
-    public void ReceiveImpact(Vector3 origin, float force, ImpactSource source)
+    // hitPoint : point du collider touche (utilise seulement si pushAtHitPoint)
+    public void ReceiveImpact(Vector3 origin, float force, ImpactSource source, Vector3? hitPoint = null)
     {
         float multiplier = source switch
         {
@@ -68,6 +71,14 @@ public class PhysicsProp : MonoBehaviour
         Vector3 dir = (transform.position - origin).normalized;
         dir.y = upwardBias;
         dir.Normalize();
+
+        if (pushAtHitPoint && hitPoint.HasValue)
+        {
+            // La rotation vient du point d'application, pas de broomTorque
+            rb.AddForceAtPosition(dir * force * multiplier, hitPoint.Value, ForceMode.Impulse);
+            return;
+        }
+
         rb.AddForce(dir * force * multiplier, ForceMode.Impulse);
         if (source == ImpactSource.Broom)
         {

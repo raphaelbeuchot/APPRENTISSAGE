@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System;
 using Pathfinding;
 
@@ -290,6 +291,7 @@ public class BombProjectile : MonoBehaviour
 
         // Passe 2 : ennemis et destabilisables (sans restriction de layer)
         Collider[] blastHits = Physics.OverlapSphere(transform.position, explosionRadius);
+        HashSet<PhysicsProp> blastedProps = new HashSet<PhysicsProp>();
 
         foreach (Collider hit in blastHits)
         {
@@ -329,10 +331,12 @@ public class BombProjectile : MonoBehaviour
                 continue;
             }
 
-            PhysicsProp prop = hit.GetComponent<PhysicsProp>();
+            // Prop compose (PhysicsProp sur le parent, colliders sur les enfants) : une seule explosion par prop
+            PhysicsProp prop = hit.GetComponentInParent<PhysicsProp>();
             if (prop != null)
             {
-                prop.ReceiveExplosion(transform.position, knockbackForce, explosionRadius);
+                if (blastedProps.Add(prop))
+                    prop.ReceiveExplosion(transform.position, knockbackForce, explosionRadius);
                 continue;
             }
         }
