@@ -68,8 +68,9 @@
 ## Session du 2026-10-30
 
 ### Tous niveaux
-- [ ] Coup de balai à vide : plus aucun son. **Cause trouvée** : ce n'est pas un réglage d'Inspector, le code « AUDIO MISS » (`stats.broomSound` joué si le coup ne touche rien) a été retiré de `BroomAttackSystem.OnBroomHit` le 2026-04-02 (commit 756447ff « bomb »). Le clip `broomSound` est toujours renseigné dans `HammerGirl`, il n'est plus lu nulle part.
-- [ ] Coup de balai sur les cubes explosables (`PhysicsProp`, Flower Power II) : pas de son. Les props n'ont jamais eu de son au coup de balai : avant avril, c'était sans doute le son « à vide » qu'on entendait (le prop ne compte pas comme une touche).
+- [x] Coup de balai à vide : plus aucun son. **Corrigé le 2026-10-31** : son à vide remis en fin de `OnBroomHit`. **Cause trouvée** : ce n'est pas un réglage d'Inspector, le code « AUDIO MISS » (`stats.broomSound` joué si le coup ne touche rien) a été retiré de `BroomAttackSystem.OnBroomHit` le 2026-04-02 (commit 756447ff « bomb »). Le clip `broomSound` est toujours renseigné dans `HammerGirl`, il n'est plus lu nulle part.
+- [x] Coup de balai sur les cubes explosables (`PhysicsProp`, Flower Power II) : pas de son. Les props n'ont jamais eu de son au coup de balai : avant avril, c'était sans doute le son « à vide » qu'on entendait (le prop ne compte pas comme une touche). **Corrigé le 2026-10-31** avec le son à vide (un son propre aux props reste possible plus tard).
+  - Au passage (2026-10-31) : props composés gérés (Rigidbody + `PhysicsProp` sur le parent, colliders sur les enfants, tous en layer Prop, MeshColliders convexes — ex. prefab `DUMMY`) : balai et bombes cherchent `PhysicsProp` dans les parents, une seule poussée par prop. Nouvelle option `Push At Hit Point` sur `PhysicsProp` (poussée au point touché par le balai, sans `Broom Torque`), décochée par défaut.
 - [ ] Blinder sans animations (niveau à préciser). Prefab `ZombieBlinder` inchangé depuis le 2026-04-08 : modèle `TPose_BLDR` avec l'Animator `ZombieChaserController` (et pas `BlinderController`). À vérifier en jeu : Animator actif, état courant, paramètres reçus.
 
 ### Void I (`Level_Casino`, « Call of the Void »)
