@@ -6,9 +6,9 @@ public class SplinePitZoneEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
-
         SplinePitZone zone = (SplinePitZone)target;
+
+        DrawFieldsWithPitOffset(zone);
 
         GUILayout.Space(10);
         GUILayout.BeginVertical(EditorStyles.helpBox);
@@ -61,6 +61,53 @@ public class SplinePitZoneEditor : Editor
         }
 
         GUILayout.EndVertical();
+    }
+
+    // Comme DrawDefaultInspector, avec en plus le "Decalage de la fosse" juste avant les rayons de l'ellipse du rim.
+    void DrawFieldsWithPitOffset(SplinePitZone zone)
+    {
+        serializedObject.Update();
+        bool ellipse = serializedObject.FindProperty("rimShape").enumValueIndex == (int)SplinePitZone.RimShape.Ellipse;
+        Vector2? newOffset = null;
+
+        SerializedProperty it = serializedObject.GetIterator();
+        for (bool enter = true; it.NextVisible(enter); enter = false)
+        {
+            if (it.propertyPath == "m_Script")
+            {
+                using (new EditorGUI.DisabledScope(true)) EditorGUILayout.PropertyField(it);
+                continue;
+            }
+            if (ellipse && it.propertyPath == "rimEllipseRadii")
+            {
+                EditorGUI.BeginChangeCheck();
+                Vector2 offset = EditorGUILayout.Vector2Field(new GUIContent("Decalage de la fosse",
+                    "Ellipse : position de la fosse dans la salle, depuis le centre de l'ellipse (X / Z locaux). " +
+                    "Deplace la fosse, l'ellipse reste en place."), -zone.rimEllipseCenter);
+                if (EditorGUI.EndChangeCheck()) newOffset = offset;
+            }
+            EditorGUILayout.PropertyField(it, true);
+        }
+        serializedObject.ApplyModifiedProperties();
+
+        if (newOffset.HasValue) MovePitInsideEllipse(zone, newOffset.Value);
+    }
+
+    // Deplace la fosse (et sa spline) et recale le centre de l'ellipse en sens inverse : l'ellipse ne bouge pas.
+    // Les meshes deja generes sont regeneres (le rim suit l'objet, il serait decale sinon). Ctrl+Z annule le
+    // deplacement mais pas la regeneration : refaire Generate Meshes apres une annulation.
+    static void MovePitInsideEllipse(SplinePitZone zone, Vector2 offset)
+    {
+        Vector2 delta = offset + zone.rimEllipseCenter;
+        if (delta.sqrMagnitude < 1e-12f) return;
+
+        Undo.RecordObjects(new Object[] { zone.transform, zone }, "Decalage de la fosse");
+        zone.transform.position += zone.transform.TransformVector(new Vector3(delta.x, 0f, delta.y));
+        zone.rimEllipseCenter = -offset;
+        EditorUtility.SetDirty(zone);
+
+        if (zone.transform.Find("SplinePit_Rim") != null) zone.GenerateMeshes();
+        SceneView.RepaintAll();
     }
 
     // Forme rapide : reecrit la spline en rectangle aux coins arrondis (quarts de cercle).

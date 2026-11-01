@@ -18,8 +18,9 @@ public class SplinePitZone : MonoBehaviour
     public RimShape rimShape = RimShape.Rectangle;
     [Tooltip("Rectangle : marge autour de la fosse.")]
     public float rimMargin = 0.5f;
-    [Tooltip("Ellipse : centre du contour exterieur, en X / Z locaux de la fosse (0 = pivot de la fosse).")]
-    public Vector2 rimEllipseCenter = Vector2.zero;
+    // Ellipse : centre du contour exterieur, en X / Z locaux de la fosse (0 = pivot de la fosse). Pas affiche :
+    // l'Inspector montre a la place le "Decalage de la fosse" (= -centre), qui deplace la fosse et garde l'ellipse en place.
+    [HideInInspector] public Vector2 rimEllipseCenter = Vector2.zero;
     [Tooltip("Ellipse : rayons en X et en Z locaux. Egaux = cercle.")]
     public Vector2 rimEllipseRadii = new Vector2(6f, 6f);
     [Tooltip("Ellipse : nombre de facettes sur le tour complet du contour exterieur.")]
