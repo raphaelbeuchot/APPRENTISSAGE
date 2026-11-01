@@ -114,8 +114,7 @@ Deux familles :
 
 1. **Format TV** : épisodes, numéros de détenu, titres façon programmes (l'équivalent des faces d'album d'Ape Out).
 2. **Texte de la machine** (cartons, règlement, commentaires).
-3. **Décor qui se dégrade** au fil des niveaux : écrans qui figent, sentinelle qui a des « ratés », foule enregistrée qui se répète.
-4. **La fin** (seule vraie mise en scène à produire).
+3. **La fin** (seule vraie mise en scène à produire).
 
 ## Piste de fin (non tranchée)
 

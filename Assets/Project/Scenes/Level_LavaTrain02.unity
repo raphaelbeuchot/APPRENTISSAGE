@@ -80796,7 +80796,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SplinePitZone
   depth: 2
   splineSampleCount: 32
+  rimShape: 0
   rimMargin: 0.5
+  rimEllipseCenter: {x: 0, y: 0}
+  rimEllipseRadii: {x: 6, y: 6}
+  rimEllipseSegments: 64
   wallMaterial: {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
   floorMaterial: {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
   rimMaterial: {fileID: 2100000, guid: 96b34f8b1b473314c86a978b0e82dd15, type: 2}
@@ -115418,7 +115422,7 @@ GameObject:
   - component: {fileID: 1931607920}
   - component: {fileID: 1931607919}
   - component: {fileID: 1931607918}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: GOTHIC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -117026,9 +117030,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: TomatoCrate
       objectReference: {fileID: 0}
+    - target: {fileID: 3650622312175949740, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4176317200099649265, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7431779402005536931, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 8126514716244228571, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.753
+      value: 4.056
       objectReference: {fileID: 0}
     - target: {fileID: 8126514716244228571, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
       propertyPath: m_LocalPosition.y
@@ -117036,35 +117052,35 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8126514716244228571, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.462
+      value: 3.397
       objectReference: {fileID: 0}
     - target: {fileID: 8126514716244228571, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.98707795
+      value: 0.56504697
       objectReference: {fileID: 0}
     - target: {fileID: 8126514716244228571, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0.56504685
       objectReference: {fileID: 0}
     - target: {fileID: 8126514716244228571, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.16024119
+      value: -0.42511415
       objectReference: {fileID: 0}
     - target: {fileID: 8126514716244228571, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0.425114
       objectReference: {fileID: 0}
     - target: {fileID: 8126514716244228571, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: 8126514716244228571, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 18.442
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8126514716244228571, guid: 2b4161d26956a8749be64ef6673108b4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
+      value: 73.912
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

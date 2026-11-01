@@ -267,6 +267,11 @@ public class EnemyPitInteractable : MonoBehaviour, IPitInteractable
                     enemyAI.enabled = false;
             }
         }
+        else if (category == PitContentType.ContentCategory.Spikes)
+        {
+            if (enemyAI != null)
+                enemyAI.enabled = false;
+        }
         else if (category == PitContentType.ContentCategory.InstantKill || category == PitContentType.ContentCategory.DamageZone)
         {
             if (enemyHealth != null && enemyHealth.stats.lavaSplashSound != null)

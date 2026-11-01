@@ -41,6 +41,20 @@ public class SplinePitZone : MonoBehaviour
     [Tooltip("Look de la surface, propre a cette fosse (le SO ne decide que du comportement)")]
     public Material fillMaterial;
 
+    // Contenu Spikes : pas de surface plate, des triangles verticaux poses au fond, face a -Z (fixes, pas billboard).
+    // Le Fill Level regle toujours la hauteur du trigger qui tue, independamment de la hauteur des pics.
+    [Header("Spikes (contenu Spikes seulement)")]
+    [Tooltip("Nombre de pics par m2 de fond : la fosse garde le meme aspect si on l'agrandit")]
+    public float spikeDensity = 4f;
+    [Tooltip("Placement : 0 = grille reguliere, 1 = chaque pic n'importe ou dans sa case de la grille")]
+    [Range(0f, 1f)] public float spikeRandomness = 1f;
+    [Tooltip("Largeur de la base des pics (m), tiree au hasard entre min et max")]
+    public Vector2 spikeBaseRange = new Vector2(0.15f, 0.4f);
+    [Tooltip("Hauteur des pics (m), tiree au hasard entre min et max")]
+    public Vector2 spikeHeightRange = new Vector2(0.2f, 0.6f);
+    [Tooltip("Graine du tirage : changer pour une autre disposition")]
+    public int spikeSeed = 0;
+
     // Reglages de la forme rapide "rectangle arrondi" (dessines par SplinePitZoneEditor) :
     // memorises par fosse, ce sont ceux de la derniere creation, pas un reflet de la spline actuelle.
     [HideInInspector] public float quickRectWidth = 6f;   // axe X local de la spline
@@ -161,12 +175,17 @@ public class SplinePitZone : MonoBehaviour
         {
             float fillY = contour[0].y - depth + fillLevel;
 
-            GameObject fillGO = new GameObject("SplinePit_Fill");
+            bool spikes = FillCategory == PitContentType.ContentCategory.Spikes;
+            GameObject fillGO = new GameObject(spikes ? "SplinePit_Spikes" : "SplinePit_Fill");
             fillGO.transform.SetParent(transform);
             fillGO.transform.localPosition = Vector3.zero;
+            fillGO.transform.localRotation = Quaternion.identity;
+            fillGO.transform.localScale = Vector3.one;
             MeshFilter fillMF = fillGO.AddComponent<MeshFilter>();
             MeshRenderer fillMR = fillGO.AddComponent<MeshRenderer>();
-            fillMF.sharedMesh = SplinePitMeshGenerator.GenerateFillMesh(contour, depth, fillLevel);
+            fillMF.sharedMesh = spikes
+                ? GenerateSpikesMesh(contour, contour[0].y - depth)
+                : SplinePitMeshGenerator.GenerateFillMesh(contour, depth, fillLevel);
             if (fillMaterial != null) fillMR.sharedMaterial = fillMaterial;
 
             GameObject fillTriggerGO = new GameObject("SplinePit_FillTrigger");
@@ -184,7 +203,7 @@ public class SplinePitZone : MonoBehaviour
 
     public void ClearMeshes()
     {
-        string[] names = { "SplinePit_Walls", "SplinePit_Floor", "SplinePit_Rim", "SplinePit_Trigger", "SplinePit_Fill", "SplinePit_FillTrigger" }; foreach (string n in names)
+        string[] names = { "SplinePit_Walls", "SplinePit_Floor", "SplinePit_Rim", "SplinePit_Trigger", "SplinePit_Fill", "SplinePit_Spikes", "SplinePit_FillTrigger" }; foreach (string n in names)
         {
             Transform t = transform.Find(n);
             if (t != null) DestroyImmediate(t.gameObject);
@@ -224,6 +243,84 @@ public class SplinePitZone : MonoBehaviour
     public float GetDepth()
     {
         return depth;
+    }
+
+    // Pics : un par case d'une grille (pas = 1 / racine de la densite), decale dans sa case selon spikeRandomness,
+    // garde s'il tombe dans le contour. Tailles tirees au hasard (graine fixe), base au fond de la fosse.
+    // Construits en monde (face a -Z monde, axe Y monde) puis ramenes en local : la fosse peut etre tournee.
+    // Une seule face, sens horaire vue depuis -Z (la camera regarde toujours vers +Z). UV en metres.
+    Mesh GenerateSpikesMesh(Vector3[] contour, float floorY)
+    {
+        float minX = float.MaxValue, maxX = float.MinValue;
+        float minZ = float.MaxValue, maxZ = float.MinValue;
+        for (int i = 0; i < contour.Length; i++)
+        {
+            minX = Mathf.Min(minX, contour[i].x); maxX = Mathf.Max(maxX, contour[i].x);
+            minZ = Mathf.Min(minZ, contour[i].z); maxZ = Mathf.Max(maxZ, contour[i].z);
+        }
+        float step = 1f / Mathf.Sqrt(Mathf.Max(0.01f, spikeDensity));
+        // Grille centree sur la fosse
+        int cellsX = Mathf.Max(1, Mathf.CeilToInt((maxX - minX) / step));
+        int cellsZ = Mathf.Max(1, Mathf.CeilToInt((maxZ - minZ) / step));
+        float startX = (minX + maxX - (cellsX - 1) * step) * 0.5f;
+        float startZ = (minZ + maxZ - (cellsZ - 1) * step) * 0.5f;
+
+        Vector3 right = transform.InverseTransformDirection(Vector3.right);
+        Vector3 up = transform.InverseTransformDirection(Vector3.up);
+
+        var verts = new System.Collections.Generic.List<Vector3>();
+        var uvs = new System.Collections.Generic.List<Vector2>();
+        var tris = new System.Collections.Generic.List<int>();
+        var rng = new System.Random(spikeSeed);
+        float Range(Vector2 r) => Mathf.Lerp(r.x, r.y, (float)rng.NextDouble());
+
+        for (int cell = 0; cell < cellsX * cellsZ; cell++)
+        {
+            // Tirages faits pour chaque case, meme rejetee : bouger un reglage ne rebat pas toute la fosse
+            float x = startX + (cell % cellsX) * step + ((float)rng.NextDouble() - 0.5f) * step * spikeRandomness;
+            float z = startZ + (cell / cellsX) * step + ((float)rng.NextDouble() - 0.5f) * step * spikeRandomness;
+            float halfBase = Range(spikeBaseRange) * 0.5f;
+            float height = Range(spikeHeightRange);
+
+            Vector3 center = new Vector3(x, floorY, z);
+            Vector3 left = center - right * halfBase;
+            Vector3 rightPt = center + right * halfBase;
+            // Les deux coins de la base dans la fosse : pas de pic qui traverse le mur
+            if (!InsideContour(contour, left) || !InsideContour(contour, rightPt)) continue;
+
+            int v = verts.Count;
+            verts.Add(left);
+            verts.Add(center + up * height);
+            verts.Add(rightPt);
+            Vector3 w = transform.TransformPoint(center);
+            uvs.Add(new Vector2(w.x - halfBase, 0f));
+            uvs.Add(new Vector2(w.x, height));
+            uvs.Add(new Vector2(w.x + halfBase, 0f));
+            tris.Add(v); tris.Add(v + 1); tris.Add(v + 2);
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.name = "SplinePit_Spikes";
+        mesh.SetVertices(verts);
+        mesh.SetUVs(0, uvs);
+        mesh.SetTriangles(tris, 0);
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        return mesh;
+    }
+
+    // Point dans le polygone du contour (plan XZ local), par comptage de croisements
+    static bool InsideContour(Vector3[] contour, Vector3 p)
+    {
+        bool inside = false;
+        for (int i = 0, j = contour.Length - 1; i < contour.Length; j = i++)
+        {
+            Vector3 a = contour[i], b = contour[j];
+            if ((a.z > p.z) != (b.z > p.z) &&
+                p.x < (b.x - a.x) * (p.z - a.z) / (b.z - a.z) + a.x)
+                inside = !inside;
+        }
+        return inside;
     }
 
     // Apercu du contour exterieur du rim en ellipse, pour le regler avant Generate Meshes.

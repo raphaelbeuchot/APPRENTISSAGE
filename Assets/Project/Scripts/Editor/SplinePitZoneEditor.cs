@@ -68,6 +68,7 @@ public class SplinePitZoneEditor : Editor
     {
         serializedObject.Update();
         bool ellipse = serializedObject.FindProperty("rimShape").enumValueIndex == (int)SplinePitZone.RimShape.Ellipse;
+        bool spikes = zone.FillCategory == PitContentType.ContentCategory.Spikes;
         Vector2? newOffset = null;
 
         SerializedProperty it = serializedObject.GetIterator();
@@ -78,6 +79,7 @@ public class SplinePitZoneEditor : Editor
                 using (new EditorGUI.DisabledScope(true)) EditorGUILayout.PropertyField(it);
                 continue;
             }
+            if (!spikes && it.propertyPath.StartsWith("spike")) continue;
             if (ellipse && it.propertyPath == "rimEllipseRadii")
             {
                 EditorGUI.BeginChangeCheck();
