@@ -70,6 +70,7 @@ public class Ramp : MonoBehaviour
     public bool separateMaterials = false;
 
     [System.NonSerialized] Mesh generatedMesh;
+    [System.NonSerialized] Vector3 pivotOffset; // centre de la boite englobante retire aux sommets (voir BuildMesh)
 
     void OnEnable()
     {
@@ -451,6 +452,7 @@ public class Ramp : MonoBehaviour
             bMax = Vector3.Max(bMax, v);
         }
         Vector3 center = (bMin + bMax) * 0.5f;
+        pivotOffset = center;
         for (int i = 0; i < verts.Count; i++) verts[i] -= center;
 
         mesh.Clear();
@@ -472,6 +474,23 @@ public class Ramp : MonoBehaviour
         }
         mesh.RecalculateTangents();
         mesh.RecalculateBounds();
+    }
+
+    // ---------------------------------------------------------------- Bords (pour EdgeLights)
+
+    // Longueur de la surface de marche, sur la ligne mediane.
+    public float WalkLength => RunFor(rise);
+
+    // Point au bord de la surface de marche, dans le repere local du GO (pivot compris).
+    // s = abscisse sur la ligne mediane (0 = pied, WalkLength = haut). side = -1 bord gauche, +1 bord droit (en montant).
+    // outward = ecartement depuis le bord, positif vers l'exterieur. up = decalage vertical depuis le dessus.
+    // forward = direction de la passerelle a ce bord (pente comprise), unitaire.
+    public void GetEdgePoint(float s, int side, float outward, float up, out Vector3 localPos, out Vector3 forward)
+    {
+        float l = RunFor(rise);
+        float x = side * (HalfWidth + outward);
+        localPos = Map(s, rise * s / l + up, x) - pivotOffset;
+        forward = (Tangent(s) * Stretch(x) + Vector3.up * (rise / l)).normalized;
     }
 
     // Ajoute le triangle dans le sens qui le rend visible du cote de la normale voulue ; ignore les triangles plats
