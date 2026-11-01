@@ -10,8 +10,20 @@ public class SplinePitZone : MonoBehaviour
     [Header("Mesh Settings")]
     public int splineSampleCount = 32;
 
+    public enum RimShape { Rectangle, Ellipse }
+
     [Header("Rim Settings")]
+    [Tooltip("Contour exterieur du rim. Rectangle : rectangle englobant de la fosse + marge. " +
+             "Ellipse : sol de salle ronde, centre et rayons ci-dessous.")]
+    public RimShape rimShape = RimShape.Rectangle;
+    [Tooltip("Rectangle : marge autour de la fosse.")]
     public float rimMargin = 0.5f;
+    [Tooltip("Ellipse : centre du contour exterieur, en X / Z locaux de la fosse (0 = pivot de la fosse).")]
+    public Vector2 rimEllipseCenter = Vector2.zero;
+    [Tooltip("Ellipse : rayons en X et en Z locaux. Egaux = cercle.")]
+    public Vector2 rimEllipseRadii = new Vector2(6f, 6f);
+    [Tooltip("Ellipse : nombre de facettes sur le tour complet du contour exterieur.")]
+    [Range(8, 256)] public int rimEllipseSegments = 64;
 
     [Header("Materials")]
     public Material wallMaterial;
@@ -108,7 +120,9 @@ public class SplinePitZone : MonoBehaviour
         rimGO.layer = LayerMask.NameToLayer("Ground");
         MeshFilter rimMF = rimGO.AddComponent<MeshFilter>();
         MeshRenderer rimMR = rimGO.AddComponent<MeshRenderer>();
-        Mesh rimMesh = SplinePitMeshGenerator.GenerateRimMesh(contour, rimMargin);
+        Mesh rimMesh = rimShape == RimShape.Ellipse
+            ? SplinePitMeshGenerator.GenerateRimMeshEllipse(contour, rimEllipseCenter, rimEllipseRadii, rimEllipseSegments)
+            : SplinePitMeshGenerator.GenerateRimMesh(contour, rimMargin);
         rimMF.sharedMesh = rimMesh;
         MeshCollider rimMC = rimGO.AddComponent<MeshCollider>();
         rimMC.sharedMesh = rimMesh;
@@ -209,5 +223,27 @@ public class SplinePitZone : MonoBehaviour
     public float GetDepth()
     {
         return depth;
+    }
+
+    // Apercu du contour exterieur du rim en ellipse, pour le regler avant Generate Meshes.
+    private void OnDrawGizmosSelected()
+    {
+        if (rimShape != RimShape.Ellipse) return;
+        SplineContainer sc = GetSplineContainer();
+        float y = sc != null ? transform.InverseTransformPoint(sc.transform.position).y : 0f;
+        float rx = Mathf.Max(0.01f, rimEllipseRadii.x);
+        float rz = Mathf.Max(0.01f, rimEllipseRadii.y);
+        int seg = Mathf.Max(8, rimEllipseSegments);
+
+        Gizmos.matrix = transform.localToWorldMatrix;
+        Gizmos.color = Color.yellow;
+        Vector3 prev = new Vector3(rimEllipseCenter.x + rx, y, rimEllipseCenter.y);
+        for (int i = 1; i <= seg; i++)
+        {
+            float a = Mathf.PI * 2f * i / seg;
+            Vector3 p = new Vector3(rimEllipseCenter.x + rx * Mathf.Cos(a), y, rimEllipseCenter.y + rz * Mathf.Sin(a));
+            Gizmos.DrawLine(prev, p);
+            prev = p;
+        }
     }
 }

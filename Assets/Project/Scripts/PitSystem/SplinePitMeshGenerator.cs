@@ -202,6 +202,108 @@ public static class SplinePitMeshGenerator
         return mesh;
     }
 
+    // Rim a contour exterieur elliptique (salle ronde) : meme principe que le rectangle, rayons depuis le centroide de
+    // la fosse vers l'ellipse. Entre deux rayons voisins, des points intermediaires suivent l'ellipse (au plus un pas de
+    // 360 / segments degres), comme les coins du rectangle. Centre et rayons dans le repere local de la fosse (X, Z).
+    public static Mesh GenerateRimMeshEllipse(Vector3[] innerContour, Vector2 center, Vector2 radii, int segments)
+    {
+        int innerCount = innerContour.Length;
+        float y = innerContour[0].y;
+        float rx = Mathf.Max(0.01f, radii.x);
+        float rz = Mathf.Max(0.01f, radii.y);
+        float maxStep = Mathf.PI * 2f / Mathf.Max(8, segments);
+
+        // Normalise en CCW vu d'en haut
+        Vector3[] inner = new Vector3[innerCount];
+        System.Array.Copy(innerContour, inner, innerCount);
+        if (IsClockwiseXZ(inner))
+            System.Array.Reverse(inner);
+
+        Vector3 centroid = Vector3.zero;
+        for (int i = 0; i < innerCount; i++) centroid += inner[i];
+        centroid /= innerCount;
+        centroid.y = y;
+
+        float cx0 = (centroid.x - center.x) / rx;
+        float cz0 = (centroid.z - center.y) / rz;
+        if (cx0 * cx0 + cz0 * cz0 >= 1f)
+            Debug.LogWarning("[SplinePitMeshGenerator] Le centre de la fosse est hors de l'ellipse du rim : rim incorrect.");
+
+        // Intersection rayon centroide->inner[i] avec l'ellipse, et angle parametrique du point touche
+        float[] outerAngles = new float[innerCount];
+        bool pitOutside = false;
+        for (int i = 0; i < innerCount; i++)
+        {
+            float t = RayEllipseIntersect(centroid, inner[i], center, rx, rz);
+            if (t < 1f) pitOutside = true;
+            float hx = centroid.x + t * (inner[i].x - centroid.x);
+            float hz = centroid.z + t * (inner[i].z - centroid.z);
+            outerAngles[i] = Mathf.Atan2((hz - center.y) / rz, (hx - center.x) / rx);
+        }
+        if (pitOutside)
+            Debug.LogWarning("[SplinePitMeshGenerator] La fosse depasse de l'ellipse du rim : agrandir les rayons.");
+
+        List<Vector3> verts = new List<Vector3>();
+        List<int> tris = new List<int>();
+
+        for (int i = 0; i < innerCount; i++)
+        {
+            int next = (i + 1) % innerCount;
+            Vector3 iA = inner[i];
+            Vector3 iB = inner[next];
+            float aA = outerAngles[i];
+            float delta = Mathf.Repeat(outerAngles[next] - aA, Mathf.PI * 2f);
+
+            // Sequence du fan : oA, [points intermediaires de l'ellipse], oB, iB
+            List<Vector3> fanSeq = new List<Vector3>();
+            int steps = Mathf.Max(1, Mathf.CeilToInt(delta / maxStep));
+            for (int s = 0; s <= steps; s++)
+            {
+                float a = aA + delta * s / steps;
+                fanSeq.Add(new Vector3(center.x + rx * Mathf.Cos(a), y, center.y + rz * Mathf.Sin(a)));
+            }
+            fanSeq.Add(iB);
+
+            for (int j = 0; j < fanSeq.Count - 1; j++)
+            {
+                int baseIdx = verts.Count;
+                verts.Add(iA);
+                verts.Add(fanSeq[j]);
+                verts.Add(fanSeq[j + 1]);
+                tris.Add(baseIdx);
+                tris.Add(baseIdx + 2);
+                tris.Add(baseIdx + 1);
+            }
+        }
+
+        Vector3[] normals = new Vector3[verts.Count];
+        for (int i = 0; i < normals.Length; i++) normals[i] = Vector3.up;
+
+        Mesh mesh = new Mesh();
+        mesh.name = "SplinePitRim";
+        mesh.vertices = verts.ToArray();
+        mesh.triangles = tris.ToArray();
+        mesh.normals = normals;
+        mesh.uv = PlanarUVs(mesh.vertices);
+        return mesh;
+    }
+
+    // Plus grand t > 0 tel que from + t * (through - from) soit sur l'ellipse (centre, rx, rz), dans le plan XZ.
+    private static float RayEllipseIntersect(Vector3 from, Vector3 through, Vector2 center, float rx, float rz)
+    {
+        float px = (from.x - center.x) / rx;
+        float pz = (from.z - center.y) / rz;
+        float dx = (through.x - from.x) / rx;
+        float dz = (through.z - from.z) / rz;
+        float a = dx * dx + dz * dz;
+        if (a < 1e-12f) return 1f;
+        float b = 2f * (px * dx + pz * dz);
+        float c = px * px + pz * pz - 1f;
+        float disc = b * b - 4f * a * c;
+        if (disc < 0f) return 1f;
+        return (-b + Mathf.Sqrt(disc)) / (2f * a);
+    }
+
     private static Vector3 RayRectIntersect(Vector3 from, Vector3 through,
         float minX, float maxX, float minZ, float maxZ, float y)
     {
