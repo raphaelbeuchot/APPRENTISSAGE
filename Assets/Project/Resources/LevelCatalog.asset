@@ -958,8 +958,8 @@ MonoBehaviour:
       status: 0
       detail: 
     - id: broomPedestal
-      status: 0
-      detail: 
+      status: 2
+      detail: Sol_Pedestal/BROOMPEDESTAL-PickUp (Prise)
     - id: levelEssentiels
       status: 1
       detail: LevelEssentiels (PAS tague Sentinel)
@@ -985,6 +985,65 @@ MonoBehaviour:
       status: 0
       detail: 
     - id: transitionRoom
+      status: 2
+      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
+    - id: victoryBounds
+      status: 1
+      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
+        apres la victoire'
+    - id: broomPickup
+      status: 2
+      detail: Sol_Pedestal/BROOMPEDESTAL-PickUp (BroomPedestal)
+    scenePath: Assets/Project/Scenes/Level_TrouNormand.unity
+    collectibleIDs: []
+  - scene: {fileID: 102900000, guid: 58b4a24b14170e149a21b9592f033f51, type: 3}
+    levelName: AcidFloor I
+    launchText: Not alone anymore
+    hasBroom: 1
+    hasSpray: 0
+    inDemo: 1
+    observed:
+    - id: tomatoCrate
+      status: 0
+      detail: 
+    - id: enemies
+      status: 2
+      detail: ENEMIES/ZombieChaser01 (EnemyAI_AStar) + 25 autre(s)
+    - id: brightEyes
+      status: 0
+      detail: 
+    - id: bombs
+      status: 0
+      detail: 
+    - id: broomPedestal
+      status: 0
+      detail: 
+    - id: levelEssentiels
+      status: 2
+      detail: LevelEssentiels (tague Sentinel)
+    - id: startDoor
+      status: 0
+      detail: 
+    - id: pupitre
+      status: 2
+      detail: Pupitre
+    - id: goalDoor
+      status: 0
+      detail: 
+    - id: key
+      status: 0
+      detail: 
+    - id: victory
+      status: 0
+      detail: 
+    - id: curtain
+      status: 0
+      detail: 
+    - id: circles
+      status: 2
+      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
+        tague Sentinel)
+    - id: transitionRoom
       status: 0
       detail: 
     - id: victoryBounds
@@ -994,7 +1053,7 @@ MonoBehaviour:
     - id: broomPickup
       status: 0
       detail: 
-    scenePath: Assets/Project/Scenes/Level_TrouNormand.unity
+    scenePath: Assets/Project/Scenes/Level_Acid_01.unity
     collectibleIDs: []
   - scene: {fileID: 102900000, guid: 4573f525910770a4583bc1b6be9af952, type: 3}
     levelName: Flower Power I
@@ -1091,11 +1150,11 @@ MonoBehaviour:
       status: 2
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
-      status: 1
-      detail: pas de rideau (EndCurtainRise)
+      status: 2
+      detail: VictoryManager (configuration complete)
     - id: curtain
-      status: 0
-      detail: 
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
     - id: circles
       status: 2
       detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
@@ -1580,4 +1639,4 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_TrafficJam_04.unity
     collectibleIDs: []
-  lastAnalysis: 30/10/2026 a 17:13
+  lastAnalysis: 01/11/2026 a 14:27
