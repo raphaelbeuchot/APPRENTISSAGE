@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // Lumieres (ou tout prefab) alignees le long des bords d'une passerelle : une Ramp (droite ou en virage), ou a defaut
@@ -7,6 +8,8 @@ using UnityEngine;
 // Espacement mesure sur la ligne mediane : en virage, les lumieres gauche et droite sont face a face, plus serrees
 // a l'interieur. L'espacement est ajuste pour tomber juste entre les marges de debut et de fin.
 // Boite : toutes les distances sont en metres reels, malgre l'echelle du GO.
+// Source Aretes : le long des aretes vives cochees du mesh (MeshEdgeChains) ; boucle fermee = sans marges,
+// espacement ajuste pour que le dernier retombe juste avant le premier. Hauteur vers le haut du monde.
 [RequireComponent(typeof(MeshFilter))]
 public class EdgeLights : MonoBehaviour
 {
@@ -21,6 +24,9 @@ public class EdgeLights : MonoBehaviour
     public Source source = Source.Auto;
     [Tooltip("Aretes seulement : angle mini entre deux faces voisines pour que leur arete compte comme vive.")]
     [Range(1f, 179f)] public float edgeAngle = 30f;
+    // Aretes : numeros des chaines cochees (liste dessinee par EdgeLightsEditor). Changer de mesh ou de seuil
+    // peut renumeroter les chaines : recocher alors.
+    [HideInInspector] public List<int> selectedChains = new List<int>();
 
     [Tooltip("Prefab ou GO de la scene a aligner (ex. sphere avec ProximityTarget). Un GO de la scene est duplique, " +
              "les copies sont actives meme s'il est desactive (pratique pour garder un modele cache).")]
