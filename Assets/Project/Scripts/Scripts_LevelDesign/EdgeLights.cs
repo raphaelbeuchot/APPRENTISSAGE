@@ -12,8 +12,15 @@ public class EdgeLights : MonoBehaviour
 {
     public enum Sides { Gauche, Droite, LesDeux }
     public enum Axis { Auto, X, Z }
+    public enum Source { Auto, Aretes }
 
     public const string ContainerName = "EdgeLights_Generated";
+
+    [Tooltip("Auto : la Ramp du GO, sinon la boite du mesh. Aretes : aretes vives du mesh (cylindre, mesh importe...), " +
+             "affichees en couleur dans la Scene view quand le GO est selectionne.")]
+    public Source source = Source.Auto;
+    [Tooltip("Aretes seulement : angle mini entre deux faces voisines pour que leur arete compte comme vive.")]
+    [Range(1f, 179f)] public float edgeAngle = 30f;
 
     [Tooltip("Prefab ou GO de la scene a aligner (ex. sphere avec ProximityTarget). Un GO de la scene est duplique, " +
              "les copies sont actives meme s'il est desactive (pratique pour garder un modele cache).")]

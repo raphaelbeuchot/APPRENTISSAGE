@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -70,6 +71,7 @@ public class EdgeLightsEditor : Editor
 
     static EdgePath GetPath(EdgeLights el)
     {
+        if (el.source == EdgeLights.Source.Aretes) return null; // pas encore de generation sur les aretes
         Ramp ramp = el.GetComponent<Ramp>();
         if (ramp != null) return new RampPath(ramp);
         MeshFilter mf = el.GetComponent<MeshFilter>();
@@ -89,7 +91,16 @@ public class EdgeLightsEditor : Editor
         GUILayout.Space(10);
         GUILayout.BeginVertical(EditorStyles.helpBox);
 
-        if (path == null)
+        if (el.source == EdgeLights.Source.Aretes)
+        {
+            List<MeshEdgeChains.Chain> chains = GetChains(el);
+            int loops = 0;
+            foreach (var c in chains) if (c.closed) loops++;
+            GUILayout.Label("Source : aretes vives - " + chains.Count + " chaines (" + loops + " boucles), " +
+                            "numerotees dans la Scene view", EditorStyles.miniLabel);
+            EditorGUILayout.HelpBox("Etape 1 : affichage des chaines seulement, pas encore de generation.", MessageType.Info);
+        }
+        else if (path == null)
             EditorGUILayout.HelpBox("Pas de mesh sur ce GO.", MessageType.Warning);
         else
         {
@@ -119,6 +130,55 @@ public class EdgeLightsEditor : Editor
         GUI.backgroundColor = Color.white;
 
         GUILayout.EndVertical();
+    }
+
+    // ---------------------------------------------------------------- Aretes vives
+
+    // Recalcul seulement si le mesh, l'echelle ou le seuil changent (OnSceneGUI tourne a chaque repaint).
+    List<MeshEdgeChains.Chain> cachedChains;
+    Mesh cachedMesh;
+    Vector3 cachedScale;
+    float cachedAngle;
+
+    List<MeshEdgeChains.Chain> GetChains(EdgeLights el)
+    {
+        MeshFilter mf = el.GetComponent<MeshFilter>();
+        Mesh mesh = mf != null ? mf.sharedMesh : null;
+        Vector3 scale = el.transform.lossyScale;
+        if (cachedChains == null || mesh != cachedMesh || scale != cachedScale || el.edgeAngle != cachedAngle)
+        {
+            cachedChains = MeshEdgeChains.Find(mesh, scale, el.edgeAngle);
+            cachedMesh = mesh;
+            cachedScale = scale;
+            cachedAngle = el.edgeAngle;
+        }
+        return cachedChains;
+    }
+
+    static readonly Color[] chainColors =
+    {
+        new Color(1f, 0.3f, 0.3f), new Color(0.3f, 1f, 0.4f), new Color(0.35f, 0.6f, 1f), new Color(1f, 0.85f, 0.2f),
+        new Color(1f, 0.4f, 1f), new Color(0.3f, 1f, 1f), new Color(1f, 0.6f, 0.2f), new Color(0.7f, 0.5f, 1f)
+    };
+
+    void OnSceneGUI()
+    {
+        EdgeLights el = (EdgeLights)target;
+        if (el.source != EdgeLights.Source.Aretes) return;
+
+        List<MeshEdgeChains.Chain> chains = GetChains(el);
+        Matrix4x4 m = el.transform.localToWorldMatrix;
+        for (int i = 0; i < chains.Count; i++)
+        {
+            MeshEdgeChains.Chain c = chains[i];
+            int n = c.points.Count + (c.closed ? 1 : 0);
+            var world = new Vector3[n];
+            for (int p = 0; p < n; p++) world[p] = m.MultiplyPoint3x4(c.points[p % c.points.Count]);
+
+            Handles.color = chainColors[i % chainColors.Length];
+            Handles.DrawAAPolyLine(5f, world);
+            Handles.Label(world[c.points.Count / 2], " " + i + (c.closed ? " (boucle)" : ""), EditorStyles.boldLabel);
+        }
     }
 
     // Abscisses le long de la ligne mediane, de la marge de debut a la marge de fin, espacement ajuste.
