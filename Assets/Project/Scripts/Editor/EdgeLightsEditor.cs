@@ -71,35 +71,144 @@ public class EdgeLightsEditor : Editor
 
     // Chaine d'aretes vives (repere local du mesh). Abscisse en metres reels (echelle du GO appliquee).
     // side et outward ignores ; up = vers le haut du monde. forward dans le repere tourne du GO, sans l'echelle.
+    // Boucle : remise dans un ordre fixe (depart sur le +X local vu depuis son centre, sens anti-horaire vu du dessus),
+    // sinon le depart dependrait de l'ordre des sommets du mesh. arcDegrees < 360 : seule cette portion compte.
     class ChainPath : EdgePath
     {
+        // Sommet dont le virage depasse ce seuil = vrai coin (dessus d'un cube) : tangente non lissee.
+        const float smoothMaxTurn = 45f;
+
         readonly List<Vector3> pts;   // boucle : le premier point est repete a la fin
         readonly float[] cumul;       // longueur cumulee en metres jusqu'a chaque point
+        readonly Vector3[] segDir;    // direction de chaque segment (echelle appliquee)
+        readonly Vector3?[] vertTan;  // tangente lissee a chaque sommet, null = coin vif ou bout
         readonly Vector3 scale;
         readonly Transform tr;
+        readonly float length;
+        public readonly bool closed;  // boucle entiere (arc 360)
 
-        public ChainPath(MeshEdgeChains.Chain chain, Transform tr)
+        public ChainPath(MeshEdgeChains.Chain chain, Transform tr, float arcDegrees)
         {
             this.tr = tr;
             scale = tr.lossyScale;
-            pts = new List<Vector3>(chain.points);
-            if (chain.closed) pts.Add(chain.points[0]);
+            pts = chain.closed ? CanonicalLoop(chain.points, scale) : new List<Vector3>(chain.points);
+            if (chain.closed) pts.Add(pts[0]);
+
+            int m = pts.Count - 1;
             cumul = new float[pts.Count];
-            for (int i = 1; i < pts.Count; i++)
-                cumul[i] = cumul[i - 1] + Vector3.Scale(pts[i] - pts[i - 1], scale).magnitude;
+            segDir = new Vector3[m];
+            for (int i = 0; i < m; i++)
+            {
+                Vector3 d = Vector3.Scale(pts[i + 1] - pts[i], scale);
+                cumul[i + 1] = cumul[i] + d.magnitude;
+                segDir[i] = d.normalized;
+            }
+
+            vertTan = new Vector3?[pts.Count];
+            for (int v = 0; v <= m; v++)
+            {
+                int before = v - 1, after = v;
+                if (chain.closed && v == 0) before = m - 1;
+                if (chain.closed && v == m) after = 0;
+                if (before < 0 || after >= m) continue; // bout de chaine ouverte
+                if (Vector3.Angle(segDir[before], segDir[after]) > smoothMaxTurn) continue;
+                vertTan[v] = (segDir[before] + segDir[after]).normalized;
+            }
+
+            float total = cumul[m];
+            closed = chain.closed && arcDegrees >= 360f;
+            length = chain.closed ? total * Mathf.Clamp(arcDegrees, 0f, 360f) / 360f : total;
         }
 
         public override string Label => "Arete";
-        public override float Length => cumul[cumul.Length - 1];
+        public override float Length => length;
+        public float TotalLength => cumul[cumul.Length - 1];
 
         public override void Point(float s, int side, float outward, float up, out Vector3 localPos, out Vector3 forward)
         {
-            int i = 1;
-            while (i < pts.Count - 1 && cumul[i] < s) i++;
-            float segLen = cumul[i] - cumul[i - 1];
-            float t = segLen > 1e-6f ? Mathf.Clamp01((s - cumul[i - 1]) / segLen) : 0f;
-            localPos = Vector3.Lerp(pts[i - 1], pts[i], t) + tr.InverseTransformVector(Vector3.up * up);
-            forward = Vector3.Scale(pts[i] - pts[i - 1], scale).normalized;
+            int i = Segment(s);
+            float segLen = cumul[i + 1] - cumul[i];
+            float t = segLen > 1e-6f ? Mathf.Clamp01((s - cumul[i]) / segLen) : 0f;
+            localPos = Vector3.Lerp(pts[i], pts[i + 1], t) + tr.InverseTransformVector(Vector3.up * up);
+
+            // Tangente lissee : direction du segment au milieu, tangente du sommet aux bouts (cylindre a facettes :
+            // la tangente suit le vrai cercle au lieu de sauter de 18 degres a chaque sommet).
+            Vector3 seg = segDir[i];
+            Vector3 a = vertTan[i] ?? seg;
+            Vector3 b = vertTan[i + 1] ?? seg;
+            forward = t < 0.5f ? Vector3.Slerp(a, seg, t * 2f) : Vector3.Slerp(seg, b, (t - 0.5f) * 2f);
+        }
+
+        // Points (repere local) entre deux abscisses, pour l'affichage.
+        public List<Vector3> Polyline(float from, float to)
+        {
+            var list = new List<Vector3>();
+            if (to <= from) return list;
+            list.Add(At(from));
+            for (int k = 1; k < pts.Count - 1; k++)
+                if (cumul[k] > from && cumul[k] < to) list.Add(pts[k]);
+            list.Add(At(to));
+            return list;
+        }
+
+        Vector3 At(float s)
+        {
+            int i = Segment(s);
+            float segLen = cumul[i + 1] - cumul[i];
+            return Vector3.Lerp(pts[i], pts[i + 1], segLen > 1e-6f ? Mathf.Clamp01((s - cumul[i]) / segLen) : 0f);
+        }
+
+        int Segment(float s)
+        {
+            int i = 0;
+            while (i < pts.Count - 2 && cumul[i + 1] < s) i++;
+            return i;
+        }
+
+        // Sens anti-horaire vu du dessus (+X vers +Z), depart au croisement de la demi-droite +X issue du centre.
+        // Boucle a plat vue du dessus (verticale) : laissee telle quelle.
+        static List<Vector3> CanonicalLoop(List<Vector3> loop, Vector3 scale)
+        {
+            var p = new List<Vector3>(loop);
+            int n = p.Count;
+            Vector3 c = Vector3.zero;
+            foreach (Vector3 v in p) c += v;
+            c /= n;
+
+            float area = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                Vector3 a = Vector3.Scale(p[i] - c, scale), b = Vector3.Scale(p[(i + 1) % n] - c, scale);
+                area += a.x * b.z - b.x * a.z;
+            }
+            if (Mathf.Abs(area) < 1e-6f) return p;
+            if (area < 0f) p.Reverse();
+
+            for (int i = 0; i < n; i++)
+            {
+                Vector3 a = p[i], b = p[(i + 1) % n];
+                float za = a.z - c.z, zb = b.z - c.z;
+                // Passage de z <= 0 a z > 0 du cote x > 0 : le +X local
+                if (!(za <= 0f && zb > 0f)) continue;
+                float t = za / (za - zb);
+                Vector3 hit = Vector3.Lerp(a, b, t);
+                if (hit.x - c.x <= 0f) continue;
+
+                // Croisement sur un sommet (ou presque) : on part de ce sommet, sans point en double
+                var result = new List<Vector3>(n + 1);
+                if (t < 1e-4f || t > 1f - 1e-4f)
+                {
+                    int start = t < 1e-4f ? i : (i + 1) % n;
+                    for (int k = 0; k < n; k++) result.Add(p[(start + k) % n]);
+                }
+                else
+                {
+                    result.Add(hit);
+                    for (int k = 1; k <= n; k++) result.Add(p[(i + k) % n]);
+                }
+                return result;
+            }
+            return p;
         }
     }
 
@@ -127,8 +236,11 @@ public class EdgeLightsEditor : Editor
         if (el.source == EdgeLights.Source.Aretes)
         {
             foreach (int i in el.selectedChains)
-                if (i >= 0 && i < chains.Count && chains[i].points.Count >= 2)
-                    runs.Add(new Run { path = new ChainPath(chains[i], el.transform), side = 0, name = "C" + i, closed = chains[i].closed });
+            {
+                if (i < 0 || i >= chains.Count || chains[i].points.Count < 2) continue;
+                var cp = new ChainPath(chains[i], el.transform, el.arc);
+                runs.Add(new Run { path = cp, side = 0, name = "C" + i, closed = cp.closed });
+            }
             return runs;
         }
 
@@ -149,7 +261,7 @@ public class EdgeLightsEditor : Editor
 
     // Champs sans objet selon la source : masques.
     static readonly string[] autoOnly = { "sides", "axis", "outward" };
-    static readonly string[] aretesOnly = { "edgeAngle" };
+    static readonly string[] aretesOnly = { "edgeAngle", "arc" };
 
     public override void OnInspectorGUI()
     {
@@ -229,7 +341,7 @@ public class EdgeLightsEditor : Editor
         for (int i = 0; i < chains.Count; i++)
         {
             bool on = el.selectedChains.Contains(i);
-            float len = new ChainPath(chains[i], el.transform).Length;
+            float len = new ChainPath(chains[i], el.transform, 360f).TotalLength;
             string label = i + " - " + (chains[i].closed ? "boucle" : "ouverte") + " - " + len.ToString("0.00") + " m";
             bool now = EditorGUILayout.ToggleLeft(label, on);
             if (now == on) continue;
@@ -280,7 +392,8 @@ public class EdgeLightsEditor : Editor
     };
     static readonly Color unselectedColor = new Color(0.6f, 0.6f, 0.6f, 0.35f);
 
-    // Chaines cochees en couleur vive, les autres en gris pale.
+    // Chaines cochees en couleur vive, les autres en gris pale. Boucle cochee avec arc < 360 : la portion garnie
+    // en trait epais, le reste de la boucle en trait fin de la meme couleur.
     void OnSceneGUI()
     {
         EdgeLights el = (EdgeLights)target;
@@ -291,15 +404,33 @@ public class EdgeLightsEditor : Editor
         for (int i = 0; i < chains.Count; i++)
         {
             MeshEdgeChains.Chain c = chains[i];
+            if (c.points.Count < 2) continue;
             bool on = el.selectedChains.Contains(i);
-            int n = c.points.Count + (c.closed ? 1 : 0);
-            var world = new Vector3[n];
-            for (int p = 0; p < n; p++) world[p] = m.MultiplyPoint3x4(c.points[p % c.points.Count]);
+            var cp = new ChainPath(c, el.transform, el.arc);
+            float active = on ? cp.Length : 0f;
+            Color color = chainColors[i % chainColors.Length];
 
-            Handles.color = on ? chainColors[i % chainColors.Length] : unselectedColor;
-            Handles.DrawAAPolyLine(on ? 5f : 2f, world);
-            Handles.Label(world[c.points.Count / 2], " " + i + (c.closed ? " (boucle)" : ""), EditorStyles.boldLabel);
+            if (active > 0f)
+            {
+                Handles.color = color;
+                Handles.DrawAAPolyLine(5f, ToWorld(cp.Polyline(0f, active), m));
+            }
+            if (active < cp.TotalLength)
+            {
+                Handles.color = on ? new Color(color.r, color.g, color.b, 0.5f) : unselectedColor;
+                Handles.DrawAAPolyLine(2f, ToWorld(cp.Polyline(active, cp.TotalLength), m));
+            }
+            List<Vector3> labelLine = cp.Polyline(0f, cp.TotalLength);
+            Handles.Label(m.MultiplyPoint3x4(labelLine[labelLine.Count / 2]), " " + i + (c.closed ? " (boucle)" : ""),
+                          EditorStyles.boldLabel);
         }
+    }
+
+    static Vector3[] ToWorld(List<Vector3> local, Matrix4x4 m)
+    {
+        var world = new Vector3[local.Count];
+        for (int k = 0; k < local.Count; k++) world[k] = m.MultiplyPoint3x4(local[k]);
+        return world;
     }
 
     // ---------------------------------------------------------------- Generation

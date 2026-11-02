@@ -9,7 +9,8 @@ using UnityEngine;
 // a l'interieur. L'espacement est ajuste pour tomber juste entre les marges de debut et de fin.
 // Boite : toutes les distances sont en metres reels, malgre l'echelle du GO.
 // Source Aretes : le long des aretes vives cochees du mesh (MeshEdgeChains) ; boucle fermee = sans marges,
-// espacement ajuste pour que le dernier retombe juste avant le premier. Hauteur vers le haut du monde.
+// espacement ajuste pour que le dernier retombe juste avant le premier ; arc < 360 = portion traitee comme une
+// chaine ouverte. Hauteur vers le haut du monde. Tangente lissee aux sommets peu anguleux (cylindre a facettes).
 [RequireComponent(typeof(MeshFilter))]
 public class EdgeLights : MonoBehaviour
 {
@@ -24,6 +25,9 @@ public class EdgeLights : MonoBehaviour
     public Source source = Source.Auto;
     [Tooltip("Aretes seulement : angle mini entre deux faces voisines pour que leur arete compte comme vive.")]
     [Range(1f, 179f)] public float edgeAngle = 30f;
+    [Tooltip("Aretes, boucles seulement : portion garnie, en degres de tour (fraction du perimetre ; exact sur un cercle). " +
+             "Part du +X local en tournant anti-horaire vu du dessus : tourner le GO deplace l'arc. 360 = toute la boucle.")]
+    [Range(1f, 360f)] public float arc = 360f;
     // Aretes : numeros des chaines cochees (liste dessinee par EdgeLightsEditor). Changer de mesh ou de seuil
     // peut renumeroter les chaines : recocher alors.
     [HideInInspector] public List<int> selectedChains = new List<int>();
