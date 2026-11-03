@@ -76,6 +76,15 @@ public class EdgeLights : MonoBehaviour
     [Tooltip("Distance laissee libre a la fin du chemin (haut de la rampe), sur la ligne mediane.")]
     [Min(0f)] public float endMargin = 0.25f;
 
+    [Header("Lignes")]
+    [Tooltip("Nombre de lignes. Toutes aux memes positions le long du chemin (alignees les unes derriere les autres).")]
+    [Min(1)] public int lines = 1;
+    [Tooltip("Ecart entre deux lignes, en metres : X = Ecartement (vers l'exterieur), Y = Hauteur. " +
+             "Ex. Y negatif = rangees l'une sous l'autre sur la tranche ; X = tours concentriques.")]
+    public Vector2 lineGap = new Vector2(0f, -0.5f);
+    [Tooltip("Une ligne sur deux decalee d'un demi-pas le long du chemin (sans effet Aux coins).")]
+    public bool staggered = false;
+
     [Header("Orientation")]
     [Tooltip("Coche : chaque instance regarde dans le sens de la passerelle (pente comprise). " +
              "Decoche : rotation du prefab.")]

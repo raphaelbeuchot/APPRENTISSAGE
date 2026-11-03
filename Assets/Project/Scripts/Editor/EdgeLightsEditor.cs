@@ -334,6 +334,7 @@ public class EdgeLightsEditor : Editor
             if (System.Array.IndexOf(hidden, it.propertyPath) >= 0) continue;
             if (it.propertyPath == "count" && el.distribution != EdgeLights.Distribution.Nombre) continue;
             if (it.propertyPath == "spacing" && !UsesSpacing(el)) continue;
+            if ((it.propertyPath == "lineGap" || it.propertyPath == "staggered") && el.lines <= 1) continue;
             EditorGUILayout.PropertyField(it, true);
         }
         if (serializedObject.ApplyModifiedProperties()) SceneView.RepaintAll(); // fantomes a jour
@@ -360,8 +361,7 @@ public class EdgeLightsEditor : Editor
                 EditorGUILayout.HelpBox("Cocher au moins une chaine.", MessageType.Warning);
             else
             {
-                int total = 0;
-                foreach (Run r in runs) total += PositionsFor(el, r).Length;
+                int total = Placements(el, runs).Count;
                 GUILayout.Label(total + " instances", EditorStyles.miniLabel);
                 if (el.distribution == EdgeLights.Distribution.AuxCoins && !HasCorners(el))
                     EditorGUILayout.HelpBox("Aux coins : RoundedBlock ou Aretes seulement, reparti ici a l'espacement.",
@@ -494,7 +494,9 @@ public class EdgeLightsEditor : Editor
     }
 
     // Positions et rotations des instances : partage par Generer et la previsualisation, qui montre donc exactement
-    // ce qui sera genere.
+    // ce qui sera genere. Lignes : memes abscisses pour toutes (alignees les unes derriere les autres), ligne k
+    // decalee de k fois l'ecart ; quinconce = une ligne sur deux glissee d'un demi-pas (ouvert : sans depasser la
+    // derniere position ; sans effet Aux coins).
     static List<Placement> Placements(EdgeLights el, List<Run> runs)
     {
         var list = new List<Placement>();
@@ -502,35 +504,52 @@ public class EdgeLightsEditor : Editor
         bool aretes = el.source == EdgeLights.Source.Aretes;
         Quaternion toLocal = Quaternion.Inverse(el.transform.rotation);
         Quaternion extra = Quaternion.Euler(el.rotationOffset);
+        int lines = Mathf.Max(1, el.lines);
+        bool corners = el.distribution == EdgeLights.Distribution.AuxCoins && HasCorners(el);
 
         foreach (Run run in runs)
         {
             float[] positions = PositionsFor(el, run);
-            for (int i = 0; i < positions.Length; i++)
+            if (positions.Length == 0) continue;
+            float step = run.closed ? run.path.Length / positions.Length
+                       : positions.Length > 1 ? positions[1] - positions[0] : 0f;
+            float lastPos = positions[positions.Length - 1];
+
+            for (int line = 0; line < lines; line++)
             {
-                run.path.Point(positions[i], run.side, el.outward, el.height, out Vector3 pos, out Vector3 forward);
+                float outward = el.outward + line * el.lineGap.x;
+                float height = el.height + line * el.lineGap.y;
+                float shift = el.staggered && !corners && line % 2 == 1 ? step * 0.5f : 0f;
 
-                Quaternion rot; // monde
-                if (!el.alignToPath)
-                    rot = el.prefab.transform.rotation;
-                else if (run.path is FramedPath fp && fp.hasAxis)
-                    rot = el.transform.rotation * Quaternion.LookRotation(forward, fp.axis);
-                else if (aretes)
+                for (int i = 0; i < positions.Length; i++)
                 {
-                    // Chaine ouverte : haut du monde ; arete verticale (coin de cube) : +Z monde pour ne pas partir en vrille.
-                    Vector3 worldForward = el.transform.rotation * forward;
-                    Vector3 up = Mathf.Abs(Vector3.Dot(worldForward, Vector3.up)) > 0.999f ? Vector3.forward : Vector3.up;
-                    rot = Quaternion.LookRotation(worldForward, up);
+                    float s = positions[i] + shift;
+                    if (!run.closed && shift > 0f && s > lastPos + 1e-4f) continue;
+                    run.path.Point(s, run.side, outward, height, out Vector3 pos, out Vector3 forward);
+
+                    Quaternion rot; // monde
+                    if (!el.alignToPath)
+                        rot = el.prefab.transform.rotation;
+                    else if (run.path is FramedPath fp && fp.hasAxis)
+                        rot = el.transform.rotation * Quaternion.LookRotation(forward, fp.axis);
+                    else if (aretes)
+                    {
+                        // Chaine ouverte : haut du monde ; arete verticale (coin de cube) : +Z monde pour ne pas partir en vrille.
+                        Vector3 worldForward = el.transform.rotation * forward;
+                        Vector3 up = Mathf.Abs(Vector3.Dot(worldForward, Vector3.up)) > 0.999f ? Vector3.forward : Vector3.up;
+                        rot = Quaternion.LookRotation(worldForward, up);
+                    }
+                    else
+                        rot = el.transform.rotation * Quaternion.LookRotation(forward, Vector3.up);
+
+                    list.Add(new Placement
+                    {
+                        name = el.prefab.name + "_" + run.name + (aretes ? "_" : "") + (lines > 1 ? "L" + line + "_" : "")
+                               + i.ToString("D2"),
+                        localPos = pos,
+                        localRot = toLocal * rot * extra
+                    });
                 }
-                else
-                    rot = el.transform.rotation * Quaternion.LookRotation(forward, Vector3.up);
-
-                list.Add(new Placement
-                {
-                    name = el.prefab.name + "_" + run.name + (aretes ? "_" : "") + i.ToString("D2"),
-                    localPos = pos,
-                    localRot = toLocal * rot * extra
-                });
             }
         }
         return list;
