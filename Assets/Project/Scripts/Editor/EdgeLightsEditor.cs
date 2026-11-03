@@ -70,57 +70,118 @@ public class EdgeLightsEditor : Editor
         }
     }
 
-    // Chaine d'aretes vives (EdgeChainPath, partage avec Barriere). side et outward ignores ;
-    // up = vers le haut du monde. forward dans le repere tourne du GO, sans l'echelle.
-    class ChainPath : EdgePath
+    // Chemin le long d'une chaine (EdgeChainPath), avec un repere en chaque point : sens du chemin, exterieur, axe.
+    // outward = vers l'exterieur, up = le long de l'axe, along = glissement le long du chemin. side ignore.
+    // Partage par la tranche du RoundedBlock et les aretes vives : memes options dans les deux cas.
+    abstract class FramedPath : EdgePath
     {
-        readonly EdgeChainPath path;
-        readonly Transform tr;
+        protected EdgeChainPath path;
+        protected Vector3 scale;
+        protected float outSign = 1f;
+        protected float along;
+        protected bool loop;
+        public Vector3 axis;          // repere local tourne, en metres (echelle appliquee), unitaire
+        public bool hasAxis = true;   // faux : chaine ouverte, axe = haut du monde, orientation a part
+        public float[] cornerPositions = new float[0]; // Aux coins : abscisses, glissement non compris
 
-        public ChainPath(MeshEdgeChains.Chain chain, Transform tr, float arcDegrees)
+        protected void Init(MeshEdgeChains.Chain chain, Vector3 lossyScale, float arcDegrees, float along)
         {
-            this.tr = tr;
-            path = new EdgeChainPath(chain, tr.lossyScale, arcDegrees);
+            scale = new Vector3(Mathf.Max(1e-4f, Mathf.Abs(lossyScale.x)), Mathf.Max(1e-4f, Mathf.Abs(lossyScale.y)),
+                                Mathf.Max(1e-4f, Mathf.Abs(lossyScale.z)));
+            this.along = along;
+            loop = chain.closed;
+            path = new EdgeChainPath(chain, scale, arcDegrees);
+        }
+
+        // Exterieur = axe x tangente, au signe pres (depend du sens du chemin) : fixe sur le premier point, du cote
+        // oppose a 'center' (repere local).
+        protected void FixOutSign(Vector3 center)
+        {
+            path.Point(0f, out Vector3 p0, out Vector3 f0);
+            outSign = Vector3.Dot(Vector3.Cross(axis, f0), Vector3.Scale(p0 - center, scale)) >= 0f ? 1f : -1f;
         }
 
         public bool closed => path.closed;
-        public override string Label => "Arete";
         public override float Length => path.Length;
 
         public override void Point(float s, int side, float outward, float up, out Vector3 localPos, out Vector3 forward)
         {
-            path.Point(s, out localPos, out forward);
-            localPos += tr.InverseTransformVector(Vector3.up * up);
+            float total = path.TotalLength;
+            path.Point(loop ? Mathf.Repeat(s + along, total) : Mathf.Clamp(s + along, 0f, total),
+                       out Vector3 p, out forward);
+            // Pile sur un coin : tangente moyenne des deux cotes, l'exterieur est alors la diagonale
+            // (sur un coin vif, la tangente d'un seul segment ne rentrerait l'instance que d'un cote).
+            if (along == 0f && System.Array.IndexOf(cornerPositions, s) >= 0)
+            {
+                const float e = 0.01f;
+                path.Point(loop ? Mathf.Repeat(s - e, total) : Mathf.Max(0f, s - e), out _, out Vector3 before);
+                path.Point(loop ? Mathf.Repeat(s + e, total) : Mathf.Min(total, s + e), out _, out Vector3 after);
+                if ((before + after).sqrMagnitude > 1e-6f) forward = (before + after).normalized;
+            }
+            Vector3 o = Vector3.Cross(axis, forward);
+            o = o.sqrMagnitude > 1e-8f ? o.normalized * outSign : Vector3.zero; // arete parallele a l'axe : pas d'exterieur
+            Vector3 offset = o * outward + axis * up; // en metres
+            localPos = p + new Vector3(offset.x / scale.x, offset.y / scale.y, offset.z / scale.z);
         }
     }
 
-    // Tranche d'un RoundedBlock : tour du profil au bord de la face haute (RoundedBlock.GetTopContour). Repere en chaque
-    // point : sens du tour, exterieur de la tranche, axe d'extrusion. outward = vers l'exterieur, up = le long de
-    // l'extrusion (negatif = descend sur la tranche), along = glissement le long du tour. side ignore.
-    class BlockPath : EdgePath
+    // Chaine d'aretes vives (MeshEdgeChains). Boucle : axe = perpendiculaire a son plan, tourne vers l'exterieur du
+    // mesh (cercle du haut d'un cylindre : vers le haut) ; exterieur = loin du centre de la boucle ; coins = sommets
+    // qui tournent de plus de 45 degres. Chaine ouverte : axe = haut du monde, exterieur = loin du centre du mesh.
+    class ChainPath : FramedPath
     {
-        readonly EdgeChainPath path;
-        readonly Vector3 scale;
-        readonly float outSign;
-        readonly float along;
-        public readonly Vector3 axis; // repere local, unitaire
+        const float cornerTurn = 45f;
 
-        public BlockPath(RoundedBlock block, float arcDegrees, float along)
+        public ChainPath(MeshEdgeChains.Chain chain, Transform tr, Vector3 meshCenter, float arcDegrees, float along)
         {
-            Vector3 s = block.transform.lossyScale;
-            scale = new Vector3(Mathf.Max(1e-4f, Mathf.Abs(s.x)), Mathf.Max(1e-4f, Mathf.Abs(s.y)),
-                                Mathf.Max(1e-4f, Mathf.Abs(s.z)));
-            this.along = along;
-            var chain = new MeshEdgeChains.Chain { closed = true };
-            block.GetTopContour(chain.points, out axis);
-            path = new EdgeChainPath(chain, scale, arcDegrees);
+            Init(chain, tr.lossyScale, arcDegrees, along);
 
-            // Exterieur = axe x tangente, au signe pres (depend du sens du tour) : on le fixe sur le premier point.
             Vector3 center = Vector3.zero;
             foreach (Vector3 p in chain.points) center += p;
             center /= Mathf.Max(1, chain.points.Count);
-            path.Point(0f, out Vector3 p0, out Vector3 f0);
-            outSign = Vector3.Dot(Vector3.Cross(axis, f0), Vector3.Scale(p0 - center, scale)) >= 0f ? 1f : -1f;
+            Vector3 worldUp = Quaternion.Inverse(tr.rotation) * Vector3.up;
+
+            Vector3 n = Vector3.zero;
+            if (loop)
+                for (int i = 0; i < chain.points.Count; i++)
+                    n += Vector3.Cross(Vector3.Scale(chain.points[i] - center, scale),
+                                       Vector3.Scale(chain.points[(i + 1) % chain.points.Count] - center, scale));
+            if (loop && n.sqrMagnitude > 1e-10f)
+            {
+                axis = n.normalized;
+                float side = Vector3.Dot(axis, Vector3.Scale(center - meshCenter, scale));
+                // Boucle passant par le centre du mesh : on departage avec le haut du monde.
+                if (side < 0f || (Mathf.Abs(side) < 1e-4f && Vector3.Dot(axis, worldUp) < 0f)) axis = -axis;
+                FixOutSign(center);
+            }
+            else
+            {
+                axis = worldUp;
+                hasAxis = false;
+                FixOutSign(meshCenter);
+            }
+
+            cornerPositions = path.Corners(cornerTurn).ToArray();
+        }
+
+        public override string Label => "Arete";
+    }
+
+    // Tranche d'un RoundedBlock : tour du profil au bord de la face haute (RoundedBlock.GetTopContour). Axe = axe
+    // d'extrusion ; up negatif = descend sur la tranche ; coins = milieu des quatre coins du profil.
+    class BlockPath : FramedPath
+    {
+        public BlockPath(RoundedBlock block, float arcDegrees, float along)
+        {
+            var chain = new MeshEdgeChains.Chain { closed = true };
+            block.GetTopContour(chain.points, out Vector3 extrusion);
+            Init(chain, block.transform.lossyScale, arcDegrees, along);
+            axis = extrusion;
+
+            Vector3 center = Vector3.zero;
+            foreach (Vector3 p in chain.points) center += p;
+            center /= Mathf.Max(1, chain.points.Count);
+            FixOutSign(center);
 
             var corners = new List<Vector3>();
             block.GetTopCorners(corners);
@@ -129,29 +190,7 @@ public class EdgeLightsEditor : Editor
             System.Array.Sort(cornerPositions);
         }
 
-        // Abscisses du milieu des coins, sur tout le tour (le glissement le long du tour s'y ajoute dans Point).
-        public readonly float[] cornerPositions;
-
-        public bool closed => path.closed;
         public override string Label => "Tranche du RoundedBlock";
-        public override float Length => path.Length;
-
-        public override void Point(float s, int side, float outward, float up, out Vector3 localPos, out Vector3 forward)
-        {
-            path.Point(Mathf.Repeat(s + along, path.TotalLength), out Vector3 p, out forward);
-            // Pile sur le milieu d'un coin : tangente moyenne des deux cotes, l'exterieur est alors la diagonale
-            // (sur un coin vif, la tangente d'un seul segment ne rentrerait l'instance que d'un cote).
-            if (along == 0f && System.Array.IndexOf(cornerPositions, s) >= 0)
-            {
-                const float e = 0.01f;
-                path.Point(Mathf.Repeat(s - e, path.TotalLength), out _, out Vector3 before);
-                path.Point(Mathf.Repeat(s + e, path.TotalLength), out _, out Vector3 after);
-                if ((before + after).sqrMagnitude > 1e-6f) forward = (before + after).normalized;
-            }
-            Vector3 o =Vector3.Cross(axis, forward).normalized * outSign;
-            Vector3 offset = o * outward + axis * up; // en metres
-            localPos = p + new Vector3(offset.x / scale.x, offset.y / scale.y, offset.z / scale.z);
-        }
     }
 
     static EdgePath GetPath(EdgeLights el)
@@ -179,10 +218,12 @@ public class EdgeLightsEditor : Editor
         var runs = new List<Run>();
         if (el.source == EdgeLights.Source.Aretes)
         {
+            MeshFilter mf = el.GetComponent<MeshFilter>();
+            Vector3 meshCenter = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds.center : Vector3.zero;
             foreach (int i in el.selectedChains)
             {
                 if (i < 0 || i >= chains.Count || chains[i].points.Count < 2) continue;
-                var cp = new ChainPath(chains[i], el.transform, el.arc);
+                var cp = new ChainPath(chains[i], el.transform, meshCenter, el.arc, el.alongOffset);
                 runs.Add(new Run { path = cp, side = 0, name = "C" + i, closed = cp.closed });
             }
             return runs;
@@ -210,16 +251,19 @@ public class EdgeLightsEditor : Editor
 
     // Champs sans objet selon la source : masques.
     static readonly string[] hiddenAuto = { "edgeAngle", "arc", "alongOffset" };
-    static readonly string[] hiddenAretes = { "sides", "axis", "outward", "alongOffset" };
+    static readonly string[] hiddenAretes = { "sides", "axis" };
     static readonly string[] hiddenTranche = { "edgeAngle", "sides", "axis" };
 
     // Source Auto sur un RoundedBlock (sans Ramp) : sa tranche.
     static bool IsTranche(EdgeLights el) =>
         el.source == EdgeLights.Source.Auto && el.GetComponent<Ramp>() == null && el.GetComponent<RoundedBlock>() != null;
 
+    // Aux coins possible : tranche du RoundedBlock ou aretes vives (Ramp et boite : non).
+    static bool HasCorners(EdgeLights el) => el.source == EdgeLights.Source.Aretes || IsTranche(el);
+
     static bool UsesSpacing(EdgeLights el) =>
         el.distribution == EdgeLights.Distribution.Espacement
-        || (el.distribution == EdgeLights.Distribution.AuxCoins && !IsTranche(el));
+        || (el.distribution == EdgeLights.Distribution.AuxCoins && !HasCorners(el));
 
     public override void OnInspectorGUI()
     {
@@ -268,8 +312,8 @@ public class EdgeLightsEditor : Editor
                 int total = 0;
                 foreach (Run r in runs) total += PositionsFor(el, r).Length;
                 GUILayout.Label(total + " instances", EditorStyles.miniLabel);
-                if (el.distribution == EdgeLights.Distribution.AuxCoins && !IsTranche(el))
-                    EditorGUILayout.HelpBox("Aux coins : RoundedBlock seulement, reparti ici a l'espacement.",
+                if (el.distribution == EdgeLights.Distribution.AuxCoins && !HasCorners(el))
+                    EditorGUILayout.HelpBox("Aux coins : RoundedBlock ou Aretes seulement, reparti ici a l'espacement.",
                                             MessageType.Info);
             }
         }
@@ -311,8 +355,8 @@ public class EdgeLightsEditor : Editor
 
     static float[] PositionsFor(EdgeLights el, Run run)
     {
-        if (el.distribution == EdgeLights.Distribution.AuxCoins && run.path is BlockPath bp)
-            return bp.cornerPositions;
+        if (el.distribution == EdgeLights.Distribution.AuxCoins && run.path is FramedPath fp)
+            return fp.cornerPositions;
         return Positions(el, run.path.Length, run.closed);
     }
 
@@ -416,11 +460,11 @@ public class EdgeLightsEditor : Editor
                 Quaternion rot; // monde
                 if (!el.alignToPath)
                     rot = el.prefab.transform.rotation;
-                else if (run.path is BlockPath bp)
-                    rot = el.transform.rotation * Quaternion.LookRotation(forward, bp.axis);
+                else if (run.path is FramedPath fp && fp.hasAxis)
+                    rot = el.transform.rotation * Quaternion.LookRotation(forward, fp.axis);
                 else if (aretes)
                 {
-                    // Haut du monde ; arete verticale (coin de cube) : on prend +Z monde pour ne pas partir en vrille.
+                    // Chaine ouverte : haut du monde ; arete verticale (coin de cube) : +Z monde pour ne pas partir en vrille.
                     Vector3 worldForward = el.transform.rotation * forward;
                     Vector3 up = Mathf.Abs(Vector3.Dot(worldForward, Vector3.up)) > 0.999f ? Vector3.forward : Vector3.up;
                     rot = Quaternion.LookRotation(worldForward, up);
