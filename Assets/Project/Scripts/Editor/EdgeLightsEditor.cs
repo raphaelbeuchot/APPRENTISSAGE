@@ -193,12 +193,47 @@ public class EdgeLightsEditor : Editor
         public override string Label => "Tranche du RoundedBlock";
     }
 
+    // Arc d'un CurvedWall, en haut du mur : cercle de centre le pivot, de +X vers +Z sur 'angle' degres, au rayon de la
+    // ligne choisie. Facettes de 2 degres (tangente lissee : ecart au vrai cercle negligeable). Axe = haut local ;
+    // exterieur = loin du centre. Anneau complet = boucle ; sinon ouvert (marges), pas de coins.
+    class CurvedPath : FramedPath
+    {
+        public CurvedPath(CurvedWall wall, EdgeLights.WallLine line, float arcDegrees, float along)
+        {
+            float inner = Mathf.Max(0f, wall.innerRadius);
+            float thick = Mathf.Max(0.01f, wall.thickness);
+            float r = line == EdgeLights.WallLine.Interieur ? inner
+                    : line == EdgeLights.WallLine.Exterieur ? inner + thick
+                    : inner + thick * 0.5f;
+            float y = Mathf.Max(0.01f, wall.height);
+            float deg = Mathf.Clamp(wall.angle, 1f, 360f);
+            bool ring = deg >= 360f;
+
+            var chain = new MeshEdgeChains.Chain { closed = ring };
+            int n = Mathf.Max(2, Mathf.CeilToInt(deg / 2f));
+            int last = ring ? n - 1 : n; // boucle : le dernier point retomberait sur le premier
+            for (int i = 0; i <= last; i++)
+            {
+                float a = deg * Mathf.Deg2Rad * i / n;
+                chain.points.Add(new Vector3(Mathf.Cos(a) * r, y, Mathf.Sin(a) * r));
+            }
+
+            Init(chain, wall.transform.lossyScale, arcDegrees, along);
+            axis = Vector3.up;
+            FixOutSign(new Vector3(0f, y, 0f));
+        }
+
+        public override string Label => "Arc du CurvedWall";
+    }
+
     static EdgePath GetPath(EdgeLights el)
     {
         Ramp ramp = el.GetComponent<Ramp>();
         if (ramp != null) return new RampPath(ramp);
         RoundedBlock block = el.GetComponent<RoundedBlock>();
         if (block != null) return new BlockPath(block, el.arc, el.alongOffset);
+        CurvedWall wall = el.GetComponent<CurvedWall>();
+        if (wall != null) return new CurvedPath(wall, el.wallLine, el.arc, el.alongOffset);
         MeshFilter mf = el.GetComponent<MeshFilter>();
         if (mf != null && mf.sharedMesh != null) return new BoxPath(mf.sharedMesh.bounds, el.transform.lossyScale, el.axis);
         return null;
@@ -231,9 +266,9 @@ public class EdgeLightsEditor : Editor
 
         EdgePath path = GetPath(el);
         if (path == null) return runs;
-        if (path is BlockPath bp)
+        if (path is FramedPath fp)
         {
-            runs.Add(new Run { path = bp, side = 0, name = "T", closed = bp.closed });
+            runs.Add(new Run { path = fp, side = 0, name = "T", closed = fp.closed });
             return runs;
         }
         if (el.sides != EdgeLights.Sides.Droite) runs.Add(new Run { path = path, side = -1, name = "L" });
@@ -250,16 +285,32 @@ public class EdgeLightsEditor : Editor
     // ---------------------------------------------------------------- Inspector
 
     // Champs sans objet selon la source : masques.
-    static readonly string[] hiddenAuto = { "edgeAngle", "arc", "alongOffset" };
-    static readonly string[] hiddenAretes = { "sides", "axis" };
-    static readonly string[] hiddenTranche = { "edgeAngle", "sides", "axis" };
+    static readonly string[] hiddenAuto = { "edgeAngle", "arc", "alongOffset", "wallLine" };
+    static readonly string[] hiddenAretes = { "sides", "axis", "wallLine" };
+    static readonly string[] hiddenTranche = { "edgeAngle", "sides", "axis", "wallLine" };
+    static readonly string[] hiddenCurved = { "edgeAngle", "sides", "axis" };
+    static readonly string[] hiddenCurvedOpen = { "edgeAngle", "sides", "axis", "arc" }; // arc : anneau complet seulement
 
     // Source Auto sur un RoundedBlock (sans Ramp) : sa tranche.
     static bool IsTranche(EdgeLights el) =>
         el.source == EdgeLights.Source.Auto && el.GetComponent<Ramp>() == null && el.GetComponent<RoundedBlock>() != null;
 
-    // Aux coins possible : tranche du RoundedBlock ou aretes vives (Ramp et boite : non).
+    // Source Auto sur un CurvedWall (sans Ramp ni RoundedBlock) : son arc.
+    static CurvedWall CurvedSource(EdgeLights el) =>
+        el.source == EdgeLights.Source.Auto && el.GetComponent<Ramp>() == null && el.GetComponent<RoundedBlock>() == null
+            ? el.GetComponent<CurvedWall>() : null;
+
+    // Aux coins possible : tranche du RoundedBlock ou aretes vives (Ramp, boite, CurvedWall : non).
     static bool HasCorners(EdgeLights el) => el.source == EdgeLights.Source.Aretes || IsTranche(el);
+
+    static string[] HiddenFields(EdgeLights el)
+    {
+        if (el.source == EdgeLights.Source.Aretes) return hiddenAretes;
+        if (IsTranche(el)) return hiddenTranche;
+        CurvedWall wall = CurvedSource(el);
+        if (wall != null) return wall.angle >= 360f ? hiddenCurved : hiddenCurvedOpen;
+        return hiddenAuto;
+    }
 
     static bool UsesSpacing(EdgeLights el) =>
         el.distribution == EdgeLights.Distribution.Espacement
@@ -269,7 +320,7 @@ public class EdgeLightsEditor : Editor
     {
         EdgeLights el = (EdgeLights)target;
         bool aretes = el.source == EdgeLights.Source.Aretes;
-        string[] hidden = aretes ? hiddenAretes : IsTranche(el) ? hiddenTranche : hiddenAuto;
+        string[] hidden = HiddenFields(el);
 
         serializedObject.Update();
         SerializedProperty it = serializedObject.GetIterator();
@@ -355,7 +406,7 @@ public class EdgeLightsEditor : Editor
 
     static float[] PositionsFor(EdgeLights el, Run run)
     {
-        if (el.distribution == EdgeLights.Distribution.AuxCoins && run.path is FramedPath fp)
+        if (el.distribution == EdgeLights.Distribution.AuxCoins && HasCorners(el) && run.path is FramedPath fp)
             return fp.cornerPositions;
         return Positions(el, run.path.Length, run.closed);
     }
