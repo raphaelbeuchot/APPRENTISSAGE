@@ -19,6 +19,7 @@ public class EdgeLights : MonoBehaviour
     public enum Sides { Gauche, Droite, LesDeux }
     public enum Axis { Auto, X, Z }
     public enum Source { Auto, Aretes }
+    public enum Distribution { Espacement, Nombre, AuxCoins }
 
     public const string ContainerName = "EdgeLights_Generated";
 
@@ -41,8 +42,14 @@ public class EdgeLights : MonoBehaviour
     public Sides sides = Sides.LesDeux;
     [Tooltip("Boite seulement (ignore sur une Ramp) : axe local du chemin. Auto = le cote le plus long.")]
     public Axis axis = Axis.Auto;
+    [Tooltip("Espacement : distance visee entre deux instances. Nombre : nombre d'instances, a intervalles egaux " +
+             "(boucle : sur tout le tour ; ouvert : de la marge de debut a la marge de fin, bouts compris). " +
+             "Aux coins : RoundedBlock seulement, une instance au milieu de chaque coin (l'arc est ignore).")]
+    public Distribution distribution = Distribution.Espacement;
     [Tooltip("Espacement vise entre deux lumieres, en metres, sur la ligne mediane. Ajuste pour tomber juste aux deux bouts.")]
     [Min(0.05f)] public float spacing = 1f;
+    [Tooltip("Nombre d'instances par chemin (par bord sur une Ramp ou une boite, par chaine en Aretes).")]
+    [Min(1)] public int count = 4;
 
     [Header("Position")]
     [Tooltip("Ecartement depuis le bord : positif vers l'exterieur, negatif vers l'interieur du dessus. " +

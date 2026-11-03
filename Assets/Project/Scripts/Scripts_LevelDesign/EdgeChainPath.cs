@@ -17,13 +17,15 @@ public class EdgeChainPath
     readonly Vector3[] segDir;    // direction de chaque segment (echelle appliquee)
     readonly Vector3?[] vertTan;  // tangente lissee a chaque sommet, null = coin vif ou bout
     readonly bool loop;           // la chaine d'origine est une boucle
+    readonly Vector3 scale;
     readonly float length;
     public readonly bool closed;  // boucle entiere (arc 360)
 
     public EdgeChainPath(MeshEdgeChains.Chain chain, Vector3 scale, float arcDegrees)
     {
         loop = chain.closed;
-        pts = loop ? CanonicalLoop(chain.points, scale) : new List<Vector3>(chain.points);
+        this.scale = scale;
+        pts =loop ? CanonicalLoop(chain.points, scale) : new List<Vector3>(chain.points);
         if (loop) pts.Add(pts[0]);
 
         int m = pts.Count - 1;
@@ -81,6 +83,22 @@ public class EdgeChainPath
             if (closed ? (v < m) : (s > 1e-4f && s < length - 1e-4f)) list.Add(s);
         }
         return list;
+    }
+
+    // Abscisse du point du chemin le plus proche d'un point (repere local), sur toute la chaine.
+    public float Nearest(Vector3 localPoint)
+    {
+        float best = float.MaxValue, bestS = 0f;
+        for (int i = 0; i < pts.Count - 1; i++)
+        {
+            Vector3 d = Vector3.Scale(pts[i + 1] - pts[i], scale);
+            Vector3 p = Vector3.Scale(localPoint - pts[i], scale);
+            float len2 = d.sqrMagnitude;
+            float t = len2 > 1e-12f ? Mathf.Clamp01(Vector3.Dot(p, d) / len2) : 0f;
+            float dist = (p - d * t).sqrMagnitude;
+            if (dist < best) { best = dist; bestS = cumul[i] + t * Mathf.Sqrt(len2); }
+        }
+        return bestS;
     }
 
     // Points (repere local) entre deux abscisses, pour l'affichage.

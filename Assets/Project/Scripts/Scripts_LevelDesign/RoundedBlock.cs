@@ -355,6 +355,23 @@ public class RoundedBlock : MonoBehaviour
         axis = DirToLocal(0f, 0f, 1f);
     }
 
+    // Milieu de chaque coin (A, B, C, D) au bord de la face haute, sur le meme tour que GetTopContour : le point de
+    // l'arc a 45 degres, ou le coin lui-meme s'il est vif.
+    public void GetTopCorners(List<Vector3> corners)
+    {
+        GetExtents(out float hu, out float hv, out float hw);
+        Rect2 rect = GetOuterRect(hu, hv);
+        Vector2[] signs = { new Vector2(-1, -1), new Vector2(1, -1), new Vector2(1, 1), new Vector2(-1, 1) };
+        corners.Clear();
+        for (int k = 0; k < 4; k++)
+        {
+            float r = rect.radii[k];
+            Vector2 center = new Vector2(signs[k].x * hu, signs[k].y * hv) - signs[k] * r;
+            Vector2 p = center + signs[k].normalized * r;
+            corners.Add(ToLocal(p.x, p.y, hw, hv, hw));
+        }
+    }
+
     // ---------------------------------------------------------------- Contours
 
     // Contour ferme dans le sens trigo, retreci de 'inset' (negatif = elargi). Un rectangle arrondi retreci ou

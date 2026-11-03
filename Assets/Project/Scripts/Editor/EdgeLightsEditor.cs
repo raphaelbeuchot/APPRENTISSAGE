@@ -121,7 +121,16 @@ public class EdgeLightsEditor : Editor
             center /= Mathf.Max(1, chain.points.Count);
             path.Point(0f, out Vector3 p0, out Vector3 f0);
             outSign = Vector3.Dot(Vector3.Cross(axis, f0), Vector3.Scale(p0 - center, scale)) >= 0f ? 1f : -1f;
+
+            var corners = new List<Vector3>();
+            block.GetTopCorners(corners);
+            cornerPositions = new float[corners.Count];
+            for (int i = 0; i < corners.Count; i++) cornerPositions[i] = path.Nearest(corners[i]);
+            System.Array.Sort(cornerPositions);
         }
+
+        // Abscisses du milieu des coins, sur tout le tour (le glissement le long du tour s'y ajoute dans Point).
+        public readonly float[] cornerPositions;
 
         public bool closed => path.closed;
         public override string Label => "Tranche du RoundedBlock";
@@ -130,7 +139,16 @@ public class EdgeLightsEditor : Editor
         public override void Point(float s, int side, float outward, float up, out Vector3 localPos, out Vector3 forward)
         {
             path.Point(Mathf.Repeat(s + along, path.TotalLength), out Vector3 p, out forward);
-            Vector3 o = Vector3.Cross(axis, forward).normalized * outSign;
+            // Pile sur le milieu d'un coin : tangente moyenne des deux cotes, l'exterieur est alors la diagonale
+            // (sur un coin vif, la tangente d'un seul segment ne rentrerait l'instance que d'un cote).
+            if (along == 0f && System.Array.IndexOf(cornerPositions, s) >= 0)
+            {
+                const float e = 0.01f;
+                path.Point(Mathf.Repeat(s - e, path.TotalLength), out _, out Vector3 before);
+                path.Point(Mathf.Repeat(s + e, path.TotalLength), out _, out Vector3 after);
+                if ((before + after).sqrMagnitude > 1e-6f) forward = (before + after).normalized;
+            }
+            Vector3 o =Vector3.Cross(axis, forward).normalized * outSign;
             Vector3 offset = o * outward + axis * up; // en metres
             localPos = p + new Vector3(offset.x / scale.x, offset.y / scale.y, offset.z / scale.z);
         }
@@ -199,6 +217,10 @@ public class EdgeLightsEditor : Editor
     static bool IsTranche(EdgeLights el) =>
         el.source == EdgeLights.Source.Auto && el.GetComponent<Ramp>() == null && el.GetComponent<RoundedBlock>() != null;
 
+    static bool UsesSpacing(EdgeLights el) =>
+        el.distribution == EdgeLights.Distribution.Espacement
+        || (el.distribution == EdgeLights.Distribution.AuxCoins && !IsTranche(el));
+
     public override void OnInspectorGUI()
     {
         EdgeLights el = (EdgeLights)target;
@@ -215,6 +237,8 @@ public class EdgeLightsEditor : Editor
                 continue;
             }
             if (System.Array.IndexOf(hidden, it.propertyPath) >= 0) continue;
+            if (it.propertyPath == "count" && el.distribution != EdgeLights.Distribution.Nombre) continue;
+            if (it.propertyPath == "spacing" && !UsesSpacing(el)) continue;
             EditorGUILayout.PropertyField(it, true);
         }
         if (serializedObject.ApplyModifiedProperties()) SceneView.RepaintAll(); // fantomes a jour
@@ -242,8 +266,11 @@ public class EdgeLightsEditor : Editor
             else
             {
                 int total = 0;
-                foreach (Run r in runs) total += Positions(el, r.path.Length, r.closed).Length;
+                foreach (Run r in runs) total += PositionsFor(el, r).Length;
                 GUILayout.Label(total + " instances", EditorStyles.miniLabel);
+                if (el.distribution == EdgeLights.Distribution.AuxCoins && !IsTranche(el))
+                    EditorGUILayout.HelpBox("Aux coins : RoundedBlock seulement, reparti ici a l'espacement.",
+                                            MessageType.Info);
             }
         }
 
@@ -282,15 +309,25 @@ public class EdgeLightsEditor : Editor
 
     // ---------------------------------------------------------------- Generation
 
+    static float[] PositionsFor(EdgeLights el, Run run)
+    {
+        if (el.distribution == EdgeLights.Distribution.AuxCoins && run.path is BlockPath bp)
+            return bp.cornerPositions;
+        return Positions(el, run.path.Length, run.closed);
+    }
+
     // Abscisses le long du chemin. Ouvert : de la marge de debut a la marge de fin, les deux bouts compris.
     // Boucle : sans marges, n intervalles egaux, le dernier point retombe sur le premier donc n'est pas repete.
+    // Nombre : n impose ; sinon deduit de l'espacement (Aux coins hors RoundedBlock : comme Espacement).
     static float[] Positions(EdgeLights el, float length, bool closed)
     {
         float spacing = Mathf.Max(0.05f, el.spacing);
+        bool byCount = el.distribution == EdgeLights.Distribution.Nombre;
+        int wanted = Mathf.Max(1, el.count);
         if (closed)
         {
             if (length < 1e-4f) return new float[0];
-            int count = Mathf.Max(1, Mathf.RoundToInt(length / spacing));
+            int count = byCount ? wanted : Mathf.Max(1, Mathf.RoundToInt(length / spacing));
             float loopStep = length / count;
             float[] l = new float[count];
             for (int i = 0; i < count; i++) l[i] = i * loopStep;
@@ -301,8 +338,9 @@ public class EdgeLightsEditor : Editor
         float usable = length - el.startMargin - el.endMargin;
         if (usable < 0f) return new float[0];
         if (usable < 1e-4f) return new[] { start };
+        if (byCount && wanted == 1) return new[] { start + usable * 0.5f }; // seule : au milieu
 
-        int intervals = Mathf.Max(1, Mathf.RoundToInt(usable / spacing));
+        int intervals = byCount ? wanted - 1 : Mathf.Max(1, Mathf.RoundToInt(usable / spacing));
         float step = usable / intervals;
         float[] s = new float[intervals + 1];
         for (int i = 0; i <= intervals; i++) s[i] = start + i * step;
@@ -370,7 +408,7 @@ public class EdgeLightsEditor : Editor
 
         foreach (Run run in runs)
         {
-            float[] positions = Positions(el, run.path.Length, run.closed);
+            float[] positions = PositionsFor(el, run);
             for (int i = 0; i < positions.Length; i++)
             {
                 run.path.Point(positions[i], run.side, el.outward, el.height, out Vector3 pos, out Vector3 forward);
