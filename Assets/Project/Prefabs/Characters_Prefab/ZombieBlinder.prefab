@@ -512,13 +512,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de1627e57ce642b4d8ad944753f5efd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FallTracker
+  soundHeight: 2
   lethalHeight: 4
-  lookAheadDistance: 50
+  maxFallingDuration: 2.5
+  fallingClip: {fileID: 8300000, guid: 279589b36ae5c4d4f89545cd730c5c53, type: 3}
+  landingClip: {fileID: 0}
+  splatClip: {fileID: 8300000, guid: d6a8b296848aab6499c7cf7eca6c7d61, type: 3}
+  groundCheckDistance: 0.3
   groundMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  groundCheckDistance: 0.3
-  minLoggedDrop: 0.5
   showDebugLogs: 1
 --- !u!1 &5773505817504650722
 GameObject:
