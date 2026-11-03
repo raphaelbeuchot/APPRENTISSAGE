@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: -1765412710480583640}
   - component: {fileID: 4582366830139996830}
   - component: {fileID: -2056432718933974352}
+  - component: {fileID: 234898557094260405}
   m_Layer: 6
   m_Name: ZombieGrabber
   m_TagString: Untagged
@@ -260,9 +261,9 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isAttractedByBrightEyes: 0
   isDead: 0
   isDetectedBySentinel: 0
-  currentRotatingPlatform: {fileID: 0}
   currentState: 0
 --- !u!114 &8093093779357813182
 MonoBehaviour:
@@ -391,7 +392,7 @@ MonoBehaviour:
   isInKnockback: 0
   deathByPit: 0
   destroyOnDeath: 1
-  healthBarUI: {fileID: 0}
+  healthBarUIs: []
   pulseScaleMultiplier: 1.2
   pulseDuration: 0.3
 --- !u!54 &196313481047820832
@@ -454,7 +455,6 @@ MonoBehaviour:
   shotFlashDuration: 0.4
   detectionSound: {fileID: 8300000, guid: 27981f61a097d9d47ad776a5b7898095, type: 3}
   detectionSoundVolume: 0.3
-  isCurrentlyDetected: 0
 --- !u!114 &-2056432718933974352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -467,6 +467,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf7fdf9d96cfc7e44acad20a5eb09d8a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeadBodyPhysics
+--- !u!114 &234898557094260405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5248851035368284380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de1627e57ce642b4d8ad944753f5efd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FallTracker
+  lethalHeight: 4
+  lookAheadDistance: 50
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundCheckDistance: 0.3
+  minLoggedDrop: 0.5
+  showDebugLogs: 1
 --- !u!1 &5773505817504650722
 GameObject:
   m_ObjectHideFlags: 0

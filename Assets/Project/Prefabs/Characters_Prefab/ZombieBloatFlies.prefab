@@ -372,6 +372,7 @@ GameObject:
   - component: {fileID: 5292348613030770792}
   - component: {fileID: 670925382924841455}
   - component: {fileID: 6205866075143822969}
+  - component: {fileID: -1656500651587121386}
   m_Layer: 6
   m_Name: ZombieBloatFlies
   m_TagString: Untagged
@@ -488,12 +489,20 @@ MonoBehaviour:
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
   arrivalThreshold: 0.5
   targetHuman: {fileID: 2360765802615539265, guid: c2c578bd11683684aa2152baf621ba6a, type: 3}
+  isKnockedDownByEpervier: 0
+  wasAlreadyShotDuringSweep: 0
+  pendingSweepShot: 0
+  isInStandupPhase: 0
+  pendingKnockbackDir: {x: 0, y: 0, z: 0}
+  hasPendingKnockback: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
+  isOnIslandPlatform: 0
   lastPathDestination: {x: Infinity, y: Infinity, z: Infinity}
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isAttractedByBrightEyes: 0
   isDead: 0
   isDetectedBySentinel: 0
   currentState: 0
@@ -515,7 +524,8 @@ MonoBehaviour:
   recentlyHitBySentinel: 0
   isInKnockback: 0
   deathByPit: 0
-  healthBarUI: {fileID: 0}
+  destroyOnDeath: 1
+  healthBarUIs: []
   pulseScaleMultiplier: 1.2
   pulseDuration: 0.3
 --- !u!54 &6402409830878990352
@@ -666,8 +676,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwarmSpawner
   swarmStats: {fileID: 11400000, guid: 2e88c5c30b711fc4cb7445611d12258f, type: 2}
-  swarmPrefab: {fileID: 5553161441910049392, guid: 1a3fd3ca4dd2d84498ccec886dabcd29, type: 3}
-  spawnOffset: {x: 0, y: 0.5, z: 0}
+  existingSwarm: {fileID: 0}
 --- !u!114 &6205866075143822969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -686,6 +695,26 @@ MonoBehaviour:
   shotFlashDuration: 0.4
   detectionSound: {fileID: 8300000, guid: 27981f61a097d9d47ad776a5b7898095, type: 3}
   detectionSoundVolume: 0.3
+--- !u!114 &-1656500651587121386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832123752479731275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de1627e57ce642b4d8ad944753f5efd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FallTracker
+  lethalHeight: 4
+  lookAheadDistance: 50
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundCheckDistance: 0.3
+  minLoggedDrop: 0.5
+  showDebugLogs: 1
 --- !u!1 &1899051634784710806
 GameObject:
   m_ObjectHideFlags: 0

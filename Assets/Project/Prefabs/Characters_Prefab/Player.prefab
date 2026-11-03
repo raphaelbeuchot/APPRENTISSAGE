@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 7912330855418011473}
   - component: {fileID: 1789847621711801423}
   - component: {fileID: 5943132159257684885}
+  - component: {fileID: 1609233896138635161}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -166,6 +167,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52166e4e94a0683439dc983ad12856cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  debugOverride: 0
+  debugMultiplier: 1.5
   stats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
   settings: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
   movement: {fileID: 3882219009807252739}
@@ -182,6 +185,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeAttackSystem
   stats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  sprayImpactPrefab: {fileID: 0}
 --- !u!114 &3924555288570616622
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -195,6 +199,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BroomAttackSystem
   stats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
+  broomImpactEffects: []
 --- !u!114 &3882219009807252739
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -221,12 +226,17 @@ MonoBehaviour:
   isClimbing: 0
   grabState: 0
   grabProgress: 0
+  isSweepImmune: 0
+  respawnImmune: 0
   isDashing: 0
   gameManager: {fileID: 0}
   isFrozen: 0
   playerRenderer: {fileID: 0}
   normalMaterial: {fileID: 0}
   freezeMaterial: {fileID: 2100000, guid: 26b31e705b708e543922911c423d9d8f, type: 2}
+  isInContactWithEnemy: 0
+  stunBySentinel: 0
+  playerAlarmTriggered: 0
 --- !u!114 &6571802431936623517
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -275,6 +285,10 @@ MonoBehaviour:
   enemyLayers:
     serializedVersion: 2
     m_Bits: 576
+  lockableTargetLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  switchCooldown: 0.3
 --- !u!114 &6824530332055029301
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -342,7 +356,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDetectionFeedback
   detectionSound: {fileID: 8300000, guid: 03ab767723e1eeb42b6afb682b41f66f, type: 3}
-  isCurrentlyDetected: 1
+  shotFlashDuration: 0.4
+  whiteMaterial: {fileID: 0}
+  redMaterial: {fileID: 0}
+  brightEyesMaterial: {fileID: 0}
+--- !u!114 &1609233896138635161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3630615494597918022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de1627e57ce642b4d8ad944753f5efd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FallTracker
+  lethalHeight: 4
+  lookAheadDistance: 50
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundCheckDistance: 0.3
+  minLoggedDrop: 0.5
+  showDebugLogs: 1
 --- !u!1 &8250552759225607286
 GameObject:
   m_ObjectHideFlags: 0
@@ -893,6 +930,8 @@ MonoBehaviour:
   baseVolume: 0.2
   volumeVariation: 0.1
   pitchVariation: 0.05
+  minTimeBetweenSteps: 0.1
+  surfaceRayLength: 0.5
 --- !u!4 &5292117297086401231 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d5c027045b0ec1240985ae2bd424e61c, type: 3}

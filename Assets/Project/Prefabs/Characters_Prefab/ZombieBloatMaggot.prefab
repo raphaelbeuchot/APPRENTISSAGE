@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: -6583994946397728262}
   - component: {fileID: 1164020118848615808}
   - component: {fileID: 2606860563686280522}
+  - component: {fileID: -111158783229613396}
   m_Layer: 6
   m_Name: ZombieBloatMaggot
   m_TagString: Untagged
@@ -140,6 +141,8 @@ MonoBehaviour:
   wasAlreadyShotDuringSweep: 0
   pendingSweepShot: 0
   isInStandupPhase: 0
+  pendingKnockbackDir: {x: 0, y: 0, z: 0}
+  hasPendingKnockback: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -147,9 +150,9 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isAttractedByBrightEyes: 0
   isDead: 0
   isDetectedBySentinel: 0
-  currentRotatingPlatform: {fileID: 0}
   currentState: 0
 --- !u!114 &5781334577023210688
 MonoBehaviour:
@@ -170,7 +173,7 @@ MonoBehaviour:
   isInKnockback: 0
   deathByPit: 0
   destroyOnDeath: 1
-  healthBarUI: {fileID: 0}
+  healthBarUIs: []
   pulseScaleMultiplier: 1.2
   pulseDuration: 0.3
 --- !u!54 &6402409830878990352
@@ -340,7 +343,6 @@ MonoBehaviour:
   shotFlashDuration: 0.4
   detectionSound: {fileID: 8300000, guid: 27981f61a097d9d47ad776a5b7898095, type: 3}
   detectionSoundVolume: 0.3
-  isCurrentlyDetected: 0
 --- !u!114 &1164020118848615808
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -365,6 +367,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf7fdf9d96cfc7e44acad20a5eb09d8a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeadBodyPhysics
+--- !u!114 &-111158783229613396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832123752479731275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de1627e57ce642b4d8ad944753f5efd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FallTracker
+  lethalHeight: 4
+  lookAheadDistance: 50
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundCheckDistance: 0.3
+  minLoggedDrop: 0.5
+  showDebugLogs: 1
 --- !u!1 &8285912745303122231
 GameObject:
   m_ObjectHideFlags: 0

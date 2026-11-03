@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: -2056432718933974352}
   - component: {fileID: 3175957205576492235}
   - component: {fileID: 7720414994150060305}
+  - component: {fileID: -8744765910993835984}
   m_Layer: 6
   m_Name: ZombieBlinder
   m_TagString: Untagged
@@ -253,6 +254,8 @@ MonoBehaviour:
   wasAlreadyShotDuringSweep: 0
   pendingSweepShot: 0
   isInStandupPhase: 0
+  pendingKnockbackDir: {x: 0, y: 0, z: 0}
+  hasPendingKnockback: 0
   isInPitMode: 0
   isOnRotatingPlatform: 0
   isOnIslandPlatform: 0
@@ -260,9 +263,9 @@ MonoBehaviour:
   canMove: 1
   isStunnedBySentinel: 0
   isForcedChase: 0
+  isAttractedByBrightEyes: 0
   isDead: 0
   isDetectedBySentinel: 0
-  currentRotatingPlatform: {fileID: 0}
   currentState: 0
 --- !u!114 &8093093779357813182
 MonoBehaviour:
@@ -391,7 +394,7 @@ MonoBehaviour:
   isInKnockback: 0
   deathByPit: 0
   destroyOnDeath: 1
-  healthBarUI: {fileID: 0}
+  healthBarUIs: []
   pulseScaleMultiplier: 1.2
   pulseDuration: 0.3
 --- !u!54 &196313481047820832
@@ -454,7 +457,6 @@ MonoBehaviour:
   shotFlashDuration: 0.4
   detectionSound: {fileID: 8300000, guid: 27981f61a097d9d47ad776a5b7898095, type: 3}
   detectionSoundVolume: 0.3
-  isCurrentlyDetected: 0
 --- !u!114 &-2056432718933974352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -498,6 +500,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChargeAttack
   stats: {fileID: 11400000, guid: bddc9e55d177f5645a3dd8485befb1ca, type: 2}
+--- !u!114 &-8744765910993835984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5248851035368284380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de1627e57ce642b4d8ad944753f5efd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FallTracker
+  lethalHeight: 4
+  lookAheadDistance: 50
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundCheckDistance: 0.3
+  minLoggedDrop: 0.5
+  showDebugLogs: 1
 --- !u!1 &5773505817504650722
 GameObject:
   m_ObjectHideFlags: 0
