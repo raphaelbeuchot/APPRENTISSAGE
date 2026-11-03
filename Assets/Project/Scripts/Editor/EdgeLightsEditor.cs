@@ -354,7 +354,7 @@ public class EdgeLightsEditor : Editor
             if (el.prefab == null)
                 EditorGUILayout.HelpBox("Choisir un prefab ou un GO.", MessageType.Warning);
             else if (IsInsideGenerated(el))
-                EditorGUILayout.HelpBox("Le modele est dans " + EdgeLights.ContainerName + " : il serait efface a la " +
+                EditorGUILayout.HelpBox("Le modele est dans " + FindContainer(el).name + " : il serait efface a la " +
                                         "generation. Le sortir de ce dossier.", MessageType.Error);
             else if (aretes && runs.Count == 0)
                 EditorGUILayout.HelpBox("Cocher au moins une chaine.", MessageType.Warning);
@@ -454,9 +454,11 @@ public class EdgeLightsEditor : Editor
         List<Run> runs = GetRuns(el, aretes ? FindChains(el) : null);
         if (runs.Count == 0) return;
 
-        GameObject container = new GameObject(EdgeLights.ContainerName);
+        GameObject container = new GameObject(ContainerNameFor(el));
         Undo.RegisterCreatedObjectUndo(container, "Generer EdgeLights");
         container.transform.SetParent(el.transform, false);
+        Undo.RecordObject(el, "Generer EdgeLights");
+        el.generated = container.transform;
         // Echelle inverse du GO : les instances sont sous un parent sans echelle et gardent la forme du prefab, meme
         // tournees sur un GO etire (compenser l'echelle sur chaque instance deformerait les instances tournees).
         Vector3 parentScale = ParentScale(el);
@@ -565,7 +567,7 @@ public class EdgeLightsEditor : Editor
 
     void SyncHiddenContainer(EdgeLights el)
     {
-        Transform t = el.transform.Find(EdgeLights.ContainerName);
+        Transform t = FindContainer(el);
         GameObject container = t != null ? t.gameObject : null;
         bool hide = el.preview && el.prefab != null && container != null;
 
@@ -636,13 +638,36 @@ public class EdgeLightsEditor : Editor
     static bool IsInsideGenerated(EdgeLights el)
     {
         if (el.prefab == null || PrefabUtility.IsPartOfPrefabAsset(el.prefab)) return false;
-        Transform container = el.transform.Find(EdgeLights.ContainerName);
+        Transform container = FindContainer(el);
         return container != null && el.prefab.transform.IsChildOf(container);
     }
 
     static void Clear(EdgeLights el)
     {
-        Transform existing = el.transform.Find(EdgeLights.ContainerName);
+        Transform existing = FindContainer(el);
         if (existing != null) Undo.DestroyObjectImmediate(existing.gameObject);
+    }
+
+    // Dossier de CE composant (plusieurs EdgeLights possibles sur un GO) : sa reference enregistree. Sans reference
+    // (genere avant les dossiers par composant) : le dossier au nom de base, mais seulement pour le premier EdgeLights
+    // du GO (le plus ancien) et s'il n'est pas deja celui d'un autre : un EdgeLights ajoute ensuite ne l'efface pas.
+    static Transform FindContainer(EdgeLights el)
+    {
+        if (el.generated != null && el.generated.parent == el.transform) return el.generated;
+        Transform legacy = el.transform.Find(EdgeLights.ContainerName);
+        if (legacy == null) return null;
+        EdgeLights[] all = el.GetComponents<EdgeLights>();
+        if (all[0] != el) return null;
+        foreach (EdgeLights other in all)
+            if (other != el && other.generated == legacy) return null;
+        return legacy;
+    }
+
+    // Nom de base, puis _2, _3... si un autre dossier du GO le porte deja.
+    static string ContainerNameFor(EdgeLights el)
+    {
+        string name = EdgeLights.ContainerName;
+        for (int k = 2; el.transform.Find(name) != null; k++) name = EdgeLights.ContainerName + "_" + k;
+        return name;
     }
 }

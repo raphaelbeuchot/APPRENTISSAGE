@@ -27,6 +27,8 @@ public class EdgeLights : MonoBehaviour
     public enum WallLine { Milieu, Exterieur, Interieur }
 
     public const string ContainerName = "EdgeLights_Generated";
+    // Dossier des instances de CE composant (plusieurs EdgeLights possibles sur un meme GO : _2, _3...).
+    [HideInInspector] public Transform generated;
 
     [Tooltip("Auto : la Ramp du GO, sinon la boite du mesh. Aretes : aretes vives du mesh (cylindre, mesh importe...), " +
              "affichees en couleur dans la Scene view quand le GO est selectionne.")]
