@@ -62,4 +62,15 @@ public class EdgeLights : MonoBehaviour
     [Tooltip("Coche : chaque instance regarde dans le sens de la passerelle (pente comprise). " +
              "Decoche : rotation du prefab.")]
     public bool alignToPath = true;
+    [Tooltip("Rotation ajoutee a chaque instance, en degres, dans son propre repere, apres l'alignement " +
+             "(ou apres la rotation du prefab si l'alignement est decoche).")]
+    public Vector3 rotationOffset = Vector3.zero;
+    [Tooltip("Coche : les colliders des copies (enfants compris) sont retires a la generation, pour une deco purement " +
+             "visuelle. Le prefab n'est pas touche (override 'Removed Component' sur chaque copie).")]
+    public bool noColliders = false;
+
+    [Header("Scene view")]
+    [Tooltip("Affiche les instances a venir en fantome quand le GO est selectionne (rien n'est cree). " +
+             "Decocher si la scene rame.")]
+    public bool preview = true;
 }

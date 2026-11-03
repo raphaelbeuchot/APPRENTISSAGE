@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEditor;
 
 [CustomEditor(typeof(EdgeLights))]
@@ -216,7 +217,7 @@ public class EdgeLightsEditor : Editor
             if (System.Array.IndexOf(hidden, it.propertyPath) >= 0) continue;
             EditorGUILayout.PropertyField(it, true);
         }
-        serializedObject.ApplyModifiedProperties();
+        if (serializedObject.ApplyModifiedProperties()) SceneView.RepaintAll(); // fantomes a jour
 
         List<MeshEdgeChains.Chain> chains = aretes ? GetChains(el) : null;
         List<Run> runs = GetRuns(el, chains);
@@ -274,6 +275,7 @@ public class EdgeLightsEditor : Editor
     void OnSceneGUI()
     {
         EdgeLights el = (EdgeLights)target;
+        SyncHiddenContainer(el);
         if (el.source != EdgeLights.Source.Aretes) return;
         EdgeChainsGUI.DrawSceneChains(el.transform, GetChains(el), el.selectedChains, el.arc);
     }
@@ -322,15 +324,49 @@ public class EdgeLightsEditor : Editor
         GameObject container = new GameObject(EdgeLights.ContainerName);
         Undo.RegisterCreatedObjectUndo(container, "Generer EdgeLights");
         container.transform.SetParent(el.transform, false);
+        // Echelle inverse du GO : les instances sont sous un parent sans echelle et gardent la forme du prefab, meme
+        // tournees sur un GO etire (compenser l'echelle sur chaque instance deformerait les instances tournees).
+        Vector3 parentScale = ParentScale(el);
+        container.transform.localScale = new Vector3(1f / parentScale.x, 1f / parentScale.y, 1f / parentScale.z);
 
         bool isAsset = PrefabUtility.IsPartOfPrefabAsset(el.prefab);
-        Vector3 prefabScale = el.prefab.transform.localScale;
-        Vector3 parentScale = el.transform.lossyScale;
-        // Compense l'echelle du parent : les instances gardent la taille du prefab.
-        Vector3 scale = new Vector3(
-            prefabScale.x / Mathf.Max(1e-4f, Mathf.Abs(parentScale.x)),
-            prefabScale.y / Mathf.Max(1e-4f, Mathf.Abs(parentScale.y)),
-            prefabScale.z / Mathf.Max(1e-4f, Mathf.Abs(parentScale.z)));
+        Vector3 scale = el.prefab.transform.localScale;
+
+        foreach (Placement p in Placements(el, runs))
+        {
+            GameObject inst = isAsset
+                ? (GameObject)PrefabUtility.InstantiatePrefab(el.prefab, container.transform)
+                : Instantiate(el.prefab, container.transform);
+            inst.name = p.name;
+            if (!isAsset) inst.SetActive(true); // modele de la scene eventuellement desactive
+            inst.transform.localPosition = Vector3.Scale(p.localPos, parentScale);
+            inst.transform.localRotation = p.localRot;
+            inst.transform.localScale = scale;
+            if (el.noColliders)
+                foreach (Collider c in inst.GetComponentsInChildren<Collider>(true)) DestroyImmediate(c);
+            Undo.RegisterCreatedObjectUndo(inst, "Generer EdgeLights");
+        }
+
+        Undo.CollapseUndoOperations(group);
+    }
+
+    // Une instance a venir, en repere du GO (le dossier genere est a l'identite sous lui).
+    struct Placement
+    {
+        public string name;
+        public Vector3 localPos;
+        public Quaternion localRot;
+    }
+
+    // Positions et rotations des instances : partage par Generer et la previsualisation, qui montre donc exactement
+    // ce qui sera genere.
+    static List<Placement> Placements(EdgeLights el, List<Run> runs)
+    {
+        var list = new List<Placement>();
+        if (el.prefab == null) return list;
+        bool aretes = el.source == EdgeLights.Source.Aretes;
+        Quaternion toLocal = Quaternion.Inverse(el.transform.rotation);
+        Quaternion extra = Quaternion.Euler(el.rotationOffset);
 
         foreach (Run run in runs)
         {
@@ -339,31 +375,128 @@ public class EdgeLightsEditor : Editor
             {
                 run.path.Point(positions[i], run.side, el.outward, el.height, out Vector3 pos, out Vector3 forward);
 
-                GameObject inst = isAsset
-                    ? (GameObject)PrefabUtility.InstantiatePrefab(el.prefab, container.transform)
-                    : Instantiate(el.prefab, container.transform);
-                inst.name = el.prefab.name + "_" + run.name + (aretes ? "_" : "") + i.ToString("D2");
-                if (!isAsset) inst.SetActive(true); // modele de la scene eventuellement desactive
-                inst.transform.localPosition = pos;
+                Quaternion rot; // monde
                 if (!el.alignToPath)
-                    inst.transform.rotation = el.prefab.transform.rotation;
+                    rot = el.prefab.transform.rotation;
                 else if (run.path is BlockPath bp)
-                    inst.transform.rotation = el.transform.rotation * Quaternion.LookRotation(forward, bp.axis);
+                    rot = el.transform.rotation * Quaternion.LookRotation(forward, bp.axis);
                 else if (aretes)
                 {
                     // Haut du monde ; arete verticale (coin de cube) : on prend +Z monde pour ne pas partir en vrille.
                     Vector3 worldForward = el.transform.rotation * forward;
                     Vector3 up = Mathf.Abs(Vector3.Dot(worldForward, Vector3.up)) > 0.999f ? Vector3.forward : Vector3.up;
-                    inst.transform.rotation = Quaternion.LookRotation(worldForward, up);
+                    rot = Quaternion.LookRotation(worldForward, up);
                 }
                 else
-                    inst.transform.rotation = el.transform.rotation * Quaternion.LookRotation(forward, Vector3.up);
-                inst.transform.localScale = scale;
-                Undo.RegisterCreatedObjectUndo(inst, "Generer EdgeLights");
+                    rot = el.transform.rotation * Quaternion.LookRotation(forward, Vector3.up);
+
+                list.Add(new Placement
+                {
+                    name = el.prefab.name + "_" + run.name + (aretes ? "_" : "") + i.ToString("D2"),
+                    localPos = pos,
+                    localRot = toLocal * rot * extra
+                });
             }
         }
+        return list;
+    }
 
-        Undo.CollapseUndoOperations(group);
+    // Echelle du GO, annulee par le dossier genere.
+    static Vector3 ParentScale(EdgeLights el)
+    {
+        Vector3 s = el.transform.lossyScale;
+        return new Vector3(Mathf.Max(1e-4f, Mathf.Abs(s.x)), Mathf.Max(1e-4f, Mathf.Abs(s.y)),
+                           Mathf.Max(1e-4f, Mathf.Abs(s.z)));
+    }
+
+    // ---------------------------------------------------------------- Previsualisation
+
+    // Instances fantomes : les meshes du prefab dessines a chaque rendu de la Scene view (Graphics.DrawMesh), avec
+    // leurs materiaux, sans rien creer. URP : beginCameraRendering ; pipeline integre : Camera.onPreCull.
+    void OnEnable()
+    {
+        RenderPipelineManager.beginCameraRendering += OnBeginCamera;
+        Camera.onPreCull += DrawPreview;
+    }
+
+    void OnDisable()
+    {
+        RenderPipelineManager.beginCameraRendering -= OnBeginCamera;
+        Camera.onPreCull -= DrawPreview;
+        ShowHiddenContainer();
+    }
+
+    // Instances deja generees masquees dans la Scene view pendant la previsualisation (visibilite editeur, comme
+    // l'oeil de la Hierarchy : rien n'est desactive ni sauvegarde). Seul ce qu'on a masque nous-memes est reaffiche.
+    GameObject hiddenContainer;
+
+    void SyncHiddenContainer(EdgeLights el)
+    {
+        Transform t = el.transform.Find(EdgeLights.ContainerName);
+        GameObject container = t != null ? t.gameObject : null;
+        bool hide = el.preview && el.prefab != null && container != null;
+
+        if (hiddenContainer != null && (!hide || hiddenContainer != container)) ShowHiddenContainer();
+        if (hide && hiddenContainer == null && !SceneVisibilityManager.instance.IsHidden(container, true))
+        {
+            SceneVisibilityManager.instance.Hide(container, true);
+            hiddenContainer = container;
+        }
+    }
+
+    void ShowHiddenContainer()
+    {
+        if (hiddenContainer != null) SceneVisibilityManager.instance.Show(hiddenContainer, true);
+        hiddenContainer = null;
+    }
+
+    void OnBeginCamera(ScriptableRenderContext context, Camera cam) => DrawPreview(cam);
+
+    void DrawPreview(Camera cam)
+    {
+        if (cam == null || cam.cameraType != CameraType.SceneView) return;
+        EdgeLights el = target as EdgeLights;
+        if (el == null || !el.preview || el.prefab == null || IsInsideGenerated(el)) return;
+
+        List<Run> runs = GetRuns(el, el.source == EdgeLights.Source.Aretes ? GetChains(el) : null);
+        List<Placement> placements = Placements(el, runs);
+        if (placements.Count == 0) return;
+
+        // Morceaux du prefab, en repere de sa racine
+        Transform root = el.prefab.transform;
+        Matrix4x4 toRoot = root.worldToLocalMatrix;
+        var renderers = new List<MeshRenderer>();
+        foreach (MeshRenderer mr in el.prefab.GetComponentsInChildren<MeshRenderer>(true))
+            if (mr.enabled && ActiveBelowRoot(mr.transform, root)) renderers.Add(mr);
+        if (renderers.Count == 0) return;
+
+        // Meme hierarchie que Generer : GO, dossier a echelle inverse, instance.
+        Vector3 parentScale = ParentScale(el);
+        Matrix4x4 parent = el.transform.localToWorldMatrix
+                           * Matrix4x4.Scale(new Vector3(1f / parentScale.x, 1f / parentScale.y, 1f / parentScale.z));
+        Vector3 scale = el.prefab.transform.localScale;
+        foreach (Placement p in placements)
+        {
+            Matrix4x4 inst = parent * Matrix4x4.TRS(Vector3.Scale(p.localPos, parentScale), p.localRot, scale);
+            foreach (MeshRenderer mr in renderers)
+            {
+                MeshFilter mf = mr.GetComponent<MeshFilter>();
+                if (mf == null || mf.sharedMesh == null) continue;
+                Mesh mesh = mf.sharedMesh;
+                Matrix4x4 m = inst * toRoot * mr.transform.localToWorldMatrix;
+                Material[] mats = mr.sharedMaterials;
+                for (int sub = 0; sub < mesh.subMeshCount && sub < mats.Length; sub++)
+                    if (mats[sub] != null) Graphics.DrawMesh(mesh, m, mats[sub], mr.gameObject.layer, cam, sub);
+            }
+        }
+    }
+
+    // La racine peut etre desactivee (modele cache dans la scene) : les copies sont reactivees, pas leurs enfants.
+    static bool ActiveBelowRoot(Transform t, Transform root)
+    {
+        for (; t != null && t != root; t = t.parent)
+            if (!t.gameObject.activeSelf) return false;
+        return true;
     }
 
     // Un modele range dans le dossier genere disparaitrait au premier Generer / Effacer.
