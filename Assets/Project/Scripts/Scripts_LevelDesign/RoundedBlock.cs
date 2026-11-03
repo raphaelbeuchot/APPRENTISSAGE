@@ -334,6 +334,27 @@ public class RoundedBlock : MonoBehaviour
         }
     }
 
+    // ---------------------------------------------------------------- Tranche (EdgeLights)
+
+    // Tour de la tranche au bord de la face haute (+w), pour poser des objets le long (EdgeLights) : points en repere
+    // local, boucle sans repeter le premier point, points superposes des coins vifs fusionnes. axis = direction
+    // d'extrusion vers la face haute. Ni roundTop ni evasement : le decalage d'EdgeLights rattrape.
+    public void GetTopContour(List<Vector3> points, out Vector3 axis)
+    {
+        GetExtents(out float hu, out float hv, out float hw);
+        List<RingPoint> ring = BuildRing(GetOuterRect(hu, hv), 0f);
+        points.Clear();
+        for (int i = 0; i < ring.Count - 1; i++)
+        {
+            Vector3 p = ToLocal(ring[i].p.x, ring[i].p.y, hw, hv, hw);
+            if (points.Count > 0 && (p - points[points.Count - 1]).sqrMagnitude < 1e-10f) continue;
+            points.Add(p);
+        }
+        if (points.Count > 1 && (points[0] - points[points.Count - 1]).sqrMagnitude < 1e-10f)
+            points.RemoveAt(points.Count - 1);
+        axis = DirToLocal(0f, 0f, 1f);
+    }
+
     // ---------------------------------------------------------------- Contours
 
     // Contour ferme dans le sens trigo, retreci de 'inset' (negatif = elargi). Un rectangle arrondi retreci ou

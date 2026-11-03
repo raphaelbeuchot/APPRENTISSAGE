@@ -93,10 +93,54 @@ public class EdgeLightsEditor : Editor
         }
     }
 
+    // Tranche d'un RoundedBlock : tour du profil au bord de la face haute (RoundedBlock.GetTopContour). Repere en chaque
+    // point : sens du tour, exterieur de la tranche, axe d'extrusion. outward = vers l'exterieur, up = le long de
+    // l'extrusion (negatif = descend sur la tranche), along = glissement le long du tour. side ignore.
+    class BlockPath : EdgePath
+    {
+        readonly EdgeChainPath path;
+        readonly Vector3 scale;
+        readonly float outSign;
+        readonly float along;
+        public readonly Vector3 axis; // repere local, unitaire
+
+        public BlockPath(RoundedBlock block, float arcDegrees, float along)
+        {
+            Vector3 s = block.transform.lossyScale;
+            scale = new Vector3(Mathf.Max(1e-4f, Mathf.Abs(s.x)), Mathf.Max(1e-4f, Mathf.Abs(s.y)),
+                                Mathf.Max(1e-4f, Mathf.Abs(s.z)));
+            this.along = along;
+            var chain = new MeshEdgeChains.Chain { closed = true };
+            block.GetTopContour(chain.points, out axis);
+            path = new EdgeChainPath(chain, scale, arcDegrees);
+
+            // Exterieur = axe x tangente, au signe pres (depend du sens du tour) : on le fixe sur le premier point.
+            Vector3 center = Vector3.zero;
+            foreach (Vector3 p in chain.points) center += p;
+            center /= Mathf.Max(1, chain.points.Count);
+            path.Point(0f, out Vector3 p0, out Vector3 f0);
+            outSign = Vector3.Dot(Vector3.Cross(axis, f0), Vector3.Scale(p0 - center, scale)) >= 0f ? 1f : -1f;
+        }
+
+        public bool closed => path.closed;
+        public override string Label => "Tranche du RoundedBlock";
+        public override float Length => path.Length;
+
+        public override void Point(float s, int side, float outward, float up, out Vector3 localPos, out Vector3 forward)
+        {
+            path.Point(Mathf.Repeat(s + along, path.TotalLength), out Vector3 p, out forward);
+            Vector3 o = Vector3.Cross(axis, forward).normalized * outSign;
+            Vector3 offset = o * outward + axis * up; // en metres
+            localPos = p + new Vector3(offset.x / scale.x, offset.y / scale.y, offset.z / scale.z);
+        }
+    }
+
     static EdgePath GetPath(EdgeLights el)
     {
         Ramp ramp = el.GetComponent<Ramp>();
         if (ramp != null) return new RampPath(ramp);
+        RoundedBlock block = el.GetComponent<RoundedBlock>();
+        if (block != null) return new BlockPath(block, el.arc, el.alongOffset);
         MeshFilter mf = el.GetComponent<MeshFilter>();
         if (mf != null && mf.sharedMesh != null) return new BoxPath(mf.sharedMesh.bounds, el.transform.lossyScale, el.axis);
         return null;
@@ -127,6 +171,11 @@ public class EdgeLightsEditor : Editor
 
         EdgePath path = GetPath(el);
         if (path == null) return runs;
+        if (path is BlockPath bp)
+        {
+            runs.Add(new Run { path = bp, side = 0, name = "T", closed = bp.closed });
+            return runs;
+        }
         if (el.sides != EdgeLights.Sides.Droite) runs.Add(new Run { path = path, side = -1, name = "L" });
         if (el.sides != EdgeLights.Sides.Gauche) runs.Add(new Run { path = path, side = 1, name = "R" });
         return runs;
@@ -141,13 +190,19 @@ public class EdgeLightsEditor : Editor
     // ---------------------------------------------------------------- Inspector
 
     // Champs sans objet selon la source : masques.
-    static readonly string[] autoOnly = { "sides", "axis", "outward" };
-    static readonly string[] aretesOnly = { "edgeAngle", "arc" };
+    static readonly string[] hiddenAuto = { "edgeAngle", "arc", "alongOffset" };
+    static readonly string[] hiddenAretes = { "sides", "axis", "outward", "alongOffset" };
+    static readonly string[] hiddenTranche = { "edgeAngle", "sides", "axis" };
+
+    // Source Auto sur un RoundedBlock (sans Ramp) : sa tranche.
+    static bool IsTranche(EdgeLights el) =>
+        el.source == EdgeLights.Source.Auto && el.GetComponent<Ramp>() == null && el.GetComponent<RoundedBlock>() != null;
 
     public override void OnInspectorGUI()
     {
         EdgeLights el = (EdgeLights)target;
         bool aretes = el.source == EdgeLights.Source.Aretes;
+        string[] hidden = aretes ? hiddenAretes : IsTranche(el) ? hiddenTranche : hiddenAuto;
 
         serializedObject.Update();
         SerializedProperty it = serializedObject.GetIterator();
@@ -158,7 +213,7 @@ public class EdgeLightsEditor : Editor
                 using (new EditorGUI.DisabledScope(true)) EditorGUILayout.PropertyField(it);
                 continue;
             }
-            if (System.Array.IndexOf(aretes ? autoOnly : aretesOnly, it.propertyPath) >= 0) continue;
+            if (System.Array.IndexOf(hidden, it.propertyPath) >= 0) continue;
             EditorGUILayout.PropertyField(it, true);
         }
         serializedObject.ApplyModifiedProperties();
@@ -292,6 +347,8 @@ public class EdgeLightsEditor : Editor
                 inst.transform.localPosition = pos;
                 if (!el.alignToPath)
                     inst.transform.rotation = el.prefab.transform.rotation;
+                else if (run.path is BlockPath bp)
+                    inst.transform.rotation = el.transform.rotation * Quaternion.LookRotation(forward, bp.axis);
                 else if (aretes)
                 {
                     // Haut du monde ; arete verticale (coin de cube) : on prend +Z monde pour ne pas partir en vrille.

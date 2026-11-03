@@ -11,6 +11,8 @@ using UnityEngine;
 // Source Aretes : le long des aretes vives cochees du mesh (MeshEdgeChains) ; boucle fermee = sans marges,
 // espacement ajuste pour que le dernier retombe juste avant le premier ; arc < 360 = portion traitee comme une
 // chaine ouverte. Hauteur vers le haut du monde. Tangente lissee aux sommets peu anguleux (cylindre a facettes).
+// RoundedBlock (source Auto) : le long de sa tranche, au bord de la face haute (dessus / avant / cote selon le profil),
+// decalage dans le repere de la tranche (exterieur, extrusion, le long du tour) ; haut des instances = axe d'extrusion.
 [RequireComponent(typeof(MeshFilter))]
 public class EdgeLights : MonoBehaviour
 {
@@ -43,10 +45,14 @@ public class EdgeLights : MonoBehaviour
     [Min(0.05f)] public float spacing = 1f;
 
     [Header("Position")]
-    [Tooltip("Ecartement depuis le bord : positif vers l'exterieur, negatif vers l'interieur du dessus.")]
+    [Tooltip("Ecartement depuis le bord : positif vers l'exterieur, negatif vers l'interieur du dessus. " +
+             "RoundedBlock : perpendiculaire a la tranche.")]
     public float outward = 0f;
-    [Tooltip("Decalage vertical depuis le dessus : positif au-dessus, negatif sur la tranche.")]
+    [Tooltip("Decalage vertical depuis le dessus : positif au-dessus, negatif sur la tranche. " +
+             "RoundedBlock : le long de l'extrusion depuis le bord de la face haute (Avant : vers l'avant +Z).")]
     public float height = 0.1f;
+    [Tooltip("RoundedBlock seulement : decalage le long du tour, en metres (fait glisser toutes les instances, et l'arc).")]
+    public float alongOffset = 0f;
     [Tooltip("Distance laissee libre au debut du chemin (pied de la rampe), sur la ligne mediane.")]
     [Min(0f)] public float startMargin = 0.25f;
     [Tooltip("Distance laissee libre a la fin du chemin (haut de la rampe), sur la ligne mediane.")]
