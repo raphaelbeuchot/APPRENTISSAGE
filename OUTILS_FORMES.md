@@ -48,6 +48,15 @@ Principes communs :
 - **Pointe** (2026-10-25) : la dernière boule en goutte (longueur 0-3 rayons, finesse de bulbe à aiguë), orientée selon la pousse. Non couverte par la sphère de collision. Piste non testée : petites boules finales.
 - Finesse utilisée en pratique : 0 ou 1 (choix visuel).
 
+## BentTube — tube plein coudé (étape 1 validée le 2026-11-04)
+
+`BentTube.cs` (Inspector dans le même fichier). Se pose sur un GameObject vide. Décor, un seul coude. Composant à part plutôt que dans Ramp (Ramp = passerelle, profil balayé sur une largeur, virage horizontal).
+
+- **Section** : largeur × hauteur, coins arrondis liés ou A-D (vus depuis le début du tube vers +Z : A bas gauche, B bas droite, C haut droite, D haut gauche). Cercle = section carrée, rayon = moitié du côté. Pas d'ellipse (un rectangle arrondi étiré donne une pilule) : jugé suffisant pour du décor.
+- **Chemin** : droit – arc – droit, part du pivot vers +Z. Longueur totale sur l'axe (coude compris), angle -180 à 180 (positif = vers +Y), rayon de courbure (borné à la demi-hauteur de la section), position du coude 0-1 sur la partie droite. Coude dans le plan vertical local : tourner le GO pour un coude à plat.
+- Pivot au début du tube, centre de la section. UV en mètres. Matériaux séparés : 0 = pourtour, 1 = bouts. MeshCollider alimenté s'il est présent (pas ajouté d'office).
+- **Étape 2 prévue** : coupes des bouts Horizontale / Verticale, comme Ramp. Plus tard éventuellement : section dessinée depuis un sprite (`Sprite.GetPhysicsShape`), lettres A-D dans la scène.
+
 ## En réflexion (pause du 2026-10-22)
 
 **Raccorder deux murs proprement** — l'équivalent du snap V (sommets), mais pour des faces. Aujourd'hui : par le pivot (cf. ci-dessus), ou V sur un coin si les deux bouts sont déjà orientés pareil. Piste proposée, **non tranchée** : boutons « Mur suivant » dans l'inspecteur de CurvedWall (même sens / sens inverse = virage en S), qui dupliquent et placent le mur à la suite. Question ouverte : couper automatiquement les arêtes de bout au raccord, ou laisser la main. Plus tard éventuellement : raccord RoundedBlock droit ↔ mur courbe.
