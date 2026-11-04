@@ -15544,13 +15544,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SplinePitZone
   depth: 1
   splineSampleCount: 64
+  rimShape: 0
   rimMargin: 0.5
+  rimEllipseCenter: {x: 0, y: 0}
+  rimEllipseRadii: {x: 6, y: 6}
+  rimEllipseSegments: 64
   wallMaterial: {fileID: 2100000, guid: 192262604b35a3941b9f9266ae3361f5, type: 2}
   floorMaterial: {fileID: 2100000, guid: a4067e8f112ca5a47adab30f72b36b9c, type: 2}
   rimMaterial: {fileID: 2100000, guid: a4067e8f112ca5a47adab30f72b36b9c, type: 2}
   fillLevel: 0.25
   fillContentType: {fileID: 11400000, guid: 84e5f792d474faf4db0c7d159637d32a, type: 2}
   fillMaterial: {fileID: 2100000, guid: c68503f61793f0440a3af843761ecae0, type: 2}
+  spikeDensity: 4
+  spikeRandomness: 1
+  spikeBaseRange: {x: 0.15, y: 0.4}
+  spikeHeightRange: {x: 0.2, y: 0.6}
+  spikeSeed: 0
   quickRectWidth: 7
   quickRectLength: 4
   quickRectRadius: 0.75
@@ -29675,7 +29684,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &1740174171
 BoxCollider:
   m_ObjectHideFlags: 0
