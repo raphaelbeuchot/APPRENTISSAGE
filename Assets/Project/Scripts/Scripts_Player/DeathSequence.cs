@@ -28,10 +28,24 @@ public class DeathSequence : MonoBehaviour
     [SerializeField] private Transform hipBone;
     [Tooltip("Multi : ne remplacer que les target groups dont la cible 0 est ce joueur (ou un de ses enfants). Decoche : tous les groupes de la scene (solo).")]
     [SerializeField] private bool onlyOwnTargetGroups = false;
+    [Tooltip("Mort sans ragdoll : duree du glissement de la camera vers le dessus du corps qui tombe")]
+    [SerializeField] private float deathCameraSlideDuration = 1f;
+    [Tooltip("Mort sans ragdoll : part du decalage horizontal camera / joueur absorbee par le glissement. " +
+             "1 = pile a la verticale du corps (le LookAt peut alors tourner brusquement), 0 = pas de glissement")]
+    [Range(0f, 1f)]
+    [SerializeField] private float deathCameraSlideAmount = 0.85f;
 
     private CinemachineTargetGroup[] allTargetGroups;
     private readonly System.Collections.Generic.Dictionary<CinemachineTargetGroup, Transform> replacedTargets
         = new System.Collections.Generic.Dictionary<CinemachineTargetGroup, Transform>();
+
+    // Mort sans ragdoll : cameras qui suivaient la racine, rebranchees sur une ancre (voir AnchorCameras)
+    private readonly System.Collections.Generic.Dictionary<CinemachineCamera, Transform> replacedTrackingTargets
+        = new System.Collections.Generic.Dictionary<CinemachineCamera, Transform>();
+    private Transform deathCameraAnchor;
+    private float deathAnchorY;
+    private Vector3 deathCameraOffsetXZ;   // camera - joueur a la mort, a plat
+    private float deathAnchorTime;
 
     void Awake()
     {
@@ -54,8 +68,16 @@ public class DeathSequence : MonoBehaviour
         PlayerPhysicsMovement movement = GetComponent<PlayerPhysicsMovement>();
         if (movement != null) movement.enabled = false;
 
-        if (ragdoll != null)
+        // Cause deduite par PlayerDeathCause (resolue sur OnDying, juste avant Play) : elle peut couper le ragdoll
+        // et imposer une duree fixe
+        PlayerDeathCause deathCause = GetComponent<PlayerDeathCause>();
+        DeathCause cause = deathCause != null ? deathCause.Current : playerHealth.LastDeathCause;
+
+        bool useRagdoll = cause == null || cause.ragdoll;
+        if (ragdoll != null && useRagdoll)
             ragdoll.Activate(deathDirection);
+        else if (!useRagdoll)
+            AnchorCameras();
 
         foreach (CinemachineTargetGroup tg in allTargetGroups)
         {
@@ -81,10 +103,6 @@ public class DeathSequence : MonoBehaviour
         bool hasRealRagdoll = hipRb != null && hipRb != mainRb;
 
         Debug.Log("ragdollTimeout runtime value: " + ragdollTimeout + " | hasRealRagdoll: " + hasRealRagdoll);
-
-        // Cause deduite par PlayerDeathCause (resolue sur OnDying, juste avant Play) : elle peut imposer une duree fixe
-        PlayerDeathCause deathCause = GetComponent<PlayerDeathCause>();
-        DeathCause cause = deathCause != null ? deathCause.Current : playerHealth.LastDeathCause;
 
         if (cause != null && cause.overrideRagdollWait)
         {
@@ -113,6 +131,62 @@ public class DeathSequence : MonoBehaviour
         return target != null && target.IsChildOf(transform);
     }
 
+    // Mort sans ragdoll : le ragdoll rendait la racine kinematique, les cameras qui suivent la racine s'arretaient
+    // et pivotaient (LookAt = target group -> hipBone) pour regarder tomber le corps. Sans lui, la racine continue
+    // de tomber, la camera la suit et CameraConfiner la bloque au fond de son volume : perso hors ecran.
+    // On fait suivre a ces cameras une ancre au Y de la mort, qui suit le X/Z du corps.
+    private void AnchorCameras()
+    {
+        if (deathCameraAnchor != null) return;
+
+        deathCameraAnchor = new GameObject("DeathCameraAnchor_" + name).transform;
+        deathCameraAnchor.position = transform.position;
+        deathAnchorY = transform.position.y;
+        deathAnchorTime = Time.time;
+
+        // Le corps tombe presque a la verticale : suivre son X/Z ne deplace pas la camera. On absorbe donc
+        // progressivement son decalage horizontal pour qu'elle vienne au-dessus du corps.
+        deathCameraOffsetXZ = Vector3.zero;
+        Camera mainCam = Camera.main;
+        if (mainCam != null)
+        {
+            deathCameraOffsetXZ = mainCam.transform.position - transform.position;
+            deathCameraOffsetXZ.y = 0f;
+        }
+
+        foreach (CinemachineCamera cam in FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None))
+        {
+            if (cam.Target.TrackingTarget != transform) continue;
+            replacedTrackingTargets[cam] = cam.Target.TrackingTarget;
+            cam.Target.TrackingTarget = deathCameraAnchor;
+        }
+    }
+
+    void LateUpdate()
+    {
+        if (deathCameraAnchor == null) return;
+        Vector3 body = hipBone != null ? hipBone.position : transform.position;
+        float t = deathCameraSlideDuration > 0f
+            ? Mathf.Clamp01((Time.time - deathAnchorTime) / deathCameraSlideDuration)
+            : 1f;
+        Vector3 slide = deathCameraOffsetXZ * (deathCameraSlideAmount * Mathf.SmoothStep(0f, 1f, t));
+        deathCameraAnchor.position = new Vector3(body.x - slide.x, deathAnchorY, body.z - slide.z);
+    }
+
+    private void RestoreAnchoredCameras()
+    {
+        foreach (var pair in replacedTrackingTargets)
+        {
+            if (pair.Key != null && pair.Key.Target.TrackingTarget == deathCameraAnchor)
+                pair.Key.Target.TrackingTarget = pair.Value;
+        }
+        replacedTrackingTargets.Clear();
+
+        if (deathCameraAnchor != null)
+            Destroy(deathCameraAnchor.gameObject);
+        deathCameraAnchor = null;
+    }
+
     // Multi : annule les effets de DeathRoutine sur le joueur et les target groups (respawn).
     // Jamais appele en solo.
     public void Restore()
@@ -128,6 +202,7 @@ public class DeathSequence : MonoBehaviour
             tg.Targets[0] = target;
         }
         replacedTargets.Clear();
+        RestoreAnchoredCameras();
 
         PlayerPhysicsMovement movement = GetComponent<PlayerPhysicsMovement>();
         if (movement != null) movement.enabled = true;

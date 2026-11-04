@@ -22,6 +22,9 @@ public class DeathCause : ScriptableObject
     public GameObject[] deathEffects;
 
     [Header("Ragdoll")]
+    [Tooltip("Decoche : pas de ragdoll a la mort, le corps continue de tomber tel quel avec son animation " +
+             "(ex. chute hors limites : le ragdoll ne sert a rien, le perso est deja tout en bas).")]
+    public bool ragdoll = true;
     [Tooltip("Coche : duree fixe (ragdollWait) avant game over / respawn, sans attendre que le corps s'immobilise " +
              "(ex. chute hors limites : le corps tombe dans le vide et ne s'arrete jamais). Decoche : attente normale de DeathSequence.")]
     public bool overrideRagdollWait = false;
