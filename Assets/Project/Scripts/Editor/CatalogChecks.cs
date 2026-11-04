@@ -96,6 +96,7 @@ internal static class CatalogChecks
         new CatalogCheck("circles", "Cercles", LDCatalog, CheckCircles),
         new CatalogCheck("transitionRoom", "Transition Room", LDCatalog, s => s.Find(c => c is TransitionRoomDoor)),
         new CatalogCheck("victoryBounds", "Bornes victoire", LDCatalog, CheckVictoryBounds),
+        new CatalogCheck("uiAudio", "UI Audio", LDCatalog, CheckUIAudio),
 
         // Sans colonne
         new CatalogCheck("broomPickup", "Socle de Prise", HiddenCatalog,
@@ -263,6 +264,17 @@ internal static class CatalogChecks
         if (problems.Count > 0)
             return CheckResult.Warn(Describe(boxes[0].gameObject, null, boxes.Count) + " : " + string.Join(" ; ", problems));
         return CheckResult.Ok(Describe(boxes[0].gameObject, "contient GoalDoor et salle de transition", 1));
+    }
+
+    // Sons des menus (pause, options...) : les menus trouvent l'UIAudioPlayer par FindObjectOfType, qui ignore
+    // les objets inactifs. Sans UIAudioPlayer actif dans la scene, le menu pause est muet.
+    private static CheckResult CheckUIAudio(SceneScan s)
+    {
+        CheckResult audio = s.Find(c => c is UIAudioPlayer);
+        if (audio.Status == CheckStatus.Ok) return audio;
+        if (s.Components.Any(c => c is PauseMenuUI))
+            return CheckResult.Warn("PauseMenuUI sans UIAudioPlayer actif dans la scene : menu pause muet");
+        return audio;
     }
 
     private static bool ContainsXZ(Bounds b, Vector3 p)
