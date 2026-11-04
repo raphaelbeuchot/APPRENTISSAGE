@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using Unity.Cinemachine;
 using System.Collections;
 
@@ -33,6 +34,12 @@ public class PupitreInteraction : MonoBehaviour
     [Tooltip("Le niveau ne se lance pas tant que le joueur a le balai : il doit le poser sur un BroomPedestal en mode Depot")]
     [SerializeField] private bool mustPutAwayBroom = false;
     [SerializeField] private string putAwayBroomMessage = "Pour continuer, merci de deposer votre balai.";
+
+    [Header("Mise en scene")]
+    [Tooltip("Appele quand le joueur appuie sur le pupitre (ex : PlayableDirector.Play)")]
+    [SerializeField] private UnityEvent onActivated;
+    [Tooltip("Appele au restart, quand le pupitre s'active tout seul : mettre la scene dans son etat final sans animation")]
+    [SerializeField] private UnityEvent onRestart;
 
     private Transform player;
     private PlayerLoadout loadout;
@@ -172,6 +179,7 @@ public class PupitreInteraction : MonoBehaviour
         StartCoroutine(SinkPupitreCoroutine());
         SwitchToNormalCamera();
         LaunchCountdownAndShutter();
+        onActivated?.Invoke();
 
         if (launchCyclesOnActivation)
             StartGameLogic(); //  AJOUTER CETTE LIGNE
@@ -204,6 +212,7 @@ public class PupitreInteraction : MonoBehaviour
         transform.position = transform.position + Vector3.down * sinkDistance;
         SwitchToNormalCamera();
         LaunchCountdownAndShutter();
+        onRestart?.Invoke();
 
         if (launchCyclesOnActivation)
             StartGameLogic(); //  AJOUTER CETTE LIGNE
