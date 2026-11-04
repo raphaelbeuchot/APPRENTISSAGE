@@ -339,10 +339,11 @@ public class RoundedBlock : MonoBehaviour
     // Tour de la tranche au bord de la face haute (+w), pour poser des objets le long (EdgeLights) : points en repere
     // local, boucle sans repeter le premier point, points superposes des coins vifs fusionnes. axis = direction
     // d'extrusion vers la face haute. Ni roundTop ni evasement : le decalage d'EdgeLights rattrape.
-    public void GetTopContour(List<Vector3> points, out Vector3 axis)
+    // ofHole : tour du trou (si Trou est coche ; sinon l'exterieur).
+    public void GetTopContour(List<Vector3> points, out Vector3 axis, bool ofHole = false)
     {
         GetExtents(out float hu, out float hv, out float hw);
-        List<RingPoint> ring = BuildRing(GetOuterRect(hu, hv), 0f);
+        List<RingPoint> ring = BuildRing(GetTopRect(hu, hv, ofHole), 0f);
         points.Clear();
         for (int i = 0; i < ring.Count - 1; i++)
         {
@@ -357,19 +358,28 @@ public class RoundedBlock : MonoBehaviour
 
     // Milieu de chaque coin (A, B, C, D) au bord de la face haute, sur le meme tour que GetTopContour : le point de
     // l'arc a 45 degres, ou le coin lui-meme s'il est vif.
-    public void GetTopCorners(List<Vector3> corners)
+    public void GetTopCorners(List<Vector3> corners, bool ofHole = false)
     {
         GetExtents(out float hu, out float hv, out float hw);
-        Rect2 rect = GetOuterRect(hu, hv);
+        Rect2 rect = GetTopRect(hu, hv, ofHole);
         Vector2[] signs = { new Vector2(-1, -1), new Vector2(1, -1), new Vector2(1, 1), new Vector2(-1, 1) };
         corners.Clear();
         for (int k = 0; k < 4; k++)
         {
             float r = rect.radii[k];
-            Vector2 center = new Vector2(signs[k].x * hu, signs[k].y * hv) - signs[k] * r;
+            Vector2 center = rect.center + new Vector2(signs[k].x * rect.hu, signs[k].y * rect.hv) - signs[k] * r;
             Vector2 p = center + signs[k].normalized * r;
             corners.Add(ToLocal(p.x, p.y, hw, hv, hw));
         }
+    }
+
+    // Profil exterieur, ou celui du trou (memes marges et coins que le mesh)
+    Rect2 GetTopRect(float hu, float hv, bool ofHole)
+    {
+        Rect2 outer = GetOuterRect(hu, hv);
+        if (!ofHole || !hole) return outer;
+        GetMargins(hu, hv, out float mL, out float mR, out float mB, out float mT);
+        return GetHoleRect(outer, mL, mR, mB, mT);
     }
 
     // ---------------------------------------------------------------- Contours

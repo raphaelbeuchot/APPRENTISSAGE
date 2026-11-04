@@ -15,6 +15,7 @@ using UnityEngine;
 // anguleux (cylindre a facettes).
 // RoundedBlock (source Auto) : le long de sa tranche, au bord de la face haute (dessus / avant / cote selon le profil),
 // decalage dans le repere de la tranche (exterieur, extrusion, le long du tour) ; haut des instances = axe d'extrusion.
+// Bloc troue : Contour = Trou suit la tranche du trou (exterieur = vers le vide du trou).
 // CurvedWall (source Auto) : arc de cercle en haut du mur (milieu, face exterieure ou interieure) ; exterieur = loin
 // du centre du cercle, hauteur vers le haut local. Anneau complet = boucle, sinon chemin ouvert (marges).
 [RequireComponent(typeof(MeshFilter))]
@@ -25,6 +26,7 @@ public class EdgeLights : MonoBehaviour
     public enum Source { Auto, Aretes }
     public enum Distribution { Espacement, Nombre, AuxCoins }
     public enum WallLine { Milieu, Exterieur, Interieur }
+    public enum BlockContour { Exterieur, Trou }
 
     public const string ContainerName = "EdgeLights_Generated";
     // Dossier des instances de CE composant (plusieurs EdgeLights possibles sur un meme GO : _2, _3...).
@@ -36,6 +38,9 @@ public class EdgeLights : MonoBehaviour
     [Tooltip("CurvedWall seulement : arc suivi en haut du mur. Milieu = au milieu de l'epaisseur ; " +
              "Exterieur / Interieur = au bord haut de la face exterieure / interieure.")]
     public WallLine wallLine = WallLine.Milieu;
+    [Tooltip("RoundedBlock troue seulement : tour suivi. Exterieur = tranche du pourtour ; Trou = tranche du trou " +
+             "(Ecartement positif vers le vide du trou). Pour garnir les deux, mettre un second EdgeLights.")]
+    public BlockContour blockContour = BlockContour.Exterieur;
     [Tooltip("Aretes seulement : angle mini entre deux faces voisines pour que leur arete compte comme vive.")]
     [Range(1f, 179f)] public float edgeAngle = 30f;
     [Tooltip("Aretes, boucles seulement : portion garnie, en degres de tour (fraction du perimetre ; exact sur un cercle). " +

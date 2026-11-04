@@ -171,10 +171,11 @@ public class EdgeLightsEditor : Editor
     // d'extrusion ; up negatif = descend sur la tranche ; coins = milieu des quatre coins du profil.
     class BlockPath : FramedPath
     {
-        public BlockPath(RoundedBlock block, float arcDegrees, float along)
+        public BlockPath(RoundedBlock block, float arcDegrees, float along, bool ofHole)
         {
             var chain = new MeshEdgeChains.Chain { closed = true };
-            block.GetTopContour(chain.points, out Vector3 extrusion);
+            block.GetTopContour(chain.points, out Vector3 extrusion, ofHole);
+            this.ofHole = ofHole;
             Init(chain, block.transform.lossyScale, arcDegrees, along);
             axis = extrusion;
 
@@ -182,15 +183,18 @@ public class EdgeLightsEditor : Editor
             foreach (Vector3 p in chain.points) center += p;
             center /= Mathf.Max(1, chain.points.Count);
             FixOutSign(center);
+            if (ofHole) outSign = -outSign; // trou : exterieur = vers le vide du trou (on sort de la matiere)
 
             var corners = new List<Vector3>();
-            block.GetTopCorners(corners);
+            block.GetTopCorners(corners, ofHole);
             cornerPositions = new float[corners.Count];
             for (int i = 0; i < corners.Count; i++) cornerPositions[i] = path.Nearest(corners[i]);
             System.Array.Sort(cornerPositions);
         }
 
-        public override string Label => "Tranche du RoundedBlock";
+        readonly bool ofHole;
+        public bool OfHole => ofHole;
+        public override string Label => ofHole ? "Tranche du trou du RoundedBlock" : "Tranche du RoundedBlock";
     }
 
     // Arc d'un CurvedWall, en haut du mur : cercle de centre le pivot, de +X vers +Z sur 'angle' degres, au rayon de la
@@ -231,7 +235,7 @@ public class EdgeLightsEditor : Editor
         Ramp ramp = el.GetComponent<Ramp>();
         if (ramp != null) return new RampPath(ramp);
         RoundedBlock block = el.GetComponent<RoundedBlock>();
-        if (block != null) return new BlockPath(block, el.arc, el.alongOffset);
+        if (block != null) return new BlockPath(block, el.arc, el.alongOffset, OnHole(el, block));
         CurvedWall wall = el.GetComponent<CurvedWall>();
         if (wall != null) return new CurvedPath(wall, el.wallLine, el.arc, el.alongOffset);
         MeshFilter mf = el.GetComponent<MeshFilter>();
@@ -268,7 +272,7 @@ public class EdgeLightsEditor : Editor
         if (path == null) return runs;
         if (path is FramedPath fp)
         {
-            runs.Add(new Run { path = fp, side = 0, name = "T", closed = fp.closed });
+            runs.Add(new Run { path = fp, side = 0, name = fp is BlockPath bp && bp.OfHole ? "H" : "T", closed = fp.closed });
             return runs;
         }
         if (el.sides != EdgeLights.Sides.Droite) runs.Add(new Run { path = path, side = -1, name = "L" });
@@ -285,11 +289,16 @@ public class EdgeLightsEditor : Editor
     // ---------------------------------------------------------------- Inspector
 
     // Champs sans objet selon la source : masques.
-    static readonly string[] hiddenAuto = { "edgeAngle", "arc", "alongOffset", "wallLine" };
-    static readonly string[] hiddenAretes = { "sides", "axis", "wallLine" };
+    static readonly string[] hiddenAuto = { "edgeAngle", "arc", "alongOffset", "wallLine", "blockContour" };
+    static readonly string[] hiddenAretes = { "sides", "axis", "wallLine", "blockContour" };
     static readonly string[] hiddenTranche = { "edgeAngle", "sides", "axis", "wallLine" };
-    static readonly string[] hiddenCurved = { "edgeAngle", "sides", "axis" };
-    static readonly string[] hiddenCurvedOpen = { "edgeAngle", "sides", "axis", "arc" }; // arc : anneau complet seulement
+    static readonly string[] hiddenTrancheNoHole = { "edgeAngle", "sides", "axis", "wallLine", "blockContour" };
+    static readonly string[] hiddenCurved = { "edgeAngle", "sides", "axis", "blockContour" };
+    static readonly string[] hiddenCurvedOpen = { "edgeAngle", "sides", "axis", "arc", "blockContour" }; // arc : anneau complet seulement
+
+    // Tranche du trou : Contour = Trou sur un RoundedBlock troue (Trou decoche = l'exterieur, reglage garde)
+    static bool OnHole(EdgeLights el, RoundedBlock block) =>
+        el.blockContour == EdgeLights.BlockContour.Trou && block.hole;
 
     // Source Auto sur un RoundedBlock (sans Ramp) : sa tranche.
     static bool IsTranche(EdgeLights el) =>
@@ -306,7 +315,7 @@ public class EdgeLightsEditor : Editor
     static string[] HiddenFields(EdgeLights el)
     {
         if (el.source == EdgeLights.Source.Aretes) return hiddenAretes;
-        if (IsTranche(el)) return hiddenTranche;
+        if (IsTranche(el)) return el.GetComponent<RoundedBlock>().hole ? hiddenTranche : hiddenTrancheNoHole;
         CurvedWall wall = CurvedSource(el);
         if (wall != null) return wall.angle >= 360f ? hiddenCurved : hiddenCurvedOpen;
         return hiddenAuto;
