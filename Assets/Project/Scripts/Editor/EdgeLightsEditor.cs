@@ -319,6 +319,7 @@ public class EdgeLightsEditor : Editor
     public override void OnInspectorGUI()
     {
         EdgeLights el = (EdgeLights)target;
+        foreach (Object t in targets) SyncContainerActive((EdgeLights)t);
         bool aretes = el.source == EdgeLights.Source.Aretes;
         string[] hidden = HiddenFields(el);
 
@@ -588,7 +589,7 @@ public class EdgeLightsEditor : Editor
     {
         Transform t = FindContainer(el);
         GameObject container = t != null ? t.gameObject : null;
-        bool hide = el.preview && el.prefab != null && container != null;
+        bool hide = el.enabled && el.preview && el.prefab != null && container != null;
 
         if (hiddenContainer != null && (!hide || hiddenContainer != container)) ShowHiddenContainer();
         if (hide && hiddenContainer == null && !SceneVisibilityManager.instance.IsHidden(container, true))
@@ -610,7 +611,7 @@ public class EdgeLightsEditor : Editor
     {
         if (cam == null || cam.cameraType != CameraType.SceneView) return;
         EdgeLights el = target as EdgeLights;
-        if (el == null || !el.preview || el.prefab == null || IsInsideGenerated(el)) return;
+        if (el == null || !el.enabled || !el.preview || el.prefab == null || IsInsideGenerated(el)) return;
 
         List<Run> runs = GetRuns(el, el.source == EdgeLights.Source.Aretes ? GetChains(el) : null);
         List<Placement> placements = Placements(el, runs);
@@ -659,6 +660,19 @@ public class EdgeLightsEditor : Editor
         if (el.prefab == null || PrefabUtility.IsPartOfPrefabAsset(el.prefab)) return false;
         Transform container = FindContainer(el);
         return container != null && el.prefab.transform.IsChildOf(container);
+    }
+
+    // Composant decoche = dossier genere desactive (recoche = reactive). Fait depuis l'Inspector (la case est
+    // dans son en-tete) et pas par OnEnable / OnDisable du composant, appeles aussi au chargement et en Play.
+    // Sans Undo propre : l'etat se deduit de la case, annuler la case resynchronise le dossier.
+    static void SyncContainerActive(EdgeLights el)
+    {
+        if (Application.isPlaying) return;
+        Transform container = FindContainer(el);
+        if (container == null || container.gameObject.activeSelf == el.enabled) return;
+        container.gameObject.SetActive(el.enabled);
+        PrefabUtility.RecordPrefabInstancePropertyModifications(container.gameObject);
+        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(el.gameObject.scene);
     }
 
     static void Clear(EdgeLights el)
