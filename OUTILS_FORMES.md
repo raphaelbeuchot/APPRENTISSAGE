@@ -97,4 +97,6 @@ Portes, fenêtres et niches dans des murs, sans ProBuilder (« détestable sur l
 - **Rampes** (idée du 2026-10-28) : construire des rampes rapidement.
 - **Percer des trous dans un mesh sans casser sa topologie** (idée du 2026-10-28, vue passer par l'utilisateur, « me rendrait énormément service ») : portes et fenêtres dans les murs. À regarder de près le moment venu : ce n'est pas l'outil booléen général écarté ci-dessous, mais un perçage ciblé ; à comparer avec le trou de RoundedBlock et la piste « Façades à trous ».
 - **Gradins / podiums empilés**, **arches**, **plateformes bombées**.
+- **Extrusion « boudin » le long d'un CurvedWall ou autre** (note du 2026-11-05) : une section (ronde, style boudin) extrudée le long d'un contour existant. À rapprocher du balayage le long d'une spline ci-dessus.
+- **Coupole creuse** (note du 2026-11-05) : angle paramétrable, voire subdivisions en quartiers, pour des coupoles qui s'ouvrent ou un opercule façon James Bond qui s'ouvre en plusieurs parties.
 - À éviter : un outil booléen général (gouffre, et on perdrait le redimensionnement sans déformation).
