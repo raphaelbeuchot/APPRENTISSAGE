@@ -1,25 +1,38 @@
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections;
 using System.Collections.Generic;
 
 // Declenche des evenements quand tous les ennemis d'un pool (liste dans l'Inspector) sont morts.
-// Ex : ouvrir une porte, jouer une Timeline, activer une zone.
+// Ex : ouvrir une porte, jouer une Timeline, faire tourner une salle.
+// Chaque evenement a son propre delai et peut attendre la fin de l'alerte.
 public class EnemyPoolTrigger : MonoBehaviour
 {
+    [System.Serializable]
+    public class PoolEvent
+    {
+        [Tooltip("Delai entre la mort du dernier ennemi et cet evenement")]
+        public float delay = 0f;
+        [Tooltip("Si l'evenement tombe en Alert ou Red Light, il attend le retour en Green Light / Release")]
+        public bool waitEndOfAlert = false;
+        public UnityEvent onFire;
+    }
+
     [Header("Pool")]
     [Tooltip("Les ennemis a tuer (glisser les GO qui portent EnemyHealth)")]
     [SerializeField] private List<EnemyHealth> enemies = new List<EnemyHealth>();
 
     [Header("Evenements")]
-    [Tooltip("Delai entre la mort du dernier ennemi et les evenements")]
-    [SerializeField] private float delay = 0f;
-    [SerializeField] private UnityEvent onAllDead;
+    [SerializeField] private List<PoolEvent> events = new List<PoolEvent>();
 
     private readonly HashSet<EnemyHealth> deadEnemies = new HashSet<EnemyHealth>();
     private bool hasFired = false;
+    private SentinelCycleManager cycleManager;
 
     private void Start()
     {
+        cycleManager = FindAnyObjectByType<SentinelCycleManager>();
+
         if (enemies.Count == 0)
         {
             Debug.LogWarning("[EnemyPoolTrigger] Pool vide sur " + gameObject.name);
@@ -56,15 +69,29 @@ public class EnemyPoolTrigger : MonoBehaviour
         }
 
         hasFired = true;
-        if (delay > 0f)
-            Invoke(nameof(Fire), delay);
-        else
-            Fire();
+        foreach (PoolEvent poolEvent in events)
+            StartCoroutine(FireEvent(poolEvent));
     }
 
-    private void Fire()
+    private IEnumerator FireEvent(PoolEvent poolEvent)
     {
-        onAllDead?.Invoke();
+        if (poolEvent.delay > 0f)
+            yield return new WaitForSeconds(poolEvent.delay);
+
+        if (poolEvent.waitEndOfAlert)
+        {
+            while (IsAlertOrRedLight())
+                yield return null;
+        }
+
+        poolEvent.onFire?.Invoke();
+    }
+
+    private bool IsAlertOrRedLight()
+    {
+        if (cycleManager == null) return false;
+        SentinelCycleManager.GameState state = cycleManager.currentState;
+        return state == SentinelCycleManager.GameState.Alert || state == SentinelCycleManager.GameState.RedLight;
     }
 
     private void OnDrawGizmosSelected()
