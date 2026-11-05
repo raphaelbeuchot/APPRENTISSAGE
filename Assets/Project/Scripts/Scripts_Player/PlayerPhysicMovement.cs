@@ -137,6 +137,11 @@ public class PlayerPhysicsMovement : MonoBehaviour
     private IMovingPlatform currentPlatform;
     private Vector3 lastPlatformPosition;
 
+    // Salle animee (AnimatedPlatform) : suivi position + rotation, a part de currentPlatform
+    private AnimatedPlatform animatedPlatform;
+    private Vector3 lastAnimatedPlatformPosition;
+    private Quaternion lastAnimatedPlatformRotation;
+
     [HideInInspector] public bool isInContactWithEnemy = false;
     private int enemyContactCount = 0;
 
@@ -740,6 +745,7 @@ public class PlayerPhysicsMovement : MonoBehaviour
         DetectMovingPlatform();
         if (currentPlatform != null)
         {
+            animatedPlatform = null;
             RotatingPlatform rotPlatform = currentPlatform.GetTransform().GetComponent<RotatingPlatform>();
 
             if (rotPlatform != null)
@@ -804,6 +810,12 @@ public class PlayerPhysicsMovement : MonoBehaviour
                     lastPlatformPosition = currentPlatform.GetTransform().position;
                 }
             }
+        }
+        else
+        {
+            DetectAnimatedPlatform();
+            if (animatedPlatform != null)
+                finalVelocity += GetAnimatedPlatformCarryVelocity();
         }
 
         rb.linearVelocity = RemoveWallPush(finalVelocity);
@@ -1083,6 +1095,52 @@ public class PlayerPhysicsMovement : MonoBehaviour
             currentPlatform = null;
         }
     }
+    void DetectAnimatedPlatform()
+    {
+        AnimatedPlatform found = null;
+
+        if (IsGrounded())
+        {
+            Vector3 rayStart = transform.position + Vector3.up * 0.1f;
+            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 0.3f, LayerMask.GetMask("Ground")))
+                found = hit.collider.GetComponentInParent<AnimatedPlatform>();
+        }
+
+        if (found != animatedPlatform && found != null)
+        {
+            lastAnimatedPlatformPosition = found.Position;
+            lastAnimatedPlatformRotation = found.Rotation;
+        }
+        animatedPlatform = found;
+    }
+
+    // Deplacement + rotation de la salle depuis le pas precedent, converti en vitesse
+    // (pas de teleport : garde l'interpolation du Rigidbody et les collisions)
+    Vector3 GetAnimatedPlatformCarryVelocity()
+    {
+        Vector3 platformPosition = animatedPlatform.Position;
+        Quaternion platformRotation = animatedPlatform.Rotation;
+        Quaternion deltaRotation = platformRotation * Quaternion.Inverse(lastAnimatedPlatformRotation);
+
+        Vector3 offset = rb.position - lastAnimatedPlatformPosition;
+        Vector3 target = platformPosition + deltaRotation * offset;
+        Vector3 carry = (target - rb.position) / Time.fixedDeltaTime;
+        carry.y = 0f;
+
+        // Ne touche a l'orientation du joueur que si la salle a tourne ce pas-ci
+        if (Quaternion.Angle(deltaRotation, Quaternion.identity) > 0.01f)
+        {
+            Vector3 forward = deltaRotation * transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude > 0.0001f)
+                rb.MoveRotation(Quaternion.LookRotation(forward));
+        }
+
+        lastAnimatedPlatformPosition = platformPosition;
+        lastAnimatedPlatformRotation = platformRotation;
+        return carry;
+    }
+
     bool CanDash()
     {
         if (isDashing) return false;
