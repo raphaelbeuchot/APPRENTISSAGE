@@ -28,8 +28,19 @@ public class PhysicsProp : MonoBehaviour
     [SerializeField] private float angularDamping = 2f;
     [SerializeField] private float gravityMultiplier = 3f;
 
+    [Header("Audio")]
+    [Tooltip("Son quand le balai frappe ce prop. Vide = pas de son (et le balai joue son son de coup rate)")]
+    [SerializeField] private AudioClip broomHitSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float broomHitVolume = 1f;
+    [Tooltip("0 = 2D (meme volume partout, comme les sons du balai), 1 = 3D (depuis le prop)")]
+    [Range(0f, 1f)]
+    [SerializeField] private float spatialBlend = 0f;
+
+    public bool HasBroomHitSound => broomHitSound != null;
 
     private Rigidbody rb;
+    private AudioSource audioSource;
 
     void Awake()
     {
@@ -67,6 +78,9 @@ public class PhysicsProp : MonoBehaviour
             _ => 1f
         };
 
+        if (source == ImpactSource.Broom)
+            PlayBroomHitSound();
+
         rb.WakeUp();
         Vector3 dir = (transform.position - origin).normalized;
         dir.y = upwardBias;
@@ -85,6 +99,19 @@ public class PhysicsProp : MonoBehaviour
             Vector3 torqueAxis = Vector3.Cross(Vector3.up, dir);
             rb.AddTorque(torqueAxis * broomTorque, ForceMode.Impulse);
         }
+    }
+
+    private void PlayBroomHitSound()
+    {
+        if (broomHitSound == null) return;
+
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+        }
+        audioSource.spatialBlend = spatialBlend;
+        audioSource.PlayOneShot(broomHitSound, broomHitVolume);
     }
 
     void OnCollisionEnter(Collision collision)

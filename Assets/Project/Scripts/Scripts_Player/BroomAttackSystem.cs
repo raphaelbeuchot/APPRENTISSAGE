@@ -544,9 +544,13 @@ public class BroomAttackSystem : MonoBehaviour
         }
 
         foreach (KeyValuePair<PhysicsProp, Vector3> entry in propHitPoints)
+        {
             entry.Key.ReceiveImpact(transform.position, stats.broomKnockbackForce, ImpactSource.Broom, entry.Value);
+            if (entry.Key.HasBroomHitSound)
+                hitSomething = true;
+        }
 
-        // AUDIO MISS : rien de touche (les props ne comptent pas, ils n'ont pas de son a eux)
+        // AUDIO MISS : rien de touche (un prop ne compte que s'il a son propre son d'impact)
         if (!hitSomething && audioSource != null && stats.broomSound != null)
             audioSource.PlayOneShot(stats.broomSound);
     }
