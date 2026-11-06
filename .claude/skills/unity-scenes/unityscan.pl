@@ -10,12 +10,12 @@
 use strict;
 use warnings;
 use FindBin;
-use File::Find;
 use File::Basename;
 use File::Spec;
 
 my $ROOT = File::Spec->rel2abs("$FindBin::Bin/../../..");
 my $ASSETS = "$ROOT/Assets";
+chdir $ROOT or die "racine du repo introuvable : $ROOT\n";
 
 my %CLASS = (
     1 => 'GameObject', 4 => 'Transform', 20 => 'Camera', 23 => 'MeshRenderer', 33 => 'MeshFilter',
@@ -40,7 +40,7 @@ sub guid_path {
     for my $dir (qw(Assets Packages Library/PackageCache)) {
         next unless -d $dir;
         my $out = `grep -rl --include=*.meta "^guid: $guid" "$dir" 2>/dev/null`;
-        if ($out =~ /^(.+?).metas*$/m) { $found = $1; last; }
+        if ($out =~ /^(.+?)\.meta\s*$/m) { $found = $1; last; }
     }
     $guidToPath{$guid} = $found;
     return $found;
@@ -72,12 +72,8 @@ sub resolve_asset {
     }
     my $path = abs_path($arg);
     unless (-e $path) {
-        my @found;
-        find({ no_chdir => 1, wanted => sub {
-            return if /\.meta$/;
-            my ($n) = fileparse($_, qr/\.[^.]*$/);
-            push @found, $_ if $n eq $arg && -f $_;
-        }}, $ASSETS);
+        (my $safe = $arg) =~ s/"/\\"/g;
+        my @found = grep { !/\.meta$/ } split /\n/, `find Assets -type f -name "$safe.*" 2>/dev/null`;
         die "aucun asset nomme '$arg'\n" unless @found;
         die "plusieurs assets nommes '$arg', preciser le chemin :\n  " . join("\n  ", map { rel($_) } @found) . "\n" if @found > 1;
         $path = $found[0];
@@ -158,7 +154,18 @@ sub describe {
     return "(trop d'imbrication)" if $depth > 8;
     my $blocks = load_file($path);
     my $b = $blocks->{$id};
-    return "(fileID $id introuvable dans " . rel(abs_path($path)) . " : objet d'un prefab imbrique ?)" unless $b;
+    unless ($b) {
+        # Objet d'un prefab imbrique : fileID = (fileID de l'instance XOR fileID dans le prefab source) & 0x7FFF...
+        for my $inst (grep { $_->{type} == 1001 && !$_->{stripped} } values %$blocks) {
+            my (undef, $srcGuid) = ref_of(field($inst, 'm_SourcePrefab'));
+            my $src = guid_path($srcGuid);
+            next unless $src && $id =~ /^\d+$/;
+            my $srcId = (($id + 0) ^ ($inst->{id} + 0)) & (~0 >> 1);
+            return describe($src, $srcId, $depth + 1) . "  <imbrique : " . basename($src) . ">"
+                if load_file($src)->{$srcId};
+        }
+        return "(fileID $id absent de " . rel(abs_path($path)) . " : override orphelin, objet supprime du prefab)";
+    }
 
     if ($b->{stripped}) {
         my ($srcId, $srcGuid) = ref_of(field($b, 'm_CorrespondingSourceObject'));
@@ -199,14 +206,10 @@ sub cmd_uses {
     my ($path, $guid) = resolve_asset($arg);
     print "$path (guid $guid)\n\n";
     my @hits;
-    find({ no_chdir => 1, wanted => sub {
-        return unless /\.(unity|prefab|asset|mat|controller|playable|anim)$/;
-        open(my $fh, '<', $_) or return;
-        my $n = 0;
-        while (my $line = <$fh>) { $n++ if index($line, $guid) >= 0; }
-        close $fh;
-        push @hits, [rel($File::Find::name), $n] if $n;
-    }}, $ASSETS);
+    my $inc = join ' ', map { "--include=*.$_" } qw(unity prefab asset mat controller playable anim);
+    for my $line (split /\n/, `grep -rc $inc "$guid" Assets 2>/dev/null`) {
+        push @hits, [$1, $2] if $line =~ /^(.*):(\d+)$/ && $2 > 0;
+    }
     if (!@hits) { print "aucune reference trouvee\n"; return; }
     for my $h (sort { $a->[0] cmp $b->[0] } @hits) {
         printf "  %-70s x%d\n", $h->[0], $h->[1];
@@ -261,10 +264,8 @@ sub cmd_overrides {
                         ? $refFile
                         : ($refFile ? describe($refFile, $refId) : "guid $refGuid");
                     $val = "-> $refDesc";
-                } elsif ($m->{ref} =~ /fileID:\s*0/ && $val eq '' && $m->{prop} !~ /m_text|Message|Text$/) {
-                    $val = "(vide / aucune reference)";
                 } elsif ($val eq '') {
-                    $val = "''";
+                    $val = "(vide)";
                 }
                 print "      $m->{prop} = $val\n";
             }
