@@ -54,3 +54,21 @@
   j'ia reussi a echapper de l'ascensuer pdt la montee ? i la ts les colldiers ?
 - [x] **Level_TrouNormand** — 2026-10-28 18:54 — pos (11.6, -0.2, -2.1)
   si je restart, j'entends le curtainrise, ce qu ine devrait pas etre le cas ds ce niveau car j'ai pas de curtain rise. faut il juste desacyiver un component qque part ?
+- [ ] **Level_HandleHurdles** — 2026-11-06 — note dictee (hors F2)
+  mettre des colliders pour empecher l'escalade depuis l'autre cote
+- [ ] **Level_GoWithTheFlow** — 2026-11-06 — note dictee (hors F2)
+  saut possible sur les murets ? bizarre, pas normal, a verifier
+- [ ] **Level_GoWithTheFlow** — 2026-11-06 — note dictee (hors F2)
+  bruit de chute infini si on tombe au-dessus d'un pit water ?
+- [ ] **Level_GoWithTheFlow** — 2026-11-06 — note dictee (hors F2)
+  UI victory sans textes ?
+- [ ] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
+  polish : jouer des effets d'etincelles, gear qui tourne et autres sur certains pupitres du level
+- [ ] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
+  faire une salle avec des gears qui tournent au niveau du point de vue
+- [ ] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
+  changer la regle d'impact des mannequins (un bool existe pour ca, je crois) + bruit d'impact + TMP BroomAttack
+- [ ] **General** — 2026-11-06 — note dictee (hors F2)
+  les corpses dans un pit font-ils un Cleaned Up ?
+- [ ] **General** — 2026-11-06 — note dictee (hors F2)
+  spot parasite dans TomatoThrow a enlever
