@@ -54,8 +54,8 @@
   j'ia reussi a echapper de l'ascensuer pdt la montee ? i la ts les colldiers ?
 - [x] **Level_TrouNormand** — 2026-10-28 18:54 — pos (11.6, -0.2, -2.1)
   si je restart, j'entends le curtainrise, ce qu ine devrait pas etre le cas ds ce niveau car j'ai pas de curtain rise. faut il juste desacyiver un component qque part ?
-- [ ] **Level_HandleHurdles** — 2026-11-06 — note dictee (hors F2)
-  mettre des colliders pour empecher l'escalade depuis l'autre cote
+- [x] **Level_HandleHurdles** — 2026-11-06 — note dictee (hors F2)
+  mettre des colliders pour empecher l'escalade depuis l'autre cote (fait le 2026-11-06)
 - [ ] **Level_GoWithTheFlow** — 2026-11-06 — note dictee (hors F2)
   saut possible sur les murets ? bizarre, pas normal, a verifier
 - [ ] **Level_WesternFlow** (Death Row I, « Row Deal ») — 2026-11-06 — note dictee (hors F2)
