@@ -58,7 +58,7 @@
   mettre des colliders pour empecher l'escalade depuis l'autre cote
 - [ ] **Level_GoWithTheFlow** — 2026-11-06 — note dictee (hors F2)
   saut possible sur les murets ? bizarre, pas normal, a verifier
-- [ ] **Level_GoWithTheFlow** — 2026-11-06 — note dictee (hors F2)
+- [ ] **Level_WesternFlow** (Death Row I, « Row Deal ») — 2026-11-06 — note dictee (hors F2)
   bruit de chute infini si on tombe au-dessus d'un pit water ?
 - [ ] **Level_GoWithTheFlow** — 2026-11-06 — note dictee (hors F2)
   UI victory sans textes ?
