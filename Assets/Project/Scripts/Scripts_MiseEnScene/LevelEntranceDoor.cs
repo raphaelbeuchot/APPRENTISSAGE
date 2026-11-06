@@ -19,6 +19,10 @@ public class LevelEntranceDoor : MonoBehaviour
     [Tooltip("Delai en secondes apres le fade-in avant que la porte s'ouvre")]
     [SerializeField] private float delayAfterFade = 0.5f;
 
+    [Header("Restart")]
+    [Tooltip("Coche : au restart la porte reste fermee (respawn au pupitre). Decoche : elle s'ouvre comme a l'arrivee (respawn derriere la porte)")]
+    [SerializeField] private bool stayClosedOnRestart = true;
+
     // Restart (Game Over -> Restart) : le joueur respawne au pupitre, la porte reste fermee.
     // Lu dans Awake : CountdownManager efface la cle dans son Start.
     private bool isRestart;
@@ -34,7 +38,7 @@ public class LevelEntranceDoor : MonoBehaviour
 
     private void Start()
     {
-        if (isRestart) return;
+        if (isRestart && stayClosedOnRestart) return;
 
         if (SceneFader.Instance != null && SceneFader.Instance.IsFading)
             SceneFader.Instance.OnFadeOutComplete += OnSceneReady;
