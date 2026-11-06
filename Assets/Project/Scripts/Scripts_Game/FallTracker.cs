@@ -163,6 +163,18 @@ public class FallTracker : MonoBehaviour
         }
     }
 
+    // Fill de fosse (eau, lave, acide...) : trigger, donc invisible pour IsGrounded. On coupe le son de chute
+    // a l'entree, sans splat ni mort : c'est la fosse qui gere la suite. Plus rien jusqu'au prochain appui.
+    private void OnTriggerEnter(Collider other)
+    {
+        if (cleaned || !inAir || voidResolved) return;
+        if (other.GetComponent<SplinePitFillController>() == null) return;
+
+        voidResolved = true;
+        audioSource.Stop();
+        Log(string.Format("entree dans un fill apres {0:F2} m -> son coupe", lastSupportY - tracked.position.y));
+    }
+
     private void Land(float drop)
     {
         audioSource.Stop();
