@@ -40,6 +40,9 @@ etre donne par son nom sans extension (`UI`, `StartZone_8`, `LevelEntranceDoor`)
 - `uses` sur un script compte les scenes ou il est pose ou surcharge directement. Un script pose dans un prefab
   apparait sous le prefab, pas sous les scenes : faire `uses` sur le prefab ensuite (ex. LevelEntranceDoor est
   dans StartZone_8, lui-meme dans 23 scenes).
+- Un override n'est pas forcement ce qu'on voit en jeu : pour un niveau de la campagne, le LevelCatalog passe
+  devant certaines valeurs de scene (titre du compte a rebours = Launch Text du catalogue, loadout balai/spray).
+  Verifier dans le code qui lit la valeur avant de conclure "mauvais reglage".
 - Les dossiers `_Recovery` sortent dans les resultats : copies de secours Unity, a ignorer.
 - Une scene non sauvegardee dans Unity : le fichier sur disque est l'ancienne version. Demander de sauvegarder
   avant de conclure.
