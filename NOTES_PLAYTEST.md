@@ -70,5 +70,5 @@
   changer la regle d'impact des mannequins (un bool existe pour ca, je crois) + bruit d'impact + TMP BroomAttack
 - [ ] **General** — 2026-11-06 — note dictee (hors F2)
   les corpses dans un pit font-ils un Cleaned Up ?
-- [ ] **General** — 2026-11-06 — note dictee (hors F2)
-  spot parasite dans TomatoThrow a enlever
+- [x] **General** — 2026-11-06 — note dictee (hors F2)
+  spot parasite dans TomatoThrow a enlever (corrige le 2026-11-06)
