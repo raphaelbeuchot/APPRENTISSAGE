@@ -72,3 +72,5 @@
   les corpses dans un pit font-ils un Cleaned Up ?
 - [x] **General** — 2026-11-06 — note dictee (hors F2)
   spot parasite dans TomatoThrow a enlever (corrige le 2026-11-06)
+- [ ] **General** — 2026-11-06 — note dictee (hors F2)
+  polish de l'animation climb : ok vue de dos, mais de face vraiment pas clean du tout
