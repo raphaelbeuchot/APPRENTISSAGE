@@ -66,7 +66,7 @@
   polish : jouer des effets d'etincelles, gear qui tourne et autres sur certains pupitres du level
 - [ ] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
   faire une salle avec des gears qui tournent au niveau du point de vue
-- [ ] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
+- [x] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
   changer la regle d'impact des mannequins (un bool existe pour ca, je crois) + bruit d'impact + TMP BroomAttack
 - [ ] **General** — 2026-11-06 — note dictee (hors F2)
   les corpses dans un pit font-ils un Cleaned Up ?
