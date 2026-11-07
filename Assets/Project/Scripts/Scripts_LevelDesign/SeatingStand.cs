@@ -6,6 +6,7 @@ using UnityEngine;
 // instances de prefab enfants (dans SeatingStand_Generated), sauvegardees dans la scene et retouchables a la main ;
 // "Generer" refait tout. Fauteuils tournes vers +Z local (la scene) : tourner le GO pour orienter le gradin.
 // Premiere rangee sur le pivot, les suivantes montent (+Y) et reculent (-Z). Rangees centrees en X sur le pivot.
+// Ecart = vide entre deux fauteuils voisins : la largeur du fauteuil est mesuree sur ses meshes (en X, apres Yaw Offset).
 // Les colliders du prefab sont gardes, pas de marches generees.
 public class SeatingStand : MonoBehaviour
 {
@@ -16,8 +17,8 @@ public class SeatingStand : MonoBehaviour
     public GameObject prefab;
     [Min(1)] public int rows = 3;
     [Min(1)] public int seatsPerRow = 6;
-    [Tooltip("Distance entre les pivots de deux fauteuils voisins, en metres.")]
-    [Min(0.01f)] public float seatSpacing = 0.7f;
+    [Tooltip("Vide entre deux fauteuils voisins, en metres (la largeur du fauteuil est mesuree sur le prefab).")]
+    [Min(0f)] public float seatGap = 0.05f;
 
     [Header("Escalier")]
     [Tooltip("Hauteur de chaque rangee par rapport a la precedente.")]
@@ -34,6 +35,7 @@ public class SeatingStand : MonoBehaviour
     public List<Vector3> SeatPositions()
     {
         var list = new List<Vector3>();
+        float seatSpacing = SeatWidth() + seatGap;
         for (int r = 0; r < rows; r++)
         {
             float shift = staggered && r % 2 == 1 ? seatSpacing * 0.5f : 0f;
@@ -44,11 +46,34 @@ public class SeatingStand : MonoBehaviour
         return list;
     }
 
+    // Largeur du fauteuil en X local du gradin : boite des meshes du prefab, tournee du Yaw Offset. 0 sans mesh.
+    public float SeatWidth()
+    {
+        if (prefab == null) return 0f;
+        Matrix4x4 rootInv = prefab.transform.worldToLocalMatrix;
+        Matrix4x4 yawScale = Matrix4x4.Rotate(Quaternion.Euler(0f, yawOffset, 0f)) * Matrix4x4.Scale(prefab.transform.localScale);
+        float min = float.MaxValue, max = float.MinValue;
+        foreach (MeshFilter mf in prefab.GetComponentsInChildren<MeshFilter>(true))
+        {
+            if (mf.sharedMesh == null) continue;
+            Matrix4x4 m = yawScale * rootInv * mf.transform.localToWorldMatrix;
+            Bounds b = mf.sharedMesh.bounds;
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 sign = new Vector3((i & 1) * 2 - 1, ((i >> 1) & 1) * 2 - 1, ((i >> 2) & 1) * 2 - 1);
+                float x = m.MultiplyPoint3x4(b.center + Vector3.Scale(b.extents, sign)).x;
+                min = Mathf.Min(min, x);
+                max = Mathf.Max(max, x);
+            }
+        }
+        return max > min ? max - min : 0f;
+    }
+
     void OnDrawGizmosSelected()
     {
         Gizmos.matrix = transform.localToWorldMatrix;
         Gizmos.color = new Color(1f, 0.8f, 0.2f, 0.8f);
-        Vector3 size = new Vector3(seatSpacing * 0.8f, 0.1f, Mathf.Max(0.1f, Mathf.Abs(rowDepth) * 0.6f));
+        Vector3 size = new Vector3(Mathf.Max(0.1f, SeatWidth()), 0.1f, Mathf.Max(0.1f, Mathf.Abs(rowDepth) * 0.6f));
         foreach (Vector3 p in SeatPositions())
         {
             Gizmos.DrawWireCube(p, size);
