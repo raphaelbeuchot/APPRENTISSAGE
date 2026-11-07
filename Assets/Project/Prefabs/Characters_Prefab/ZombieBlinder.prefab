@@ -133,7 +133,6 @@ GameObject:
   - component: {fileID: -1765412710480583640}
   - component: {fileID: 4582366830139996830}
   - component: {fileID: -2056432718933974352}
-  - component: {fileID: 3175957205576492235}
   - component: {fileID: 7720414994150060305}
   - component: {fileID: -8744765910993835984}
   m_Layer: 6
@@ -469,24 +468,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf7fdf9d96cfc7e44acad20a5eb09d8a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeadBodyPhysics
---- !u!114 &3175957205576492235
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5248851035368284380}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be122048be0ad3a489c1c1ef067bbe63, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyIdleVariant
-  idleVariants:
-  - {fileID: 9100000, guid: 9d9ca0e0cc0377c488a38a800512e521, type: 2}
-  - {fileID: 22100000, guid: fff735021c369f446a56005793e40ddf, type: 2}
-  - {fileID: 22100000, guid: 8a98e23c2241e6d44be843d8e66b9def, type: 2}
-  - {fileID: 22100000, guid: f39831ddc3718a2458711fc3eef11309, type: 2}
-  - {fileID: 22100000, guid: 33ea26d07d0eb2c4c87d6bbb0b0af187, type: 2}
 --- !u!114 &7720414994150060305
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -518,7 +499,9 @@ MonoBehaviour:
   fallingClip: {fileID: 8300000, guid: 279589b36ae5c4d4f89545cd730c5c53, type: 3}
   landingClip: {fileID: 0}
   splatClip: {fileID: 8300000, guid: d6a8b296848aab6499c7cf7eca6c7d61, type: 3}
+  deathCause: {fileID: 0}
   groundCheckDistance: 0.3
+  corpseGroundCheckDistance: 0.5
   groundMask:
     serializedVersion: 2
     m_Bits: 4294967295
