@@ -68,8 +68,8 @@
   faire une salle avec des gears qui tournent au niveau du point de vue
 - [x] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
   changer la regle d'impact des mannequins (un bool existe pour ca, je crois) + bruit d'impact + TMP BroomAttack
-- [ ] **General** — 2026-11-06 — note dictee (hors F2)
-  les corpses dans un pit font-ils un Cleaned Up ?
+- [x] **General** — 2026-11-06 — note dictee (hors F2)
+  les corpses dans un pit font-ils un Cleaned Up ? -> oui, dans les fosses spline : retabli le 2026-10-27 (SplinePitFillController, cas « Hips » du ragdoll), valide dans Flower Power III. Pas dans les anciennes fosses grille (voir migration dans CE_QUI_RESTE_A_FAIRE.md)
 - [x] **General** — 2026-11-06 — note dictee (hors F2)
   spot parasite dans TomatoThrow a enlever (corrige le 2026-11-06)
 - [ ] **General** — 2026-11-06 — note dictee (hors F2)
