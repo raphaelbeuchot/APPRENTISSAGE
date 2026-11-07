@@ -29,6 +29,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     // Visuel windup
     private Renderer enemyRenderer;
     private Material originalMaterial;
+    private WindupFlashTargets flashTargets;
     private Vector3 originalScale;
 
     // Nouveau systeme de timings fixes
@@ -74,6 +75,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         {
             originalMaterial = enemyRenderer.material;
         }
+        flashTargets = GetComponent<WindupFlashTargets>();
         originalScale = transform.localScale;
         animator = GetComponent<Animator>();
         if (animator != null)
@@ -363,7 +365,9 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
             float scaleMultiplier = 1f + Mathf.Sin(elapsed * pulseSpeed) * 0.1f;
             transform.localScale = originalScale * scaleMultiplier;
 
-            if (enemyRenderer != null && windupMaterial != null)
+            if (flashTargets != null && flashTargets.HasTargets)
+                flashTargets.Flash(windupMaterial);
+            else if (enemyRenderer != null && windupMaterial != null)
                 enemyRenderer.material = windupMaterial;
 
             yield return null;
@@ -376,6 +380,7 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
     {
         transform.localScale = originalScale;
 
+        if (flashTargets != null) flashTargets.Restore();
         if (enemyRenderer != null && originalMaterial != null)
             enemyRenderer.material = originalMaterial;
     }

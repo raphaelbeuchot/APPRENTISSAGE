@@ -14,6 +14,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
     private Transform player;
     private Animator animator;
     private BlinderSurprisedFeedback surprisedFeedback;
+    private WindupFlashTargets flashTargets;
 
 
     private float originalLinearDamping = 5f;
@@ -45,6 +46,7 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
         enemyAI = GetComponent<EnemyAI_AStar>();
         wanderBehavior = GetComponent<BlinderWanderBehavior>();
         surprisedFeedback = GetComponent<BlinderSurprisedFeedback>();
+        flashTargets = GetComponent<WindupFlashTargets>();
         aiPath = GetComponent<AIPath>();
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
@@ -150,6 +152,8 @@ public class ChargeAttack : MonoBehaviour, IAttackBehavior
         if (animator != null) animator.SetTrigger("Surprised");
 
         float rotationDuration = 0.3f;
+        // Flash de "detection sonore", equivalent du windup des autres ennemis (dure le temps du Surprised)
+        if (flashTargets != null) flashTargets.FlashFor(stats.windupMaterial, rotationDuration);
         float rotationElapsed = 0f;
         Quaternion startRotation = transform.rotation;
         Quaternion targetRotation = Quaternion.LookRotation(lockedDirection);

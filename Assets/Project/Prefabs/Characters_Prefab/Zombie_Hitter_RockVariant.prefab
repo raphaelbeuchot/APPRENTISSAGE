@@ -771,6 +771,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5232218727540076280, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: 'targets.Array.data[0]'
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Name
       value: Zombie_Hitter_RockVariant
@@ -842,13 +846,37 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4559826915694432162, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       insertIndex: 0
       addedObject: {fileID: 1151120407939708359}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -5246150615019690043}
   m_SourcePrefab: {fileID: 100100000, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
 --- !u!4 &1399323711982592538 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6982481125525153411, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
   m_PrefabInstance: {fileID: 8326491701737358489}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &4276746340859012165 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+  m_PrefabInstance: {fileID: 8326491701737358489}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &-5246150615019690043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4276746340859012165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c5d38cd16411d544b03a71b1d4f9c20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WindupFlashTargets
+  targets:
+  - {fileID: 5643329436516189462}
+  - {fileID: 8651664679197437223}
+  - {fileID: 1054514058444256164}
 --- !u!4 &5533347783268911931 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4559826915694432162, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}

@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 6303682572311570370}
   - component: {fileID: 1164020118848615808}
   - component: {fileID: 6889041550953854622}
+  - component: {fileID: -6950387454433075093}
   m_Layer: 6
   m_Name: Zombie_Bloat_Hitter_NonExplosif_Diamond
   m_TagString: Untagged
@@ -385,11 +386,26 @@ MonoBehaviour:
   fallingClip: {fileID: 8300000, guid: 279589b36ae5c4d4f89545cd730c5c53, type: 3}
   landingClip: {fileID: 0}
   splatClip: {fileID: 8300000, guid: d6a8b296848aab6499c7cf7eca6c7d61, type: 3}
+  deathCause: {fileID: 0}
   groundCheckDistance: 0.3
+  corpseGroundCheckDistance: 0.5
   groundMask:
     serializedVersion: 2
     m_Bits: 4294967295
   showDebugLogs: 1
+--- !u!114 &-6950387454433075093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832123752479731275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c5d38cd16411d544b03a71b1d4f9c20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WindupFlashTargets
+  targets: []
 --- !u!1 &8670457289442069265
 GameObject:
   m_ObjectHideFlags: 0
