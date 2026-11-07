@@ -75,6 +75,6 @@
 - [ ] **Level_WesternFlow** (Death Row I, « Row Deal ») — 2026-11-07 — note dictee (hors F2)
   uniformiser les blocks
 - [ ] **Level_WesternFlow** (Death Row I, « Row Deal ») — 2026-11-07 — note dictee (hors F2)
-  si la poutre tombe, on est bloques dans le niveau. piste : un switch qui en fait respawn une et la remet en position
+  si la poutre tombe, on est bloques dans le niveau. la poutre est un piege voulu (equilibre precaire, tombe si on passe trop lentement) -> il faut en faire reapparaitre une neuve a l'emplacement initial (piste : un switch). ne pas detruire les anciennes : les poutres tombees restent et illustrent nos echecs. au restart, on repart de zero (une seule poutre)
 - [ ] **General** — 2026-11-06 — note dictee (hors F2)
   polish de l'animation climb : ok vue de dos, mais de face vraiment pas clean du tout

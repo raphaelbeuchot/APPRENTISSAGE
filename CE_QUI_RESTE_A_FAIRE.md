@@ -38,6 +38,7 @@
   - **Direction du 2026-10-15** : le balai devient un accessoire d'épisode, comme les tomates → **socle de prise** placé selon le niveau (début ou milieu) + **socle de dépôt** en sortie (« Pour continuer, merci de déposer votre balai », hyper rapide et arcade) ; en multi, balai toujours équipé. Voir `STRUCTURE_CAMPAGNE.md`.
 - [ ] ⚪ **StartRoom — décor de « niche »** (idée des notes de playtest du 2026-10-27) : lit de camp, etc. Dans le lore, le joueur rentre dans sa niche et en ressort pour l'émission (voir `LORE_ET_DESIGN.md`).
 - [ ] ⚪ **BrightEyes — à revoir** (idée des notes de playtest du 2026-10-27, non tranchée) : n'activer ses cercles rouges concentriques que si on est détecté ; revoir l'ennemi en général, peut-être plus simple que le système d'animation actuel.
+- [ ] 🟡 **Ennemi invisible pour la sentinelle** (idée du 2026-11-07) : un ennemi plus mécanique, un petit robot, que la sentinelle ne détecte pas (il bouge pendant le feu rouge sans être puni). **À trouver** : comment le joueur s'en débarrasse.
 - [ ] ⚪ **EnemyAI_Astar** — revoir le comportement après hit raté : garder l'ennemi en Chase plutôt que retomber en Idle
 - [ ] 🟡 **Fixer le nombre de niveaux et s'y tenir** (noté le 2026-10-25) : arrêter un nombre de niveaux pour la campagne et ne plus en dévier (lien avec `STRUCTURE_CAMPAGNE.md` et le `LevelCatalog`)
 - [ ] 🟡 **Remettre un écran de sélection de niveau** (noté le 2026-10-25, **à étudier**) : à mettre en regard de l'idée « accès dev aux niveaux » (DevPanel + `LevelCatalog`) et de l'ancien LevelSelect
