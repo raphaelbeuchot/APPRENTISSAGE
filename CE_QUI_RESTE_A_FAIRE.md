@@ -56,6 +56,7 @@
   - [ ] Pour une démo publique : nettoyer les numéros de build en dur (`LoadScene(0/1/2/19)`, cas des builds 3 et 4 dans `LevelManager`) avant de réduire la liste de scènes.
 - [ ] 🔴 **Boss final** — ajouter un boss de fin de jeu : à définir (arène, pattern d'attaques, phases, mise en scène d'intro/mort, musique dédiée)
   - **Point du 2026-11-07** : il reste le **dernier niveau** à faire, peut-être avec ce boss (non tranché). Le reste est quasi en place.
+  - **Précisé le 2026-11-07** : le boss final de la démo sera **dans Rush Hour IV** (dernier niveau de la démo) ; c'est le dernier gros chantier restant pour la démo. Le boss lui-même reste à définir.
 - [ ] 🟡 **DA des ennemis : uniformiser ou personnaliser par thème ?** (réflexion du 2026-11-07, **non tranchée**, l'utilisateur hésite encore) : les salles ont des thèmes, d'où l'idée d'ennemis habillés selon le thème (aspect cactus pour le western, rocher pour la lave, etc.). Contrainte : que chaque type d'ennemi reste lisible pour le joueur, quel que soit son habillage.
 
 ---
