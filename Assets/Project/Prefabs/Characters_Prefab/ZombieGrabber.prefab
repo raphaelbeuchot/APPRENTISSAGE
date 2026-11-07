@@ -244,7 +244,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72d07bd214d077c488abee747a7073be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI_AStar
-  stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  stats: {fileID: 11400000, guid: 438c9a90f028bc145a47ac5714d06046, type: 2}
   playerStats: {fileID: 11400000, guid: 63aa2f9fe30284442a182704ca27d6a1, type: 2}
   arrivalThreshold: 0.5
   targetHuman: {fileID: 0}
@@ -385,7 +385,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29802d361abaa4c41b34d8c72e42b30f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  stats: {fileID: 11400000, guid: 132127e814882364e894d70b0d7c8922, type: 2}
+  stats: {fileID: 11400000, guid: 438c9a90f028bc145a47ac5714d06046, type: 2}
   stunSpiralPrefab: {fileID: 1267014287564623383, guid: 3b92e98228291b7499f0cf96a7602515, type: 3}
   crowdLaughterSound: {fileID: 0}
   recentlyHitBySentinel: 0
@@ -485,7 +485,9 @@ MonoBehaviour:
   fallingClip: {fileID: 8300000, guid: 279589b36ae5c4d4f89545cd730c5c53, type: 3}
   landingClip: {fileID: 0}
   splatClip: {fileID: 8300000, guid: d6a8b296848aab6499c7cf7eca6c7d61, type: 3}
+  deathCause: {fileID: 0}
   groundCheckDistance: 0.3
+  corpseGroundCheckDistance: 0.5
   groundMask:
     serializedVersion: 2
     m_Bits: 4294967295
