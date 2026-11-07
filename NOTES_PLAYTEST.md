@@ -72,5 +72,9 @@
   les corpses dans un pit font-ils un Cleaned Up ? -> oui, dans les fosses spline : retabli le 2026-10-27 (SplinePitFillController, cas « Hips » du ragdoll), valide dans Flower Power III. Pas dans les anciennes fosses grille (voir migration dans CE_QUI_RESTE_A_FAIRE.md)
 - [x] **General** — 2026-11-06 — note dictee (hors F2)
   spot parasite dans TomatoThrow a enlever (corrige le 2026-11-06)
+- [ ] **Level_WesternFlow** (Death Row I, « Row Deal ») — 2026-11-07 — note dictee (hors F2)
+  uniformiser les blocks
+- [ ] **Level_WesternFlow** (Death Row I, « Row Deal ») — 2026-11-07 — note dictee (hors F2)
+  si la poutre tombe, on est bloques dans le niveau. piste : un switch qui en fait respawn une et la remet en position
 - [ ] **General** — 2026-11-06 — note dictee (hors F2)
   polish de l'animation climb : ok vue de dos, mais de face vraiment pas clean du tout
