@@ -3009,7 +3009,7 @@ PrefabInstance:
     - target: {fileID: 815528242725882479, guid: f81f00d417fb3554b87ff8969f5ec37c, type: 3}
       propertyPath: sentinelCycleManager
       value: 
-      objectReference: {fileID: 2103414916}
+      objectReference: {fileID: 1450718896692970385}
     - target: {fileID: 2275560950659806257, guid: f81f00d417fb3554b87ff8969f5ec37c, type: 3}
       propertyPath: m_LocalScale.x
       value: 12
@@ -42388,17 +42388,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
---- !u!114 &697552402 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5847959052634411871, guid: 9e1d2572fec40b84c9db9e701c750fa7, type: 3}
-  m_PrefabInstance: {fileID: 697552401}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 117157ca8c4a2bd4090bd48b4e6852a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedLightVolumeController
 --- !u!4 &697568838 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
@@ -56949,7 +56938,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SentinelCentralLight
   centralLight: {fileID: 946305090}
-  sentinelCycleManager: {fileID: 2103414916}
+  sentinelCycleManager: {fileID: 1450718896692970385}
   greenLightColor: {r: 1, g: 0.9305355, b: 0.16509432, a: 1}
   greenLightIntensity: 2
   greenLightRange: 10
@@ -128449,17 +128438,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
---- !u!114 &2103414916 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-  m_PrefabInstance: {fileID: 9019177782128006907}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f10f21fbc34920f4fadcc816ee0b03f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SentinelCycleManager
 --- !u!1001 &2104564406
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -130536,7 +130514,7 @@ PrefabInstance:
     - target: {fileID: 2880000189980898460, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: cycleManager
       value: 
-      objectReference: {fileID: 2103414916}
+      objectReference: {fileID: 1450718896692970385}
     - target: {fileID: 3870675793715944844, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_Name
       value: UI
@@ -130766,6 +130744,21 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+--- !u!4 &1010105801249564636
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8550864380052068769}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.78797, y: 0, z: 17.06657}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1399701674331303034
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -130932,6 +130925,52 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
   m_PrefabInstance: {fileID: 972013750070247632}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1450718896692970385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8550864380052068769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f51837dd4a1074fb4fd12725be51a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelCycleManager
+  sentinelSettings: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
+  minCycleDurationMultiplier: 0.3
+  disableDistancePressure: 0
+  playerTransform: {fileID: 4617868051715933207}
+  playerTransform2: {fileID: 0}
+  sentinelTransform: {fileID: 887716756}
+  startZoneTransform: {fileID: 0}
+  gameManager: {fileID: 1801742136}
+  lightsToDisableInRedLight:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 1093731449}
+  sentinelCentralLight: {fileID: 946305088}
+  playerSpotLight: {fileID: 880121874}
+  epervierManager: {fileID: 0}
+  epervierManagerNEW: {fileID: 0}
+  epervierManagerLoop: {fileID: 0}
+  canyonTileManager: {fileID: 0}
+  goalDoorTransform: {fileID: 871157101}
+  greenLightMusicLoop: {fileID: 8300000, guid: 0aa7a84ba97d27f46b02b067f7c60011, type: 3}
+  redLightMusicLoop: {fileID: 8300000, guid: 33baaeebfb1ef4e4eb5c2b1e532c20a5, type: 3}
+  alertSound: {fileID: 8300000, guid: e2f2c96e2e7377d42a45d074be9c7031, type: 3}
+  alertIgnitionSound: {fileID: 8300000, guid: d43733bf375d9894aafe4cbd8c38ba6d, type: 3}
+  maxMusicPitch: 1.5
+  musicVolume: 0.75
+  vinylSlowDownDuration: 3
+  vinylHighPassMaxFrequency: 8000
+  vinylMinPitch: 0.2
+  currentState: 0
+  isTutorialMode: 0
+  tutorialPromptUI: {fileID: 0}
+  redLightTutorialSprite: {fileID: 0}
+  aerialLight: {fileID: 1298930524}
+  alertDuration: 0
 --- !u!4 &1703198638632186534 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1703198637837860369, guid: 265b95b0768b200439126120894c07a1, type: 3}
@@ -131200,7 +131239,7 @@ PrefabInstance:
     - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
       propertyPath: laserManager
       value: 
-      objectReference: {fileID: 9019177782128006908}
+      objectReference: {fileID: 5321454026336521061}
     - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
       propertyPath: playerHealth
       value: 
@@ -131208,7 +131247,7 @@ PrefabInstance:
     - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
       propertyPath: sentinelCycleManager
       value: 
-      objectReference: {fileID: 2103414916}
+      objectReference: {fileID: 1450718896692970385}
     - target: {fileID: 8872986562732300510, guid: e7c71e794a6cf6e4e98b38a48075c02e, type: 3}
       propertyPath: sentinelLightRenderer
       value: 
@@ -131304,6 +131343,30 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
+--- !u!114 &5321454026336521061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8550864380052068769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6afb0367d98285046b149b0acb56de7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SentinelLaserManager
+  sentinelEye: {fileID: 596375675}
+  sentinelSettings: {fileID: 11400000, guid: 7201bcd0f87f3814985c04cdec81b573, type: 2}
+  laserPlayerMaterialNormal: {fileID: 2100000, guid: e3d9487d8fa48ff448a173f9c79cbc81, type: 2}
+  laserPlayerMaterialDetected: {fileID: 2100000, guid: fec7793cdba3027448af2a0ed2a36992, type: 2}
+  laserPlayerWidthNormal: 0.02
+  laserPlayerWidthDetected: 0.02
+  laserEnemyMaterialNormal: {fileID: 2100000, guid: 7f8b5163730b7c34eac08ca95b0bf024, type: 2}
+  laserEnemyMaterialDetected: {fileID: 2100000, guid: fec7793cdba3027448af2a0ed2a36992, type: 2}
+  laserEnemyWidthNormal: 0.02
+  laserEnemyWidthDetected: 0.02
+  shotProjectilePrefab: {fileID: 532795292520040346, guid: 1cb12573de17c434fbd72c5e25970536, type: 3}
+  shotProjectileSpeed: 140
 --- !u!114 &6140236864197050197 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4183692647534518499, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
@@ -131481,166 +131544,24 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4845343978083670837, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
   m_PrefabInstance: {fileID: 6978021389780206166}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &9019177782128006907
-PrefabInstance:
+--- !u!1 &8550864380052068769
+GameObject:
   m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 828745556533612378, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: m_Name
-      value: SentinelCycleManager
-      objectReference: {fileID: 0}
-    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: player
-      value: 
-      objectReference: {fileID: 6140236864197050197}
-    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: gameManager
-      value: 
-      objectReference: {fileID: 1801742136}
-    - target: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: sentinelEye
-      value: 
-      objectReference: {fileID: 596375675}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: aerialLight
-      value: 
-      objectReference: {fileID: 1298930524}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: gameManager
-      value: 
-      objectReference: {fileID: 1801742136}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: playerSpotLight
-      value: 
-      objectReference: {fileID: 880121874}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: playerTransform
-      value: 
-      objectReference: {fileID: 4617868051715933207}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: goalDoorTransform
-      value: 
-      objectReference: {fileID: 871157101}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: sentinelTransform
-      value: 
-      objectReference: {fileID: 887716756}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: startZoneTransform
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: redLightDirectional
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: sentinelCentralLight
-      value: 
-      objectReference: {fileID: 946305088}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: sentinelLightRenderer
-      value: 
-      objectReference: {fileID: 887716754}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: marqueeLightController
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: spotColorCompensated.b
-      value: 0.4575472
-      objectReference: {fileID: 0}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: spotColorCompensated.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: spotColorCompensated.r
-      value: 0.92849886
-      objectReference: {fileID: 0}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: redLightVolumeController
-      value: 
-      objectReference: {fileID: 697552402}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: lightsToDisableInRedLight.Array.size
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: 'lightsToDisableInRedLight.Array.data[0]'
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: 'lightsToDisableInRedLight.Array.data[1]'
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: 'lightsToDisableInRedLight.Array.data[2]'
-      value: 
-      objectReference: {fileID: 1093731449}
-    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: 'lightsToDisableInRedLight.Array.data[3]'
-      value: 
-      objectReference: {fileID: 940198128}
-    - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 4.78797
-      objectReference: {fileID: 0}
-    - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 17.06657
-      objectReference: {fileID: 0}
-    - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8299592843763085607, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
---- !u!114 &9019177782128006908 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3815415669408243102, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
-  m_PrefabInstance: {fileID: 9019177782128006907}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6afb0367d98285046b149b0acb56de7c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SentinelLaserManager
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1010105801249564636}
+  - component: {fileID: 1450718896692970385}
+  - component: {fileID: 5321454026336521061}
+  m_Layer: 0
+  m_Name: SentinelCycleManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -131660,7 +131581,7 @@ SceneRoots:
   - {fileID: 2935833755866064575}
   - {fileID: 3739046734473817271}
   - {fileID: 2731549200403877522}
-  - {fileID: 9019177782128006907}
+  - {fileID: 1010105801249564636}
   - {fileID: 4913714743123645038}
   - {fileID: 1551312464}
   - {fileID: 565715951296508113}

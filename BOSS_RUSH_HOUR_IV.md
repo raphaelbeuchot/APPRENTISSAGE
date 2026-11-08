@@ -8,7 +8,10 @@ Marqué **(décidé)** ce que l'utilisateur a tranché ; tout le reste est piste
 ## Reprendre ici
 
 - **Fait** : la caméra marche dans la scène (`Level_TrafficJam_04.unity`), sans code. Détail dans « Caméra ».
-- **Rien n'est codé** pour le reste.
+- **Fait (2026-11-08) : pression par phase**, validée en jeu (les phases s'enchaînent, l'UI répond). `Scripts/Boss/BossCycleManager.cs` hérite de `SentinelCycleManager` : liste de phases sur le composant (fourchette verte, fourchette rouge, pression 0-1) ; durées tirées dans la fourchette, sans raccourcissement ; pression = celle de la phase, **sans distance ni ennemis** ; `NextPhase()` (appliquée au feu suivant), testable par clic droit sur le composant > *Phase suivante*. La durée de l'alerte suit la pression (longueur du son ÷ pitch, `maxPitch` du SO). Valeurs des 4 phases = point de départ à équilibrer.
+- **Dans la scène, le prefab `SentinelCycleManager` est unpacké** (seulement dans Rush Hour IV) pour y mettre `BossCycleManager` : les changements futurs du prefab n'y arrivent plus.
+- **Le délai avant la mise en route et la pause entre phases** : reportés, ils dépendent de la mise en scène (Timeline ou non, caméras intermédiaires : non tranché).
+- **Rien d'autre n'est codé.**
 - **Ordre de travail proposé** (petites étapes testables) :
   1. ~~Caméra~~ : validée.
   2. **Cycle** : pression par phase + pause propre entre deux phases (`SentinelCycleManager`, partagé : checklist solo).
