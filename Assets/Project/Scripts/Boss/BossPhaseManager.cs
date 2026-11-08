@@ -39,6 +39,8 @@ public class BossPhaseManager : MonoBehaviour
 
     [Header("Cycle")]
     [SerializeField] private BossCycleManager cycleManager;
+    [Tooltip("Entre-phases (joueur fige, ennemis enleves) : lancee au dernier pupitre de chaque phase. Vide = rien.")]
+    [SerializeField] private BossTransition transition;
 
     [Header("Phases")]
     [SerializeField] private List<BossPhase> phases = new List<BossPhase>();
@@ -186,6 +188,7 @@ public class BossPhaseManager : MonoBehaviour
 
         // Le dernier pupitre coupe tout, quel que soit l'etat du cycle
         if (cycleManager != null) cycleManager.PauseCycle();
+        if (transition != null) transition.Begin();
 
         phase.effets.onPhaseComplete?.Invoke();
 
