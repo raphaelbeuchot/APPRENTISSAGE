@@ -21,8 +21,9 @@ public class BossCycleManager : SentinelCycleManager
         [Min(0.1f)] public float redMax = 6f;
         [Tooltip("0 = calme, 1 = max. Regle le pitch de la musique, celui de l'alerte (donc sa duree) et la jauge.")]
         [Range(0f, 1f)] public float pressure = 0f;
-        [Tooltip("Debut de cette phase apres la pause de fin de la precedente : le cycle reprend apres ce delai (s). " +
-                 "0 = pas de reprise auto (ResumeCycle a appeler depuis un evenement, une Timeline...). Ignore pour la premiere phase.")]
+        [Tooltip("Debut de cette phase : delai (s) avant la reprise du cycle. Avec une BossTransition, compte a partir du " +
+                 "relachement du joueur (0 = reprise immediate). Sans transition, compte depuis le dernier pupitre " +
+                 "(0 = pas de reprise auto). Ignore pour la premiere phase.")]
         [Min(0f)] public float resumeDelay = 3f;
     }
 

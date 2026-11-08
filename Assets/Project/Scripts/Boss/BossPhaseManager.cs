@@ -115,6 +115,8 @@ public class BossPhaseManager : MonoBehaviour
                 pupitre.gameObject.SetActive(false);
             }
         }
+
+        if (transition != null) transition.Ended += OnTransitionEnded;
     }
 
     private void Start()
@@ -131,15 +133,43 @@ public class BossPhaseManager : MonoBehaviour
         foreach (BossPhase phase in phases)
             foreach (BossPupitre pupitre in phase.pupitres)
                 if (pupitre != null) pupitre.Activated -= OnPupitreActivated;
+
+        if (transition != null) transition.Ended -= OnTransitionEnded;
     }
 
     private Coroutine resumeCoroutine;
+    // Avec une BossTransition : le cycle attend la fin de la transition (joueur relache) pour reprendre
+    private bool waitingForTransitionEnd = false;
 
     private IEnumerator ResumeAfterDelay(float delay)
     {
-        yield return new WaitForSeconds(delay);
+        if (delay > 0f) yield return new WaitForSeconds(delay);
         resumeCoroutine = null;
         cycleManager.ResumeCycle();
+    }
+
+    private void StartResume(float delay)
+    {
+        if (cycleManager == null) return;
+        if (resumeCoroutine != null) StopCoroutine(resumeCoroutine);
+        resumeCoroutine = StartCoroutine(ResumeAfterDelay(delay));
+    }
+
+    private void OnTransitionEnded()
+    {
+        if (!waitingForTransitionEnd) return;
+        waitingForTransitionEnd = false;
+
+        float delay = CurrentResumeDelay();
+        Debug.Log($"[BOSS PHASES] Fin de transition : reprise du cycle dans {delay:F1}s");
+        StartResume(delay);
+    }
+
+    private float CurrentResumeDelay()
+    {
+        if (currentPhaseIndex < 0 || currentPhaseIndex >= phases.Count) return 0f;
+        BossCycleManager.PhaseCycle c = phases[currentPhaseIndex].cycle;
+        return c != null ? c.resumeDelay : 0f;
     }
 
     private void StartPhase(int index)
@@ -196,11 +226,16 @@ public class BossPhaseManager : MonoBehaviour
         {
             StartPhase(currentPhaseIndex + 1);
 
-            float delay = phases[currentPhaseIndex].cycle != null ? phases[currentPhaseIndex].cycle.resumeDelay : 0f;
-            if (cycleManager != null && delay > 0f)
+            if (transition != null)
             {
-                if (resumeCoroutine != null) StopCoroutine(resumeCoroutine);
-                resumeCoroutine = StartCoroutine(ResumeAfterDelay(delay));
+                // Le cycle reste arrete toute la transition ; le delai part du relachement du joueur
+                waitingForTransitionEnd = true;
+            }
+            else
+            {
+                // Sans transition : reprise apres le delai, compte depuis le dernier pupitre (0 = pas de reprise auto)
+                float delay = CurrentResumeDelay();
+                if (delay > 0f) StartResume(delay);
             }
         }
         else

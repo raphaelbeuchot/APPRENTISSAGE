@@ -23,6 +23,11 @@ public class BossTransition : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool playerFrozen = false;
 
+    /// <summary>Fin de l'entre-phases (joueur rendu). Le BossPhaseManager y lance la reprise du cycle.</summary>
+    public event System.Action Ended;
+
+    public bool IsPlayerFrozen => playerFrozen;
+
     private PlayerPhysicsMovement player;
     private Rigidbody playerRb;
 
@@ -76,6 +81,7 @@ public class BossTransition : MonoBehaviour
         player.isFrozen = false;
         if (PlayerInputManager.Instance != null) PlayerInputManager.Instance.IsLocked = false;
         Debug.Log("[BOSS TRANSITION] Joueur rendu");
+        Ended?.Invoke();
     }
 
     // ============================================
