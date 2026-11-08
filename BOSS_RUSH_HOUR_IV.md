@@ -23,7 +23,21 @@ Marqué **(décidé)** ce que l'utilisateur a tranché ; tout le reste est piste
   - Dans la scène : `BOSSPHASEMANAGER` + cylindres de test comme pupitres (`PhaseN_CylinderNN`), 4 phases.
   - Choix écarté : phases et pupitres en enfants dans la Hierarchy (impose le rangement de la scène).
 
-**Suite** : la mise en scène va dicter les nouveaux besoins. Pistes, non tranchées : monter une transition entre deux phases avec l'existant (Timeline, caméras, cases d'effets) ; immobiliser le joueur pendant la mise en place ; descente des pupitres des cintres ; explosion d'un morceau de sentinelle ; cercles abattables ; délai avant la mise en route du cycle ; musique par phase (clips encore `private`).
+- **Cage du joueur** (2026-11-08) : `BossCage`, posée sur l'objet `CAGE` (enfant `Holdpoint`). `Grab` fige le joueur, le passe en cinématique et le colle au point d'accroche chaque frame ; coupe `FallTracker` ; bloque la touche de vue (`CameraPanningExtension.UnlockViewToggle` ajouté, seul changement partagé) ; met la première caméra de transition à 30. `Release` remet tout. `ShowCamera(i)` pour passer d'un plan à l'autre. Bascule CM_NormalMode / vue basse → transition → retour validée. Le trajet de la cage n'est pas codé (Timeline ou animation). **Pas encore branchée sur les phases.**
+- **Transition** (2026-11-08) : `BossTransition`, appelée par le `BossPhaseManager` au dernier pupitre, juste après la pause du cycle.
+  - Joueur figé sur place (« coffre de BotW », **décidé**) : `isFrozen` + `PlayerInputManager.IsLocked` (crouch, balai, spray, tomates, interaction) ; la gravité continue.
+  - Zombies vivants : gel **dédié** et définitif (**décidé** : ils ne reviennent jamais), montée provisoire de 8 m en 3 s, puis suppression. Barres de vie et minuteurs désinscrits. Cadavres non touchés.
+  - Clic droit *Rendre le joueur* : fin de transition. **Le cycle reste arrêté toute la transition** ; `Resume Delay` compte à partir du relâchement (0 = reprise immédiate).
+  - Limite : rouvrir le menu pause pendant la transition lève `IsLocked`.
+
+**Flow d'entre-phases imaginé** (2026-11-08, piste) : 3e pupitre → caméra sur la sentinelle, un cercle explose → caméra revient sur le joueur → la cage le prend, monte → le décor se transforme dessous → la cage se déplace vers sa future position, se pose → elle le libère → texte rotatif « Phase 2 » + jingle (afficheur à part, nouveau script) → le cycle reprend à la fin du jingle. Des cages enlèvent les zombies vivants et d'autres apportent ceux de la phase suivante.
+- Début de niveau normal, pour comparaison : jingle = `CountdownManager.countdownStartSound`, texte = `GameUIManager.ShowCountdown`, mais le cycle démarre après un délai **fixe** (`PupitreInteraction.gameStartDelay` 4,5 s), pas sur la fin du jingle.
+
+**Suite**, dans l'ordre proposé :
+- **b.** Vider la barre d'icônes d'ennemis au dernier pupitre (**décidé** : on la vide, on en remplit une nouvelle).
+- **c.** Zombies de chaque phase en liste dans la phase (comme les pupitres), désactivés au lancement, activés en début de phase ; nouvelle barre d'icônes. Vérifier qu'un zombie activé en cours de partie est bien suivi (icônes créées une seule fois au lancement du cycle) ; code propre au niveau si besoin.
+- **d.** Brancher la cage sur la transition (aujourd'hui `BossCage.Release` remet `isFrozen` à faux tout seul : à accorder avec `BossTransition`) ; la cage qui vient au joueur demandera sans doute du code.
+- Ensuite : texte « Phase N » + jingle ; caméra sur la sentinelle ; explosion ; descente des pupitres ; cercles abattables ; musique par phase (clips encore `private`). Autres types d'ennemis (essaims, BrightEyes, bombes) non gérés par la transition.
 
 **Ordre de travail d'origine**, pour mémoire : 1. ~~Caméra~~ 2. ~~Cycle~~ 3. ~~Pupitres et phases~~ (reste : abattre un cercle, figer le joueur, mise en place) 4. Cercles abattables 5. Géant (SO dédié, œil et lumière sur sa tête) 6. Fin (lasers, passerelle, pupitre central, sortie).
 
