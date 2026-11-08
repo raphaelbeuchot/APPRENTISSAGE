@@ -25,9 +25,9 @@ public class SentinelCycleManager : MonoBehaviour
     public Transform sentinelTransform;
     [SerializeField] private Transform startZoneTransform;
     public GameManager gameManager;
-    [SerializeField] private Light[] lightsToDisableInRedLight;
-    [SerializeField] private SentinelCentralLight sentinelCentralLight;
-    [SerializeField] private Light playerSpotLight;
+    [SerializeField] protected Light[] lightsToDisableInRedLight;
+    [SerializeField] protected SentinelCentralLight sentinelCentralLight;
+    [SerializeField] protected Light playerSpotLight;
     [SerializeField] private EpervierManager epervierManager;
 
     [SerializeField] private EpervierManagerNEW epervierManagerNEW;
@@ -226,7 +226,7 @@ public class SentinelCycleManager : MonoBehaviour
         return distance;
     }
 
-    private float GetDistanceFactor()
+    protected virtual float GetDistanceFactor()
     {
         if (disableDistancePressure) return 0f;
 
@@ -234,7 +234,7 @@ public class SentinelCycleManager : MonoBehaviour
         return Mathf.Clamp01(1f - ((distance - 3f) / initialPlayerSentinelDistance));
     }
 
-    private float GetDynamicGreenLightDuration()
+    protected virtual float GetDynamicGreenLightDuration()
     {
         if (gameManager == null)
         {
@@ -265,7 +265,7 @@ public class SentinelCycleManager : MonoBehaviour
         return finalDuration;
     }
 
-    private float GetDynamicRedLightDuration()
+    protected virtual float GetDynamicRedLightDuration()
     {
         if (gameManager == null)
         {
@@ -620,7 +620,7 @@ public class SentinelCycleManager : MonoBehaviour
         return tempAS;
     }
 
-    public void StartGameCycle()
+    public virtual void StartGameCycle()
     {
         if (gameStarted) return;
         gameStarted = true;

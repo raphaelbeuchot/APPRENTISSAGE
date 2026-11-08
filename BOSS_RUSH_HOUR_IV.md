@@ -17,6 +17,8 @@ Marqué **(décidé)** ce que l'utilisateur a tranché ; tout le reste est piste
   5. **Géant** : SO dédié, œil et lumière de la sentinelle sur sa tête.
   6. **Fin** : lasers, passerelle, pupitre central, sortie.
 - Prochaine étape : la 2 (cycle). Exposer l'approche avant de coder.
+- **Cycle du boss (décidé le 2026-11-08)** : un `BossCycleManager` qui **hérite** de `SentinelCycleManager`, pour ne pas toucher à la logique du jeu actuel. Le fichier partagé n'a reçu que 7 mots-clés : `StartGameCycle` virtual ; `GetDistanceFactor`, `GetDynamicGreenLightDuration`, `GetDynamicRedLightDuration` protected virtual ; `sentinelCentralLight`, `playerSpotLight`, `lightsToDisableInRedLight` protected. Le boss pourra retarder le démarrage, régler durées et pression par phase, mettre en pause entre deux phases. Règle : ne pas déclarer `OnEnable` ni `Update` dans `BossCycleManager` (Unity n'appellerait plus ceux de la base).
+- **La musique changera aussi par phase** : à voir ensuite (les clips `greenLightMusicLoop` / `redLightMusicLoop` sont encore `private`).
 
 ---
 
