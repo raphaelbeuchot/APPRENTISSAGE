@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -130,6 +131,15 @@ public class BossPhaseManager : MonoBehaviour
                 if (pupitre != null) pupitre.Activated -= OnPupitreActivated;
     }
 
+    private Coroutine resumeCoroutine;
+
+    private IEnumerator ResumeAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        resumeCoroutine = null;
+        cycleManager.ResumeCycle();
+    }
+
     private void StartPhase(int index)
     {
         currentPhaseIndex = index;
@@ -173,11 +183,22 @@ public class BossPhaseManager : MonoBehaviour
 
         BossPhase phase = phases[currentPhaseIndex];
         Debug.Log($"[BOSS PHASES] Fin {phase.label}");
+
+        // Le dernier pupitre coupe tout, quel que soit l'etat du cycle
+        if (cycleManager != null) cycleManager.PauseCycle();
+
         phase.effets.onPhaseComplete?.Invoke();
 
         if (currentPhaseIndex < phases.Count - 1)
         {
             StartPhase(currentPhaseIndex + 1);
+
+            float delay = phases[currentPhaseIndex].cycle != null ? phases[currentPhaseIndex].cycle.resumeDelay : 0f;
+            if (cycleManager != null && delay > 0f)
+            {
+                if (resumeCoroutine != null) StopCoroutine(resumeCoroutine);
+                resumeCoroutine = StartCoroutine(ResumeAfterDelay(delay));
+            }
         }
         else
         {

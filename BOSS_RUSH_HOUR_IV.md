@@ -7,23 +7,25 @@ Marqué **(décidé)** ce que l'utilisateur a tranché ; tout le reste est piste
 
 ## Reprendre ici
 
-- **Fait** : la caméra marche dans la scène (`Level_TrafficJam_04.unity`), sans code. Détail dans « Caméra ».
-- **Fait (2026-11-08) : pression par phase**, validée en jeu (les phases s'enchaînent, l'UI répond). `Scripts/Boss/BossCycleManager.cs` hérite de `SentinelCycleManager` : liste de phases sur le composant (fourchette verte, fourchette rouge, pression 0-1) ; durées tirées dans la fourchette, sans raccourcissement ; pression = celle de la phase, **sans distance ni ennemis** ; `NextPhase()` (appliquée au feu suivant), testable par clic droit sur le composant > *Phase suivante*. La durée de l'alerte suit la pression (longueur du son ÷ pitch, `maxPitch` du SO). Valeurs des 4 phases = point de départ à équilibrer.
-- **Dans la scène, le prefab `SentinelCycleManager` est unpacké** (seulement dans Rush Hour IV) pour y mettre `BossCycleManager` : les changements futurs du prefab n'y arrivent plus.
-- **Le délai avant la mise en route et la pause entre phases** : reportés, ils dépendent de la mise en scène (Timeline ou non, caméras intermédiaires : non tranché).
-- **Fait (2026-11-08) : pupitres d'épreuve et gestionnaire de phases**, validés en jeu sur 2 phases. `BossPupitre` : interaction une seule fois, `InteractBubble` cachée, petit enfoncement, `onActivated` (effets de ce pupitre) ; rien de `PupitreInteraction` n'est repris. `BossPhaseManager` : liste de phases dans l'Inspector (nom auto « Phase N », pupitres en nombre libre rangés **n'importe où dans la scène**, pliage « Effets » avec `onPhaseStart` / `onPhaseComplete`), `onAllPhasesComplete` pour la fin du boss ; désactive les pupitres au lancement, active ceux de la phase en cours, appelle `NextPhase()` du `BossCycleManager` ; clic droit > *Terminer la phase en cours* pour tester. **Une seule liste de phases** (validé en jeu sur 4 phases) : chaque phase du manager a un pliage « Cycle » (fourchettes verte / rouge, pression) envoyé au `BossCycleManager` (`SetPhaseCycle`) au début de la phase ; le `BossCycleManager` n'a plus de liste ; nombre de phases = nombre d'éléments de la liste. Clic droit > *Remplir les feux avec les valeurs de départ* (aide de remplissage, ne limite pas le nombre de phases). **La pression du boss** règle le pitch des musiques, le pitch et donc la durée de l'alerte, et la jauge ; pas la durée des feux vert / rouge. Choix écarté : phases et pupitres rangés en enfants dans la Hierarchy (impose le rangement de la scène).
-- **Dans la scène** : objet `BOSSPHASEMANAGER` + cylindres de test comme pupitres (`PhaseN_CylinderNN`, placeholders), 4 phases.
-- **Rien d'autre n'est codé.**
-- **Ordre de travail proposé** (petites étapes testables) :
-  1. ~~Caméra~~ : validée.
-  2. **Cycle** : pression par phase + pause propre entre deux phases (`SentinelCycleManager`, partagé : checklist solo).
-  3. **Pupitre d'épreuve + gestionnaire de phases** : compter 3 pupitres, abattre un cercle, figer le joueur, mettre en place la phase suivante.
-  4. **Cercles abattables** (roaming obstacles sur splines).
-  5. **Géant** : SO dédié, œil et lumière de la sentinelle sur sa tête.
-  6. **Fin** : lasers, passerelle, pupitre central, sortie.
-- Prochaine étape : la 2 (cycle). Exposer l'approche avant de coder.
-- **Cycle du boss (décidé le 2026-11-08)** : un `BossCycleManager` qui **hérite** de `SentinelCycleManager`, pour ne pas toucher à la logique du jeu actuel. Le fichier partagé n'a reçu que 7 mots-clés : `StartGameCycle` virtual ; `GetDistanceFactor`, `GetDynamicGreenLightDuration`, `GetDynamicRedLightDuration` protected virtual ; `sentinelCentralLight`, `playerSpotLight`, `lightsToDisableInRedLight` protected. Le boss pourra retarder le démarrage, régler durées et pression par phase, mettre en pause entre deux phases. Règle : ne pas déclarer `OnEnable` ni `Update` dans `BossCycleManager` (Unity n'appellerait plus ceux de la base).
-- **La musique changera aussi par phase** : à voir ensuite (les clips `greenLightMusicLoop` / `redLightMusicLoop` sont encore `private`).
+**Fait** (tout validé en jeu, scène `Level_TrafficJam_04.unity`) :
+- **Caméra** (2026-11-07), sans code. Détail dans « Caméra ».
+- **Cycle du boss** (2026-11-08) : `Scripts/Boss/BossCycleManager.cs` **hérite** de `SentinelCycleManager`, pour ne pas toucher à la logique du jeu actuel.
+  - Dans le fichier partagé, seulement : `StartGameCycle` virtual ; `GetDistanceFactor`, `GetDynamicGreenLightDuration`, `GetDynamicRedLightDuration` protected virtual ; `sentinelCentralLight`, `playerSpotLight`, `lightsToDisableInRedLight` protected ; calcul de pression regroupé dans `GetPressureFactor()` (protected virtual, formule inchangée).
+  - Durées des feux tirées dans la fourchette de la phase, sans raccourcissement. **Pression = celle de la phase, sans distance ni ennemis** : elle règle le pitch des musiques, le pitch et donc la durée de l'alerte (longueur du son ÷ pitch, `maxPitch` du SO), et la jauge ; pas la durée des feux vert / rouge.
+  - **Pause** (`PauseCycle`) : coupe tout, quel que soit l'état (**décidé** : le dernier pupitre d'une phase coupe tout, même en plein rouge) ; état remis au vert, sons et visuels coupés, suivis de la sentinelle effacés, lumières remises. **Reprise** (`ResumeCycle`) : relance un feu vert. Clic droit sur le composant pour tester.
+  - Règle : ne pas déclarer `OnEnable` ni `Update` dans `BossCycleManager` (Unity n'appellerait plus ceux de la base).
+  - Le prefab `SentinelCycleManager` est **unpacké dans cette scène seulement** : les changements futurs du prefab n'y arrivent plus.
+- **Pupitres et phases** (2026-11-08) :
+  - `BossPupitre` : interaction une seule fois, `InteractBubble` cachée, petit enfoncement, `onActivated` (effets de ce pupitre). Rien de `PupitreInteraction` n'est repris.
+  - `BossPhaseManager` : **une seule liste de phases**, en nombre libre. Par phase : nom auto « Phase N », pupitres rangés **n'importe où dans la scène**, pliage « Cycle » (fourchettes, pression, `Resume Delay`), pliage « Effets » (`onPhaseStart` / `onPhaseComplete`). `onAllPhasesComplete` pour la fin du boss.
+  - Déroulé : pupitres désactivés au lancement, ceux de la phase en cours activés ; dernier pupitre → pause du cycle → effets de fin → phase suivante (réglages de feux envoyés au cycle) → reprise après `Resume Delay` (3 s par défaut ; 0 = reprise à appeler depuis un événement ou une Timeline). Après la dernière phase, le cycle reste en pause.
+  - Clic droit : *Terminer la phase en cours*, *Remplir les feux avec les valeurs de départ*.
+  - Dans la scène : `BOSSPHASEMANAGER` + cylindres de test comme pupitres (`PhaseN_CylinderNN`), 4 phases.
+  - Choix écarté : phases et pupitres en enfants dans la Hierarchy (impose le rangement de la scène).
+
+**Suite** : la mise en scène va dicter les nouveaux besoins. Pistes, non tranchées : monter une transition entre deux phases avec l'existant (Timeline, caméras, cases d'effets) ; immobiliser le joueur pendant la mise en place ; descente des pupitres des cintres ; explosion d'un morceau de sentinelle ; cercles abattables ; délai avant la mise en route du cycle ; musique par phase (clips encore `private`).
+
+**Ordre de travail d'origine**, pour mémoire : 1. ~~Caméra~~ 2. ~~Cycle~~ 3. ~~Pupitres et phases~~ (reste : abattre un cercle, figer le joueur, mise en place) 4. Cercles abattables 5. Géant (SO dédié, œil et lumière sur sa tête) 6. Fin (lasers, passerelle, pupitre central, sortie).
 
 ---
 
