@@ -119,6 +119,12 @@ public class CameraPanningExtension : CinemachineExtension
         viewToggleLocked = true;
     }
 
+    // Boss (cage d'entre-phases) : rend la bascule de vue apres LockViewToggle.
+    public void UnlockViewToggle()
+    {
+        viewToggleLocked = false;
+    }
+
     // Victoire (solo) : revient en vue normale si on etait en vue basse
     // (les materiaux masques sont restaures par LateUpdate des que isLowView repasse a faux).
     public void ForceNormalView()
