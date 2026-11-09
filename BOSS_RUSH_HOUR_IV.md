@@ -39,7 +39,9 @@ Le flow complet du niveau, étape par étape (codé / branché / à faire / pist
 - ~~**b.** Vider la barre d'icônes d'ennemis~~ (2026-11-09) : `EnemyIconsUI.ClearAllIcons` (vivants et cadavres, de la dernière icône à la première, délai réglable, sans compter comme un nettoyage), branchée sur le nouvel événement `BossTransition.onEnemiesRemoved` (fin de la sortie du dernier zombie, vivant ou cadavre, tout de suite s'il n'y en a aucun).
 - ~~**c.** Zombies de chaque phase~~ (2026-11-09, validé en jeu ; puis pupitres qui descendent avant les zombies, validé) : liste `Zombies` par phase dans `BossPhaseManager` (ceux des phases 2+ désactivés dès `Awake`, donc pas recensés au lancement) ; *Faire entrer les zombies de la phase* (`BringInCurrentPhaseZombies`) → descente dans `BossTransition` (`dropHeight` 8 m, `dropDuration` 3 s, inertes pendant la descente, démarrage à l'arrivée) → `onEnemiesArrived` → *Remplir la barre* (`EnemyIconsUI.SpawnIconsForLivingEnemies`, ajout partagé, appelé par le boss seul). Vérifié dans le code : barre de vie, minuteur, détection de la sentinelle et lock-on suivent un zombie activé en cours de partie.
 - ~~**d.** Brancher la cage sur la transition~~ (2026-11-09, validé en jeu) : une cage par pupitre ; `BossCage` = Bloc (monte et descend avec le joueur) > Barreaux (cachés sous le sol au repos) + Holdpoint, 4 mouvements réglables, `onRaised` / `onLowered` ; caméras de transition retirées de la cage, remplacées par `Sentinel Camera` sur `BossTransition`. Détail dans « Flow du niveau », étapes 6 à 14.
-- Ensuite : texte « Phase N » + jingle ; explosion pendant le plan sentinelle ; pièges et décor qui se réinstallent ; cercles abattables ; musique par phase (clips encore `private`). Autres types d'ennemis (essaims, BrightEyes, bombes) non gérés par la transition.
+- **Cercles de la sentinelle qui explosent** (prochain chantier, approche discutée le 2026-11-09, pas codée) : le cercle **le plus extérieur** restant explose à chaque phase (**décidé** : la sentinelle rétrécit), d'un coup, pendant le plan sentinelle. Chaque ampoule est projetée en l'air avec un peu d'aléatoire et retombe avec la gravité ; étincelles en particules sur certaines. Approche retenue : faire voler **les vraies ampoules** (aspect identique garanti : `Ampoule Plate` = SpriteRenderer + matériau URP Lit à émission + `CycleReactiveRenderer` + `BillboardRenderer`), pas un Particle System (sans le sprite, on aurait des carrés). Script prévu `BossCircleExploder`, propre au boss, qui retrouve les `Circle_N` créés par le spawner sans y toucher. Rester au sol ou disparaître : non tranché. Pas d'interaction avec le joueur ni les zombies (**décidé**).
+- Caméra : `BossCage` n'a plus de caméras ; le plan sentinelle et le plan d'installation sont sur `BossTransition`.
+- Ensuite : texte « Phase N » + jingle ; pièges et décor qui se réinstallent ; musique par phase (clips encore `private`). Autres types d'ennemis (essaims, BrightEyes, bombes) non gérés par la transition.
 
 **Ordre de travail d'origine**, pour mémoire : 1. ~~Caméra~~ 2. ~~Cycle~~ 3. ~~Pupitres et phases~~ (reste : abattre un cercle, figer le joueur, mise en place) 4. Cercles abattables 5. Géant (SO dédié, œil et lumière sur sa tête) 6. Fin (lasers, passerelle, pupitre central, sortie).
 
@@ -61,20 +63,24 @@ Légende : **[codé]** marche en jeu · **[branché]** codé et relié dans la s
 
 **Dernier pupitre d'une phase** (tout sur la même frame)
 5. Cycle en pause (coupe tout, même en plein rouge). **[codé]**
-6. `BossTransition.Begin(cage du dernier pupitre)` : **tout le monde figé** (**décidé**) : le joueur, et tous les zombies, vivants et cadavres (gel définitif, barres de vie retirées). La caméra passe sur la sentinelle (`CM_SentinelCamera`, priorité 30) ; pendant ce plan, le joueur est posé dans la cage (téléportation cachée par le changement de plan, case `Center Player`). **[branché]**
-7. `onPhaseComplete` de la phase finie. **[codé, rien de branché]**
+6. `BossTransition.Begin(cage du dernier pupitre)` : **tout le monde figé** (**décidé**) : le joueur (élan remis à zéro), et tous les zombies, vivants et cadavres (gel définitif, barres de vie retirées). La caméra passe sur la sentinelle (`CM_SentinelCamera`, priorité 30) ; **une fois le fondu fini**, le joueur est posé dans la cage (téléportation cachée, case `Center Player`). **[branché]**
+7. `onPhaseComplete` de la phase finie → `BossSentinelRotator.Stop` : la sentinelle se bloque d'un coup (**décidé**). **[branché]**
 8. La phase suivante démarre : ses réglages de feux partent au cycle, `onPhaseStart`. Ses pupitres restent cachés. Les pupitres enfoncés de la phase finie restent en place pour de bon (**décidé**). **[codé]**
 
 **Plan sentinelle puis cage** (enchaîné par les événements, ordre réglé dans l'Inspector)
-9. Après `Sentinel Shot Duration` (2 s, en attendant l'explosion d'un cercle), retour à la caméra normale. **[branché]**
-10. Cage du dernier pupitre : barreaux qui sortent du sol (1,5 m en 0,15 s), puis bloc qui monte avec le joueur (3,5 m en 1,5 s) → `onCageRaised` → *Enlever les ennemis* (`RemoveEnemies`). **[branché]** Une cage par pupitre (**décidé**, champ `Cage` du `BossPupitre`), pour la personnaliser sans code.
+9. Après `Sentinel Shot Duration` (2 s depuis le changement de caméra, fondu compris ; en attendant l'explosion d'un cercle), passage au **plan d'installation** (`CM_InstallCamera` : fixe, en hauteur, Hard Look At sur `MainSentinel`, en enfant de `SENTINELPIVOT`). **[branché]**
+10. Une fois ce fondu fini, cage du dernier pupitre : barreaux qui sortent du sol (1,5 m en 0,15 s), puis bloc qui monte avec le joueur (3,5 m en 1,5 s) → `onCageRaised` → *Enlever les ennemis* (`RemoveEnemies`). **[branché]** Une cage par pupitre (**décidé**, champ `Cage` du `BossPupitre`), pour la personnaliser sans code.
 11. Montée des zombies figés (8 m, 3 s) → `onEnemiesRemoved` → *Vider la barre* + *Faire entrer les pupitres de la phase*. **[branché]**
 12. Descente des pupitres (8 m, 3 s, pas activables en l'air) → `onPupitresArrived` → *Faire entrer les zombies de la phase*. **[branché]** Pupitres d'abord, zombies ensuite (**décidé**).
 13. Descente des zombies, là où ils sont posés dans la scène → tous à terre → `onEnemiesArrived` → *Remplir la barre* + *Redescendre la cage* (`LowerCage`). **[branché]**
 
 **Reprise**
-14. Le bloc redescend (1,5 s) ; une fois posé, les barreaux rentrent d'un coup (0,15 s, **décidé**) ; joueur relâché → fin de la transition. **[branché]** (*Rendre le joueur* reste en clic droit, pour tester sans cage.)
-15. `Resume Delay` compté depuis le relâchement → le cycle reprend au vert. Retour à l'étape 4. **[codé]**
+14. Le bloc redescend (1,5 s) ; une fois posé, les barreaux rentrent d'un coup (0,15 s, **décidé**) ; joueur relâché (élan remis à zéro), **retour à la caméra normale** à ce moment-là (choix b, validé) → fin de la transition. **[branché]** (*Rendre le joueur* reste en clic droit, pour tester sans cage.)
+15. `Resume Delay` compté depuis le relâchement → le cycle reprend au vert → `onCycleResumed` → `BossSentinelRotator.Resume` (la sentinelle repart). Retour à l'étape 4. **[branché]**
+
+Fondus des caméras : `Custom Blends` dans `Cameras/SwitchHighLow.asset` (**fichier partagé** par le prefab `GESTION CAMERAS` et ~40 scènes ; les 3 fondus ajoutés ne jouent que pour `CM_SentinelCamera` / `CM_InstallCamera`, qui n'existent que dans le boss).
+
+Sentinelle : séparée du `GiratoireReverse` (désactivé, à supprimer quand on sera sûr) sous `SENTINELPIVOT` (X 4, Y 0,05, Z 15,24), qui porte `BossSentinelRotator` (−30°/s, axe vertical monde, comme `RotatingPlatform_02`). Le `Y = 103` de l'ancien `ConcentricCircles Manager` venait de l'échelle aplatie du `Giratoire` (Y × 0,05).
 
 **Dernière phase**
 16. Étapes 5 à 10, puis `onAllPhasesComplete` ; le cycle reste en pause, le joueur reste dans la cage en haut (rien ne la redescend). **[codé, rien de branché]**
@@ -103,7 +109,7 @@ Légende : **[codé]** marche en jeu · **[branché]** codé et relié dans la s
 
 ## Déroulé (décidé, 2026-11-07)
 
-**Vocabulaire** (décidé) : une **phase** = activer **3 pupitres** et **abattre un cercle concentrique** de roaming obstacles. Les **cycles** de la sentinelle (vert, alerte, rouge) tournent normalement pendant toute la phase. Chaque phase terminée **fait exploser un morceau de la sentinelle**, et la pression monte.
+**Vocabulaire** (décidé) : une **phase** = activer **3 pupitres** et **abattre un cercle concentrique de la sentinelle** (les anneaux d'ampoules du `ConcentricCircles Manager`, précisé le 2026-11-09 : **pas** les splines de roaming obstacles). Les **cycles** de la sentinelle (vert, alerte, rouge) tournent normalement pendant toute la phase. Chaque phase terminée **fait exploser un morceau de la sentinelle**, et la pression monte.
 
 - **Phase 1** : un cercle de roaming obstacles + des ennemis. 3 pupitres.
 - **Phase 2** : un nouveau cercle de roaming obstacles, d'autres ennemis arrivent en renfort. 3 pupitres.
