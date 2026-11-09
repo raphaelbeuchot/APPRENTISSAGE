@@ -8,9 +8,8 @@ using UnityEngine.Events;
 /// Begin (appele par le BossPhaseManager au dernier pupitre d'une phase) :
 /// - le joueur est fige sur place ("coffre de BotW") : plus de deplacement ni de commandes,
 ///   la gravite continue (s'il etait en l'air, il retombe) ;
-/// - les ennemis encore vivants sont figes pour de bon (gel dedie : ils ne reviennent jamais),
+/// - les ennemis, vivants et cadavres, sont figes pour de bon (gel dedie : ils ne reviennent jamais),
 ///   montent (remplacant provisoire des cages) puis sont supprimes.
-/// Les cadavres ne sont pas touches.
 /// EndPlayerFreeze rend le joueur (menu du composant, evenement, signal de Timeline...).
 /// </summary>
 public class BossTransition : MonoBehaviour
@@ -22,7 +21,7 @@ public class BossTransition : MonoBehaviour
     [Min(0.01f)] [SerializeField] private float liftDuration = 3f;
 
     [Header("Effets")]
-    [Tooltip("Quand tous les ennemis vivants sont partis (fin de leur sortie, supprimes). " +
+    [Tooltip("Quand tous les ennemis, vivants et cadavres, sont partis (fin de leur sortie, supprimes). " +
              "Tout de suite s'il n'y en avait aucun. Ex : EnemyIconsUI.ClearAllIcons.")]
     [SerializeField] private UnityEvent onEnemiesRemoved;
 
@@ -50,12 +49,12 @@ public class BossTransition : MonoBehaviour
             Debug.LogWarning("[BOSS TRANSITION] Pas de PlayerPhysicsMovement (tag Player)");
     }
 
-    /// <summary>Debut de l'entre-phases : joueur fige, ennemis vivants figes puis enleves.</summary>
+    /// <summary>Debut de l'entre-phases : joueur fige, ennemis (vivants et cadavres) figes puis enleves.</summary>
     [ContextMenu("Debut de transition (Begin)")]
     public void Begin()
     {
         FreezePlayer();
-        RemoveLivingEnemies();
+        RemoveAllEnemies();
     }
 
     // ============================================
@@ -95,13 +94,17 @@ public class BossTransition : MonoBehaviour
     // ENNEMIS
     // ============================================
 
-    private void RemoveLivingEnemies()
+    // Vivants et cadavres (un cadavre est le meme objet que l'ennemi, EnemyHealth mort, en ragdoll) :
+    // tout le monde part, l'arene et la barre d'icones repartent a zero
+    private void RemoveAllEnemies()
     {
         List<GameObject> enemies = new List<GameObject>();
+        int corpses = 0;
         foreach (EnemyHealth health in FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None))
         {
-            if (health == null || health.IsDead()) continue;
-            if (!enemies.Contains(health.gameObject)) enemies.Add(health.gameObject);
+            if (health == null || enemies.Contains(health.gameObject)) continue;
+            enemies.Add(health.gameObject);
+            if (health.IsDead()) corpses++;
         }
 
         pendingRemovals += enemies.Count;
@@ -111,7 +114,7 @@ public class BossTransition : MonoBehaviour
             StartCoroutine(LiftAndRemove(enemy));
         }
 
-        Debug.Log($"[BOSS TRANSITION] {enemies.Count} ennemi(s) vivant(s) fige(s) et enleve(s)");
+        Debug.Log($"[BOSS TRANSITION] {enemies.Count - corpses} vivant(s) + {corpses} cadavre(s) fige(s) et enleve(s)");
         if (pendingRemovals == 0) EnemiesRemoved();
     }
 
