@@ -20,10 +20,20 @@ public class BossTransition : MonoBehaviour
     [Tooltip("Duree de la montee (s). Les ennemis sont supprimes a la fin.")]
     [Min(0.01f)] [SerializeField] private float liftDuration = 3f;
 
+    [Header("Arrivee des ennemis de la phase suivante (remplacant provisoire des cages)")]
+    [Tooltip("Hauteur d'ou ils descendent, au-dessus de l'endroit ou ils sont poses dans la scene (m).")]
+    [SerializeField] private float dropHeight = 8f;
+    [Tooltip("Duree de la descente (s). Ils sont inertes pendant la descente, rendus a l'arrivee.")]
+    [Min(0.01f)] [SerializeField] private float dropDuration = 3f;
+
     [Header("Effets")]
     [Tooltip("Quand tous les ennemis, vivants et cadavres, sont partis (fin de leur sortie, supprimes). " +
-             "Tout de suite s'il n'y en avait aucun. Ex : EnemyIconsUI.ClearAllIcons.")]
+             "Tout de suite s'il n'y en avait aucun. Ex : EnemyIconsUI.ClearAllIcons, " +
+             "BossPhaseManager.BringInCurrentPhaseZombies.")]
     [SerializeField] private UnityEvent onEnemiesRemoved;
+    [Tooltip("Quand tous les ennemis de la phase sont a terre. Tout de suite s'il n'y en avait aucun. " +
+             "Ex : EnemyIconsUI.SpawnIconsForLivingEnemies.")]
+    [SerializeField] private UnityEvent onEnemiesArrived;
 
     [Header("Debug")]
     [SerializeField] private bool playerFrozen = false;
@@ -36,6 +46,7 @@ public class BossTransition : MonoBehaviour
     private PlayerPhysicsMovement player;
     private Rigidbody playerRb;
     private int pendingRemovals = 0;
+    private int pendingArrivals = 0;
 
     private void Start()
     {
@@ -181,5 +192,108 @@ public class BossTransition : MonoBehaviour
 
         if (enemy != null) Destroy(enemy);
         OnEnemyRemoved();
+    }
+
+    // ============================================
+    // ARRIVEE DES ENNEMIS DE LA PHASE
+    // ============================================
+
+    /// <summary>
+    /// Fait descendre des ennemis desactives jusqu'a l'endroit ou ils sont poses dans la scene.
+    /// Inertes pendant la descente (scripts, physique, collisions) ; leur demarrage (Start : ragdoll,
+    /// barre de vie, IA) attend l'arrivee. Un ennemi deja actif est ignore. Appele par le BossPhaseManager.
+    /// </summary>
+    public void BringInEnemies(IList<GameObject> enemies)
+    {
+        List<GameObject> toDrop = new List<GameObject>();
+        if (enemies != null)
+        {
+            foreach (GameObject enemy in enemies)
+            {
+                if (enemy == null || toDrop.Contains(enemy)) continue;
+                if (enemy.activeInHierarchy)
+                {
+                    Debug.LogWarning($"[BOSS TRANSITION] {enemy.name} deja actif : pas de descente");
+                    continue;
+                }
+                toDrop.Add(enemy);
+            }
+        }
+
+        pendingArrivals += toDrop.Count;
+        foreach (GameObject enemy in toDrop)
+            StartCoroutine(DropIn(enemy));
+
+        Debug.Log($"[BOSS TRANSITION] {toDrop.Count} ennemi(s) en descente");
+        if (pendingArrivals == 0) EnemiesArrived();
+    }
+
+    private IEnumerator DropIn(GameObject enemy)
+    {
+        Vector3 end = enemy.transform.position;
+        Vector3 start = end + Vector3.up * dropHeight;
+
+        // Coupe AVANT l'activation : Awake tourne, mais OnEnable et Start attendent qu'on rende les scripts
+        List<MonoBehaviour> scripts = new List<MonoBehaviour>();
+        foreach (MonoBehaviour mb in enemy.GetComponentsInChildren<MonoBehaviour>(true))
+        {
+            if (mb == null || !mb.enabled) continue;
+            mb.enabled = false;
+            scripts.Add(mb);
+        }
+        List<Rigidbody> bodies = new List<Rigidbody>();
+        foreach (Rigidbody rb in enemy.GetComponentsInChildren<Rigidbody>(true))
+        {
+            if (rb.isKinematic) continue;
+            rb.isKinematic = true;
+            bodies.Add(rb);
+        }
+        List<Collider> colliders = new List<Collider>();
+        foreach (Collider col in enemy.GetComponentsInChildren<Collider>(true))
+        {
+            if (!col.enabled) continue;
+            col.enabled = false;
+            colliders.Add(col);
+        }
+
+        enemy.transform.position = start;
+        enemy.SetActive(true);
+
+        float t = 0f;
+        while (t < 1f)
+        {
+            if (enemy == null) break;
+            t += Time.deltaTime / dropDuration;
+            enemy.transform.position = Vector3.Lerp(start, end, Mathf.SmoothStep(0f, 1f, t));
+            yield return null;
+        }
+
+        if (enemy != null)
+        {
+            enemy.transform.position = end;
+            foreach (Collider col in colliders) if (col != null) col.enabled = true;
+            foreach (Rigidbody rb in bodies)
+            {
+                if (rb == null) continue;
+                rb.isKinematic = false;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+            foreach (MonoBehaviour mb in scripts) if (mb != null) mb.enabled = true;
+        }
+
+        OnEnemyArrived();
+    }
+
+    private void OnEnemyArrived()
+    {
+        pendingArrivals = Mathf.Max(0, pendingArrivals - 1);
+        if (pendingArrivals == 0) EnemiesArrived();
+    }
+
+    private void EnemiesArrived()
+    {
+        Debug.Log("[BOSS TRANSITION] Ennemis arrives");
+        onEnemiesArrived?.Invoke();
     }
 }

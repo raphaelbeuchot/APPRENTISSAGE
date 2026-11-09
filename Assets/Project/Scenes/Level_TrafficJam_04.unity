@@ -32016,6 +32016,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
+--- !u!1 &514606580 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+  m_PrefabInstance: {fileID: 766111971}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &515185162
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -46285,6 +46290,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
+--- !u!1 &767882729 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+  m_PrefabInstance: {fileID: 183895496}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &769120112 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
@@ -54237,6 +54247,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 882433499}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!1 &888109456 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+  m_PrefabInstance: {fileID: 1473443653}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &890213511
 GameObject:
   m_ObjectHideFlags: 0
@@ -58476,6 +58491,9 @@ MonoBehaviour:
     pupitres:
     - {fileID: 1570069095}
     - {fileID: 1260626166}
+    zombies:
+    - {fileID: 1239441194}
+    - {fileID: 767882729}
     cycle:
       greenMin: 5
       greenMax: 8
@@ -58494,6 +58512,11 @@ MonoBehaviour:
     pupitres:
     - {fileID: 1999399998}
     - {fileID: 1483057894}
+    zombies:
+    - {fileID: 514606580}
+    - {fileID: 2073015648}
+    - {fileID: 888109456}
+    - {fileID: 2065686691}
     cycle:
       greenMin: 4
       greenMax: 6
@@ -58524,6 +58547,7 @@ MonoBehaviour:
     pupitres:
     - {fileID: 1923458459}
     - {fileID: 936756285}
+    zombies: []
     cycle:
       greenMin: 3
       greenMax: 5
@@ -58553,6 +58577,7 @@ MonoBehaviour:
   - label: Phase 4
     pupitres:
     - {fileID: 1583499363}
+    zombies: []
     cycle:
       greenMin: 2
       greenMax: 4
@@ -58624,12 +58649,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossTransition
   liftHeight: 8
   liftDuration: 3
+  dropHeight: 8
+  dropDuration: 3
   onEnemiesRemoved:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1422865899}
         m_TargetAssemblyTypeName: EnemyIconsUI, Assembly-CSharp
         m_MethodName: ClearAllIcons
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 964285850}
+        m_TargetAssemblyTypeName: BossPhaseManager, Assembly-CSharp
+        m_MethodName: BringInCurrentPhaseZombies
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onEnemiesArrived:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1422865899}
+        m_TargetAssemblyTypeName: EnemyIconsUI, Assembly-CSharp
+        m_MethodName: SpawnIconsForLivingEnemies
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -73963,6 +74017,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
+--- !u!1 &1239441194 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1832123752479731275, guid: ea3a1f07eee322b46bdac64f5a56bb5c, type: 3}
+  m_PrefabInstance: {fileID: 13470957}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1239851985
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -127534,6 +127593,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
+--- !u!1 &2065686691 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+  m_PrefabInstance: {fileID: 1189892274}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2066575553 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
@@ -128066,6 +128130,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8c6fa7ab62026104b805b357479e7e2d, type: 3}
+--- !u!1 &2073015648 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+  m_PrefabInstance: {fileID: 1176659108}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2073779036 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}

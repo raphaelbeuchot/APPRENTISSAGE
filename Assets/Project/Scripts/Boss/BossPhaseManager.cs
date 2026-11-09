@@ -32,6 +32,9 @@ public class BossPhaseManager : MonoBehaviour
         public string label = "Phase";
         [Tooltip("Pupitres a activer pour finir la phase. Liste vide : la phase ne se termine que par \"Terminer la phase en cours\".")]
         public List<BossPupitre> pupitres = new List<BossPupitre>();
+        [Tooltip("Ennemis de la phase, poses ou ils doivent arriver. Phase 1 : presents des le lancement. " +
+                 "Phases suivantes : desactives au lancement, ils descendent avec \"Faire entrer les zombies de la phase\".")]
+        public List<GameObject> zombies = new List<GameObject>();
         [Tooltip("Feux de la sentinelle pendant cette phase (durees et pression).")]
         public BossCycleManager.PhaseCycle cycle = new BossCycleManager.PhaseCycle();
         public PhaseEffects effets = new PhaseEffects();
@@ -106,14 +109,21 @@ public class BossPhaseManager : MonoBehaviour
 
     private void Awake()
     {
-        foreach (BossPhase phase in phases)
+        for (int i = 0; i < phases.Count; i++)
         {
+            BossPhase phase = phases[i];
             foreach (BossPupitre pupitre in phase.pupitres)
             {
                 if (pupitre == null) continue;
                 pupitre.Activated += OnPupitreActivated;
                 pupitre.gameObject.SetActive(false);
             }
+
+            // Zombies des phases suivantes : hors scene jusqu'a leur arrivee. Desactives des Awake, avant
+            // les Start qui recensent les ennemis (CleaningBonusManager, GameManager) : ils n'y comptent pas.
+            if (i > 0)
+                foreach (GameObject zombie in phase.zombies)
+                    if (zombie != null) zombie.SetActive(false);
         }
 
         if (transition != null) transition.Ended += OnTransitionEnded;
@@ -205,6 +215,25 @@ public class BossPhaseManager : MonoBehaviour
 
         if (done >= phase.pupitres.Count)
             CompleteCurrentPhase();
+    }
+
+    /// <summary>
+    /// Fait descendre les zombies de la phase en cours (par la BossTransition). A brancher dans le flow,
+    /// ex. sur BossTransition.onEnemiesRemoved : la phase suivante a deja commence a ce moment-la.
+    /// </summary>
+    [ContextMenu("Faire entrer les zombies de la phase")]
+    public void BringInCurrentPhaseZombies()
+    {
+        if (currentPhaseIndex < 0 || currentPhaseIndex >= phases.Count) return;
+        if (transition == null)
+        {
+            Debug.LogWarning("[BOSS PHASES] Pas de BossTransition : les zombies ne peuvent pas descendre");
+            return;
+        }
+
+        BossPhase phase = phases[currentPhaseIndex];
+        Debug.Log($"[BOSS PHASES] {phase.label} : entree de {phase.zombies.Count} zombie(s)");
+        transition.BringInEnemies(phase.zombies);
     }
 
     /// <summary>Termine la phase en cours (appele quand tous ses pupitres sont actives, ou a la main).</summary>

@@ -31,7 +31,30 @@ public class EnemyIconsUI : MonoBehaviour
 
     public void SpawnIconsForEnemies()
     {
-        spawnCoroutine = StartCoroutine(SpawnIconsCoroutine());
+        List<EnemyHealth> validEnemies = null;
+        if (CleaningBonusManager.Instance != null)
+            validEnemies = CleaningBonusManager.Instance.GetRegisteredEnemies();
+        spawnCoroutine = StartCoroutine(SpawnIconsCoroutine(validEnemies));
+    }
+
+    /// <summary>
+    /// Remplit la barre (boss de Rush Hour IV, nouvelle phase) avec les ennemis vivants presents dans la
+    /// scene, sans passer par la liste du CleaningBonusManager (figee au lancement). Memes exclusions que
+    /// lui (BrightEyes). A appeler sur une barre videe (ClearAllIcons). Les autres niveaux ne l'appellent pas.
+    /// </summary>
+    [ContextMenu("Remplir la barre")]
+    public void SpawnIconsForLivingEnemies()
+    {
+        List<EnemyHealth> living = new List<EnemyHealth>();
+        foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsSortMode.InstanceID))
+        {
+            if (enemy == null || enemy.IsDead()) continue;
+            if (enemy.GetComponent<BrightEyesController>() != null) continue;
+            living.Add(enemy);
+        }
+
+        if (spawnCoroutine != null) StopCoroutine(spawnCoroutine);
+        spawnCoroutine = StartCoroutine(SpawnIconsCoroutine(living));
     }
 
     /// <summary>
@@ -72,16 +95,11 @@ public class EnemyIconsUI : MonoBehaviour
         if (cleanedCount >= enemyIcons.Count)
             OnAllIconsCleaned?.Invoke();
     }
-    private IEnumerator SpawnIconsCoroutine()
+    private IEnumerator SpawnIconsCoroutine(List<EnemyHealth> validEnemies)
     {
-        List<EnemyHealth> validEnemies = null;
-
-        if (CleaningBonusManager.Instance != null)
-            validEnemies = CleaningBonusManager.Instance.GetRegisteredEnemies();
-
         if (validEnemies == null || validEnemies.Count == 0)
         {
-            Debug.LogWarning("[EnemyIconsUI] Aucun ennemi enregistre dans CleaningBonusManager.");
+            Debug.LogWarning("[EnemyIconsUI] Aucun ennemi a afficher.");
             yield break;
         }
 

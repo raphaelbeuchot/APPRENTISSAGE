@@ -30,16 +30,62 @@ Marqué **(décidé)** ce que l'utilisateur a tranché ; tout le reste est piste
   - Clic droit *Rendre le joueur* : fin de transition. **Le cycle reste arrêté toute la transition** ; `Resume Delay` compte à partir du relâchement (0 = reprise immédiate).
   - Limite : rouvrir le menu pause pendant la transition lève `IsLocked`.
 
+Le flow complet du niveau, étape par étape (codé / branché / à faire / piste), est dans **« Flow du niveau »** ci-dessous.
+
 **Flow d'entre-phases imaginé** (2026-11-08, piste) : 3e pupitre → caméra sur la sentinelle, un cercle explose → caméra revient sur le joueur → la cage le prend, monte → le décor se transforme dessous → la cage se déplace vers sa future position, se pose → elle le libère → texte rotatif « Phase 2 » + jingle (afficheur à part, nouveau script) → le cycle reprend à la fin du jingle. Des cages enlèvent les zombies vivants et d'autres apportent ceux de la phase suivante.
 - Début de niveau normal, pour comparaison : jingle = `CountdownManager.countdownStartSound`, texte = `GameUIManager.ShowCountdown`, mais le cycle démarre après un délai **fixe** (`PupitreInteraction.gameStartDelay` 4,5 s), pas sur la fin du jingle.
 
 **Suite**, dans l'ordre proposé :
 - ~~**b.** Vider la barre d'icônes d'ennemis~~ (2026-11-09) : `EnemyIconsUI.ClearAllIcons` (vivants et cadavres, de la dernière icône à la première, délai réglable, sans compter comme un nettoyage), branchée sur le nouvel événement `BossTransition.onEnemiesRemoved` (fin de la sortie du dernier zombie, vivant ou cadavre, tout de suite s'il n'y en a aucun).
-- **c.** Zombies de chaque phase en liste dans la phase (comme les pupitres), désactivés au lancement, activés en début de phase ; nouvelle barre d'icônes. Vérifier qu'un zombie activé en cours de partie est bien suivi (icônes créées une seule fois au lancement du cycle) ; code propre au niveau si besoin.
+- **c.** Zombies de chaque phase (2026-11-09, **codé, pas encore testé**) : liste `Zombies` par phase dans `BossPhaseManager` (ceux des phases 2+ désactivés dès `Awake`, donc pas recensés au lancement) ; *Faire entrer les zombies de la phase* (`BringInCurrentPhaseZombies`) → descente dans `BossTransition` (`dropHeight` 8 m, `dropDuration` 3 s, inertes pendant la descente, démarrage à l'arrivée) → `onEnemiesArrived` → *Remplir la barre* (`EnemyIconsUI.SpawnIconsForLivingEnemies`, ajout partagé, appelé par le boss seul). Vérifié dans le code : barre de vie, minuteur, détection de la sentinelle et lock-on suivent un zombie activé en cours de partie.
 - **d.** Brancher la cage sur la transition (aujourd'hui `BossCage.Release` remet `isFrozen` à faux tout seul : à accorder avec `BossTransition`) ; la cage qui vient au joueur demandera sans doute du code.
 - Ensuite : texte « Phase N » + jingle ; caméra sur la sentinelle ; explosion ; descente des pupitres ; cercles abattables ; musique par phase (clips encore `private`). Autres types d'ennemis (essaims, BrightEyes, bombes) non gérés par la transition.
 
 **Ordre de travail d'origine**, pour mémoire : 1. ~~Caméra~~ 2. ~~Cycle~~ 3. ~~Pupitres et phases~~ (reste : abattre un cercle, figer le joueur, mise en place) 4. Cercles abattables 5. Géant (SO dédié, œil et lumière sur sa tête) 6. Fin (lasers, passerelle, pupitre central, sortie).
+
+---
+
+## Flow du niveau (écrit le 2026-11-09, à relire ensemble)
+
+Légende : **[codé]** marche en jeu · **[branché]** codé et relié dans la scène · **[à brancher]** codé, reste à relier dans l'Inspector · **[à faire]** prévu, pas codé · **[piste]** imaginé, rien de décidé.
+
+**Lancement de la scène**
+1. `BossPhaseManager` (Awake) : tous les pupitres de boss désactivés ; zombies des phases 2+ désactivés. Ceux de la phase 1 sont là. **[codé]**
+2. Phase 1 démarre tout de suite (Start) : ses pupitres activés, ses réglages de feux envoyés au cycle, `onPhaseStart`. Le cycle ne tourne pas encore. **[codé]**
+
+**Début du combat** (le niveau normal, rien de spécifique au boss)
+3. Le joueur active le pupitre de départ (`PupitreInteraction`) : compte à rebours, caméra qui monte de 4 m, barre d'icônes remplie avec les zombies de la phase 1, cycle lancé après 4,5 s. **[codé, existant]**
+
+**Pendant une phase**
+4. Le cycle tourne avec les fourchettes et la pression de la phase. Le joueur active les pupitres de la phase, se défend, jette les cadavres dans les fosses (« Cleaned Up ! » + icône rayée). **[codé]**
+
+**Dernier pupitre d'une phase** (tout sur la même frame)
+5. Cycle en pause (coupe tout, même en plein rouge). **[codé]**
+6. `BossTransition.Begin` : joueur figé ; tous les zombies, vivants et cadavres, gelés et qui montent (8 m, 3 s). **[codé]**
+7. `onPhaseComplete` de la phase finie. **[codé, rien de branché]**
+8. La phase suivante démarre : ses pupitres apparaissent **tout de suite**, ses réglages de feux partent au cycle, `onPhaseStart`. **[codé]**
+
+**Environ 3 s plus tard**
+9. Fin de la montée → `onEnemiesRemoved` → *Vider la barre* **[branché]** + *Faire entrer les zombies de la phase* **[à brancher]**.
+10. Descente des zombies de la phase (8 m, 3 s), là où ils sont posés dans la scène. **[codé, à tester]**
+11. Tous à terre → `onEnemiesArrived` → *Remplir la barre* **[à brancher]**.
+
+**Reprise**
+12. Joueur rendu : **à la main pour l'instant** (clic droit *Rendre le joueur*), indépendant des étapes 9 à 11. **[codé]**
+13. `Resume Delay` compté depuis le relâchement → le cycle reprend au vert. Retour à l'étape 4. **[codé]**
+
+**Dernière phase**
+14. Étapes 5 à 7, puis `onAllPhasesComplete` ; le cycle reste en pause. **[codé, rien de branché]**
+15. Fin : passerelle, pupitre central, « pan pan pan », porte, ciel bleu, fondu au blanc, écran de fin de démo. **[à faire]**
+
+**Ce qui doit venir s'insérer** (voir « Flow d'entre-phases imaginé ») : caméra sur la sentinelle et explosion d'un cercle (vers l'étape 7) **[piste]** ; cage qui prend le joueur, transformation du décor, cage qui le repose et le relâche (remplace l'étape 12) **[piste, d. à faire]** ; cages qui enlèvent et apportent les zombies (remplacent les étapes 6 et 10) **[piste]** ; descente des pupitres (remplace l'apparition sèche de l'étape 8) **[piste]** ; texte « Phase N » + jingle, cycle qui reprend à la fin du jingle (remplace l'étape 13) **[à faire]**.
+
+**Points à vérifier ensemble**
+- Étape 8 : les pupitres de la phase suivante apparaissent dès le dernier pupitre, en pleine transition. Voulu ?
+- Étapes 11 / 12 : le joueur peut être relâché avant que les zombies soient à terre, ou l'inverse. Faut-il un ordre imposé ?
+- Étape 14 : après la dernière phase, le joueur reste **figé** (la transition est lancée) ; la fin devra le rendre ou le prendre en charge.
+- **`GoalDoor` qui s'ouvrirait en plein combat** : `LevelManager` de la scène a `Require All Enemies Killed` coché et `goalDoor` relié ; `totalEnemies` ne compte que la phase 1 → la porte s'ouvre dès qu'on a tué autant de zombies qu'en phase 1 (toutes phases confondues). Suggestion : décocher, la fin passera par `onAllPhasesComplete`.
+- **« Cleaned Up ! » muet à partir de la phase 2** (probable, pas testé) : `CleaningBonusManager` croit avoir fini quand il a nettoyé autant de cadavres qu'il y avait de zombies au lancement ; ensuite il ne l'affiche plus (l'icône est quand même rayée). « Spick and span ! » sortira à chaque phase où tout est nettoyé.
 
 ---
 
