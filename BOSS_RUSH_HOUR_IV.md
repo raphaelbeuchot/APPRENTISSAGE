@@ -80,12 +80,14 @@ Légende : **[codé]** marche en jeu · **[branché]** codé et relié dans la s
 
 **Ce qui doit venir s'insérer** (voir « Flow d'entre-phases imaginé ») : caméra sur la sentinelle et explosion d'un cercle (vers l'étape 7) **[piste]** ; cage qui prend le joueur, transformation du décor, cage qui le repose et le relâche (remplace l'étape 12) **[piste, d. à faire]** ; cages qui enlèvent et apportent les zombies (remplacent les étapes 6 et 10) **[piste]** ; descente des pupitres (remplace l'apparition sèche de l'étape 8) **[piste]** ; texte « Phase N » + jingle, cycle qui reprend à la fin du jingle (remplace l'étape 13) **[à faire]**.
 
-**Points à vérifier ensemble**
-- Étape 8 : les pupitres de la phase suivante apparaissent dès le dernier pupitre, en pleine transition. Voulu ?
-- Étapes 11 / 12 : le joueur peut être relâché avant que les zombies soient à terre, ou l'inverse. Faut-il un ordre imposé ?
-- Étape 14 : après la dernière phase, le joueur reste **figé** (la transition est lancée) ; la fin devra le rendre ou le prendre en charge.
-- **`GoalDoor` qui s'ouvrirait en plein combat** : `LevelManager` de la scène a `Require All Enemies Killed` coché et `goalDoor` relié ; `totalEnemies` ne compte que la phase 1 → la porte s'ouvre dès qu'on a tué autant de zombies qu'en phase 1 (toutes phases confondues). Suggestion : décocher, la fin passera par `onAllPhasesComplete`.
-- **« Cleaned Up ! » muet à partir de la phase 2** (probable, pas testé) : `CleaningBonusManager` croit avoir fini quand il a nettoyé autant de cadavres qu'il y avait de zombies au lancement ; ensuite il ne l'affiche plus (l'icône est quand même rayée). « Spick and span ! » sortira à chaque phase où tout est nettoyé.
+**Décisions du 2026-11-09 sur le flow**
+- **Pupitres** (**décidé**) : ils descendent comme les zombies, au lieu d'apparaître tout de suite (étape 8). Avant ou après les zombies : non tranché.
+- **Joueur** (**décidé**, rappel) : la cage le saisit, le monte, et ne le redescend que quand **toute la scène est réinstallée** : pupitres, ennemis, pièges et meshes de décor. L'étape 12 (rendre le joueur) viendra donc après tout le reste, et non en parallèle.
+- **Après la dernière phase** (étape 14, joueur resté figé) : on verra plus tard.
+- **`GoalDoor`** (**décidé**) : `Require All Enemies Killed` à décocher sur le `LevelManager` de la scène (coché, avec `goalDoor` relié, et `totalEnemies` ne compte que la phase 1 → la porte s'ouvrirait en plein combat). Plus tard, sans doute une **BossGoalDoor** dédiée, avec des effets différents.
+
+**Points à vérifier**
+- **« Cleaned Up ! » qui peut se taire en cours de combat** : vu en jeu le 2026-11-09, il s'affiche bien en phase 2. Mais `CleaningBonusManager` croit avoir fini quand il a nettoyé autant de cadavres qu'il y avait de zombies au lancement, toutes phases confondues (les zombies enlevés par la montée ne comptent pas) ; passé ce nombre, il ne l'affiche plus (l'icône est quand même rayée). À corriger si ça arrive en jeu. « Spick and span ! » sortira à chaque phase où tout est nettoyé.
 
 ---
 
