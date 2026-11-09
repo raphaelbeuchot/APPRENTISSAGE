@@ -13,11 +13,14 @@ public class EnemyIconsUI : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float delayBetweenIcons = 0.5f;
     [SerializeField] private float flashDuration = 1f;
+    [Tooltip("Vider la barre : delai entre deux icones retirees, de la derniere a la premiere (0 = tout d'un coup).")]
+    [SerializeField] private float clearDelayBetweenIcons = 0.1f;
 
     private List<EnemyIconDisplay> enemyIcons = new List<EnemyIconDisplay>();
     private AudioSource audioSource;
     public event System.Action OnAllIconsCleaned;
     private int cleanedCount = 0;
+    private Coroutine spawnCoroutine;
 
     private void Awake()
     {
@@ -28,7 +31,40 @@ public class EnemyIconsUI : MonoBehaviour
 
     public void SpawnIconsForEnemies()
     {
-        StartCoroutine(SpawnIconsCoroutine());
+        spawnCoroutine = StartCoroutine(SpawnIconsCoroutine());
+    }
+
+    /// <summary>
+    /// Vide la barre (boss de Rush Hour IV, entre deux phases) : retire toutes les icones, vivants et
+    /// morts, de la derniere affichee a la premiere. Ne compte pas comme un nettoyage (pas de
+    /// OnAllIconsCleaned). Les autres niveaux ne l'appellent pas.
+    /// </summary>
+    [ContextMenu("Vider la barre")]
+    public void ClearAllIcons()
+    {
+        if (spawnCoroutine != null)
+        {
+            StopCoroutine(spawnCoroutine);
+            spawnCoroutine = null;
+        }
+
+        // La liste est videe tout de suite : un cadavre nettoye pendant le retrait ne retrouve plus son icone
+        List<EnemyIconDisplay> toRemove = new List<EnemyIconDisplay>(enemyIcons);
+        enemyIcons.Clear();
+        cleanedCount = 0;
+
+        StartCoroutine(ClearIconsCoroutine(toRemove));
+    }
+
+    private IEnumerator ClearIconsCoroutine(List<EnemyIconDisplay> icons)
+    {
+        for (int i = icons.Count - 1; i >= 0; i--)
+        {
+            if (icons[i] == null) continue;
+            Destroy(icons[i].gameObject);
+            if (clearDelayBetweenIcons > 0f && i > 0)
+                yield return new WaitForSeconds(clearDelayBetweenIcons);
+        }
     }
     public void OnIconCleaned(EnemyIconDisplay icon)
     {
@@ -71,6 +107,7 @@ public class EnemyIconsUI : MonoBehaviour
 
             yield return new WaitForSeconds(delayBetweenIcons);
         }
+        spawnCoroutine = null;
     }
 
     public void FlashIconRed(EnemyIconDisplay icon)

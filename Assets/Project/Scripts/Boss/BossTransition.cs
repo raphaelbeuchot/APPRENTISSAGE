@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>
 /// Entre-phases du boss de Rush Hour IV, cote joueur et ennemis.
@@ -20,6 +21,11 @@ public class BossTransition : MonoBehaviour
     [Tooltip("Duree de la montee (s). Les ennemis sont supprimes a la fin.")]
     [Min(0.01f)] [SerializeField] private float liftDuration = 3f;
 
+    [Header("Effets")]
+    [Tooltip("Quand tous les ennemis vivants sont partis (fin de leur sortie, supprimes). " +
+             "Tout de suite s'il n'y en avait aucun. Ex : EnemyIconsUI.ClearAllIcons.")]
+    [SerializeField] private UnityEvent onEnemiesRemoved;
+
     [Header("Debug")]
     [SerializeField] private bool playerFrozen = false;
 
@@ -30,6 +36,7 @@ public class BossTransition : MonoBehaviour
 
     private PlayerPhysicsMovement player;
     private Rigidbody playerRb;
+    private int pendingRemovals = 0;
 
     private void Start()
     {
@@ -97,6 +104,7 @@ public class BossTransition : MonoBehaviour
             if (!enemies.Contains(health.gameObject)) enemies.Add(health.gameObject);
         }
 
+        pendingRemovals += enemies.Count;
         foreach (GameObject enemy in enemies)
         {
             FreezeEnemy(enemy);
@@ -104,6 +112,19 @@ public class BossTransition : MonoBehaviour
         }
 
         Debug.Log($"[BOSS TRANSITION] {enemies.Count} ennemi(s) vivant(s) fige(s) et enleve(s)");
+        if (pendingRemovals == 0) EnemiesRemoved();
+    }
+
+    private void OnEnemyRemoved()
+    {
+        pendingRemovals = Mathf.Max(0, pendingRemovals - 1);
+        if (pendingRemovals == 0) EnemiesRemoved();
+    }
+
+    private void EnemiesRemoved()
+    {
+        Debug.Log("[BOSS TRANSITION] Ennemis enleves");
+        onEnemiesRemoved?.Invoke();
     }
 
     // Gel definitif : scripts coupes (coroutines comprises : desactiver un script ne les arrete pas),
@@ -149,12 +170,13 @@ public class BossTransition : MonoBehaviour
 
         while (t < 1f)
         {
-            if (enemy == null) yield break;
+            if (enemy == null) break;
             t += Time.deltaTime / liftDuration;
             enemy.transform.position = Vector3.Lerp(start, end, Mathf.SmoothStep(0f, 1f, t));
             yield return null;
         }
 
         if (enemy != null) Destroy(enemy);
+        OnEnemyRemoved();
     }
 }
