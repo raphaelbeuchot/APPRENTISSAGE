@@ -58624,6 +58624,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossTransition
   liftHeight: 8
   liftDuration: 3
+  onEnemiesRemoved:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1422865899}
+        m_TargetAssemblyTypeName: EnemyIconsUI, Assembly-CSharp
+        m_MethodName: ClearAllIcons
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   playerFrozen: 0
 --- !u!1001 &964656653
 PrefabInstance:
@@ -66249,7 +66264,7 @@ PrefabInstance:
     - target: {fileID: 3128886738955206479, guid: 62e8cf5d8e610c14aa1def1f208af8c4, type: 3}
       propertyPath: enemyIconsUI
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1422865899}
     - target: {fileID: 3128886738955206479, guid: 62e8cf5d8e610c14aa1def1f208af8c4, type: 3}
       propertyPath: corpseIconsUI
       value: 
@@ -85844,6 +85859,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
+--- !u!114 &1422865899 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5871758403430879850, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+  m_PrefabInstance: {fileID: 115993669638194592}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d938481c7e262cc40a04543d2d349ed3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyIconsUI
 --- !u!4 &1423385318 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}

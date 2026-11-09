@@ -27,6 +27,12 @@
   - **À ne pas confondre** : grimper une pente très raide vient de `HandleStepClimb` (raycasts sur Ground + Obstacle : une pente raide passe pour une marche). Constaté le 2026-10-30 sur un objet en Obstacle, contourné en le passant en Default. Piste si ça revient : refuser dans `HandleStepClimb` une face inclinée (normale du raycast bas), une vraie marche a une face verticale.
 - [ ] 🟡 **Lave — vie à 0 sans mort** (noté le 2026-11-01, mis de côté) : en sautant de caillou en caillou à moitié immergés dans une fosse de lave (`SplinePitZone`), le joueur se brûle, la vie tombe à 0 (0 pip = vraiment 0, les pips arrondissent au-dessus) mais il ne meurt pas et continue à jouer. **Écarté** : sortie de fosse avec E (`ClimbOutAnimation`) et escalade E (`TestClimbDetection`), il n'y avait pas d'escalade. **Fait du code** : `PlayerHealth.TakeDamage` appelle `Die()` dès que `currentHealth <= 0`. **Piste restante** : une exception dans un abonné de `OnHealthChanged` (`PlayerHealthUI`, `GameUIManager`, `PlayerDeathCause`) ou de `OnDying` couperait la chaîne avant `DeathSequence.Play`. **À la prochaine occurrence** : regarder la Console (exception rouge ? « PLAYER IS DEAD! » présent ?).
 - [ ] ⚪ **Spray mis en mémoire pendant un coup de balai** (noté le 2026-10-30) : depuis le retrait du `animator.Rebind()` en fin de coup de balai (`BroomAttackSystem.PerformBroomAttack`, il relançait la locomotion → saccade très visible en marchant), un spray demandé pendant le coup part après coup (buffering). Les triggers `BroomAttack` / `SprayAttack` sont remis à zéro en fin de coup, mais ça ne suffit pas. Pas gênant tant que le spray n'est pas en jeu ; à revoir s'il revient.
+- [ ] 🟡 **Icône pas nettoyée quand un cadavre tombe dans une fosse** (noté le 2026-11-09) : « Cleaned Up ! » s'affiche mais l'icône reste dans la barre. Cause : champ `Enemy Icons UI` vide sur `CleaningManager` (`CleaningBonusManager`) dans la scène ; les icônes s'affichent quand même (elles cherchent n'importe quelle barre), mais le nettoyage ne sait pas à quelle barre parler. Corrigé dans **Level_TrafficJam_04** (confirmé en jeu). **Correctif** : glisser `EnemyIconsContainer` dans le champ. **Mêmes scènes à vérifier puis corriger** (champ vide relevé le 2026-11-09 dans les fichiers ; pas vérifié en jeu, certaines n'affichent peut-être pas la barre) :
+  - Level_TrafficJam_02, Level_TrafficJam_03
+  - Level_Flower02
+  - Level_LavaTrain01
+  - Level_Epervier02
+  - Level_Bowling_001, Level_Epervier01 (pas de réglage dans la scène : valeur du prefab, vide aussi)
 ---
 
 ## 🎮 GAME DESIGN
