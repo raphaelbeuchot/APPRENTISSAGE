@@ -1,19 +1,31 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Events;
 
 /// <summary>
-/// Entre-phases du boss de Rush Hour IV, cote joueur et ennemis.
-/// Begin (appele par le BossPhaseManager au dernier pupitre d'une phase) :
-/// - le joueur est fige sur place ("coffre de BotW") : plus de deplacement ni de commandes,
-///   la gravite continue (s'il etait en l'air, il retombe) ;
-/// - les ennemis, vivants et cadavres, sont figes pour de bon (gel dedie : ils ne reviennent jamais),
-///   montent (remplacant provisoire des cages) puis sont supprimes.
-/// EndPlayerFreeze rend le joueur (menu du composant, evenement, signal de Timeline...).
+/// Entre-phases du boss de Rush Hour IV. Flow complet : BOSS_RUSH_HOUR_IV.md, « Flow du niveau ».
+/// Begin (appele par le BossPhaseManager au dernier pupitre d'une phase, avec la cage de ce pupitre) :
+/// - tout le monde est fige : le joueur sur place (plus de deplacement ni de commandes, la gravite continue),
+///   les ennemis vivants et cadavres pour de bon (gel dedie : ils ne reviennent jamais) ;
+/// - plan sentinelle (camera dediee) pendant "Sentinel Shot Duration", joueur pose dans la cage ;
+/// - retour a la camera normale, la cage monte avec le joueur -> onCageRaised.
+/// La suite s'enchaine par les evenements (Inspector) : RemoveEnemies (montee des ennemis figes),
+/// pupitres et zombies de la phase qui descendent, puis LowerCage : la cage redescend, relache le joueur,
+/// et la transition se termine (Ended -> reprise du cycle).
+/// EndPlayerFreeze rend le joueur a la main (menu du composant), sans passer par la cage.
 /// </summary>
 public class BossTransition : MonoBehaviour
 {
+    [Header("Plan sentinelle")]
+    [Tooltip("Camera qui regarde la sentinelle au dernier pupitre. Vide = pas de changement de plan.")]
+    [SerializeField] private CinemachineCamera sentinelCamera;
+    [Tooltip("Doit rester au-dessus de 20 (priorite de la vue active dans CameraPanningExtension).")]
+    [SerializeField] private int cameraPriority = 30;
+    [Tooltip("Duree du plan (s), en attendant l'explosion d'un cercle. Puis retour a la camera normale et montee de la cage.")]
+    [Min(0f)] [SerializeField] private float sentinelShotDuration = 2f;
+
     [Header("Ennemis (remplacant provisoire des cages)")]
     [Tooltip("Hauteur de montee des ennemis figes (m).")]
     [SerializeField] private float liftHeight = 8f;
@@ -27,12 +39,15 @@ public class BossTransition : MonoBehaviour
     [Min(0.01f)] [SerializeField] private float dropDuration = 3f;
 
     [Header("Effets")]
+    [Tooltip("La cage est en haut avec le joueur (tout de suite apres le plan sentinelle s'il n'y a pas de cage). " +
+             "Ex : BossTransition.RemoveEnemies.")]
+    [SerializeField] private UnityEvent onCageRaised;
     [Tooltip("Quand tous les ennemis, vivants et cadavres, sont partis (fin de leur sortie, supprimes). " +
              "Tout de suite s'il n'y en avait aucun. Ex : EnemyIconsUI.ClearAllIcons, " +
              "BossPhaseManager.BringInCurrentPhaseZombies.")]
     [SerializeField] private UnityEvent onEnemiesRemoved;
     [Tooltip("Quand tous les ennemis de la phase sont a terre. Tout de suite s'il n'y en avait aucun. " +
-             "Ex : EnemyIconsUI.SpawnIconsForLivingEnemies.")]
+             "Ex : EnemyIconsUI.SpawnIconsForLivingEnemies, BossTransition.LowerCage.")]
     [SerializeField] private UnityEvent onEnemiesArrived;
     [Tooltip("Quand tous les pupitres de la phase sont poses. Tout de suite s'il n'y en avait aucun. " +
              "Ex : BossPhaseManager.BringInCurrentPhaseZombies (pupitres d'abord, zombies ensuite).")]
@@ -49,6 +64,16 @@ public class BossTransition : MonoBehaviour
     private PlayerPhysicsMovement player;
     private Rigidbody playerRb;
     private int pendingRemovals = 0;
+    private BossCage currentCage;
+    private bool lowering = false;
+    // Ennemis figes au debut de la transition, enleves plus tard (RemoveEnemies)
+    private readonly List<GameObject> frozenEnemies = new List<GameObject>();
+    private int frozenCorpses = 0;
+
+    private void Awake()
+    {
+        if (sentinelCamera != null) sentinelCamera.Priority = 0;
+    }
 
     private void Start()
     {
@@ -62,12 +87,65 @@ public class BossTransition : MonoBehaviour
             Debug.LogWarning("[BOSS TRANSITION] Pas de PlayerPhysicsMovement (tag Player)");
     }
 
-    /// <summary>Debut de l'entre-phases : joueur fige, ennemis (vivants et cadavres) figes puis enleves.</summary>
-    [ContextMenu("Debut de transition (Begin)")]
-    public void Begin()
+    [ContextMenu("Debut de transition (Begin, sans cage)")]
+    private void BeginFromMenu() => Begin(null);
+
+    /// <summary>
+    /// Debut de l'entre-phases : tout le monde fige, plan sentinelle, puis la cage monte avec le joueur.
+    /// cage : celle du dernier pupitre active (null = pas de cage, le joueur reste fige au sol).
+    /// </summary>
+    public void Begin(BossCage cage)
     {
+        currentCage = cage;
         FreezePlayer();
-        RemoveAllEnemies();
+        FreezeAllEnemies();
+        StartCoroutine(SentinelShotThenCage());
+    }
+
+    private IEnumerator SentinelShotThenCage()
+    {
+        if (sentinelCamera != null) sentinelCamera.Priority = cameraPriority;
+        // Le changement de plan cache la teleportation du joueur dans la cage
+        if (currentCage != null) currentCage.PlacePlayer();
+
+        if (sentinelShotDuration > 0f) yield return new WaitForSeconds(sentinelShotDuration);
+
+        if (sentinelCamera != null) sentinelCamera.Priority = 0;
+
+        if (currentCage != null) currentCage.RaiseWithPlayer(CageRaised);
+        else CageRaised();
+    }
+
+    private void CageRaised()
+    {
+        Debug.Log("[BOSS TRANSITION] Cage en haut");
+        onCageRaised?.Invoke();
+    }
+
+    /// <summary>
+    /// Fin de l'entre-phases : la cage redescend, relache le joueur, puis la transition se termine.
+    /// A brancher dans le flow (ex. sur onEnemiesArrived). Sans cage : le joueur est rendu tout de suite.
+    /// </summary>
+    [ContextMenu("Redescendre la cage")]
+    public void LowerCage()
+    {
+        // Un deuxieme appel pendant la descente ne doit pas rendre le joueur avant que la cage soit posee
+        if (lowering) return;
+
+        if (currentCage == null)
+        {
+            EndPlayerFreeze();
+            return;
+        }
+
+        BossCage cage = currentCage;
+        currentCage = null;
+        lowering = true;
+        cage.LowerAndRelease(() =>
+        {
+            lowering = false;
+            EndPlayerFreeze();
+        });
     }
 
     // ============================================
@@ -108,26 +186,38 @@ public class BossTransition : MonoBehaviour
     // ============================================
 
     // Vivants et cadavres (un cadavre est le meme objet que l'ennemi, EnemyHealth mort, en ragdoll) :
-    // tout le monde part, l'arene et la barre d'icones repartent a zero
-    private void RemoveAllEnemies()
+    // tout le monde est fige des le dernier pupitre (plus personne ne frappe le joueur), et partira ensuite
+    private void FreezeAllEnemies()
     {
-        List<GameObject> enemies = new List<GameObject>();
-        int corpses = 0;
         foreach (EnemyHealth health in FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None))
         {
-            if (health == null || enemies.Contains(health.gameObject)) continue;
-            enemies.Add(health.gameObject);
-            if (health.IsDead()) corpses++;
+            if (health == null || frozenEnemies.Contains(health.gameObject)) continue;
+            frozenEnemies.Add(health.gameObject);
+            if (health.IsDead()) frozenCorpses++;
+            FreezeEnemy(health.gameObject);
         }
+
+        Debug.Log($"[BOSS TRANSITION] {frozenEnemies.Count - frozenCorpses} vivant(s) + {frozenCorpses} cadavre(s) fige(s)");
+    }
+
+    /// <summary>
+    /// Enleve les ennemis figes au debut de la transition (montee puis suppression) : l'arene et la barre
+    /// d'icones repartent a zero. A brancher dans le flow (ex. sur onCageRaised). Fin : onEnemiesRemoved.
+    /// </summary>
+    [ContextMenu("Enlever les ennemis")]
+    public void RemoveEnemies()
+    {
+        List<GameObject> enemies = new List<GameObject>();
+        foreach (GameObject enemy in frozenEnemies)
+            if (enemy != null) enemies.Add(enemy);
+        frozenEnemies.Clear();
+        frozenCorpses = 0;
 
         pendingRemovals += enemies.Count;
         foreach (GameObject enemy in enemies)
-        {
-            FreezeEnemy(enemy);
             StartCoroutine(LiftAndRemove(enemy));
-        }
 
-        Debug.Log($"[BOSS TRANSITION] {enemies.Count - corpses} vivant(s) + {corpses} cadavre(s) fige(s) et enleve(s)");
+        Debug.Log($"[BOSS TRANSITION] {enemies.Count} ennemi(s) enleve(s)");
         if (pendingRemovals == 0) EnemiesRemoved();
     }
 

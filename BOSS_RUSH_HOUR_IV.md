@@ -23,7 +23,7 @@ Marqué **(décidé)** ce que l'utilisateur a tranché ; tout le reste est piste
   - Dans la scène : `BOSSPHASEMANAGER` + cylindres de test comme pupitres (`PhaseN_CylinderNN`), 4 phases.
   - Choix écarté : phases et pupitres en enfants dans la Hierarchy (impose le rangement de la scène).
 
-- **Cage du joueur** (2026-11-08) : `BossCage`, posée sur l'objet `CAGE` (enfant `Holdpoint`). `Grab` fige le joueur, le passe en cinématique et le colle au point d'accroche chaque frame ; coupe `FallTracker` ; bloque la touche de vue (`CameraPanningExtension.UnlockViewToggle` ajouté, seul changement partagé) ; met la première caméra de transition à 30. `Release` remet tout. `ShowCamera(i)` pour passer d'un plan à l'autre. Bascule CM_NormalMode / vue basse → transition → retour validée. Le trajet de la cage n'est pas codé (Timeline ou animation). **Pas encore branchée sur les phases.**
+- **Cage du joueur** (2026-11-08, refaite le 2026-11-09) : `BossCage`, une par pupitre. `Grab` fige le joueur, le passe en cinématique et lui fait suivre le point d'accroche chaque frame ; coupe `FallTracker` ; bloque la touche de vue (`CameraPanningExtension.UnlockViewToggle` ajouté, seul changement partagé). `Release` remet tout. Montée et descente codées dans la cage (plus de Timeline), branchées sur les phases : voir « Flow du niveau ».
 - **Transition** (2026-11-08) : `BossTransition`, appelée par le `BossPhaseManager` au dernier pupitre, juste après la pause du cycle.
   - Joueur figé sur place (« coffre de BotW », **décidé**) : `isFrozen` + `PlayerInputManager.IsLocked` (crouch, balai, spray, tomates, interaction) ; la gravité continue.
   - Zombies vivants : gel **dédié** et définitif (**décidé** : ils ne reviennent jamais), montée provisoire de 8 m en 3 s, puis suppression. Barres de vie et minuteurs désinscrits. **Cadavres enlevés aussi** (2026-11-09, même gel et même montée : tout le monde est dégagé, comme la barre d'icônes).
@@ -38,8 +38,8 @@ Le flow complet du niveau, étape par étape (codé / branché / à faire / pist
 **Suite**, dans l'ordre proposé :
 - ~~**b.** Vider la barre d'icônes d'ennemis~~ (2026-11-09) : `EnemyIconsUI.ClearAllIcons` (vivants et cadavres, de la dernière icône à la première, délai réglable, sans compter comme un nettoyage), branchée sur le nouvel événement `BossTransition.onEnemiesRemoved` (fin de la sortie du dernier zombie, vivant ou cadavre, tout de suite s'il n'y en a aucun).
 - ~~**c.** Zombies de chaque phase~~ (2026-11-09, validé en jeu ; puis pupitres qui descendent avant les zombies, validé) : liste `Zombies` par phase dans `BossPhaseManager` (ceux des phases 2+ désactivés dès `Awake`, donc pas recensés au lancement) ; *Faire entrer les zombies de la phase* (`BringInCurrentPhaseZombies`) → descente dans `BossTransition` (`dropHeight` 8 m, `dropDuration` 3 s, inertes pendant la descente, démarrage à l'arrivée) → `onEnemiesArrived` → *Remplir la barre* (`EnemyIconsUI.SpawnIconsForLivingEnemies`, ajout partagé, appelé par le boss seul). Vérifié dans le code : barre de vie, minuteur, détection de la sentinelle et lock-on suivent un zombie activé en cours de partie.
-- **d.** Brancher la cage sur la transition (aujourd'hui `BossCage.Release` remet `isFrozen` à faux tout seul : à accorder avec `BossTransition`) ; la cage qui vient au joueur demandera sans doute du code.
-- Ensuite : texte « Phase N » + jingle ; caméra sur la sentinelle ; explosion ; descente des pupitres ; cercles abattables ; musique par phase (clips encore `private`). Autres types d'ennemis (essaims, BrightEyes, bombes) non gérés par la transition.
+- ~~**d.** Brancher la cage sur la transition~~ (2026-11-09, validé en jeu) : une cage par pupitre ; `BossCage` = Bloc (monte et descend avec le joueur) > Barreaux (cachés sous le sol au repos) + Holdpoint, 4 mouvements réglables, `onRaised` / `onLowered` ; caméras de transition retirées de la cage, remplacées par `Sentinel Camera` sur `BossTransition`. Détail dans « Flow du niveau », étapes 6 à 14.
+- Ensuite : texte « Phase N » + jingle ; explosion pendant le plan sentinelle ; pièges et décor qui se réinstallent ; cercles abattables ; musique par phase (clips encore `private`). Autres types d'ennemis (essaims, BrightEyes, bombes) non gérés par la transition.
 
 **Ordre de travail d'origine**, pour mémoire : 1. ~~Caméra~~ 2. ~~Cycle~~ 3. ~~Pupitres et phases~~ (reste : abattre un cercle, figer le joueur, mise en place) 4. Cercles abattables 5. Géant (SO dédié, œil et lumière sur sa tête) 6. Fin (lasers, passerelle, pupitre central, sortie).
 
@@ -61,29 +61,31 @@ Légende : **[codé]** marche en jeu · **[branché]** codé et relié dans la s
 
 **Dernier pupitre d'une phase** (tout sur la même frame)
 5. Cycle en pause (coupe tout, même en plein rouge). **[codé]**
-6. `BossTransition.Begin` : joueur figé ; tous les zombies, vivants et cadavres, gelés et qui montent (8 m, 3 s). **[codé]**
+6. `BossTransition.Begin(cage du dernier pupitre)` : **tout le monde figé** (**décidé**) : le joueur, et tous les zombies, vivants et cadavres (gel définitif, barres de vie retirées). La caméra passe sur la sentinelle (`CM_SentinelCamera`, priorité 30) ; pendant ce plan, le joueur est posé dans la cage (téléportation cachée par le changement de plan, case `Center Player`). **[branché]**
 7. `onPhaseComplete` de la phase finie. **[codé, rien de branché]**
 8. La phase suivante démarre : ses réglages de feux partent au cycle, `onPhaseStart`. Ses pupitres restent cachés. Les pupitres enfoncés de la phase finie restent en place pour de bon (**décidé**). **[codé]**
 
-**Environ 3 s plus tard** (ordre réglé dans l'Inspector, sans code)
-9. Fin de la montée → `onEnemiesRemoved` → *Vider la barre* + *Faire entrer les pupitres de la phase*. **[branché]**
-10. Descente des pupitres (8 m, 3 s, pas activables en l'air) → `onPupitresArrived` → *Faire entrer les zombies de la phase*. **[branché]** Pupitres d'abord, zombies ensuite (**décidé** le 2026-11-09, « sur le principe ça fonctionne »).
-11. Descente des zombies, là où ils sont posés dans la scène → tous à terre → `onEnemiesArrived` → *Remplir la barre*. **[branché]**
+**Plan sentinelle puis cage** (enchaîné par les événements, ordre réglé dans l'Inspector)
+9. Après `Sentinel Shot Duration` (2 s, en attendant l'explosion d'un cercle), retour à la caméra normale. **[branché]**
+10. Cage du dernier pupitre : barreaux qui sortent du sol (1,5 m en 0,15 s), puis bloc qui monte avec le joueur (3,5 m en 1,5 s) → `onCageRaised` → *Enlever les ennemis* (`RemoveEnemies`). **[branché]** Une cage par pupitre (**décidé**, champ `Cage` du `BossPupitre`), pour la personnaliser sans code.
+11. Montée des zombies figés (8 m, 3 s) → `onEnemiesRemoved` → *Vider la barre* + *Faire entrer les pupitres de la phase*. **[branché]**
+12. Descente des pupitres (8 m, 3 s, pas activables en l'air) → `onPupitresArrived` → *Faire entrer les zombies de la phase*. **[branché]** Pupitres d'abord, zombies ensuite (**décidé**).
+13. Descente des zombies, là où ils sont posés dans la scène → tous à terre → `onEnemiesArrived` → *Remplir la barre* + *Redescendre la cage* (`LowerCage`). **[branché]**
 
 **Reprise**
-12. Joueur rendu : **à la main pour l'instant** (clic droit *Rendre le joueur*), indépendant des étapes 9 à 11. **[codé]**
-13. `Resume Delay` compté depuis le relâchement → le cycle reprend au vert. Retour à l'étape 4. **[codé]**
+14. Le bloc redescend (1,5 s) ; une fois posé, les barreaux rentrent d'un coup (0,15 s, **décidé**) ; joueur relâché → fin de la transition. **[branché]** (*Rendre le joueur* reste en clic droit, pour tester sans cage.)
+15. `Resume Delay` compté depuis le relâchement → le cycle reprend au vert. Retour à l'étape 4. **[codé]**
 
 **Dernière phase**
-14. Étapes 5 à 7, puis `onAllPhasesComplete` ; le cycle reste en pause. **[codé, rien de branché]**
-15. Fin : passerelle, pupitre central, « pan pan pan », porte, ciel bleu, fondu au blanc, écran de fin de démo. **[à faire]**
+16. Étapes 5 à 10, puis `onAllPhasesComplete` ; le cycle reste en pause, le joueur reste dans la cage en haut (rien ne la redescend). **[codé, rien de branché]**
+17. Fin : passerelle, pupitre central, « pan pan pan », porte, ciel bleu, fondu au blanc, écran de fin de démo. **[à faire]**
 
-**Ce qui doit venir s'insérer** (voir « Flow d'entre-phases imaginé ») : caméra sur la sentinelle et explosion d'un cercle (vers l'étape 7) **[piste]** ; cage qui prend le joueur, transformation du décor, cage qui le repose et le relâche (remplace l'étape 12) **[piste, d. à faire]** ; cages qui enlèvent et apportent les zombies (remplacent les étapes 6 et 10) **[piste]** ; texte « Phase N » + jingle, cycle qui reprend à la fin du jingle (remplace l'étape 13) **[à faire]**.
+**Ce qui doit venir s'insérer** (voir « Flow d'entre-phases imaginé ») : explosion d'un cercle pendant le plan sentinelle (remplace la durée fixe de l'étape 9) **[à faire]** ; pièges et meshes de décor qui se réinstallent pendant que la cage est en haut (avant l'étape 14) **[à faire]** ; cages qui enlèvent et apportent les zombies (remplacent les montées et descentes des étapes 11 et 13) **[piste]** ; texte « Phase N » + jingle, cycle qui reprend à la fin du jingle (remplace l'étape 15) **[à faire]**.
 
 **Décisions du 2026-11-09 sur le flow**
 - **Pupitres** (**décidé**, fait) : ils descendent comme les zombies, avant eux (étapes 9 à 11).
-- **Joueur** (**décidé**, rappel) : la cage le saisit, le monte, et ne le redescend que quand **toute la scène est réinstallée** : pupitres, ennemis, pièges et meshes de décor. L'étape 12 (rendre le joueur) viendra donc après tout le reste, et non en parallèle.
-- **Après la dernière phase** (étape 14, joueur resté figé) : on verra plus tard.
+- **Joueur** (**décidé**, fait pour pupitres et ennemis) : la cage le saisit, le monte, et ne le redescend que quand **toute la scène est réinstallée** : pupitres, ennemis, pièges et meshes de décor. Aujourd'hui, la descente attend l'arrivée des zombies ; les pièges et le décor viendront s'intercaler avant.
+- **Après la dernière phase** (étape 16, joueur resté dans la cage en haut) : on verra plus tard.
 - **`GoalDoor`** (**décidé**, fait) : `Require All Enemies Killed` décoché sur le `LevelManager` de la scène (coché, avec `goalDoor` relié, et `totalEnemies` ne compte que la phase 1 → la porte s'ouvrirait en plein combat). Plus tard, sans doute une **BossGoalDoor** dédiée, avec des effets différents.
 
 **Points à vérifier**

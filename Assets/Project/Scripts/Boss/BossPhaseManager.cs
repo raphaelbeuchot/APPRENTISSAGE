@@ -149,6 +149,7 @@ public class BossPhaseManager : MonoBehaviour
     }
 
     private Coroutine resumeCoroutine;
+    private BossPupitre lastActivatedPupitre;
     // Avec une BossTransition : le cycle attend la fin de la transition (joueur relache) pour reprendre
     private bool waitingForTransitionEnd = false;
 
@@ -217,6 +218,7 @@ public class BossPhaseManager : MonoBehaviour
 
         Debug.Log($"[BOSS PHASES] {phase.label} : {done}/{phase.pupitres.Count}");
 
+        lastActivatedPupitre = pupitre;
         if (done >= phase.pupitres.Count)
             CompleteCurrentPhase();
     }
@@ -274,7 +276,10 @@ public class BossPhaseManager : MonoBehaviour
 
         // Le dernier pupitre coupe tout, quel que soit l'etat du cycle
         if (cycleManager != null) cycleManager.PauseCycle();
-        if (transition != null) transition.Begin();
+        // La cage est celle du dernier pupitre active (aucune si la phase est terminee a la main sans pupitre)
+        BossCage cage = lastActivatedPupitre != null ? lastActivatedPupitre.Cage : null;
+        lastActivatedPupitre = null;
+        if (transition != null) transition.Begin(cage);
 
         phase.effets.onPhaseComplete?.Invoke();
 

@@ -18,6 +18,10 @@ public class BossPupitre : MonoBehaviour
     [SerializeField] private float sinkDistance = 0.3f;
     [SerializeField] private float sinkDuration = 0.3f;
 
+    [Header("Cage")]
+    [Tooltip("Cage qui emporte le joueur si ce pupitre est le dernier active de sa phase. Vide = pas de cage.")]
+    [SerializeField] private BossCage cage;
+
     [Header("Effets de ce pupitre")]
     [SerializeField] private UnityEvent onActivated;
 
@@ -25,6 +29,8 @@ public class BossPupitre : MonoBehaviour
     public event System.Action<BossPupitre> Activated;
 
     public bool IsActivated { get; private set; }
+
+    public BossCage Cage => cage;
 
     private Transform player;
 
