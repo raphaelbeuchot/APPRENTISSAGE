@@ -34,7 +34,7 @@ Marqué **(décidé)** ce que l'utilisateur a tranché ; tout le reste est piste
 - Début de niveau normal, pour comparaison : jingle = `CountdownManager.countdownStartSound`, texte = `GameUIManager.ShowCountdown`, mais le cycle démarre après un délai **fixe** (`PupitreInteraction.gameStartDelay` 4,5 s), pas sur la fin du jingle.
 
 **Suite**, dans l'ordre proposé :
-- **b.** Vider la barre d'icônes d'ennemis au dernier pupitre (**décidé** : on la vide, on en remplit une nouvelle).
+- ~~**b.** Vider la barre d'icônes d'ennemis~~ (2026-11-09) : `EnemyIconsUI.ClearAllIcons` (vivants et cadavres, de la dernière icône à la première, délai réglable, sans compter comme un nettoyage), branchée sur le nouvel événement `BossTransition.onEnemiesRemoved` (fin de la sortie du dernier zombie vivant, tout de suite s'il n'y en a aucun).
 - **c.** Zombies de chaque phase en liste dans la phase (comme les pupitres), désactivés au lancement, activés en début de phase ; nouvelle barre d'icônes. Vérifier qu'un zombie activé en cours de partie est bien suivi (icônes créées une seule fois au lancement du cycle) ; code propre au niveau si besoin.
 - **d.** Brancher la cage sur la transition (aujourd'hui `BossCage.Release` remet `isFrozen` à faux tout seul : à accorder avec `BossTransition`) ; la cage qui vient au joueur demandera sans doute du code.
 - Ensuite : texte « Phase N » + jingle ; caméra sur la sentinelle ; explosion ; descente des pupitres ; cercles abattables ; musique par phase (clips encore `private`). Autres types d'ennemis (essaims, BrightEyes, bombes) non gérés par la transition.
