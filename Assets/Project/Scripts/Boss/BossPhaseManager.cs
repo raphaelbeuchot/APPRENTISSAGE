@@ -9,9 +9,9 @@ using UnityEngine.Events;
 /// Chaque phase : une liste de pupitres (nombre libre, ranges n'importe ou dans la scene).
 /// Quand tous sont actives, la phase est finie : effets de fin, puis debut de la phase suivante
 /// (ses reglages de feux sont envoyes au BossCycleManager).
-/// Version simple : au debut d'une phase, ses pupitres sont actives d'un coup (remplacant provisoire
-/// de la descente des cintres, a brancher plus tard dans les effets de debut). Les pupitres des
-/// phases suivantes sont desactives au lancement de la scene.
+/// Pupitres et zombies des phases suivantes sont desactives au lancement de la scene ; ils descendent
+/// pendant la transition (BringInCurrentPhasePupitres / BringInCurrentPhaseZombies, branches dans le
+/// flow depuis les evenements de la BossTransition). Ceux de la phase 1 sont la des le lancement.
 /// Le nombre de phases = le nombre d elements de la liste, rien d autre a aligner.
 /// </summary>
 public class BossPhaseManager : MonoBehaviour
@@ -32,8 +32,9 @@ public class BossPhaseManager : MonoBehaviour
         public string label = "Phase";
         [Tooltip("Pupitres a activer pour finir la phase. Liste vide : la phase ne se termine que par \"Terminer la phase en cours\".")]
         public List<BossPupitre> pupitres = new List<BossPupitre>();
-        [Tooltip("Ennemis de la phase, poses ou ils doivent arriver. Phase 1 : presents des le lancement. " +
-                 "Phases suivantes : desactives au lancement, ils descendent avec \"Faire entrer les zombies de la phase\".")]
+        [Tooltip("Ennemis de la phase, poses ou ils doivent arriver. Inutile en phase 1 : tout zombie range " +
+                 "hors des phases suivantes est present au lancement. Phases suivantes : desactives au lancement, " +
+                 "ils descendent avec \"Faire entrer les zombies de la phase\".")]
         public List<GameObject> zombies = new List<GameObject>();
         [Tooltip("Feux de la sentinelle pendant cette phase (durees et pression).")]
         public BossCycleManager.PhaseCycle cycle = new BossCycleManager.PhaseCycle();
@@ -187,8 +188,11 @@ public class BossPhaseManager : MonoBehaviour
         currentPhaseIndex = index;
         BossPhase phase = phases[index];
 
-        foreach (BossPupitre pupitre in phase.pupitres)
-            if (pupitre != null) pupitre.gameObject.SetActive(true);
+        // Phase 1 (ou pas de BossTransition) : pupitres la tout de suite. Phases suivantes : ils attendent
+        // "Faire entrer les pupitres de la phase" (descente)
+        if (index == 0 || transition == null)
+            foreach (BossPupitre pupitre in phase.pupitres)
+                if (pupitre != null) pupitre.gameObject.SetActive(true);
 
         if (cycleManager != null) cycleManager.SetPhaseCycle(phase.cycle, phase.label);
 
@@ -234,6 +238,29 @@ public class BossPhaseManager : MonoBehaviour
         BossPhase phase = phases[currentPhaseIndex];
         Debug.Log($"[BOSS PHASES] {phase.label} : entree de {phase.zombies.Count} zombie(s)");
         transition.BringInEnemies(phase.zombies);
+    }
+
+    /// <summary>
+    /// Fait descendre les pupitres de la phase en cours (par la BossTransition). A brancher dans le flow,
+    /// ex. sur BossTransition.onEnemiesRemoved. Les pupitres enfonces des phases finies restent en place.
+    /// </summary>
+    [ContextMenu("Faire entrer les pupitres de la phase")]
+    public void BringInCurrentPhasePupitres()
+    {
+        if (currentPhaseIndex < 0 || currentPhaseIndex >= phases.Count) return;
+        if (transition == null)
+        {
+            Debug.LogWarning("[BOSS PHASES] Pas de BossTransition : les pupitres ne peuvent pas descendre");
+            return;
+        }
+
+        BossPhase phase = phases[currentPhaseIndex];
+        List<GameObject> objects = new List<GameObject>();
+        foreach (BossPupitre pupitre in phase.pupitres)
+            if (pupitre != null) objects.Add(pupitre.gameObject);
+
+        Debug.Log($"[BOSS PHASES] {phase.label} : entree de {objects.Count} pupitre(s)");
+        transition.BringInPupitres(objects);
     }
 
     /// <summary>Termine la phase en cours (appele quand tous ses pupitres sont actives, ou a la main).</summary>

@@ -58668,7 +58668,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 964285850}
         m_TargetAssemblyTypeName: BossPhaseManager, Assembly-CSharp
-        m_MethodName: BringInCurrentPhaseZombies
+        m_MethodName: BringInCurrentPhasePupitres
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -58684,6 +58684,21 @@ MonoBehaviour:
       - m_Target: {fileID: 1422865899}
         m_TargetAssemblyTypeName: EnemyIconsUI, Assembly-CSharp
         m_MethodName: SpawnIconsForLivingEnemies
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onPupitresArrived:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 964285850}
+        m_TargetAssemblyTypeName: BossPhaseManager, Assembly-CSharp
+        m_MethodName: BringInCurrentPhaseZombies
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -132763,7 +132778,7 @@ PrefabInstance:
       objectReference: {fileID: 1801742136}
     - target: {fileID: 4660017790960198809, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: requireAllEnemiesKilled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7881171583933020488, guid: 760fb1ae76f14ae4ab4ec6cd4d1c42a4, type: 3}
       propertyPath: m_Name

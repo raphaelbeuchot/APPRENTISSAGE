@@ -20,7 +20,7 @@ public class BossTransition : MonoBehaviour
     [Tooltip("Duree de la montee (s). Les ennemis sont supprimes a la fin.")]
     [Min(0.01f)] [SerializeField] private float liftDuration = 3f;
 
-    [Header("Arrivee des ennemis de la phase suivante (remplacant provisoire des cages)")]
+    [Header("Arrivee des ennemis et pupitres de la phase suivante (remplacant provisoire des cages)")]
     [Tooltip("Hauteur d'ou ils descendent, au-dessus de l'endroit ou ils sont poses dans la scene (m).")]
     [SerializeField] private float dropHeight = 8f;
     [Tooltip("Duree de la descente (s). Ils sont inertes pendant la descente, rendus a l'arrivee.")]
@@ -34,6 +34,9 @@ public class BossTransition : MonoBehaviour
     [Tooltip("Quand tous les ennemis de la phase sont a terre. Tout de suite s'il n'y en avait aucun. " +
              "Ex : EnemyIconsUI.SpawnIconsForLivingEnemies.")]
     [SerializeField] private UnityEvent onEnemiesArrived;
+    [Tooltip("Quand tous les pupitres de la phase sont poses. Tout de suite s'il n'y en avait aucun. " +
+             "Ex : BossPhaseManager.BringInCurrentPhaseZombies (pupitres d'abord, zombies ensuite).")]
+    [SerializeField] private UnityEvent onPupitresArrived;
 
     [Header("Debug")]
     [SerializeField] private bool playerFrozen = false;
@@ -46,7 +49,6 @@ public class BossTransition : MonoBehaviour
     private PlayerPhysicsMovement player;
     private Rigidbody playerRb;
     private int pendingRemovals = 0;
-    private int pendingArrivals = 0;
 
     private void Start()
     {
@@ -205,30 +207,61 @@ public class BossTransition : MonoBehaviour
     /// </summary>
     public void BringInEnemies(IList<GameObject> enemies)
     {
-        List<GameObject> toDrop = new List<GameObject>();
-        if (enemies != null)
+        DropGroup(enemies, "ennemi(s)", EnemiesArrived);
+    }
+
+    /// <summary>
+    /// Fait descendre les pupitres d'une phase, comme les ennemis (inertes pendant la descente : pas
+    /// activables en l'air). Appele par le BossPhaseManager. Fin : onPupitresArrived.
+    /// </summary>
+    public void BringInPupitres(IList<GameObject> pupitres)
+    {
+        DropGroup(pupitres, "pupitre(s)", PupitresArrived);
+    }
+
+    // Chaque groupe (ennemis, pupitres) compte ses arrivees de son cote : leurs evenements ne se melangent pas
+    private class DropGroupCounter
+    {
+        public int remaining;
+        public System.Action onAllArrived;
+
+        public void OneArrived()
         {
-            foreach (GameObject enemy in enemies)
+            remaining--;
+            if (remaining == 0) onAllArrived?.Invoke();
+        }
+    }
+
+    private void DropGroup(IList<GameObject> objects, string label, System.Action onAllArrived)
+    {
+        List<GameObject> toDrop = new List<GameObject>();
+        if (objects != null)
+        {
+            foreach (GameObject obj in objects)
             {
-                if (enemy == null || toDrop.Contains(enemy)) continue;
-                if (enemy.activeInHierarchy)
+                if (obj == null || toDrop.Contains(obj)) continue;
+                if (obj.activeInHierarchy)
                 {
-                    Debug.LogWarning($"[BOSS TRANSITION] {enemy.name} deja actif : pas de descente");
+                    Debug.LogWarning($"[BOSS TRANSITION] {obj.name} deja actif : pas de descente");
                     continue;
                 }
-                toDrop.Add(enemy);
+                toDrop.Add(obj);
             }
         }
 
-        pendingArrivals += toDrop.Count;
-        foreach (GameObject enemy in toDrop)
-            StartCoroutine(DropIn(enemy));
+        Debug.Log($"[BOSS TRANSITION] {toDrop.Count} {label} en descente");
+        if (toDrop.Count == 0)
+        {
+            onAllArrived?.Invoke();
+            return;
+        }
 
-        Debug.Log($"[BOSS TRANSITION] {toDrop.Count} ennemi(s) en descente");
-        if (pendingArrivals == 0) EnemiesArrived();
+        DropGroupCounter counter = new DropGroupCounter { remaining = toDrop.Count, onAllArrived = onAllArrived };
+        foreach (GameObject obj in toDrop)
+            StartCoroutine(DropIn(obj, counter));
     }
 
-    private IEnumerator DropIn(GameObject enemy)
+    private IEnumerator DropIn(GameObject enemy, DropGroupCounter counter)
     {
         Vector3 end = enemy.transform.position;
         Vector3 start = end + Vector3.up * dropHeight;
@@ -282,18 +315,18 @@ public class BossTransition : MonoBehaviour
             foreach (MonoBehaviour mb in scripts) if (mb != null) mb.enabled = true;
         }
 
-        OnEnemyArrived();
-    }
-
-    private void OnEnemyArrived()
-    {
-        pendingArrivals = Mathf.Max(0, pendingArrivals - 1);
-        if (pendingArrivals == 0) EnemiesArrived();
+        counter.OneArrived();
     }
 
     private void EnemiesArrived()
     {
         Debug.Log("[BOSS TRANSITION] Ennemis arrives");
         onEnemiesArrived?.Invoke();
+    }
+
+    private void PupitresArrived()
+    {
+        Debug.Log("[BOSS TRANSITION] Pupitres arrives");
+        onPupitresArrived?.Invoke();
     }
 }
