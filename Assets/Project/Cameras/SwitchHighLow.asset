@@ -57,3 +57,36 @@ MonoBehaviour:
         m_PreInfinity: 0
         m_PostInfinity: 0
         m_RotationOrder: 0
+  - From: '**ANY CAMERA**'
+    To: CM_SentinelCamera
+    Blend:
+      Style: 4
+      Time: 0.75
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 0
+        m_PostInfinity: 0
+        m_RotationOrder: 0
+  - From: CM_SentinelCamera
+    To: CM_InstallCamera
+    Blend:
+      Style: 2
+      Time: 2
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 0
+        m_PostInfinity: 0
+        m_RotationOrder: 0
+  - From: CM_InstallCamera
+    To: '**ANY CAMERA**'
+    Blend:
+      Style: 6
+      Time: 1.5
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 0
+        m_PostInfinity: 0
+        m_RotationOrder: 0

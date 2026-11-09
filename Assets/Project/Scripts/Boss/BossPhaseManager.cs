@@ -49,6 +49,10 @@ public class BossPhaseManager : MonoBehaviour
     [Header("Phases")]
     [SerializeField] private List<BossPhase> phases = new List<BossPhase>();
 
+    [Header("Reprise du cycle")]
+    [Tooltip("Le cycle repart apres une transition (fin du Resume Delay). Ex : BossSentinelRotator.Resume.")]
+    [SerializeField] private UnityEvent onCycleResumed;
+
     [Header("Fin du boss")]
     [Tooltip("Toutes les phases terminees.")]
     [SerializeField] private UnityEvent onAllPhasesComplete;
@@ -158,6 +162,7 @@ public class BossPhaseManager : MonoBehaviour
         if (delay > 0f) yield return new WaitForSeconds(delay);
         resumeCoroutine = null;
         cycleManager.ResumeCycle();
+        onCycleResumed?.Invoke();
     }
 
     private void StartResume(float delay)

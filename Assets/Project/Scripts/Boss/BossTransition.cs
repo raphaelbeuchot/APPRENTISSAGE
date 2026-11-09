@@ -25,6 +25,9 @@ public class BossTransition : MonoBehaviour
     [SerializeField] private int cameraPriority = 30;
     [Tooltip("Duree du plan (s), en attendant l'explosion d'un cercle. Puis retour a la camera normale et montee de la cage.")]
     [Min(0f)] [SerializeField] private float sentinelShotDuration = 2f;
+    [Tooltip("Camera de la remise en place (fixe, en hauteur), montree apres le plan sentinelle, pendant la montee " +
+             "de la cage, l'installation et la descente ; retiree quand le joueur reprend la main. Vide = retour a la camera normale.")]
+    [SerializeField] private CinemachineCamera installCamera;
 
     [Header("Ennemis (remplacant provisoire des cages)")]
     [Tooltip("Hauteur de montee des ennemis figes (m).")]
@@ -73,6 +76,7 @@ public class BossTransition : MonoBehaviour
     private void Awake()
     {
         if (sentinelCamera != null) sentinelCamera.Priority = 0;
+        if (installCamera != null) installCamera.Priority = 0;
     }
 
     private void Start()
@@ -104,16 +108,51 @@ public class BossTransition : MonoBehaviour
 
     private IEnumerator SentinelShotThenCage()
     {
-        if (sentinelCamera != null) sentinelCamera.Priority = cameraPriority;
-        // Le changement de plan cache la teleportation du joueur dans la cage
+        float shotStart = Time.time;
+
+        // Le plan sentinelle cache la teleportation du joueur dans la cage : on attend que la camera
+        // sentinelle soit seule a l'ecran (fondu termine), sinon on le verrait sauter pendant le fondu
+        if (sentinelCamera != null)
+        {
+            sentinelCamera.Priority = cameraPriority;
+            yield return WaitUntilCameraIsLive(sentinelCamera, sentinelShotDuration);
+        }
         if (currentCage != null) currentCage.PlacePlayer();
 
-        if (sentinelShotDuration > 0f) yield return new WaitForSeconds(sentinelShotDuration);
+        // La duree du plan compte depuis le changement de camera, fondu compris
+        float remaining = sentinelShotDuration - (Time.time - shotStart);
+        if (remaining > 0f) yield return new WaitForSeconds(remaining);
 
+        // Plan d'installation (s'il y en a un) avant de rendre la camera sentinelle : pas d'aller-retour par la vue normale
+        if (installCamera != null) installCamera.Priority = cameraPriority;
         if (sentinelCamera != null) sentinelCamera.Priority = 0;
+
+        // La cage monte une fois le plan d'installation a l'ecran (fondu termine), pour qu'on la voie partir
+        if (installCamera != null) yield return WaitUntilCameraIsLive(installCamera, MaxBlendWait);
 
         if (currentCage != null) currentCage.RaiseWithPlayer(CageRaised);
         else CageRaised();
+    }
+
+    // Securite : on n'attend jamais un fondu plus longtemps que ca (s)
+    private const float MaxBlendWait = 5f;
+
+    // Attend que le CinemachineBrain affiche cette camera seule (pas de fondu en cours). Limite : timeout (s).
+    private static IEnumerator WaitUntilCameraIsLive(CinemachineCamera cam, float timeout)
+    {
+        // Le Brain prend en compte la nouvelle priorite a son prochain LateUpdate
+        yield return null;
+
+        float elapsed = 0f;
+        while (elapsed < timeout)
+        {
+            CinemachineBrain brain = CinemachineBrain.ActiveBrainCount > 0 ? CinemachineBrain.GetActiveBrain(0) : null;
+            if (brain == null) yield break;
+            if (!brain.IsBlending && brain.ActiveVirtualCamera == (ICinemachineCamera)cam) yield break;
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
     }
 
     private void CageRaised()
@@ -165,7 +204,14 @@ public class BossTransition : MonoBehaviour
         {
             // Garde la chute verticale : seul le deplacement horizontal est coupe
             Vector3 v = playerRb.linearVelocity;
+            // Le mouvement ne tourne plus pendant le gel : sans remise a zero, son elan (vitesse lissee)
+            // resterait en memoire et ressortirait au relachement
+            player.ResetAllInputs();
             playerRb.linearVelocity = new Vector3(0f, Mathf.Min(v.y, 0f), 0f);
+        }
+        else
+        {
+            player.ResetAllInputs();
         }
         Debug.Log("[BOSS TRANSITION] Joueur fige");
     }
@@ -175,6 +221,13 @@ public class BossTransition : MonoBehaviour
     {
         if (player == null || !playerFrozen) return;
         playerFrozen = false;
+
+        // Retour a la vue normale au moment ou le joueur reprend la main (fondu : Custom Blends du Brain)
+        if (installCamera != null) installCamera.Priority = 0;
+        if (sentinelCamera != null) sentinelCamera.Priority = 0;
+
+        // Repart de l'arret : aucun elan d'avant le gel
+        if (playerRb == null || !playerRb.isKinematic) player.ResetAllInputs();
         player.isFrozen = false;
         if (PlayerInputManager.Instance != null) PlayerInputManager.Instance.IsLocked = false;
         Debug.Log("[BOSS TRANSITION] Joueur rendu");
