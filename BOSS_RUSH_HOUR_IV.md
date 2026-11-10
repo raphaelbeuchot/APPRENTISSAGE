@@ -178,6 +178,8 @@ Autres caméras : `CM_StartZone` (remplacée au pupitre), `CM_FinalZone` (`Simpl
 - **Champ Target Group de `CameraPanningExtension` vidé** : son dézoom en −Z faisait sortir le perso du champ au bout +Z de la salle.
 - `CM_LowView` : même montage, sans `CameraPanningExtension` (donc sans les +4 m), vise `Target Group LowView` = Player + MainSentinel. **Follow Offset Y passé de 3 à 5** (validé).
 - Résultat : après le pupitre, la caméra regarde le long de la droite joueur → sentinelle partout dans la salle.
+- **`CM_FinalZone` et son `FinalZoneTrigger` (`CameraZoneSwitcher`) supprimés** (2026-11-10) : restes du niveau normal, le trigger était sur l'anneau ; piste d'un passage parasite en vue basse entre deux phases. Seule la touche de vue (L / bouton Nord) met `CM_LowView` en avant dans le code.
+- **`SpikesFaceCamera`** sur la fosse (2026-11-10) : les pics tournent autour de leur axe vertical vers la caméra.
 - Non lu : le `TargetGroupProxy` du prefab `GestionTargetGroups` (plus utilisé par l'utilisateur ; vérifier qu'il n'agit sur aucun groupe si un comportement bizarre apparaît).
 
 ## Besoins techniques et état du code (lu le 2026-11-07)
