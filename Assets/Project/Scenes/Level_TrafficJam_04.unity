@@ -37313,7 +37313,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1374319474226879168, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 946305087}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1371746067569967026, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2107340419251254514}
   m_SourcePrefab: {fileID: 100100000, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
 --- !u!4 &599922132 stripped
 Transform:
@@ -59048,6 +59051,21 @@ MonoBehaviour:
   liftDuration: 3
   dropHeight: 8
   dropDuration: 3
+  onSentinelShotLive:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2107340419251254514}
+        m_TargetAssemblyTypeName: BossCircleExploder, Assembly-CSharp
+        m_MethodName: Explode
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onCageRaised:
     m_PersistentCalls:
       m_Calls:
@@ -132797,7 +132815,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3.551
+      value: 8.09
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.y
@@ -132805,7 +132823,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.955
+      value: 3.87
       objectReference: {fileID: 0}
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalRotation.w
@@ -133120,6 +133138,47 @@ MonoBehaviour:
   gizmoColor: {r: 0, g: 1, b: 1, a: 1}
   warningColor: {r: 1, g: 0, b: 0, a: 1}
   showGizmo: 1
+--- !u!114 &2107340419251254513 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2107340418705312904, guid: d4d89e3705a868b42a29072ca69fff5e, type: 3}
+  m_PrefabInstance: {fileID: 596375673}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1371746068047333323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01e4659abc7becc46963dae4216c2304, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConcentricCirclesSpawner
+--- !u!114 &2107340419251254514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1371746068047333323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49bdf600190823e40a85e79f057c66c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossCircleExploder
+  spawner: {fileID: 2107340419251254513}
+  chargeDuration: 2
+  chargeIntensity: 2
+  chargeWhiteness: 1
+  upSpeed: {x: 4, y: 7}
+  outwardSpeed: {x: 1, y: 3}
+  randomSpeed: 1
+  gravity: 15
+  collisionLayers:
+    serializedVersion: 2
+    m_Bits: 133384
+  bounce: 0.4
+  friction: 0.3
+  settleSpeed: 0.8
+  lifetime: 5
+  shrinkDuration: 0.5
+  sparksPrefab: {fileID: 0}
+  sparksChance: 0.3
 --- !u!4 &2232417177763634009
 Transform:
   m_ObjectHideFlags: 0

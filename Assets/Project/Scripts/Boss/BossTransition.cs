@@ -23,7 +23,7 @@ public class BossTransition : MonoBehaviour
     [SerializeField] private CinemachineCamera sentinelCamera;
     [Tooltip("Doit rester au-dessus de 20 (priorite de la vue active dans CameraPanningExtension).")]
     [SerializeField] private int cameraPriority = 30;
-    [Tooltip("Duree du plan (s), en attendant l'explosion d'un cercle. Puis retour a la camera normale et montee de la cage.")]
+    [Tooltip("Duree du plan (s), fondu compris : laisser le temps de voir l'explosion du cercle (onSentinelShotLive). Puis retour a la camera normale et montee de la cage.")]
     [Min(0f)] [SerializeField] private float sentinelShotDuration = 2f;
     [Tooltip("Camera de la remise en place (fixe, en hauteur), montree apres le plan sentinelle, pendant la montee " +
              "de la cage, l'installation et la descente ; retiree quand le joueur reprend la main. Vide = retour a la camera normale.")]
@@ -42,6 +42,9 @@ public class BossTransition : MonoBehaviour
     [Min(0.01f)] [SerializeField] private float dropDuration = 3f;
 
     [Header("Effets")]
+    [Tooltip("Le plan sentinelle est seul a l'ecran (fondu fini), le joueur vient d'etre pose dans la cage. " +
+             "Tout de suite s'il n'y a pas de camera sentinelle. Ex : BossCircleExploder.Explode.")]
+    [SerializeField] private UnityEvent onSentinelShotLive;
     [Tooltip("La cage est en haut avec le joueur (tout de suite apres le plan sentinelle s'il n'y a pas de cage). " +
              "Ex : BossTransition.RemoveEnemies.")]
     [SerializeField] private UnityEvent onCageRaised;
@@ -118,6 +121,7 @@ public class BossTransition : MonoBehaviour
             yield return WaitUntilCameraIsLive(sentinelCamera, sentinelShotDuration);
         }
         if (currentCage != null) currentCage.PlacePlayer();
+        onSentinelShotLive?.Invoke();
 
         // La duree du plan compte depuis le changement de camera, fondu compris
         float remaining = sentinelShotDuration - (Time.time - shotStart);
