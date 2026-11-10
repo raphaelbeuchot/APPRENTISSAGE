@@ -141,7 +141,7 @@ Les phases 1 à 3 tiennent sur des pièces déjà existantes ; la phase 4 est la
 
 **Contraintes techniques** (lues dans le code et les notes) :
 - **Sol qui bouge sous le joueur** : déjà fait dans `Level_Acid_02` (`PlatformRotator` + `AnimatedPlatform`). Les zombies vivants ne suivent pas, la grille A\* ne bouge pas avec le décor. **Jamais `IMovingPlatform`** (`RotatingPlatform`…) pour un décor : la sentinelle voit le joueur « en mouvement » dès qu'il est dessus.
-- **Bouger le terrain pendant la transition** (cycle en pause, zombies partis, joueur dans la cage) évite presque tout. Ça se place avant l'arrivée des pupitres et des zombies, comme prévu (la cage ne redescend qu'une fois la scène réinstallée) ; la grille A\* serait à recalculer à ce moment (à vérifier). **Bouger pendant le combat** : un autre chantier (zombies, détection).
+- **Bouger le terrain pendant la transition** (cycle en pause, zombies partis, joueur dans la cage) évite presque tout. Ça se place avant l'arrivée des pupitres et des zombies, comme prévu (la cage ne redescend qu'une fois la scène réinstallée) ; la grille A\* serait à recalculer à ce moment (à vérifier). **C'est la voie retenue** (voir « Décidé » plus bas).
 - **Roaming obstacles** : `RoamingObstacle` (partagé avec le solo) avance chaque frame, sans lien avec le cycle : il continue pendant la transition. Le désactiver arrête le mouvement, depuis un script du boss, sans toucher au fichier partagé (`OnDisable` à vérifier). Splines en enfants du cylindre : elles suivraient ses déplacements.
 
 **Suggestions** (non tranchées) :
@@ -151,7 +151,9 @@ Les phases 1 à 3 tiennent sur des pièces déjà existantes ; la phase 4 est la
 - **Écho à la sentinelle** : elle rétrécit pendant que l'arène s'ouvre ou se complique.
 - Roaming obstacles en fin de phase : s'arrêtent et restent, sont enlevés comme les zombies, ou sont remplacés par ceux de la phase suivante.
 
-**Questions ouvertes** : le terrain change-t-il seulement entre les phases, ou aussi en combat ? La zone extérieure, c'est quoi pour le joueur : de l'air, du danger, ou ça change selon la phase ? Que deviennent les roaming obstacles d'une phase à l'autre ?
+**Décidé** (2026-11-10) : **le terrain ne change que pendant les transitions** (jamais en combat).
+
+**Questions ouvertes** : la zone extérieure, c'est quoi pour le joueur : de l'air, du danger, ou ça change selon la phase ? Que deviennent les roaming obstacles d'une phase à l'autre ?
 
 ## Fin (décidé)
 
