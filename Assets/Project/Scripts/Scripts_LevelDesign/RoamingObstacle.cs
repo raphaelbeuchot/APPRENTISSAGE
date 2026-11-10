@@ -7,6 +7,10 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private bool reverseDirection = false;
     [SerializeField] private bool usePingPong = true;
+    [Tooltip("Coche : immobile tant que le cycle de la sentinelle ne tourne pas (avant le pupitre de depart, " +
+             "pendant les transitions du boss, apres la victoire), repart tout seul avec lui. " +
+             "Decoche : bouge des le lancement.")]
+    [SerializeField] private bool startWithCycle = false;
 
     [Header("Audio")]
     [SerializeField] private RoamingObstacleSettings settings;
@@ -113,12 +117,46 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
         // Initialiser lastPosition
         lastPosition = transform.position;
 
+        if (startWithCycle)
+        {
+            cycleManager = FindFirstObjectByType<SentinelCycleManager>();
+            if (cycleManager == null)
+                Debug.LogWarning("[RoamingObstacle] Start With Cycle coche mais pas de SentinelCycleManager : l'obstacle ne bougera pas");
+        }
+
         Debug.Log("[RoamingObstacle] Obstacle demarre sur spline");
+    }
+
+    // Start With Cycle
+    private SentinelCycleManager cycleManager;
+    private bool waitingForCycle = false;
+
+    // Coche Start With Cycle et cycle arrete : obstacle immobile, vitesse a zero (il est IMovingPlatform :
+    // sinon il transmettrait son dernier elan au joueur pose dessus), son de deplacement en pause
+    private bool WaitForCycle()
+    {
+        bool wait = startWithCycle && (cycleManager == null || !cycleManager.IsGameStarted());
+        if (wait != waitingForCycle)
+        {
+            waitingForCycle = wait;
+            if (audioSource != null && audioSource.clip != null)
+            {
+                if (wait) audioSource.Pause();
+                else audioSource.UnPause();
+            }
+        }
+        if (wait)
+        {
+            currentVelocity = Vector3.zero;
+            lastPosition = transform.position;
+        }
+        return wait;
     }
 
     void Update()
     {
         if (splineContainer == null) return;
+        if (WaitForCycle()) return;
 
         float splineLength = splineContainer.Spline.GetLength() * splineContainer.transform.lossyScale.x;
         float distanceThisFrame = moveSpeed * Time.deltaTime;
