@@ -128,6 +128,31 @@ Sentinelle : séparée du `GiratoireReverse` (désactivé, à supprimer quand on
 
 Les phases 1 à 3 tiennent sur des pièces déjà existantes ; la phase 4 est la seule qui demande un vrai nouvel ennemi.
 
+## Terrain et changement de décor (idées brutes, 2026-11-10, rien de tranché)
+
+**Constat** (utilisateur) : la salle actuelle = une fosse + un rim très large. Ça marche, mais c'est très rigide. Idéalement : **un rim étroit**, et au-delà **un cylindre de sol** qu'on pourrait bouger, tourner, etc. Autre point : **les roaming obstacles ne sont pas gérés** au dernier pupitre d'une phase.
+
+**Idées brutes de l'utilisateur** :
+- Obliger le joueur à aller activer des pupitres **à l'extérieur**, puis, à la phase suivante, un **chemin ardu (sauts au-dessus du vide)** pour aller activer **plutôt vers l'intérieur**.
+- **Phase 1** : seulement des roaming obstacles.
+- **Phase 2** : la même chose, avec des ennemis.
+- **Phase 3** : **la moitié du sol devient du vide**.
+- À rapprocher du « Déroulé (décidé, 2026-11-07) » ci-dessus : là-bas, la phase 1 a déjà des ennemis et la phase 2 un nouveau cercle d'obstacles. À rediscuter ensemble.
+
+**Contraintes techniques** (lues dans le code et les notes) :
+- **Sol qui bouge sous le joueur** : déjà fait dans `Level_Acid_02` (`PlatformRotator` + `AnimatedPlatform`). Les zombies vivants ne suivent pas, la grille A\* ne bouge pas avec le décor. **Jamais `IMovingPlatform`** (`RotatingPlatform`…) pour un décor : la sentinelle voit le joueur « en mouvement » dès qu'il est dessus.
+- **Bouger le terrain pendant la transition** (cycle en pause, zombies partis, joueur dans la cage) évite presque tout. Ça se place avant l'arrivée des pupitres et des zombies, comme prévu (la cage ne redescend qu'une fois la scène réinstallée) ; la grille A\* serait à recalculer à ce moment (à vérifier). **Bouger pendant le combat** : un autre chantier (zombies, détection).
+- **Roaming obstacles** : `RoamingObstacle` (partagé avec le solo) avance chaque frame, sans lien avec le cycle : il continue pendant la transition. Le désactiver arrête le mouvement, depuis un script du boss, sans toucher au fichier partagé (`OnDisable` à vérifier). Splines en enfants du cylindre : elles suivraient ses déplacements.
+
+**Suggestions** (non tranchées) :
+- Cylindre en **secteurs** (8 pour un octogone) qui montent ou descendent pendant la transition : trous, murs, chemins différents d'une phase à l'autre. Repères de hauteur : franchissable en marchant jusqu'à 0,3 m ; infranchissable au-dessus de 0,66 m (0,75 conseillé).
+- **Anneaux qui s'écartent** (vide entre eux, plateformes refuges) : rejoint la phase 3 du déroulé.
+- **Rotation du cylindre pendant la transition** : ce qui était derrière la sentinelle passe devant ; peut-être le moins cher pour un effet « tout a bougé ».
+- **Écho à la sentinelle** : elle rétrécit pendant que l'arène s'ouvre ou se complique.
+- Roaming obstacles en fin de phase : s'arrêtent et restent, sont enlevés comme les zombies, ou sont remplacés par ceux de la phase suivante.
+
+**Questions ouvertes** : le terrain change-t-il seulement entre les phases, ou aussi en combat ? La zone extérieure, c'est quoi pour le joueur : de l'air, du danger, ou ça change selon la phase ? Que deviennent les roaming obstacles d'une phase à l'autre ?
+
 ## Fin (décidé)
 
 - **Une porte s'ouvre** ; on devine **un ciel bleu** et on entend **des oiseaux** ; on sort ; **fondu au blanc**.
