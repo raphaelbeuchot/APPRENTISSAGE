@@ -53013,7 +53013,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &871157097
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -58985,6 +58985,8 @@ MonoBehaviour:
               m_StringArgument: 
               m_BoolArgument: 0
             m_CallState: 2
+  pupitreSound: {fileID: 8300000, guid: 62f4ad0c7ae6fe943969201fd267ad42, type: 3}
+  lastPupitreSound: {fileID: 8300000, guid: ced217ac06076bb47a47376573e82021, type: 3}
   onCycleResumed:
     m_PersistentCalls:
       m_Calls:
@@ -80760,7 +80762,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1344271812}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.017081363, y: 0.9786416, z: -0.18349178, w: -0.091102354}
+  m_LocalRotation: {x: -0.005069229, y: 0.9947099, z: -0.08229055, w: -0.061275717}
   m_LocalPosition: {x: 4.45, y: 5, z: 19.62}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -130880,23 +130882,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6206311881450325017, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.149007
+      value: 1.6025376
       objectReference: {fileID: 0}
     - target: {fileID: 6206311881450325017, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.2794338
+      value: -0.834455
       objectReference: {fileID: 0}
     - target: {fileID: 6206311881450325017, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -4.114728
+      value: -22.317326
       objectReference: {fileID: 0}
     - target: {fileID: 6206311881450325017, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.92387956
+      value: 0.7071067
       objectReference: {fileID: 0}
     - target: {fileID: 6206311881450325017, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.3826835
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 7197655680183251589, guid: 0b4c8f0110e74734b81da02cc660006c, type: 3}
       propertyPath: m_LocalPosition.x
@@ -133162,7 +133164,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossCircleExploder
   spawner: {fileID: 2107340419251254513}
-  chargeDuration: 2
+  chargeDuration: 1.5
   chargeIntensity: 2
   chargeWhiteness: 1
   upSpeed: {x: 4, y: 7}
@@ -133177,6 +133179,8 @@ MonoBehaviour:
   settleSpeed: 0.8
   lifetime: 5
   shrinkDuration: 0.5
+  chargeSound: {fileID: 8300000, guid: aca18f2b7f7101e4588b63a4eb766645, type: 3}
+  explosionSound: {fileID: 8300000, guid: 001b59c5be6a94a4b8732639fd875040, type: 3}
   sparksPrefab: {fileID: 0}
   sparksChance: 0.3
 --- !u!4 &2232417177763634009

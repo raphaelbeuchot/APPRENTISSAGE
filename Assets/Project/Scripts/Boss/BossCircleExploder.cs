@@ -57,6 +57,12 @@ public class BossCircleExploder : MonoBehaviour
     [Tooltip("Duree du retrecissement (s), puis l'ampoule est detruite.")]
     [Min(0.01f)] [SerializeField] private float shrinkDuration = 0.5f;
 
+    [Header("Sons")]
+    [Tooltip("Au debut de la montee en charge. Vide = pas de son.")]
+    [SerializeField] private AudioClip chargeSound;
+    [Tooltip("Au moment ou les ampoules s'envolent. Vide = pas de son.")]
+    [SerializeField] private AudioClip explosionSound;
+
     [Header("Etincelles")]
     [Tooltip("Prefab de particules colle a l'ampoule. Vide = pas d'etincelles.")]
     [SerializeField] private GameObject sparksPrefab;
@@ -124,6 +130,7 @@ public class BossCircleExploder : MonoBehaviour
         }
 
         // 1. Montee en charge, ampoules en place
+        PlaySound(chargeSound);
         float chargedFactor = Mathf.Pow(2f, chargeIntensity);
         float start = Time.time;
         while (Time.time - start < chargeDuration)
@@ -135,6 +142,7 @@ public class BossCircleExploder : MonoBehaviour
         SetEmission(bulbs, chargedFactor, chargeWhiteness);
 
         // 2. Explosion
+        PlaySound(explosionSound);
         foreach (var b in bulbs)
         {
             if (b.transform == null) continue;
@@ -220,6 +228,24 @@ public class BossCircleExploder : MonoBehaviour
 
         foreach (var b in bulbs)
             if (b.transform != null) Destroy(b.transform.gameObject);
+    }
+
+    private AudioSource audioSource;
+
+    // Son 2D sur l'AudioSource de cet objet (ajoutee si absente)
+    private void PlaySound(AudioClip clip)
+    {
+        if (clip == null) return;
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.playOnAwake = false;
+            }
+        }
+        audioSource.PlayOneShot(clip);
     }
 
     // Emission de chaque ampoule = emission de son materiau, poussee vers le blanc (meme intensite) de "whiteness",

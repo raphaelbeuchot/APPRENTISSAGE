@@ -49,6 +49,12 @@ public class BossPhaseManager : MonoBehaviour
     [Header("Phases")]
     [SerializeField] private List<BossPhase> phases = new List<BossPhase>();
 
+    [Header("Sons des pupitres")]
+    [Tooltip("Pupitre active, sauf le dernier de la phase. Vide = pas de son.")]
+    [SerializeField] private AudioClip pupitreSound;
+    [Tooltip("Dernier pupitre de la phase (lance la transition). Vide = pas de son.")]
+    [SerializeField] private AudioClip lastPupitreSound;
+
     [Header("Reprise du cycle")]
     [Tooltip("Le cycle repart apres une transition (fin du Resume Delay). Ex : BossSentinelRotator.Resume.")]
     [SerializeField] private UnityEvent onCycleResumed;
@@ -223,9 +229,30 @@ public class BossPhaseManager : MonoBehaviour
 
         Debug.Log($"[BOSS PHASES] {phase.label} : {done}/{phase.pupitres.Count}");
 
+        bool last = done >= phase.pupitres.Count;
+        PlaySound(last ? lastPupitreSound : pupitreSound);
+
         lastActivatedPupitre = pupitre;
-        if (done >= phase.pupitres.Count)
+        if (last)
             CompleteCurrentPhase();
+    }
+
+    private AudioSource audioSource;
+
+    // Son 2D sur l'AudioSource de cet objet (ajoutee si absente)
+    private void PlaySound(AudioClip clip)
+    {
+        if (clip == null) return;
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.playOnAwake = false;
+            }
+        }
+        audioSource.PlayOneShot(clip);
     }
 
     /// <summary>
