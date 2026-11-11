@@ -10,7 +10,8 @@ using UnityEngine.Serialization;
 ///    de couleur HDR : +1 = x2) pendant "Charge Duration", ampoules encore en place ;
 /// 2. explosion : chaque ampoule (la vraie, meme aspect) est projetee vers le haut et vers l'exterieur avec de
 ///    l'aleatoire, retombe avec la gravite jusqu'au sol ; son emission redescend jusqu'a zero pendant "Lifetime",
-///    puis elle retrecit et disparait. Etincelles (prefab de particules) sur une partie des ampoules.
+///    puis elle retrecit et disparait. Etincelles : des explosions (prefab de particules) a des points au hasard du
+///    haut du cercle, tournees face a la camera, separees des ampoules ; leur nombre monte a chaque phase.
 /// Pas de Rigidbody ni de collider : aucune interaction avec le joueur ni les zombies.
 /// Retrouve les cercles crees par le ConcentricCirclesSpawner (CirclesRuntimeContainer > Circle_N) sans y toucher.
 /// Branchement : BossTransition.onSentinelShotLive -> Explode. Flow : BOSS_RUSH_HOUR_IV.md.
@@ -64,10 +65,20 @@ public class BossCircleExploder : MonoBehaviour
     [SerializeField] private AudioClip explosionSound;
 
     [Header("Etincelles")]
-    [Tooltip("Prefab de particules colle a l'ampoule. Vide = pas d'etincelles.")]
+    [Tooltip("Prefab de particules d'une explosion (le nombre de jets se regle dans le prefab). Pose sur le cercle, " +
+             "tourne face a la camera : son plan XY local est le plan de l'ecran. Vide = pas d'etincelles.")]
     [SerializeField] private GameObject sparksPrefab;
-    [Tooltip("Part des ampoules qui ont des etincelles (0 a 1).")]
-    [Range(0f, 1f)] [SerializeField] private float sparksChance = 0.3f;
+    [Tooltip("Nombre d'explosions sur le premier cercle, tire entre min et max (inclus).")]
+    [SerializeField] private Vector2Int sparksCount = new Vector2Int(1, 3);
+    [Tooltip("Ajoute a min et max a chaque phase (cercle suivant).")]
+    [Min(0)] [SerializeField] private int sparksCountPerPhase = 2;
+    [Tooltip("Plafond du nombre d'explosions par cercle.")]
+    [Min(0)] [SerializeField] private int sparksCountMax = 10;
+    [Tooltip("Zone d'apparition : angle de part et d'autre du sommet du cercle (degres). 180 = tout le cercle.")]
+    [Range(0f, 180f)] [SerializeField] private float sparksArcAngle = 60f;
+
+    // Nombre de cercles deja exploses : fait monter le nombre d'explosions par phase
+    private int explodedCount;
 
     private class Bulb
     {
@@ -143,11 +154,14 @@ public class BossCircleExploder : MonoBehaviour
 
         // 2. Explosion
         PlaySound(explosionSound);
+        SpawnSparks(circle, bulbs);
+        explodedCount++;
+
         foreach (var b in bulbs)
         {
             if (b.transform == null) continue;
 
-            // Rayon de l'ampoule, mesure avant d'ajouter les etincelles (sinon on mesurerait leur renderer)
+            // Rayon de l'ampoule
             if (b.renderer != null)
             {
                 Vector3 e = b.renderer.bounds.extents;
@@ -165,9 +179,6 @@ public class BossCircleExploder : MonoBehaviour
             b.velocity = Vector3.up * Random.Range(upSpeed.x, upSpeed.y)
                        + outward * Random.Range(outwardSpeed.x, outwardSpeed.y)
                        + new Vector3(jitter.x, 0f, jitter.y);
-
-            if (sparksPrefab != null && Random.value < sparksChance)
-                Instantiate(sparksPrefab, b.transform.position, Quaternion.identity, b.transform);
         }
 
         chargingCircle = null;
@@ -228,6 +239,51 @@ public class BossCircleExploder : MonoBehaviour
 
         foreach (var b in bulbs)
             if (b.transform != null) Destroy(b.transform.gameObject);
+    }
+
+    // Explosions d'etincelles a des points au hasard du haut du cercle, avant que les ampoules ne s'envolent.
+    // Cercle = plan XY local du Circle_N (vertical face a la camera) ; centre = moyenne des ampoules (reparties
+    // regulierement), rayon = distance d'une ampoule au centre. Instances libres (pas d'enfant) : a detruire par
+    // le prefab lui-meme (Stop Action = Destroy)
+    private void SpawnSparks(Transform circle, List<Bulb> bulbs)
+    {
+        if (sparksPrefab == null) return;
+
+        Vector3 center = Vector3.zero;
+        int n = 0;
+        foreach (var b in bulbs)
+        {
+            if (b.transform == null) continue;
+            center += b.transform.position;
+            n++;
+        }
+        if (n == 0) return;
+        center /= n;
+
+        Vector3 firstBulb = Vector3.zero;
+        foreach (var b in bulbs)
+            if (b.transform != null) { firstBulb = b.transform.position; break; }
+        float radius = Vector3.Distance(firstBulb, center);
+
+        int extra = sparksCountPerPhase * explodedCount;
+        int min = Mathf.Min(sparksCount.x + extra, sparksCountMax);
+        int max = Mathf.Min(Mathf.Max(sparksCount.y, sparksCount.x) + extra, sparksCountMax);
+        int count = Random.Range(min, max + 1);
+
+        Camera cam = Camera.main;
+        Quaternion facing = cam != null ? cam.transform.rotation : Quaternion.identity;
+
+        // Sommet = le haut du monde ramene dans le plan du cercle (si la sentinelle a tourne, le haut local n'est plus en haut)
+        Vector3 top = Vector3.ProjectOnPlane(Vector3.up, circle.forward);
+        top = top.sqrMagnitude > 0.0001f ? top.normalized : circle.up;
+        Vector3 side = Vector3.Cross(circle.forward, top);
+
+        for (int i = 0; i < count; i++)
+        {
+            float angle = Random.Range(-sparksArcAngle, sparksArcAngle) * Mathf.Deg2Rad;
+            Vector3 dir = top * Mathf.Cos(angle) + side * Mathf.Sin(angle);
+            Instantiate(sparksPrefab, center + dir * radius, facing);
+        }
     }
 
     private AudioSource audioSource;
