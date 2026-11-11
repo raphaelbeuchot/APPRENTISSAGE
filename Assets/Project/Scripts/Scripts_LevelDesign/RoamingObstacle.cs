@@ -1,6 +1,11 @@
 using UnityEngine;
 using UnityEngine.Splines;
 
+// Obstacle qui roule le long d'une spline. En edition, il est tenu par sa spline : place en direct a son
+// point de depart (Starting Progress + offsets), il suit la spline quand on la modifie et y revient si on le
+// deplace a la main. Le comportement de jeu (mouvement, sons, poussee) ne tourne qu'en Play.
+// Gizmo (case Afficher Gizmo) : l'empreinte au sol de l'obstacle, repetee le long de toute la spline.
+[ExecuteAlways]
 public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 {
     [Header("Movement Settings")]
@@ -37,9 +42,22 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     [SerializeField] private SplineContainer splineContainer;
     
     [Header("Instance Settings")]
+    [Tooltip("Point de depart sur la spline (0 = debut, 1 = fin). L'obstacle s'y place en direct en edition.")]
     [SerializeField]
     [Range(0f, 1f)]
     private float startingProgress = 0f;
+    [Tooltip("Decalage par rapport a la spline, dans le sens de la marche : X = sur le cote, Y = en hauteur, " +
+             "Z = en avant / en arriere.")]
+    [SerializeField] private Vector3 positionOffset = Vector3.zero;
+    [Tooltip("Rotation ajoutee apres l'orientation dans le sens de la marche (degres).")]
+    [SerializeField] private Vector3 rotationOffset = Vector3.zero;
+
+    [Header("Gizmo")]
+    [Tooltip("Empreinte au sol de l'obstacle, repetee le long de toute la spline : la zone qu'il balaie.")]
+    [SerializeField] private bool showGizmo = false;
+    [Tooltip("Ecart entre deux empreintes (m).")]
+    [Min(0.1f)] [SerializeField] private float gizmoStep = 1f;
+    [SerializeField] private Color gizmoColor = new Color(1f, 0.4f, 0f, 0.25f);
 
     private float currentProgress = 0f;
     private AudioSource audioSource;
@@ -62,6 +80,8 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
     void Start()
     {
+        if (!Application.isPlaying) return;
+
         if (splineContainer == null)
         {
             Debug.LogError("[RoamingObstacle] SplineContainer non assigne !");
@@ -155,6 +175,7 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
     void Update()
     {
+        if (!Application.isPlaying) return;
         if (splineContainer == null) return;
         if (WaitForCycle()) return;
 
@@ -237,8 +258,28 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
     private void UpdatePosition()
     {
-        // Evaluer position sur spline
-        Vector3 position = splineContainer.EvaluatePosition(currentProgress);
+        PlaceAt(currentProgress);
+    }
+
+    // Pose sur la spline : position du point, cap de la marche (tangente a plat), puis offsets.
+    // Partage par le jeu, le placement en edition et le gizmo.
+    private void GetSplinePose(float progress, out Vector3 splinePoint, out Quaternion heading)
+    {
+        splinePoint = splineContainer.EvaluatePosition(progress);
+        Vector3 tangent = (Vector3)splineContainer.EvaluateTangent(progress);
+        tangent.y = 0f;
+        // Tangente nulle : on garde le cap actuel (sans l'offset de rotation, qui sera reapplique)
+        heading = tangent.sqrMagnitude > 0.000001f
+            ? Quaternion.LookRotation(tangent.normalized)
+            : transform.rotation * Quaternion.Inverse(Quaternion.Euler(rotationOffset));
+    }
+
+    private void PlaceAt(float progress)
+    {
+        GetSplinePose(progress, out Vector3 position, out Quaternion heading);
+
+        // Rotation d'abord : la hauteur de la base en depend des que l'offset de rotation incline l'obstacle
+        transform.rotation = heading * Quaternion.Euler(rotationOffset);
 
         // Offset pour que la BASE de l'obstacle touche la spline
         Collider col = GetComponent<Collider>();
@@ -246,15 +287,14 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
 
         if (col != null)
         {
+            // En edition, les bounds ne suivent pas le transform tant que la physique n'est pas synchronisee
+            if (!Application.isPlaying) Physics.SyncTransforms();
             yOffset = col.bounds.extents.y;
         }
 
+        position += heading * positionOffset;
         position.y += yOffset;
         transform.position = position;
-        Vector3 tangent = (Vector3)splineContainer.EvaluateTangent(currentProgress);
-        tangent.y = 0f;
-        if (tangent != Vector3.zero)
-            transform.rotation = Quaternion.LookRotation(tangent.normalized);
     }
 
     private void CalculateVelocity()
@@ -364,6 +404,111 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
         isPushingPlayer = false;
         Debug.Log($"[RoamingObstacle] Fin poussee progressive du player");
     }*/
+
+    // ============================================
+    // EDITION : obstacle tenu par sa spline
+    // ============================================
+
+#if UNITY_EDITOR
+    private Vector3 lastSnapPosition;
+    private Quaternion lastSnapRotation;
+    private Matrix4x4 lastSplineMatrix;
+
+    void OnEnable()
+    {
+        if (Application.isPlaying) return;
+        Spline.Changed += OnSplineChanged;
+        UnityEditor.EditorApplication.update += EditorWatch;
+        SnapInEditor();
+    }
+
+    void OnDisable()
+    {
+        Spline.Changed -= OnSplineChanged;
+        UnityEditor.EditorApplication.update -= EditorWatch;
+    }
+
+    // Deplacer un transform pendant OnValidate provoque des avertissements : on decale d'une frame d'editeur
+    void OnValidate()
+    {
+        if (Application.isPlaying) return;
+        UnityEditor.EditorApplication.delayCall += () =>
+        {
+            if (this != null) SnapInEditor();
+        };
+    }
+
+    private void OnSplineChanged(Spline spline, int knotIndex, SplineModification modification)
+    {
+        if (splineContainer != null && splineContainer.Spline == spline) SnapInEditor();
+    }
+
+    // Spline deplacee en bloc, ou obstacle deplace a la main : on le remet sur la spline
+    private void EditorWatch()
+    {
+        if (this == null || Application.isPlaying || splineContainer == null) return;
+        if (transform.position != lastSnapPosition || transform.rotation != lastSnapRotation ||
+            splineContainer.transform.localToWorldMatrix != lastSplineMatrix)
+            SnapInEditor();
+    }
+
+    private void SnapInEditor()
+    {
+        if (Application.isPlaying || splineContainer == null || splineContainer.Spline == null) return;
+        // Prefab ouvert en mode Prefab sans sa spline : rien a faire
+        if (splineContainer.Spline.Count < 2) return;
+
+        PlaceAt(startingProgress);
+        lastSnapPosition = transform.position;
+        lastSnapRotation = transform.rotation;
+        lastSplineMatrix = splineContainer.transform.localToWorldMatrix;
+    }
+#endif
+
+    // Empreinte au sol (meshes de l'obstacle aplatis a la hauteur de la spline), tous les gizmoStep metres
+    void OnDrawGizmos()
+    {
+        if (!showGizmo || splineContainer == null || splineContainer.Spline == null) return;
+        if (splineContainer.Spline.Count < 2) return;
+
+        float length = splineContainer.CalculateLength();
+        if (length <= 0.001f) return;
+
+        MeshFilter[] meshes = GetComponentsInChildren<MeshFilter>();
+        if (meshes.Length == 0) return;
+
+        // Garde-fou : pas plus de 500 empreintes par obstacle
+        float step = Mathf.Max(gizmoStep, length / 500f);
+        int count = Mathf.FloorToInt(length / step) + 1;
+        Matrix4x4 rootToWorldInverse = transform.worldToLocalMatrix;
+        Quaternion offsetRotation = Quaternion.Euler(rotationOffset);
+
+        Matrix4x4 previous = Gizmos.matrix;
+        Gizmos.color = gizmoColor;
+
+        for (int i = 0; i < count; i++)
+        {
+            float progress = Mathf.Clamp01(i * step / length);
+            GetSplinePose(progress, out Vector3 point, out Quaternion heading);
+
+            // Pose de la racine a cet endroit (hauteur sans importance : tout est aplati ensuite)
+            Matrix4x4 rootPose = Matrix4x4.TRS(point + heading * positionOffset, heading * offsetRotation, transform.lossyScale);
+            // Aplatissement sur le plan horizontal de la spline, un poil au-dessus pour ne pas clignoter avec le sol
+            Matrix4x4 flatten = Matrix4x4.Translate(new Vector3(0f, point.y + 0.02f, 0f)) *
+                                Matrix4x4.Scale(new Vector3(1f, 0.001f, 1f)) *
+                                Matrix4x4.Translate(new Vector3(0f, -point.y, 0f));
+            foreach (MeshFilter mf in meshes)
+            {
+                if (mf == null || mf.sharedMesh == null) continue;
+                // Mesh relatif a la racine (worldToLocal retire deja l'echelle de la racine, remise par rootPose)
+                Matrix4x4 relative = rootToWorldInverse * mf.transform.localToWorldMatrix;
+                Gizmos.matrix = flatten * rootPose * relative;
+                Gizmos.DrawMesh(mf.sharedMesh);
+            }
+        }
+
+        Gizmos.matrix = previous;
+    }
 
     void OnDestroy()
     {
