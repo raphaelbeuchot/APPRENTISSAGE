@@ -59,6 +59,9 @@ public class RoamingObstacle : MonoBehaviour, IMovingPlatform
     [Min(0.1f)] [SerializeField] private float gizmoStep = 1f;
     [SerializeField] private Color gizmoColor = new Color(1f, 0.4f, 0f, 0.25f);
 
+    // Lecture seule pour SplineCircles (largeur des cercles)
+    public SplineContainer SplineContainer => splineContainer;
+
     private float currentProgress = 0f;
     private AudioSource audioSource;
     private float currentDirection = 1f;
