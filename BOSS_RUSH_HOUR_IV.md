@@ -26,7 +26,9 @@ Marqué **(décidé)** ce que l'utilisateur a tranché ; tout le reste est piste
 - **Cage du joueur** (2026-11-08, refaite le 2026-11-09) : `BossCage`, une par pupitre. `Grab` fige le joueur, le passe en cinématique et lui fait suivre le point d'accroche chaque frame ; coupe `FallTracker` ; bloque la touche de vue (`CameraPanningExtension.UnlockViewToggle` ajouté, seul changement partagé). `Release` remet tout. Montée et descente codées dans la cage (plus de Timeline), branchées sur les phases : voir « Flow du niveau ».
 - **Transition** (2026-11-08) : `BossTransition`, appelée par le `BossPhaseManager` au dernier pupitre, juste après la pause du cycle.
   - Joueur figé sur place (« coffre de BotW », **décidé**) : `isFrozen` + `PlayerInputManager.IsLocked` (crouch, balai, spray, tomates, interaction) ; la gravité continue.
-  - Zombies vivants : gel **dédié** et définitif (**décidé** : ils ne reviennent jamais), montée provisoire de 8 m en 3 s, puis suppression. Barres de vie et minuteurs désinscrits. **Cadavres enlevés aussi** (2026-11-09, même gel et même montée : tout le monde est dégagé, comme la barre d'icônes).
+  - Zombies vivants : gel **dédié**, montée provisoire de 8 m en 3 s, puis suppression. Barres de vie et minuteurs désinscrits. **Cadavres enlevés aussi** (2026-11-09, même gel et même montée : tout le monde est dégagé, comme la barre d'icônes).
+  - **Case `Remove Enemies` par phase** (2026-11-11, validé en jeu, ecb549f2) : décochée, les ennemis restent figés pendant la transition (barres de vie et minuteurs gardés), puis sont **dégelés** quand le joueur est rendu (état d'avant le gel remis, sans élan ; les coroutines en cours au gel ne reprennent pas). `On Enemies Removed` part tout de suite, le flow continue. Dans la scène : phases 1 à 3 décochées, phase 4 cochée.
+  - **Décidé** (2026-11-11, remplace « ils ne reviennent jamais » du 2026-11-08) : mieux vaut **apporter encore plus d'ennemis que les remplacer**. Ça pousse à se débarrasser des ennemis dès les premières phases.
   - Clic droit *Rendre le joueur* : fin de transition. **Le cycle reste arrêté toute la transition** ; `Resume Delay` compte à partir du relâchement (0 = reprise immédiate).
   - Limite : rouvrir le menu pause pendant la transition lève `IsLocked`.
 
@@ -74,7 +76,7 @@ Légende : **[codé]** marche en jeu · **[branché]** codé et relié dans la s
 **Plan sentinelle puis cage** (enchaîné par les événements, ordre réglé dans l'Inspector)
 9. Après `Sentinel Shot Duration` (5 s dans la scène depuis le changement de caméra, fondu compris ; l'explosion du cercle part dès que le plan est à l'écran, via `onSentinelShotLive`), passage au **plan d'installation** (`CM_InstallCamera` : fixe, en hauteur, Hard Look At sur `MainSentinel`, en enfant de `SENTINELPIVOT`). **[branché]**
 10. Une fois ce fondu fini, cage du dernier pupitre : barreaux qui sortent du sol (1,5 m en 0,15 s), puis bloc qui monte avec le joueur (3,5 m en 1,5 s) → `onCageRaised` → *Enlever les ennemis* (`RemoveEnemies`). **[branché]** Une cage par pupitre (**décidé**, champ `Cage` du `BossPupitre`), pour la personnaliser sans code.
-11. Montée des zombies figés (8 m, 3 s) → `onEnemiesRemoved` → *Vider la barre* + *Faire entrer les pupitres de la phase*. **[branché]**
+11. Montée des zombies figés (8 m, 3 s), seulement si la phase a `Remove Enemies` coché (sinon ils restent figés, dégelés à l'étape 14) → `onEnemiesRemoved` → *Vider la barre* + *Faire entrer les pupitres de la phase*. **[branché]**
 12. Descente des pupitres (8 m, 3 s, pas activables en l'air) → `onPupitresArrived` → *Faire entrer les zombies de la phase*. **[branché]** Pupitres d'abord, zombies ensuite (**décidé**).
 13. Descente des zombies, là où ils sont posés dans la scène → tous à terre → `onEnemiesArrived` → *Remplir la barre* + *Redescendre la cage* (`LowerCage`). **[branché]**
 
