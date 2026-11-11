@@ -76,6 +76,22 @@ public class BossTransition : MonoBehaviour
     private readonly List<GameObject> frozenEnemies = new List<GameObject>();
     private int frozenCorpses = 0;
 
+    // Phase avec "Enlever les ennemis" decoche : ils restent figes pendant la transition, puis sont degeles
+    // (remis dans leur etat d'avant le gel) quand le joueur est rendu
+    private bool keepEnemies = false;
+
+    // Etat d'un ennemi avant le gel, pour le degel
+    private class FrozenState
+    {
+        public readonly List<MonoBehaviour> scripts = new List<MonoBehaviour>();
+        public readonly List<Animator> animators = new List<Animator>();
+        public readonly List<float> animatorSpeeds = new List<float>();
+        public readonly List<Rigidbody> bodies = new List<Rigidbody>();
+        public readonly List<bool> bodiesWereKinematic = new List<bool>();
+        public readonly List<Collider> colliders = new List<Collider>();
+    }
+    private readonly Dictionary<GameObject, FrozenState> frozenStates = new Dictionary<GameObject, FrozenState>();
+
     private void Awake()
     {
         if (sentinelCamera != null) sentinelCamera.Priority = 0;
@@ -101,9 +117,10 @@ public class BossTransition : MonoBehaviour
     /// Debut de l'entre-phases : tout le monde fige, plan sentinelle, puis la cage monte avec le joueur.
     /// cage : celle du dernier pupitre active (null = pas de cage, le joueur reste fige au sol).
     /// </summary>
-    public void Begin(BossCage cage)
+    public void Begin(BossCage cage, bool removeEnemies = true)
     {
         currentCage = cage;
+        keepEnemies = !removeEnemies;
         FreezePlayer();
         FreezeAllEnemies();
         StartCoroutine(SentinelShotThenCage());
@@ -235,6 +252,13 @@ public class BossTransition : MonoBehaviour
         player.isFrozen = false;
         if (PlayerInputManager.Instance != null) PlayerInputManager.Instance.IsLocked = false;
         Debug.Log("[BOSS TRANSITION] Joueur rendu");
+
+        // Ennemis gardes : ils reprennent en meme temps que le joueur
+        if (keepEnemies)
+        {
+            UnfreezeKeptEnemies();
+            keepEnemies = false;
+        }
         Ended?.Invoke();
     }
 
@@ -251,7 +275,7 @@ public class BossTransition : MonoBehaviour
             if (health == null || frozenEnemies.Contains(health.gameObject)) continue;
             frozenEnemies.Add(health.gameObject);
             if (health.IsDead()) frozenCorpses++;
-            FreezeEnemy(health.gameObject);
+            frozenStates[health.gameObject] = FreezeEnemy(health.gameObject, !keepEnemies);
         }
 
         Debug.Log($"[BOSS TRANSITION] {frozenEnemies.Count - frozenCorpses} vivant(s) + {frozenCorpses} cadavre(s) fige(s)");
@@ -264,6 +288,15 @@ public class BossTransition : MonoBehaviour
     [ContextMenu("Enlever les ennemis")]
     public void RemoveEnemies()
     {
+        // Phase qui garde ses ennemis : personne ne part, la suite du flow enchaine tout de suite
+        if (keepEnemies)
+        {
+            Debug.Log($"[BOSS TRANSITION] Ennemis gardes ({frozenEnemies.Count}) : degel quand le joueur sera rendu");
+            EnemiesRemoved();
+            return;
+        }
+
+        frozenStates.Clear();
         List<GameObject> enemies = new List<GameObject>();
         foreach (GameObject enemy in frozenEnemies)
             if (enemy != null) enemies.Add(enemy);
@@ -293,9 +326,14 @@ public class BossTransition : MonoBehaviour
     // Gel definitif : scripts coupes (coroutines comprises : desactiver un script ne les arrete pas),
     // animations en pause, physique arretee, collisions coupees (ils traversent le decor en montant),
     // barres de vie et minuteurs d'etourdissement desinscrits (elements d'UI hors de l'ennemi).
-    private static void FreezeEnemy(GameObject enemy)
+    // Fige un ennemi et note son etat d'avant (pour un eventuel degel).
+    // removeUI : retire barres de vie et minuteurs d'etourdissement (ennemi enleve ensuite). Ennemi garde : on
+    // les laisse, rien a reinscrire au degel (l'inscription est faite au Start de l'ennemi, qui ne repasse pas).
+    private static FrozenState FreezeEnemy(GameObject enemy, bool removeUI)
     {
-        if (EnemyHealthBarManager.Instance != null || StunTimerManager.Instance != null)
+        var state = new FrozenState();
+
+        if (removeUI && (EnemyHealthBarManager.Instance != null || StunTimerManager.Instance != null))
         {
             foreach (Transform t in enemy.GetComponentsInChildren<Transform>(true))
             {
@@ -304,16 +342,24 @@ public class BossTransition : MonoBehaviour
             }
         }
 
+        // Les coroutines sont coupees (un script desactive continue ses coroutines) : elles ne reprendront pas au degel
         foreach (MonoBehaviour mb in enemy.GetComponentsInChildren<MonoBehaviour>(true))
         {
             if (mb == null) continue;
             mb.StopAllCoroutines();
+            if (mb.enabled) state.scripts.Add(mb);
             mb.enabled = false;
         }
         foreach (Animator animator in enemy.GetComponentsInChildren<Animator>(true))
+        {
+            state.animators.Add(animator);
+            state.animatorSpeeds.Add(animator.speed);
             animator.speed = 0f;
+        }
         foreach (Rigidbody rb in enemy.GetComponentsInChildren<Rigidbody>(true))
         {
+            state.bodies.Add(rb);
+            state.bodiesWereKinematic.Add(rb.isKinematic);
             if (!rb.isKinematic)
             {
                 rb.linearVelocity = Vector3.zero;
@@ -322,7 +368,43 @@ public class BossTransition : MonoBehaviour
             rb.isKinematic = true;
         }
         foreach (Collider col in enemy.GetComponentsInChildren<Collider>(true))
+        {
+            if (col.enabled) state.colliders.Add(col);
             col.enabled = false;
+        }
+
+        return state;
+    }
+
+    // Remet les ennemis gardes dans leur etat d'avant le gel, sans elan
+    private void UnfreezeKeptEnemies()
+    {
+        int count = 0;
+        foreach (var pair in frozenStates)
+        {
+            if (pair.Key == null) continue;
+            FrozenState s = pair.Value;
+            foreach (Collider col in s.colliders) if (col != null) col.enabled = true;
+            for (int i = 0; i < s.bodies.Count; i++)
+            {
+                Rigidbody rb = s.bodies[i];
+                if (rb == null) continue;
+                rb.isKinematic = s.bodiesWereKinematic[i];
+                if (!rb.isKinematic)
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
+            }
+            for (int i = 0; i < s.animators.Count; i++)
+                if (s.animators[i] != null) s.animators[i].speed = s.animatorSpeeds[i];
+            foreach (MonoBehaviour mb in s.scripts) if (mb != null) mb.enabled = true;
+            count++;
+        }
+        frozenStates.Clear();
+        frozenEnemies.Clear();
+        frozenCorpses = 0;
+        Debug.Log($"[BOSS TRANSITION] {count} ennemi(s) degele(s)");
     }
 
     private IEnumerator LiftAndRemove(GameObject enemy)

@@ -36,6 +36,10 @@ public class BossPhaseManager : MonoBehaviour
                  "hors des phases suivantes est present au lancement. Phases suivantes : desactives au lancement, " +
                  "ils descendent avec \"Faire entrer les zombies de la phase\".")]
         public List<GameObject> zombies = new List<GameObject>();
+        [Tooltip("Coche : a la fin de la phase, les ennemis (vivants et cadavres) sont enleves pendant la transition. " +
+                 "Decoche : ils restent figes pendant la transition, puis reprennent la ou ils etaient quand le joueur " +
+                 "est rendu (les coroutines en cours au gel, ex. un etourdissement, ne reprennent pas).")]
+        public bool removeEnemies = true;
         [Tooltip("Feux de la sentinelle pendant cette phase (durees et pression).")]
         public BossCycleManager.PhaseCycle cycle = new BossCycleManager.PhaseCycle();
         public PhaseEffects effets = new PhaseEffects();
@@ -311,7 +315,7 @@ public class BossPhaseManager : MonoBehaviour
         // La cage est celle du dernier pupitre active (aucune si la phase est terminee a la main sans pupitre)
         BossCage cage = lastActivatedPupitre != null ? lastActivatedPupitre.Cage : null;
         lastActivatedPupitre = null;
-        if (transition != null) transition.Begin(cage);
+        if (transition != null) transition.Begin(cage, phase.removeEnemies);
 
         phase.effets.onPhaseComplete?.Invoke();
 
