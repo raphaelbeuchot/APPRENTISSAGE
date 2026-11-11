@@ -653,6 +653,13 @@ public class EnemyHealth : MonoBehaviour
     }
 
     public bool IsRecovering() => isRecovering;
+
+    // Reprise apres un gel (BossTransition) : etats tenus par des coroutines coupees
+    public void ResetAfterFreeze()
+    {
+        isRecovering = false;
+        recentlyHitBySentinel = false;
+    }
     public float GetBaseMaxHealth() => stats.maxHealth;
     public float GetMaxHealth()
     {

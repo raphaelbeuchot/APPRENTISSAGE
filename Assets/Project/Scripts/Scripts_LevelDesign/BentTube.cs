@@ -7,7 +7,8 @@ using UnityEngine;
 // Cercle : section carree, rayon = moitie du cote ; demi-cercle : deux coins au rayon maxi.
 // Usage : poser sur un GameObject vide, regler, le mesh se met a jour en direct.
 // Le mesh n'est pas sauvegarde : il est reconstruit a partir des reglages a chaque chargement (marche tel quel dans un prefab).
-// Pivot au debut du tube, au centre de la section. Un MeshCollider present sur l'objet recoit le mesh.
+// Pivot au debut du tube, au centre de la section. Un MeshCollider present sur l'objet recoit le mesh
+// (ajoute tout seul quand on pose le composant ; a ajouter a la main sur les tubes poses avant).
 //
 // UV0 : en metres. Pourtour : u = distance le long du contour de la section, v = distance le long du tube (axe).
 //       Bouts : projection dans le plan de la section.
@@ -65,6 +66,19 @@ public class BentTube : MonoBehaviour
     }
 
 #if UNITY_EDITOR
+    // Remplace le BoxCollider du cube par un MeshCollider qui epouse la forme (seulement a l'ajout du composant).
+    void Reset()
+    {
+        UnityEditor.EditorApplication.delayCall += () =>
+        {
+            if (this == null) return;
+            BoxCollider box = GetComponent<BoxCollider>();
+            if (box != null) UnityEditor.Undo.DestroyObjectImmediate(box);
+            if (GetComponent<MeshCollider>() == null) UnityEditor.Undo.AddComponent<MeshCollider>(gameObject);
+            Rebuild();
+        };
+    }
+
     // Toucher au MeshCollider pendant OnValidate provoque des avertissements : on decale d'une frame d'editeur.
     void OnValidate()
     {

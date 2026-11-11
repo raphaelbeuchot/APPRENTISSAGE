@@ -709,6 +709,24 @@ public class GrabAttack : MonoBehaviour, IAttackBehavior
         }
     }
 
+    // Reprise apres un gel (BossTransition) : coroutines deja coupees, on remet l'attaque a zero.
+    // ForceStop (cote joueur : contraintes, grabState, OnGrabEnd) seulement si un grab etait en cours.
+    public void ResetAfterFreeze()
+    {
+        if (isGrabbing) ForceStop();
+        StopAllCoroutines();
+
+        isInWindup = false;
+        windupAnimComplete = true;
+        windupCoroutine = null;
+        willBeGrabbed = false;
+        isLockedInIdle = false;
+        isInBourradeDuration = false;
+        isInBourradeCooldown = false;
+
+        RestoreVisual();
+    }
+
     public void ForceStop()
     {
         StopAllCoroutines();

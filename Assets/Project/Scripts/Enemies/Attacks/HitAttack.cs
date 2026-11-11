@@ -337,6 +337,15 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
             enemyRb.linearVelocity = Vector3.zero;
     }
 
+    // Reprise apres un gel (BossTransition) : coroutines deja coupees, on remet l'attaque a zero
+    public void ResetAfterFreeze()
+    {
+        ForceStop();
+        windupCoroutine = null;
+        willHit = false;
+        isCancelled = false;
+    }
+
     public void OnWindupComplete()
     {
         windupAnimComplete = true;

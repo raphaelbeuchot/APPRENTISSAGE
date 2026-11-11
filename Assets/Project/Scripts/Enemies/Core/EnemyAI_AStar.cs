@@ -122,7 +122,67 @@ public class EnemyAI_AStar : MonoBehaviour
             aiPath.rotationSpeed = stats.rotationSpeed;
         }
 
+        baseScale = transform.localScale;
+
         InitializeAttackBehavior();
+        StartCoroutine(DetectionLoop());
+    }
+
+    // Echelle de depart : les pulsations (coup recu, windup du Grabber) la modifient en coroutine
+    private Vector3 baseScale = Vector3.one;
+
+    /// <summary>
+    /// Reprise apres un gel qui a coupe toutes les coroutines de l'ennemi (BossTransition, ennemis gardes
+    /// entre deux phases). Une coroutine ne se met pas en pause : on remet l'ennemi dans un etat neutre
+    /// (debout, Idle, sans attaque en cours, taille et materiau d'origine) et on relance la detection.
+    /// A appeler une fois les scripts reactives.
+    /// </summary>
+    public void ResumeAfterFreeze()
+    {
+        if (stats == null || isDead) return;
+
+        // Attaque en cours (windup, grab, bourrade, verrou Idle) annulee, visuel remis
+        if (attackBehavior is HitAttack hit) hit.ResetAfterFreeze();
+        else if (attackBehavior is GrabAttack grab) grab.ResetAfterFreeze();
+
+        // Etats tenus par des coroutines coupees
+        isKnockedDownByEpervier = false;
+        isInStandupPhase = false;
+        wasAlreadyShotDuringSweep = false;
+        isStunnedBySentinel = false;
+        isLookingAround = false;
+        isTemporarilyPushed = false;
+        isRotatingToImpact = false;
+        hasPendingKnockback = false;
+        pendingKnockbackDir = Vector3.zero;
+
+        transform.localScale = baseScale;
+
+        if (animator != null)
+        {
+            animator.ResetTrigger("EpervierKnockdown");
+            animator.SetBool("CanStandUp", true);
+            animator.Play("Idle", 0, Random.value);
+        }
+
+        currentState = State.Idle;
+        ResetChaseState();
+        canMove = true;
+        if (aiPath != null)
+        {
+            aiPath.enabled = true;
+            aiPath.canMove = true;
+        }
+        if (rb != null && !rb.isKinematic)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+        if (gameManager != null)
+            gameManager.ResetSequenceTarget(gameObject);
+
+        if (health != null) health.ResetAfterFreeze();
+
         StartCoroutine(DetectionLoop());
     }
 

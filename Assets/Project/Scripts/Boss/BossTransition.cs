@@ -399,6 +399,10 @@ public class BossTransition : MonoBehaviour
             for (int i = 0; i < s.animators.Count; i++)
                 if (s.animators[i] != null) s.animators[i].speed = s.animatorSpeeds[i];
             foreach (MonoBehaviour mb in s.scripts) if (mb != null) mb.enabled = true;
+
+            // Le gel a coupe les coroutines (detection, wipeout, windup...) : etat neutre + detection relancee
+            EnemyAI_AStar ai = pair.Key.GetComponent<EnemyAI_AStar>();
+            if (ai != null && ai.enabled) ai.ResumeAfterFreeze();
             count++;
         }
         frozenStates.Clear();
