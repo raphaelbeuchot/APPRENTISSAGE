@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -8,9 +9,12 @@ using UnityEngine.Events;
 /// Apres "Delay" (compte depuis l'envol des ampoules) :
 /// 1. les spheres du coeur (TestSpheres) retrecissent jusqu'a zero ;
 /// 2. le cylindre grossit jusqu'a "Grow Scale" pendant que son emission monte de "Ramp Intensity" crans
-///    (comme l'Intensity du selecteur HDR : +1 = x2), pendant "Ramp Duration" ;
+///    (comme l'Intensity du selecteur HDR : +1 = x2), pendant "Ramp Duration" ; le couvercle du pit glisse en X
+///    en meme temps (duree a part) ;
 /// 3. il se retracte jusqu'a zero en "Retract Duration" (0 = d'un coup) : onRetract au debut de la retraction
-///    (ex. GameObject.SetActive pour changer de Global Volume).
+///    (ex. GameObject.SetActive pour changer de Global Volume) ;
+/// 4. camera de sortie (CM_Exit), puis evacuation du decor (DecorExitSequencer) et rideau (EndCurtainRise) en
+///    parallele -> onDecorEvacuated (ex. BossTransition.EndPlayerFreeze : le joueur reprend la main).
 /// La reaction au cycle (CycleReactiveRenderer) est coupee : on part du materiau et de l'echelle en place.
 /// </summary>
 public class BossEndSequence : MonoBehaviour
@@ -36,6 +40,16 @@ public class BossEndSequence : MonoBehaviour
     [Tooltip("Echelle en fin de montee, en multiple de l'echelle de depart (5 = 500 %).")]
     [Min(0f)] [SerializeField] private float growScale = 5f;
 
+    [Header("Couvercle du pit")]
+    [Tooltip("Couvercle deplace pendant la montee du cylindre (part en meme temps). Vide = rien.")]
+    [SerializeField] private Transform pitLid;
+    [Tooltip("Deplacement du couvercle en X monde (m).")]
+    [SerializeField] private float pitLidMoveX = 10f;
+    [Tooltip("Deplacement du couvercle en Z monde (m).")]
+    [SerializeField] private float pitLidMoveZ = 0f;
+    [Tooltip("Duree du deplacement (s).")]
+    [Min(0.01f)] [SerializeField] private float pitLidDuration = 2f;
+
     [Header("Retraction")]
     [Tooltip("Duree de la retraction jusqu'a zero (s). 0 = d'un coup.")]
     [Min(0f)] [SerializeField] private float retractDuration = 0.05f;
@@ -43,8 +57,27 @@ public class BossEndSequence : MonoBehaviour
              "celui de la transition room.")]
     [SerializeField] private UnityEvent onRetract;
 
+    [Header("Sortie")]
+    [Tooltip("Camera de sortie, mise en avant a la fin de la retraction. Vide = pas de changement de plan.")]
+    [SerializeField] private CinemachineCamera exitCamera;
+    [Tooltip("Doit rester au-dessus de la camera sentinelle (30 par defaut dans BossTransition).")]
+    [SerializeField] private int exitCameraPriority = 40;
+    [Tooltip("Evacuation du decor (gauche / droite / haut), lancee a la fin de la retraction. Vide = pas d'evacuation.")]
+    [SerializeField] private DecorExitSequencer decorExit;
+    [Tooltip("Rideau leve en meme temps que l'evacuation. Vide = pas de rideau.")]
+    [SerializeField] private EndCurtainRise curtain;
+    [Tooltip("Securite : on n'attend jamais plus longtemps l'evacuation et le rideau (s).")]
+    [Min(0f)] [SerializeField] private float maxEvacuationWait = 15f;
+    [Tooltip("Decor evacue et rideau leve. Ex : BossTransition.EndPlayerFreeze (le joueur reprend la main).")]
+    [SerializeField] private UnityEvent onDecorEvacuated;
+
     private static readonly int EmissionColorID = Shader.PropertyToID("_EmissionColor");
     private bool played;
+
+    private void Awake()
+    {
+        if (exitCamera != null) exitCamera.Priority = 0;
+    }
 
     [ContextMenu("Play")]
     public void Play()
@@ -77,6 +110,7 @@ public class BossEndSequence : MonoBehaviour
         {
             Debug.LogWarning("[BOSS END] Pas de cylindre : montee sautee", this);
             onRetract?.Invoke();
+            yield return Exit();
             yield break;
         }
 
@@ -99,7 +133,8 @@ public class BossEndSequence : MonoBehaviour
         if (Mathf.Max(baseEmission.r, baseEmission.g, baseEmission.b) < 0.01f)
             baseEmission = new Color(0.1f, 0.1f, 0.1f);
 
-        // 2. Montee : echelle et emission ensemble
+        // 2. Montee : echelle et emission ensemble ; le couvercle part en meme temps
+        if (pitLid != null) StartCoroutine(MovePitLid());
         var block = new MaterialPropertyBlock();
         float start = Time.time;
         while (Time.time - start < rampDuration)
@@ -125,6 +160,49 @@ public class BossEndSequence : MonoBehaviour
         }
         cyl.localScale = Vector3.zero;
         cylinder.enabled = false;
+
+        yield return Exit();
+    }
+
+    // 4. Camera de sortie, puis evacuation du decor et rideau en parallele -> onDecorEvacuated
+    private IEnumerator Exit()
+    {
+        if (exitCamera != null) exitCamera.Priority = exitCameraPriority;
+
+        bool decorDone = decorExit == null;
+        bool curtainDone = curtain == null;
+        if (decorExit != null)
+        {
+            decorExit.OnDecorExitComplete += () => decorDone = true;
+            decorExit.StartExit(0f); // la direction se calcule sur la position du joueur
+        }
+        if (curtain != null)
+        {
+            curtain.OnRiseComplete += () => curtainDone = true;
+            curtain.Rise();
+        }
+
+        float t0 = Time.time;
+        yield return new WaitUntil(() => (decorDone && curtainDone) || Time.time - t0 > maxEvacuationWait);
+        if (!(decorDone && curtainDone))
+            Debug.LogWarning($"[BOSS END] Evacuation non terminee apres {maxEvacuationWait} s (decor {decorDone}, rideau {curtainDone}) : on continue", this);
+
+        Debug.Log("[BOSS END] Decor evacue");
+        onDecorEvacuated?.Invoke();
+    }
+
+    private IEnumerator MovePitLid()
+    {
+        Vector3 from = pitLid.position;
+        Vector3 to = from + new Vector3(pitLidMoveX, 0f, pitLidMoveZ);
+        float t0 = Time.time;
+        while (Time.time - t0 < pitLidDuration)
+        {
+            float p = (Time.time - t0) / pitLidDuration;
+            pitLid.position = Vector3.Lerp(from, to, Mathf.SmoothStep(0f, 1f, p));
+            yield return null;
+        }
+        pitLid.position = to;
     }
 
     private void SetEmission(MaterialPropertyBlock block, Color c)

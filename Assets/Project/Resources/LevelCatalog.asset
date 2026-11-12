@@ -1059,7 +1059,7 @@ MonoBehaviour:
       detail: 
     - id: enemies
       status: 2
-      detail: ENEMIES/ZombieChaser01 (EnemyAI_AStar) + 25 autre(s)
+      detail: ROOM_01_TL/ROOM_01/ZombieChaser (EnemyAI_AStar) + 1 autre(s)
     - id: brightEyes
       status: 0
       detail: 
@@ -1073,34 +1073,33 @@ MonoBehaviour:
       status: 2
       detail: LevelEssentiels (tague Sentinel)
     - id: startDoor
-      status: 0
-      detail: 
+      status: 2
+      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
     - id: pupitre
       status: 2
       detail: Pupitre
     - id: goalDoor
-      status: 0
-      detail: 
+      status: 2
+      detail: LevelEssentiels/GoalDoor (GoalDoorNew)
     - id: key
-      status: 0
-      detail: 
+      status: 2
+      detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
-      status: 0
-      detail: 
+      status: 2
+      detail: VICTORY/VictoryManager (configuration complete)
     - id: curtain
-      status: 0
-      detail: 
+      status: 2
+      detail: EndCurtain (EndCurtainRise)
     - id: circles
       status: 2
-      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
-        tague Sentinel)
+      detail: LevelEssentiels/CentralLightTest/ConcentricCircles Manager (sous un
+        objet tague Sentinel)
     - id: transitionRoom
-      status: 0
-      detail: 
+      status: 2
+      detail: VICTORY/TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
+      status: 2
+      detail: VICTORY/PostvictoryBounds (contient GoalDoor et salle de transition)
     - id: uiAudio
       status: 2
       detail: UI_Audio (UIAudioPlayer)
@@ -1120,8 +1119,8 @@ MonoBehaviour:
       status: 0
       detail: 
     - id: enemies
-      status: 0
-      detail: 
+      status: 2
+      detail: ROOM_01/ZombieChaser (EnemyAI_AStar) + 9 autre(s)
     - id: brightEyes
       status: 0
       detail: 
@@ -1268,7 +1267,7 @@ MonoBehaviour:
       detail: KeyCollectible/Collectible (KeyCollectible)
     - id: victory
       status: 2
-      detail: VictoryManager (configuration complete)
+      detail: VICTORY/VictoryManager (configuration complete)
     - id: curtain
       status: 2
       detail: EndCurtain (EndCurtainRise)
@@ -1277,10 +1276,11 @@ MonoBehaviour:
       detail: LevelEssentiels/ConcentricCircles Manager (sous un objet tague Sentinel)
     - id: transitionRoom
       status: 2
-      detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
+      detail: VICTORY/TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     - id: victoryBounds
-      status: 2
-      detail: PostVictoryBounds (contient GoalDoor et salle de transition)
+      status: 1
+      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
+        apres la victoire'
     - id: uiAudio
       status: 2
       detail: UI_Audio (UIAudioPlayer)
@@ -1301,7 +1301,7 @@ MonoBehaviour:
       detail: 
     - id: enemies
       status: 2
-      detail: ENEMIES/ZombieChaser_Cactus (2) (EnemyAI_AStar) + 9 autre(s)
+      detail: ENEMIES/Zombie_Hitter_CactusVariant (3) (EnemyAI_AStar) + 9 autre(s)
     - id: brightEyes
       status: 0
       detail: 
@@ -1340,9 +1340,8 @@ MonoBehaviour:
       status: 2
       detail: TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
+      status: 2
+      detail: PostvictoryBounds (contient GoalDoor et salle de transition)
     - id: uiAudio
       status: 2
       detail: UI_Audio (UIAudioPlayer)
@@ -1363,7 +1362,7 @@ MonoBehaviour:
       detail: 
     - id: enemies
       status: 2
-      detail: ENEMIES/ZombieChaser_Diamond_001 (2) (EnemyAI_AStar) + 13 autre(s)
+      detail: ENEMIES/Zombie_Hitter_RockVariant (EnemyAI_AStar) + 13 autre(s)
     - id: brightEyes
       status: 0
       detail: 
@@ -1723,7 +1722,7 @@ MonoBehaviour:
     collectibleIDs: []
   - scene: {fileID: 102900000, guid: ad868371203801a41ae24c658fd59220, type: 3}
     levelName: Rush Hour IV
-    launchText: Rush Hour !
+    launchText: Super Banco !
     hasBroom: 1
     hasSpray: 0
     inDemo: 1
@@ -1733,13 +1732,13 @@ MonoBehaviour:
       detail: 
     - id: enemies
       status: 2
-      detail: ENEMIES/ZombieChaser01 (EnemyAI_AStar) + 25 autre(s)
+      detail: ENEMIES/ENEMYS_PHASE 02/ZombieChaser01 (EnemyAI_AStar) + 35 autre(s)
     - id: brightEyes
       status: 0
       detail: 
     - id: bombs
-      status: 0
-      detail: 
+      status: 2
+      detail: BombSpawner (BombSpawner) + 2 autre(s)
     - id: broomPedestal
       status: 0
       detail: 
@@ -1747,8 +1746,8 @@ MonoBehaviour:
       status: 2
       detail: LevelEssentiels (tague Sentinel)
     - id: startDoor
-      status: 0
-      detail: 
+      status: 2
+      detail: StartZone_8/DoorBasic (LevelEntranceDoor)
     - id: pupitre
       status: 2
       detail: Pupitre
@@ -1762,12 +1761,12 @@ MonoBehaviour:
       status: 0
       detail: 
     - id: curtain
-      status: 0
-      detail: 
-    - id: circles
       status: 2
-      detail: LevelEssentiels/MainSentinel/ConcentricCircles Manager (sous un objet
-        tague Sentinel)
+      detail: DECOR FOND/EndCurtain (EndCurtainRise)
+    - id: circles
+      status: 1
+      detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : SENTINELPIVOT/ConcentricCircles
+        Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
       status: 0
       detail: 
@@ -1783,4 +1782,4 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_TrafficJam_04.unity
     collectibleIDs: []
-  lastAnalysis: 04/11/2026 a 14:51
+  lastAnalysis: 12/11/2026 a 21:58
