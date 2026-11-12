@@ -15,6 +15,7 @@ using UnityEngine.Events;
 /// pupitres et zombies de la phase qui descendent, puis LowerCage : la cage redescend, relache le joueur,
 /// et la transition se termine (Ended -> reprise du cycle).
 /// EndPlayerFreeze rend le joueur a la main (menu du composant), sans passer par la cage.
+/// BeginFinal (derniere phase) : meme debut, puis onFinalShot (sequence de fin) sur le plan sentinelle, sans cage.
 /// </summary>
 public class BossTransition : MonoBehaviour
 {
@@ -45,6 +46,9 @@ public class BossTransition : MonoBehaviour
     [Tooltip("Le plan sentinelle est seul a l'ecran (fondu fini), le joueur vient d'etre pose dans la cage. " +
              "Tout de suite s'il n'y a pas de camera sentinelle. Ex : BossCircleExploder.Explode.")]
     [SerializeField] private UnityEvent onSentinelShotLive;
+    [Tooltip("Fin du boss (BeginFinal) : explosion du dernier cercle vue, on reste sur le plan sentinelle, joueur " +
+             "fige. Ex : BossEndSequence.Play. Rendre le joueur et la camera plus tard : BossTransition.EndPlayerFreeze.")]
+    [SerializeField] private UnityEvent onFinalShot;
     [Tooltip("La cage est en haut avec le joueur (tout de suite apres le plan sentinelle s'il n'y a pas de cage). " +
              "Ex : BossTransition.RemoveEnemies.")]
     [SerializeField] private UnityEvent onCageRaised;
@@ -153,6 +157,42 @@ public class BossTransition : MonoBehaviour
 
         if (currentCage != null) currentCage.RaiseWithPlayer(CageRaised);
         else CageRaised();
+    }
+
+    /// <summary>
+    /// Fin du boss (dernier pupitre de la derniere phase) : meme debut que Begin (tout le monde fige, plan
+    /// sentinelle, onSentinelShotLive = explosion du dernier cercle), puis onFinalShot, toujours sur le plan
+    /// sentinelle et joueur fige (a rendre par EndPlayerFreeze). Pas de cage, pas de retrait : les ennemis
+    /// restent figes pour de bon.
+    /// </summary>
+    [ContextMenu("Fin du boss (BeginFinal)")]
+    public void BeginFinal()
+    {
+        currentCage = null;
+        keepEnemies = false;
+        FreezePlayer();
+        FreezeAllEnemies();
+        StartCoroutine(FinalShot());
+    }
+
+    private IEnumerator FinalShot()
+    {
+        float shotStart = Time.time;
+
+        if (sentinelCamera != null)
+        {
+            sentinelCamera.Priority = cameraPriority;
+            yield return WaitUntilCameraIsLive(sentinelCamera, sentinelShotDuration);
+        }
+        onSentinelShotLive?.Invoke();
+
+        float remaining = sentinelShotDuration - (Time.time - shotStart);
+        if (remaining > 0f) yield return new WaitForSeconds(remaining);
+
+        // On reste sur le plan sentinelle, joueur fige : la sequence de fin le rendra (EndPlayerFreeze,
+        // qui remet aussi la camera normale)
+        Debug.Log("[BOSS TRANSITION] Fin du boss : explosion vue, plan sentinelle garde");
+        onFinalShot?.Invoke();
     }
 
     // Securite : on n'attend jamais un fondu plus longtemps que ca (s)

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 /// <summary>
@@ -77,6 +78,10 @@ public class BossCircleExploder : MonoBehaviour
     [Tooltip("Zone d'apparition : angle de part et d'autre du sommet du cercle (degres). 180 = tout le cercle.")]
     [Range(0f, 180f)] [SerializeField] private float sparksArcAngle = 60f;
 
+    [Header("Fin du boss")]
+    [Tooltip("Envol des ampoules du DERNIER cercle (plus aucun autre cercle). Ex : BossEndSequence.Play.")]
+    [SerializeField] private UnityEvent onLastCircleExploded;
+
     // Nombre de cercles deja exploses : fait monter le nombre d'explosions par phase
     private int explodedCount;
 
@@ -119,6 +124,24 @@ public class BossCircleExploder : MonoBehaviour
         StartCoroutine(ExplodeSequence(circle, center));
     }
 
+    /// <summary>
+    /// DEV (depart a une phase plus loin) : retire tout de suite les "count" cercles les plus exterieurs, sans
+    /// explosion. Compte comme des phases passees pour le nombre d'explosions d'etincelles.
+    /// </summary>
+    public void RemoveOutermostCircles(int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            Transform circle = FindOutermostCircle(out _);
+            if (circle == null) break;
+            // Detache tout de suite : Destroy n'agit qu'en fin de frame, le cercle serait retrouve au tour suivant
+            circle.SetParent(null);
+            Destroy(circle.gameObject);
+            explodedCount++;
+        }
+        Debug.Log($"[BossCircleExploder] DEV : {count} cercle(s) retire(s) sans explosion", this);
+    }
+
     private IEnumerator ExplodeSequence(Transform circle, Vector3 center)
     {
         chargingCircle = circle;
@@ -156,6 +179,8 @@ public class BossCircleExploder : MonoBehaviour
         PlaySound(explosionSound);
         SpawnSparks(circle, bulbs);
         explodedCount++;
+        // Dernier cercle : aucun autre ne reste (celui-ci, en charge, est exclu de la recherche)
+        bool isLast = FindOutermostCircle(out _) == null;
 
         foreach (var b in bulbs)
         {
@@ -183,6 +208,11 @@ public class BossCircleExploder : MonoBehaviour
 
         chargingCircle = null;
         Destroy(circle.gameObject);
+        if (isLast)
+        {
+            Debug.Log("[BossCircleExploder] Dernier cercle explose", this);
+            onLastCircleExploded?.Invoke();
+        }
 
         // Vol : emission qui redescend jusqu'a zero pendant lifetime, puis retrecissement
         start = Time.time;

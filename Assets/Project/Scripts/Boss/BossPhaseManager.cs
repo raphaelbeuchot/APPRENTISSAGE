@@ -67,6 +67,14 @@ public class BossPhaseManager : MonoBehaviour
     [Tooltip("Toutes les phases terminees.")]
     [SerializeField] private UnityEvent onAllPhasesComplete;
 
+    [Header("Dev")]
+    [Tooltip("DEV : phase de depart (1 = normal). Ex. 3 : le niveau demarre en phase 3, ses pupitres et zombies " +
+             "en place, les autres ennemis retires, les cercles des phases sautees retires sans explosion. " +
+             "Les effets des phases sautees (onPhaseStart / onPhaseComplete) ne sont PAS joues. Remettre a 1 avant un build.")]
+    [Min(1)] [SerializeField] private int devStartPhase = 1;
+    [Tooltip("DEV : exploder dont on retire un cercle par phase sautee. Vide = cercles laisses.")]
+    [SerializeField] private BossCircleExploder devCircleExploder;
+
     [Header("Debug")]
     [Tooltip("Phase en cours (0 = phase 1, -1 = pas commence).")]
     [SerializeField] private int currentPhaseIndex = -1;
@@ -142,15 +150,46 @@ public class BossPhaseManager : MonoBehaviour
         }
 
         if (transition != null) transition.Ended += OnTransitionEnded;
+
+        // DEV : depart a une phase plus loin. Des Awake, comme ci-dessus : les ennemis retires ne sont pas recenses
+        int start = DevStartIndex;
+        if (start > 0)
+        {
+            var keep = new HashSet<GameObject>(phases[start].zombies);
+            foreach (EnemyHealth health in FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None))
+                if (!keep.Contains(health.gameObject)) health.gameObject.SetActive(false);
+            foreach (GameObject zombie in phases[start].zombies)
+                if (zombie != null) zombie.SetActive(true);
+        }
     }
+
+    // Index de la phase de depart (0 = normal), borne a la liste
+    private int DevStartIndex => phases.Count == 0 ? 0 : Mathf.Clamp(devStartPhase - 1, 0, phases.Count - 1);
 
     private void Start()
     {
         if (cycleManager == null)
             Debug.LogWarning("[BOSS PHASES] Pas de BossCycleManager : les feux ne suivront pas les phases");
 
-        if (phases.Count > 0)
-            StartPhase(0);
+        if (phases.Count == 0) return;
+
+        int start = DevStartIndex;
+        StartPhase(start);
+        if (start > 0)
+        {
+            Debug.LogWarning($"[BOSS PHASES] DEV : depart en {phases[start].label} (Dev Start Phase = {devStartPhase})");
+            // Pupitres de la phase la tout de suite (pas de descente)
+            foreach (BossPupitre pupitre in phases[start].pupitres)
+                if (pupitre != null) pupitre.gameObject.SetActive(true);
+            // Les cercles sont crees au Start du spawner : retrait une frame plus tard
+            if (devCircleExploder != null) StartCoroutine(RemoveSkippedCircles(start));
+        }
+    }
+
+    private IEnumerator RemoveSkippedCircles(int count)
+    {
+        yield return null;
+        devCircleExploder.RemoveOutermostCircles(count);
     }
 
     private void OnDestroy()
@@ -315,7 +354,13 @@ public class BossPhaseManager : MonoBehaviour
         // La cage est celle du dernier pupitre active (aucune si la phase est terminee a la main sans pupitre)
         BossCage cage = lastActivatedPupitre != null ? lastActivatedPupitre.Cage : null;
         lastActivatedPupitre = null;
-        if (transition != null) transition.Begin(cage, phase.removeEnemies);
+        // Derniere phase : fin du boss (plan sentinelle puis sequence de fin), pas d'entre-phases
+        bool isLast = currentPhaseIndex >= phases.Count - 1;
+        if (transition != null)
+        {
+            if (isLast) transition.BeginFinal();
+            else transition.Begin(cage, phase.removeEnemies);
+        }
 
         phase.effets.onPhaseComplete?.Invoke();
 
