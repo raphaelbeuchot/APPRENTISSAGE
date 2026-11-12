@@ -993,17 +993,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1703198637837860369, guid: 265b95b0768b200439126120894c07a1, type: 3}
   m_PrefabInstance: {fileID: 1399701674331303034}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6547641 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 1399701674331303034}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6547626}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &7000822
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9338,6 +9327,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &133825755 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 133825751}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133825753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1 &133919952
 GameObject:
   m_ObjectHideFlags: 0
@@ -36404,8 +36404,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1.2000002
-  widthSource: {fileID: 6547641}
+  usedWidth: 1.1999999
+  widthSource: {fileID: 1386927547}
 --- !u!23 &561584258
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -73880,6 +73880,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1198155868 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 2098569762}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1198155865}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &1198317464
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -85115,36 +85126,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c84649697c86a3448d4d7d16f5c1e9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacleTrail
-  trailMaterial: {fileID: 2100000, guid: a4067e8f112ca5a47adab30f72b36b9c, type: 2}
-  trailColor:
-    r: 1
-    g: 0.7863551
-    b: 0.3066038
-    a: 1
-  spacing: 1.5
-  shapeScale: 0.8
-  heightAboveSpline: 0.02
-  glow: 1
-  glowMaterial: {fileID: 0}
-  glowColor:
-    r: 2
-    g: 1.2
-    b: 0.2
-    a: 1
-  glowLevels:
-  - 1
-  - 0.5
-  - 0.25
-  smoothGlow: 0
-  obstacle: {fileID: 0}
-  trailRoot: {fileID: 0}
-  trailMesh: {fileID: 0}
-  circleMesh: {fileID: 0}
-  circlePositions: []
-  circleRotations: []
-  closedLoop: 0
-  splineLength: 0
-  circleSpacing: 0
+--- !u!114 &1386927547 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 1386927537}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1386927539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &1387246418
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -88175,17 +88167,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1435904412 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 630568483}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1435904407}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1 &1436026450
 GameObject:
   m_ObjectHideFlags: 0
@@ -107971,17 +107952,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1741039016 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 1741039010}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1741039012}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &1743701351
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -115089,7 +115059,12 @@ PrefabInstance:
       propertyPath: m_Name
       value: TestSpheres
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6134951278774988198, guid: 4cc52cedbde31994fa18d5cd351b66d3, type: 3}
+    - {fileID: 4780226146775084580, guid: 4cc52cedbde31994fa18d5cd351b66d3, type: 3}
+    - {fileID: 3823291908530758034, guid: 4cc52cedbde31994fa18d5cd351b66d3, type: 3}
+    - {fileID: 893125620560888245, guid: 4cc52cedbde31994fa18d5cd351b66d3, type: 3}
+    - {fileID: 3427627091285555086, guid: 4cc52cedbde31994fa18d5cd351b66d3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -120983,7 +120958,7 @@ MonoBehaviour:
   shrinkDuration: 0.4
   growDuration: 0.2
   usedWidth: 1.0000001
-  widthSource: {fileID: 1741039016}
+  widthSource: {fileID: 133825755}
 --- !u!23 &1928467117
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -126053,8 +126028,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1.0000004
-  widthSource: {fileID: 1435904412}
+  usedWidth: 1
+  widthSource: {fileID: 1198155868}
 --- !u!23 &2015631814
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -135400,7 +135375,7 @@ MonoBehaviour:
   chargeSound: {fileID: 8300000, guid: aca18f2b7f7101e4588b63a4eb766645, type: 3}
   explosionSound: {fileID: 8300000, guid: 001b59c5be6a94a4b8732639fd875040, type: 3}
   sparksPrefab: {fileID: 4253818877063138869, guid: 982d236f2482cea46858de30015316d4, type: 3}
-  sparksCount: {x: 1, y: 3}
+  sparksCount: {x: 3, y: 5}
   sparksCountPerPhase: 2
   sparksCountMax: 10
   sparksArcAngle: 60
@@ -136074,6 +136049,10 @@ PrefabInstance:
     - target: {fileID: 4253818877063138869, guid: 982d236f2482cea46858de30015316d4, type: 3}
       propertyPath: m_Name
       value: Sparks_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 4253818877063138869, guid: 982d236f2482cea46858de30015316d4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6751684882220343863, guid: 982d236f2482cea46858de30015316d4, type: 3}
       propertyPath: m_LocalPosition.x

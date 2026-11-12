@@ -66,7 +66,7 @@ public class BossCircleExploder : MonoBehaviour
 
     [Header("Etincelles")]
     [Tooltip("Prefab de particules d'une explosion (le nombre de jets se regle dans le prefab). Pose sur le cercle, " +
-             "tourne face a la camera : son plan XY local est le plan de l'ecran. Vide = pas d'etincelles.")]
+             "tourne comme la camera (sa propre rotation en plus) : le regler vu de face, +Y = haut de l'ecran. Vide = pas d'etincelles.")]
     [SerializeField] private GameObject sparksPrefab;
     [Tooltip("Nombre d'explosions sur le premier cercle, tire entre min et max (inclus).")]
     [SerializeField] private Vector2Int sparksCount = new Vector2Int(1, 3);
@@ -270,8 +270,10 @@ public class BossCircleExploder : MonoBehaviour
         int max = Mathf.Min(Mathf.Max(sparksCount.y, sparksCount.x) + extra, sparksCountMax);
         int count = Random.Range(min, max + 1);
 
+        // Rotation camera x rotation du prefab : le prefab se regle vu de face (vue Scene regardant vers +Z),
+        // ce qu'on y voit monter vers +Y monte a l'ecran
         Camera cam = Camera.main;
-        Quaternion facing = cam != null ? cam.transform.rotation : Quaternion.identity;
+        Quaternion facing = (cam != null ? cam.transform.rotation : Quaternion.identity) * sparksPrefab.transform.rotation;
 
         // Sommet = le haut du monde ramene dans le plan du cercle (si la sentinelle a tourne, le haut local n'est plus en haut)
         Vector3 top = Vector3.ProjectOnPlane(Vector3.up, circle.forward);
