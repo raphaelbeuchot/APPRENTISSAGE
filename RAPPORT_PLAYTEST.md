@@ -55,7 +55,7 @@
 
 ### Lava Train III
 - [x] EndCurtain coché `Static` → ne monte pas : décocher Static (2026-10-29)
-- [ ] Level art à faire (noté le 2026-10-29) ; précisé le 2026-11-13 : petits rochers naturels, étudier les plateformes, etc. C'est encore un peu vide.
+- [x] Level art à faire (noté le 2026-10-29, **fait le 2026-11-13**) ; précisé le 2026-11-13 : petits rochers naturels, étudier les plateformes, etc. C'est encore un peu vide.
 
 ### Renvoyé dans `CE_QUI_RESTE_A_FAIRE.md`
 - Porte de StartRoom qui rejoue son animation au redémarrage (BUGS)
