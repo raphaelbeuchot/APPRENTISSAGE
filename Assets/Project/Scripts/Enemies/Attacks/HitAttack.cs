@@ -254,9 +254,8 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
 
         // Sur le joueur, a hauteur de poitrine, legerement du cote de l'ennemi
         Vector3 pos = player.transform.position + Vector3.up * stats.hitLandEffectHeight - recoilDir * 0.3f;
-        // Plan local XY face camera (cercle du module Shape) ; Camera.main : solo seulement, en multi vise une seule des deux cameras
-        Quaternion rot = Camera.main != null ? Quaternion.LookRotation(Camera.main.transform.forward) : Quaternion.identity;
-        GameObject fx = Instantiate(stats.hitLandEffect, pos, rot);
+        // Rotation du prefab (ex. X -90 : cercle du module Shape a plat, plan XZ) ; pas d'orientation camera, pour le multi
+        GameObject fx = Instantiate(stats.hitLandEffect, pos, stats.hitLandEffect.transform.rotation);
         Destroy(fx, stats.hitLandEffectLifetime);
     }
 
