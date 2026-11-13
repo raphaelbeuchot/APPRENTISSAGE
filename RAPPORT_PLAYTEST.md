@@ -55,7 +55,7 @@
 
 ### Lava Train III
 - [x] EndCurtain coché `Static` → ne monte pas : décocher Static (2026-10-29)
-- [ ] Level art à faire (noté le 2026-10-29)
+- [ ] Level art à faire (noté le 2026-10-29) ; précisé le 2026-11-13 : petits rochers naturels, étudier les plateformes, etc. C'est encore un peu vide.
 
 ### Renvoyé dans `CE_QUI_RESTE_A_FAIRE.md`
 - Porte de StartRoom qui rejoue son animation au redémarrage (BUGS)
@@ -75,3 +75,34 @@
 
 ### Void I (`Level_Casino`, « Call of the Void »)
 - [ ] Ajouter des ennemis
+
+---
+
+## Session du 2026-11-13 (prise de note rough + notes dictées du 2026-11-06 / 07)
+
+### Tous niveaux
+- [ ] « Cleaned Up ! » qui n'a pas marché dans un ou deux niveaux (lesquels : oublié). Deux pistes déjà connues, voir `CE_QUI_RESTE_A_FAIRE.md` : champ `Enemy Icons UI` vide sur `CleaningManager` (liste de scènes dans BUGS, dont Flower Power II) ; anciennes fosses grille, qui ne font aucun Cleaned Up (Lava Train III, Western Canyon : migration en fosses spline, TECH).
+
+### Go with the flow (`Level_GoWithTheFlow01`)
+- [ ] UI de victoire sans textes ? (note du 2026-11-06)
+
+### Death Row I (`Level_WesternFlow`, « Row Deal »)
+- [ ] Uniformiser les blocks (note du 2026-11-07)
+- [ ] Poutre piège : si elle tombe, on est bloqué dans le niveau (note du 2026-11-07). Elle est voulue (équilibre précaire, tombe si on passe trop lentement) → en faire réapparaître une neuve à l'emplacement initial (piste : un switch). Ne pas détruire les anciennes : les poutres tombées restent et illustrent nos échecs. Au restart, on repart de zéro (une seule poutre).
+
+### Flower Power II (`Level_Flower02`, celui avec les bombes)
+- [ ] Il manque une StartRoom
+- [ ] Pas de son au coup de balai sur les props : le système existe (`PhysicsProp` : clip, volume, spatial blend, 4ff5ae05, utilisé dans Trou normand) → assigner les champs sur les props du niveau, pas de script à écrire
+- [ ] `Enemy Icons UI` vide sur `CleaningManager` (voir « Tous niveaux » plus haut)
+
+### AcidFloor I (`Level_Acid_01`)
+- [ ] Enlever la chaîne
+
+### Trou normand (`Level_TrouNormand`)
+- [ ] Polish : effets d'étincelles, gear qui tourne et autres sur certains pupitres (note du 2026-11-06)
+- [ ] Une salle avec des gears qui tournent au niveau du point de vue (note du 2026-11-06)
+
+### Renvoyé ailleurs
+- Gants de boxe des Hitters, tête du Blinder, Bright Eyes, polish de l'anim climb → `CE_QUI_RESTE_A_FAIRE.md`
+- Points du boss (Cleaned Up, icônes des pupitres, textes de victoire, surcharge avant explosion) → `BOSS_RUSH_HOUR_IV.md`
+- Version française → `VF_DEMO.md`

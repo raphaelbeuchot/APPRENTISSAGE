@@ -33,6 +33,7 @@
   - Level_LavaTrain01
   - Level_Epervier02
   - Level_Bowling_001, Level_Epervier01 (pas de réglage dans la scène : valeur du prefab, vide aussi)
+  - **Rappel du 2026-11-13** : un « Cleaned Up ! » n'a pas marché dans un ou deux niveaux (lesquels : oublié) → commencer par cette liste (Flower Power II en fait partie), puis les fosses grille (aucun Cleaned Up, voir TECH). Suivi dans `RAPPORT_PLAYTEST.md`, session du 2026-11-13.
 ---
 
 ## 🎮 GAME DESIGN
@@ -43,7 +44,7 @@
 - [ ] 🟡 **Ramassage du balai (narratif)** — InteractBubble sur le balai en StartRoom → appel `EquipBroom()` à ajouter dans `PlayerLoadout` (faisable à la volée : `SetLoadout` est déjà publique, il suffit d'activer le GO + notifier `PlayerInputManager`)
   - **Direction du 2026-10-15** : le balai devient un accessoire d'épisode, comme les tomates → **socle de prise** placé selon le niveau (début ou milieu) + **socle de dépôt** en sortie (« Pour continuer, merci de déposer votre balai », hyper rapide et arcade) ; en multi, balai toujours équipé. Voir `STRUCTURE_CAMPAGNE.md`.
 - [ ] ⚪ **StartRoom — décor de « niche »** (idée des notes de playtest du 2026-10-27) : lit de camp, etc. Dans le lore, le joueur rentre dans sa niche et en ressort pour l'émission (voir `LORE_ET_DESIGN.md`).
-- [ ] ⚪ **BrightEyes — à revoir** (idée des notes de playtest du 2026-10-27, non tranchée) : n'activer ses cercles rouges concentriques que si on est détecté ; revoir l'ennemi en général, peut-être plus simple que le système d'animation actuel.
+- [ ] ⚪ **BrightEyes — à revoir** (idée des notes de playtest du 2026-10-27, non tranchée) : n'activer ses cercles rouges concentriques que si on est détecté ; revoir l'ennemi en général, peut-être plus simple que le système d'animation actuel. Relevé à nouveau dans la prise de note du 2026-11-13 (« Bright Eyes », sans détail).
 - [ ] 🟡 **Ennemi invisible pour la sentinelle** (idée du 2026-11-07) : un ennemi plus mécanique, un petit robot, que la sentinelle ne détecte pas (il bouge pendant le feu rouge sans être puni). **À trouver** : comment le joueur s'en débarrasse.
 - [ ] ⚪ **Hitter « small »** (idée du 2026-11-07, type pas encore créé) : sa frappe serait une rotation à 360° bras tendus.
 - [ ] ⚪ **EnemyAI_Astar** — revoir le comportement après hit raté : garder l'ennemi en Chase plutôt que retomber en Idle
@@ -62,6 +63,7 @@
     - Idée (2026-11-07, pas urgent, l'utilisateur n'en est pas sûr) : finir la démo débloquerait le choix libre du niveau à jouer. Lien avec « Remettre un écran de sélection de niveau » plus haut.
   - **Testeurs pressentis** (noté le 2026-10-28) : Maxime, Florent, Aurélien, Simon (Redondo), éventuellement Johan (Corgié).
   - [ ] Pour une démo publique : nettoyer les numéros de build en dur (`LoadScene(0/1/2/19)`, cas des builds 3 et 4 dans `LevelManager`) avant de réduire la liste de scènes.
+- [ ] 🟡 **Version française de la démo** (chantier ouvert le 2026-11-13, inventaire fait sur le PC du bureau) : environ 105 textes, police sans accents, système de traduction maison envisagé. Tout est dans `VF_DEMO.md`.
 - [ ] 🔴 **Boss final** — ajouter un boss de fin de jeu : à définir (arène, pattern d'attaques, phases, mise en scène d'intro/mort, musique dédiée)
   - **Point du 2026-11-07** : il reste le **dernier niveau** à faire, peut-être avec ce boss (non tranché). Le reste est quasi en place.
   - **Précisé le 2026-11-07** : le boss final de la démo sera **dans Rush Hour IV** (dernier niveau de la démo) ; c'est le dernier gros chantier restant pour la démo. Le boss lui-même reste à définir.
@@ -105,6 +107,9 @@
 *(son, feel, visuel, animations, feedbacks)*
 
 - [x] 🟡 **Lava Train — chaîne et roues crantées** (clos le 2026-10-30) : `LavaTrainChain` (chaîne le long de la spline, creux sous le wagon du joueur, maillons qui défilent à la vitesse du train) et `LavaTrainGears` (prefab `Gear_001` à chaque knot, tourne avec le train) posés sur le `LavaTrain Manager` des 3 Lava Train ; tout se règle dans le SO partagé `LavaTrain_01` (sections Chain et Gears). Matériau `Maillon_LavaTrain` (copie Opaque + Alpha Clipping de `Maillon_04` : en Transparent la chaîne était masquée jusqu'au cycle sentinelle). Nouvel outil maison `GearShape` (roue crantée paramétrique). Essai abandonné : chaînes tendues sur tout le niveau (illisible). Mis de côté : réglage de longueur des maillons en mètres, creux peu visible sur les tronçons en Z (accepté). Le BoxCollider du prefab `Gear_001` est gardé volontairement (autres usages dans d'autres niveaux).
+- [ ] 🟡 **Hitters — gants de boxe** (noté le 2026-11-13) : un gant de boxe à tous les Hitters (changer le prototype) ; le gros Hitter (Bloat) n'en a qu'un, sur la main qui frappe (vérifier laquelle).
+- [ ] 🟡 **Blinder — tête** (noté le 2026-11-13, non tranché) : une tête noire ? pas de tête ?
+- [ ] 🟡 **Player — anim climb de face** (note dictée du 2026-11-06) : ok vue de dos, pas clean du tout vue de face. Voir `CLIMB_ANIMATION.md` (anim refaite dans Blender).
 - [ ] 🟡 **Player — animations tomates** : stance de visée (lock-on actif) + animation de lancer au moment du tir + **animation de strafe** pendant la visée (rappel du 2026-10-25)
 - [ ] 🟡 **SlipperyZone — corps du joueur glissant à la mort** (noté le 2026-10-25) : quand le joueur meurt sur une surface glissante, son corps (ragdoll) doit glisser lui aussi au lieu de s'arrêter net
 - [ ] 🟡 **Effet de mort dans la lave dans tous les niveaux** (noté le 2026-10-25). **Comment c'est fait** : rien à poser dans les scènes, c'est porté par les données. Le contenu de fosse `Scripts_LevelDesign/LavaContentType` pointe vers le `DeathCause` `Scripts/Scriptable Objects/DeathCauses/Death_Lava` (son d'exposition, effets d'exposition `LavaExposure_Particles` + un 2e prefab, message « You burned »). `PlayerDeathCause` (sur le Player) les joue au **premier dégât reçu dans la fosse**, sur un point qui suit le joueur à la surface du contenu, et continue sur le corps à la mort.

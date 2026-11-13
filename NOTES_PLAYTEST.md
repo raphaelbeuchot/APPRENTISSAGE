@@ -4,6 +4,8 @@
 
 **Tri du 2026-10-28** : les 24 notes du 2026-10-27 sont rangees dans RAPPORT_PLAYTEST.md.
 
+**Tri du 2026-11-13** : les notes dictees du 2026-11-06 / 07 sont rangees dans RAPPORT_PLAYTEST.md (session du 2026-11-13) et CE_QUI_RESTE_A_FAIRE.md (anim climb).
+
 - [x] **Level_It's Show Time** — 2026-10-27 22:36 — pos (-2.9, 0.0, -3.5)
   ajouter du decor ds la salle de depart ? lit de camp, etc. ds le lore, le player rentre "ds sa niche" et ressort pour "l'emission"
 - [x] **Level_It's Show Time** — 2026-10-27 22:37 — pos (4.4, 0.0, 14.6)
@@ -60,11 +62,11 @@
   saut possible sur les murets ? bizarre, pas normal, a verifier -> laisse tel quel (step climb en l air, muret safe = 0.75 m)
 - [x] **Level_WesternFlow** (Death Row I, « Row Deal ») — 2026-11-06 — note dictee (hors F2)
   bruit de chute infini si on tombe au-dessus d'un pit water ? -> corrige : son coupe a l entree du fill (d2333aff)
-- [ ] **Level_GoWithTheFlow** — 2026-11-06 — note dictee (hors F2)
+- [x] **Level_GoWithTheFlow** — 2026-11-06 — note dictee (hors F2)
   UI victory sans textes ?
-- [ ] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
+- [x] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
   polish : jouer des effets d'etincelles, gear qui tourne et autres sur certains pupitres du level
-- [ ] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
+- [x] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
   faire une salle avec des gears qui tournent au niveau du point de vue
 - [x] **Level_TrouNormand** — 2026-11-06 — note dictee (hors F2)
   changer la regle d'impact des mannequins (un bool existe pour ca, je crois) + bruit d'impact + TMP BroomAttack
@@ -72,9 +74,9 @@
   les corpses dans un pit font-ils un Cleaned Up ? -> oui, dans les fosses spline : retabli le 2026-10-27 (SplinePitFillController, cas « Hips » du ragdoll), valide dans Flower Power III. Pas dans les anciennes fosses grille (voir migration dans CE_QUI_RESTE_A_FAIRE.md)
 - [x] **General** — 2026-11-06 — note dictee (hors F2)
   spot parasite dans TomatoThrow a enlever (corrige le 2026-11-06)
-- [ ] **Level_WesternFlow** (Death Row I, « Row Deal ») — 2026-11-07 — note dictee (hors F2)
+- [x] **Level_WesternFlow** (Death Row I, « Row Deal ») — 2026-11-07 — note dictee (hors F2)
   uniformiser les blocks
-- [ ] **Level_WesternFlow** (Death Row I, « Row Deal ») — 2026-11-07 — note dictee (hors F2)
+- [x] **Level_WesternFlow** (Death Row I, « Row Deal ») — 2026-11-07 — note dictee (hors F2)
   si la poutre tombe, on est bloques dans le niveau. la poutre est un piege voulu (equilibre precaire, tombe si on passe trop lentement) -> il faut en faire reapparaitre une neuve a l'emplacement initial (piste : un switch). ne pas detruire les anciennes : les poutres tombees restent et illustrent nos echecs. au restart, on repart de zero (une seule poutre)
-- [ ] **General** — 2026-11-06 — note dictee (hors F2)
+- [x] **General** — 2026-11-06 — note dictee (hors F2)
   polish de l'animation climb : ok vue de dos, mais de face vraiment pas clean du tout

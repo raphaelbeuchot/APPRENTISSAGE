@@ -103,6 +103,13 @@ Sentinelle : séparée du `GiratoireReverse` (désactivé, à supprimer quand on
 **Points à vérifier**
 - **« Cleaned Up ! » qui peut se taire en cours de combat** : vu en jeu le 2026-11-09, il s'affiche bien en phase 2. Mais `CleaningBonusManager` croit avoir fini quand il a nettoyé autant de cadavres qu'il y avait de zombies au lancement, toutes phases confondues (les zombies enlevés par la montée ne comptent pas) ; passé ce nombre, il ne l'affiche plus (l'icône est quand même rayée). À corriger si ça arrive en jeu. « Spick and span ! » sortira à chaque phase où tout est nettoyé.
 
+**Questions de la prise de note du 2026-11-13** (non tranchées)
+- **« Cleaned Up ! » dans le boss : état des lieux.** Pas de texte actuellement, pas de jingle non plus (à rapprocher du point ci-dessus).
+- **Icônes sur les pupitres ?**
+- **Textes UI de victoire** : lesquels, et à quel moment du flow (étape 17, fin de démo) ?
+- **Montée en surcharge avant l'explosion d'un cercle** : cercles concentriques (plutôt des anneaux) ou cercles plats ?
+- Nouveaux textes à faire naître en EN + FR si la VF est en place avant (voir `VF_DEMO.md`).
+
 ---
 
 ## L'arène
