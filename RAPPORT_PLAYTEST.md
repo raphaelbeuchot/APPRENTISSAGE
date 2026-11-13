@@ -91,9 +91,9 @@
 - [ ] Poutre piège : si elle tombe, on est bloqué dans le niveau (note du 2026-11-07). Elle est voulue (équilibre précaire, tombe si on passe trop lentement) → en faire réapparaître une neuve à l'emplacement initial (piste : un switch). Ne pas détruire les anciennes : les poutres tombées restent et illustrent nos échecs. Au restart, on repart de zéro (une seule poutre).
 
 ### Flower Power II (`Level_Flower02`, celui avec les bombes)
-- [ ] Il manque une StartRoom
-- [ ] Pas de son au coup de balai sur les props : le système existe (`PhysicsProp` : clip, volume, spatial blend, 4ff5ae05, utilisé dans Trou normand) → assigner les champs sur les props du niveau, pas de script à écrire
-- [ ] `Enemy Icons UI` vide sur `CleaningManager` (voir « Tous niveaux » plus haut)
+- [x] Il manque une StartRoom (2026-11-13 : StartRoom avec porte d'entrée ; au passage colliders adaptés à `ClimbableObject`, VictoryManager revu, `PostVictoryBounds` ajoutée ; flow complet testé)
+- [x] Pas de son au coup de balai sur les props (2026-11-13) : les 44 props sont des cubes posés à la main, pas des prefabs, `Broom Hit Sound` était vide sur tous → clips assignés dans l'Inspector, validé en jeu
+- [x] `Enemy Icons UI` vide sur `CleaningManager` : sans objet, le niveau n'a pas de fosse (2026-11-13)
 
 ### AcidFloor I (`Level_Acid_01`)
 - [ ] Enlever la chaîne

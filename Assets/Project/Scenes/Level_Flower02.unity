@@ -1383,12 +1383,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1 &67702272
 GameObject:
   m_ObjectHideFlags: 0
@@ -2353,12 +2357,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &110693762
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4020,12 +4028,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!4 &186770145 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -5459,12 +5471,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &242363094
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -5769,6 +5785,51 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
+--- !u!1 &248255474
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 248255476}
+  - component: {fileID: 248255475}
+  m_Layer: 0
+  m_Name: PostVictoryBounds
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &248255475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 248255474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70acfcca1a97a964a9eabbd0acc68376, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PostVictoryBounds
+  gizmoColor: {r: 0.2, g: 1, b: 0.4, a: 1}
+--- !u!4 &248255476
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 248255474}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.69, y: 1.2, z: 31.84}
+  m_LocalScale: {x: 8, y: 1, z: 8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &248634316 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -6344,7 +6405,7 @@ GameObject:
   - component: {fileID: 279519660}
   - component: {fileID: 279519659}
   - component: {fileID: 279519658}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6851,12 +6912,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!4 &298681218 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -7379,6 +7444,10 @@ PrefabInstance:
       propertyPath: 'objectsToHide.Array.data[0]'
       value: 
       objectReference: {fileID: 607755349}
+    - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: layersToHideOnVictory.m_Bits
+      value: 4342024
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8357,12 +8426,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &413886465
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -8741,12 +8814,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &421693501
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9758,12 +9835,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1001 &464992783
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9990,12 +10071,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1 &474546243
 GameObject:
   m_ObjectHideFlags: 0
@@ -10679,12 +10764,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!114 &500014194 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2694316255533964190, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
@@ -10804,6 +10893,14 @@ MonoBehaviour:
   sinkDuration: 3
   interactionRange: 1
   restartSpawnDistance: 1
+  mustPutAwayBroom: 0
+  putAwayBroomMessage: Pour continuer, merci de deposer votre balai.
+  onActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  onRestart:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!136 &503121591
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -10892,7 +10989,7 @@ Transform:
   m_GameObject: {fileID: 503121589}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.5, y: 0.35, z: -0.5}
+  m_LocalPosition: {x: 4.48, y: 0.35, z: -1.72}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -11749,63 +11846,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
   m_PrefabInstance: {fileID: 1064304481}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &546704083
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 3403024086969289959, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 4.1014423
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403024086969289959, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403024086969289959, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -2.08
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403024086969289959, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403024086969289959, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403024086969289959, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403024086969289959, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403024086969289959, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 90
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403024086969289959, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403024086969289959, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4250107161246234360, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
-      propertyPath: m_Name
-      value: StartZone_8m
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 3eac75f043a6db547b2cdd4bedcc0318, type: 3}
 --- !u!1001 &553143191
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12696,12 +12736,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!4 &587916084 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8614961758245970650, guid: 677a140d1b61c5048999ae3190b663d7, type: 3}
@@ -12868,12 +12912,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!4 &592728735 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -13084,12 +13132,69 @@ Transform:
   m_GameObject: {fileID: 607755349}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.9499998, y: 0.3, z: 29.28}
-  m_LocalScale: {x: 7.8, y: 0.8, z: 1}
+  m_LocalPosition: {x: 1.99, y: 0.3, z: 29.28}
+  m_LocalScale: {x: 3.9, y: 0.8, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &612342356
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1628611284987011441, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
+      propertyPath: m_Name
+      value: StartZone_8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3158725463532017442, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.96
+      objectReference: {fileID: 0}
+    - target: {fileID: 3158725463532017442, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3158725463532017442, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -2.0499992
+      objectReference: {fileID: 0}
+    - target: {fileID: 3158725463532017442, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3158725463532017442, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3158725463532017442, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3158725463532017442, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3158725463532017442, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3158725463532017442, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3158725463532017442, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3593507a52b8e874281beb77e27a2133, type: 3}
 --- !u!1 &614458241
 GameObject:
   m_ObjectHideFlags: 0
@@ -13182,12 +13287,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &620673125
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -13448,12 +13557,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!4 &622821890 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -13620,12 +13733,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1001 &627302001
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14440,12 +14557,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &669866450
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -14629,7 +14750,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 506873655801851025, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.2
+      value: 1.1
       objectReference: {fileID: 0}
     - target: {fileID: 506873655801851025, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -14666,6 +14787,14 @@ PrefabInstance:
     - target: {fileID: 673779228288303160, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
       propertyPath: m_Name
       value: TRANSITIONROOM
+      objectReference: {fileID: 0}
+    - target: {fileID: 6965447297442169404, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400850256596416415, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -15253,12 +15382,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!4 &700326845 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8614961758245970650, guid: 677a140d1b61c5048999ae3190b663d7, type: 3}
@@ -15841,12 +15974,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &725486151
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -16107,12 +16244,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!4 &727778228 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -16989,12 +17130,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!4 &789830183 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2601288511267828969, guid: eee70d57ce7bc79479079ad87ecec17d, type: 3}
@@ -17156,12 +17301,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!4 &801402606 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -17579,12 +17728,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &815311327
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -18172,6 +18325,8 @@ MonoBehaviour:
   doorRenderer: {fileID: 0}
   activeMaterial: {fileID: 2100000, guid: e9e73c7ed777b064d8861a8a0ed08d30, type: 2}
   inactiveMaterial: {fileID: 2100000, guid: cdc1119035bdb6b48873886c877be377, type: 2}
+  reachedFadeDuration: 1
+  reachedEmissionBoost: 5
   doorReachedSound: {fileID: 8300000, guid: 66f5647459bc04147be64765d5fd4af9, type: 3}
   doorUnlockedSound: {fileID: 8300000, guid: d7a73023f94824c4290ef18a5f0e42a7, type: 3}
   doorLockedSound: {fileID: 0}
@@ -19031,12 +19186,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1 &927471599
 GameObject:
   m_ObjectHideFlags: 0
@@ -21627,12 +21786,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!4 &1045969117 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -21768,12 +21931,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &1054369113
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -24037,7 +24204,7 @@ Transform:
   m_GameObject: {fileID: 1146068290}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.25881952, z: -0, w: 0.96592575}
-  m_LocalPosition: {x: 4.6, y: 0.075, z: -0.8999999}
+  m_LocalPosition: {x: 4.58, y: 0.075, z: -2.12}
   m_LocalScale: {x: 1.5, y: 0.05, z: 1.25}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -24254,12 +24421,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &1159068742
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -24655,12 +24826,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!4 &1171237381 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -24863,7 +25038,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1189802040}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3139385, y: 0.27624476, z: -0.09601002, w: 0.90327936}
+  m_LocalRotation: {x: 0.29540676, y: -0.2904613, z: 0.094790675, w: 0.90519714}
   m_LocalPosition: {x: 3.1880078, y: 5, z: -8}
   m_LocalScale: {x: -73, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -26140,8 +26315,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1231677631}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.22962952, y: -0.0657401, z: 0.01554783, w: 0.9709309}
-  m_LocalPosition: {x: 6.69, y: 3.05, z: -3.81}
+  m_LocalRotation: {x: 0.22568712, y: 0.13472103, z: -0.03152964, w: 0.96432436}
+  m_LocalPosition: {x: -0.754, y: 3.051, z: -3.49}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -27819,12 +27994,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &1327003905
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -28287,7 +28466,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1344271812}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.032444872, y: 0.95414966, z: -0.27554154, w: 0.11235063}
+  m_LocalRotation: {x: -0.04957063, y: 0.9457723, z: -0.2700224, w: -0.17362459}
   m_LocalPosition: {x: 3.97, y: 5, z: 19.02}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -28699,7 +28878,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1361275052}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3139385, y: 0.27624476, z: -0.09601002, w: 0.90327936}
+  m_LocalRotation: {x: 0.29540676, y: -0.2904613, z: 0.094790675, w: 0.90519714}
   m_LocalPosition: {x: 3.1880078, y: 5, z: -8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -29979,12 +30158,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &1439004168
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -30383,39 +30566,39 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.69
+      value: -0.754
       objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.05
+      value: 0.051
       objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.81
+      value: -2.49
       objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071068
+      value: 0.70710623
       objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: 0.00091348373
       objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.7071068
+      value: 0.70710623
       objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0.0009134842
       objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
+      value: 0.148
       objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -90
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: 7861409183220270489, guid: 6c48a21a54b3c01439bde7a21812c4dd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -30873,12 +31056,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &1475713129
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -31541,12 +31728,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1 &1506183017
 GameObject:
   m_ObjectHideFlags: 0
@@ -31703,12 +31894,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1001 &1508275497
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -32149,7 +32344,7 @@ Transform:
   m_GameObject: {fileID: 1518189095}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.25881952, z: -0, w: 0.96592575}
-  m_LocalPosition: {x: 4.5, y: 0.024999999, z: -1.3999997}
+  m_LocalPosition: {x: 4.48, y: 0.024999999, z: -2.62}
   m_LocalScale: {x: 2.5, y: 0.05, z: 2.25}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -33063,12 +33258,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1 &1564896137
 GameObject:
   m_ObjectHideFlags: 0
@@ -33225,12 +33424,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1001 &1578874163
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -34411,12 +34614,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1001 &1667551424
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35238,12 +35445,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &1739173783
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -36098,12 +36309,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1001 &1799648201
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -36599,9 +36814,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 147f18422723c8744a2302466f1e8be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MetalShutter
-  openHeight: 10
+  mode: 0
   openSpeed: 2
   destroyDelay: 0.5
+  openHeight: 10
+  leftPanel: {fileID: 0}
+  rightPanel: {fileID: 0}
+  slideDistance: 3
 --- !u!1001 &1805884797
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37138,12 +37357,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &1829299661
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -37327,6 +37550,132 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 33b4c27d074e62e44b9431205ccfb59e, type: 3}
+--- !u!1 &1854264033
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1854264038}
+  - component: {fileID: 1854264037}
+  - component: {fileID: 1854264036}
+  - component: {fileID: 1854264035}
+  - component: {fileID: 1854264034}
+  m_Layer: 3
+  m_Name: PlatformFinal (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1854264034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1854264033}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a576934b6fc79545936c933f01e4383, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClimbableObject
+  climbType: {fileID: 11400000, guid: da5e2907d0787a048ac1bdf1a77cd53b, type: 2}
+  onlyClimbFromLongSide: 0
+--- !u!65 &1854264035
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1854264033}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &1854264036
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1854264033}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a4067e8f112ca5a47adab30f72b36b9c, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1854264037
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1854264033}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1854264038
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1854264033}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5.89, y: 0.3, z: 29.28}
+  m_LocalScale: {x: 3.9, y: 0.8, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1854330003 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -38413,12 +38762,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1001 &1887057571
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -38802,12 +39155,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &1894022339
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -39133,12 +39490,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1001 &1901537633
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -39495,12 +39856,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!1 &1918688399
 GameObject:
   m_ObjectHideFlags: 0
@@ -40221,8 +40586,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1935770370}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.042834416, y: -0.03556893, z: 0.0015259429, w: 0.9984477}
-  m_LocalPosition: {x: 6.69, y: 3.05, z: -3.81}
+  m_LocalRotation: {x: 0.042850107, y: 0.06965323, z: -0.0029946924, w: 0.99664605}
+  m_LocalPosition: {x: -0.754, y: 3.051, z: -3.49}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -41819,12 +42184,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &2061992694
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -42631,12 +43000,16 @@ MonoBehaviour:
   explosionUpwardModifier: 0.7
   broomMultiplier: 10
   broomTorque: 3
+  pushAtHitPoint: 0
   collisionMultiplier: 0.15
   upwardBias: 0.5
   minImpactForce: 3
   linearDamping: 2.5
   angularDamping: 1
   gravityMultiplier: 1
+  broomHitSound: {fileID: 8300000, guid: c81195fc30504c741a4adf8eae174ec4, type: 3}
+  broomHitVolume: 1
+  spatialBlend: 0
 --- !u!54 &2097825798
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -44308,8 +44681,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6325826785511819874}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.3826835, z: -0, w: 0.92387956}
-  m_LocalPosition: {x: 6.2800655, y: -0.13250917, z: -0.20748806}
+  m_LocalRotation: {x: 0.00066916144, y: 0.3826829, z: -0.00077154994, w: 0.9238792}
+  m_LocalPosition: {x: 2.3343215, y: -0.13203496, z: -0.03900528}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -44397,8 +44770,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4105620322150424761}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.52573115, z: -0, w: 0.8506508}
-  m_LocalPosition: {x: 6.6109376, y: 1.0988783, z: -4.7601323}
+  m_LocalRotation: {x: 0.00078041654, y: 0.5257306, z: -0.0009351055, w: 0.85065025}
+  m_LocalPosition: {x: 1.6482711, y: 1.0995449, z: -4.5467987}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -44412,8 +44785,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2473446915854280539}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.52573115, z: -0, w: 0.8506508}
-  m_LocalPosition: {x: 6.6409307, y: -0.9011217, z: -10.591396}
+  m_LocalRotation: {x: 0.00078041654, y: 0.5257306, z: -0.0009351055, w: 0.85065025}
+  m_LocalPosition: {x: 1.6782641, y: -0.90045506, z: -10.378063}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -44720,9 +45093,11 @@ SceneRoots:
   - {fileID: 578252975}
   - {fileID: 851456177}
   - {fileID: 1655783208}
-  - {fileID: 546704083}
   - {fileID: 607755354}
+  - {fileID: 1854264038}
   - {fileID: 1052676466}
   - {fileID: 356782535}
   - {fileID: 673986557}
   - {fileID: 113386501}
+  - {fileID: 612342356}
+  - {fileID: 248255476}
