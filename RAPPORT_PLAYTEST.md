@@ -96,7 +96,7 @@
 - [x] `Enemy Icons UI` vide sur `CleaningManager` : sans objet, le niveau n'a pas de fosse (2026-11-13)
 
 ### AcidFloor I (`Level_Acid_01`)
-- [ ] Enlever la chaîne
+- [x] Enlever la chaîne (2026-11-13, c131428b)
 
 ### Trou normand (`Level_TrouNormand`)
 - [ ] Polish : effets d'étincelles, gear qui tourne et autres sur certains pupitres (note du 2026-11-06)
