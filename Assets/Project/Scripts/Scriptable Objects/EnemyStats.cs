@@ -58,6 +58,12 @@ public class EnemyStats : ScriptableObject
     public AudioClip hitWindupSound;
     public AudioClip hitLandSound;
     public AudioClip hitWindupFailSound;
+    [Tooltip("Particules jouees sur le joueur quand le coup touche (vide = aucun effet)")]
+    public GameObject hitLandEffect;
+    [Tooltip("Hauteur de l'effet au-dessus des pieds du joueur")]
+    public float hitLandEffectHeight = 1f;
+    [Tooltip("Duree de vie de l'effet avant destruction (s)")]
+    public float hitLandEffectLifetime = 2f;
 
     [Header("ATTAQUE - SPITTER")]
     public float spitDamage = 15f;

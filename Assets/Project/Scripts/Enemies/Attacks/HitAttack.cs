@@ -241,10 +241,23 @@ public class HitAttack : MonoBehaviour, IAttackBehavior
 
         if (audioSource != null && stats.hitLandSound != null)
             audioSource.PlayOneShot(stats.hitLandSound);
+        SpawnHitLandEffect(recoilDir);
         if (animator != null)
             animator.SetTrigger("HitEndTrigger");
 
         StartCoroutine(FinishAttack());
+    }
+
+    void SpawnHitLandEffect(Vector3 recoilDir)
+    {
+        if (stats.hitLandEffect == null || player == null) return;
+
+        // Sur le joueur, a hauteur de poitrine, legerement du cote de l'ennemi
+        Vector3 pos = player.transform.position + Vector3.up * stats.hitLandEffectHeight - recoilDir * 0.3f;
+        // Plan local XY face camera (cercle du module Shape) ; Camera.main : solo seulement, en multi vise une seule des deux cameras
+        Quaternion rot = Camera.main != null ? Quaternion.LookRotation(Camera.main.transform.forward) : Quaternion.identity;
+        GameObject fx = Instantiate(stats.hitLandEffect, pos, rot);
+        Destroy(fx, stats.hitLandEffectLifetime);
     }
 
     void FailHit()
