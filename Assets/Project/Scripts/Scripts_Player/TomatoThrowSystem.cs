@@ -27,8 +27,13 @@ public class TomatoThrowSystem : MonoBehaviour
     [SerializeField] private string aimLayerName = "Aim";
     [Tooltip("Duree du fondu d'entree/sortie de la pose de visee (secondes).")]
     [SerializeField] private float aimBlendDuration = 0.15f;
+    [Tooltip("Trigger de l'Animator qui joue le lancer (calque Aim).")]
+    [SerializeField] private string throwTrigger = "Throw";
+    [Tooltip("Tomate visuelle (sans collider ni script) en enfant de l'os de la main. Visible en visee, cachee au lancer ; la vraie tomate part de sa position. Vide = depart au-dessus du joueur comme avant.")]
+    [SerializeField] private GameObject handTomato;
     private Animator animator;
     private int aimLayerIndex = -1;
+    private Collider[] playerColliders;
 
 
     public bool IsThrowingTomato() => isThrowing;
@@ -48,6 +53,9 @@ public class TomatoThrowSystem : MonoBehaviour
             Debug.LogWarning("TomatoThrowSystem : calque '" + aimLayerName + "' introuvable sur l'Animator "
                 + (animator != null ? animator.name + " (controller " + animator.runtimeAnimatorController?.name + ")" : "ABSENT")
                 + " -> pas de pose de visee.", this);
+        playerColliders = GetComponentsInChildren<Collider>(true);
+        if (handTomato != null)
+            handTomato.SetActive(false);
 
         currentTomatoCount = 0;
         OnTomatoCountChanged?.Invoke(currentTomatoCount, stats.tomatoCount);
@@ -63,12 +71,21 @@ public class TomatoThrowSystem : MonoBehaviour
     }
 
     // Pose de visee sur le haut du corps tant que le lock est actif (le lock n'existe qu'avec des tomates).
+    // Gardee pendant le lancer : a la derniere tomate le lock se relache aussitot, le bras finit son geste.
     void UpdateAimLayer()
     {
+        bool alive = health == null || !health.IsDead();
+        bool aiming = lockSystem != null && lockSystem.IsLocked && currentTomatoCount > 0 && alive;
+
+        if (handTomato != null)
+        {
+            bool showHandTomato = aiming && !isThrowing;
+            if (handTomato.activeSelf != showHandTomato)
+                handTomato.SetActive(showHandTomato);
+        }
+
         if (animator == null || aimLayerIndex < 0) return;
-        bool aiming = lockSystem != null && lockSystem.IsLocked && currentTomatoCount > 0
-                      && (health == null || !health.IsDead());
-        float target = aiming ? 1f : 0f;
+        float target = (aiming || (isThrowing && alive)) ? 1f : 0f;
         float step = aimBlendDuration > 0f ? Time.deltaTime / aimBlendDuration : 1f;
         animator.SetLayerWeight(aimLayerIndex, Mathf.MoveTowards(animator.GetLayerWeight(aimLayerIndex), target, step));
     }
@@ -95,8 +112,18 @@ public class TomatoThrowSystem : MonoBehaviour
         currentTomatoCount--;
         OnTomatoCountChanged?.Invoke(currentTomatoCount, stats.tomatoCount);
         StartCoroutine(ThrowingWindow());
-        Vector3 spawnPos = transform.position + Vector3.up * 1.5f;
+        if (animator != null && aimLayerIndex >= 0)
+            animator.SetTrigger(throwTrigger);
+        Vector3 spawnPos = handTomato != null ? handTomato.transform.position : transform.position + Vector3.up * 1.5f;
+        if (handTomato != null)
+            handTomato.SetActive(false);
         GameObject tomato = Instantiate(stats.bottlePrefab, spawnPos, Quaternion.identity);
+        // Depart depuis la main, pres du corps : la tomate ne doit pas s'ecraser sur son lanceur.
+        Collider[] tomatoColliders = tomato.GetComponentsInChildren<Collider>();
+        foreach (Collider tc in tomatoColliders)
+            foreach (Collider pc in playerColliders)
+                if (pc != null && pc.enabled && pc.gameObject.activeInHierarchy)
+                    Physics.IgnoreCollision(tc, pc);
         TomatoProjectile proj = tomato.GetComponent<TomatoProjectile>();
         if (proj != null)
         {
