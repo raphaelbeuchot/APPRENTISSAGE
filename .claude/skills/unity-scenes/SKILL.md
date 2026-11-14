@@ -24,6 +24,7 @@ etre donne par son nom sans extension (`UI`, `StartZone_8`, `LevelEntranceDoor`)
 | `uses <asset>` | Quelles scenes / prefabs / assets le referencent ? (avec le nombre de references) | `uses StartZone_8` |
 | `overrides <scene> <prefab>` | Qu'est-ce que cette scene change sur ce prefab ? | `overrides Project/Scenes/Level_WesternFlow.unity UI` |
 | `object <fichier> <fileID>` | C'est quoi cet objet ? -> `NomDuGO [Composant]` | `object Project/Prefabs/UI_Prefabs/UI.prefab 2288864631848179854` |
+| `texts <scene\|prefab>` | Quels textes s'affichent ? TMP / Text / TextMesh, champs de script nommes message / texte / label / title, et textes changes par override. `(GO inactif)` signale un objet desactive | `texts Project/Scenes/MainMenu.unity` |
 
 ## Lire la sortie de `overrides`
 

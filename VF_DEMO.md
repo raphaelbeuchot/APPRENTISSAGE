@@ -1,7 +1,7 @@
 # Chantier VF : version française de la démo
 
 > Récap de la séance du 2026-11-13 sur le PC du bureau, recopié ici le même jour (la mémoire de Claude du bureau ne suit pas d'une machine à l'autre).
-> Tableau complet (texte actuel, proposition VF, emplacement, source) : Google Sheet « inventaire_VF_demo ».
+> Tableau des textes : Google Sheet « inventaire_VF_demo » (Drive de raphaelbeuchot@gmail.com), créée le 2026-11-14 sur le PC maison. C'est la source : le CSV que lira le jeu en sera exporté, jamais retouché à la main.
 > Rien de ce qui est marqué « envisagé » n'est tranché.
 
 ## Contexte
@@ -9,6 +9,15 @@
 Objectif : avoir une version française de la démo de *They Left the Game On (Again!)*.
 
 Inventaire fait en lecture seule sur le PC du bureau, branche `Version-2-TV-SHOW`, commit `9e515b8f`. Rien n'a été modifié dans le projet. Depuis, deux commits boss (`fe67d673`, `704e0d7f`) : d'éventuels textes de fin du boss ne sont pas dans l'inventaire.
+
+## Inventaire refait le 2026-11-14 (PC maison, commit `c881aa7f`)
+
+- La Sheet annoncée le 13/11 n'avait jamais été créée : inventaire refait en lecture seule (catalogue, scripts, assets, scènes et prefabs via `unityscan.pl texts`).
+- 104 lignes, une par texte unique, doublons regroupés. Colonnes : `bloc | clé | EN | FR | contexte | source | note`. Le jeu ne lira que clé, EN, FR.
+- Clés en `bloc.nom` (`level.`, `menu.`, `options.`, `hud.`, `tuto.`, `gameover.`, `victory.`, `multi.`…). `{0}` = valeur insérée par le code, `\n` = retour à la ligne.
+- FR = propositions, rien n'est validé. Jeux de mots laissés vides (« à trouver »). Propositions écrites au vouvoiement : tu ou vous reste à trancher.
+- Questions relevées dans la colonne note : objets inactifs (sert encore ?), `StatsText` (debug ?), les 5 messages Game Over du code qui ne s'affichent pas, boutons PlayStation (tomates) et Xbox (ailleurs) mélangés.
+- Les textes du boss vus dans le code : seulement « Cleaned Up ! » (les « Phase N » ne sortent que dans la Console).
 
 ## Règle de travail sur deux machines
 
