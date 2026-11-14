@@ -106,7 +106,7 @@ public class DevPanel : MonoBehaviour
             return;
         }
 
-        GUILayout.BeginArea(new Rect(10, 10, 280, 400), GUI.skin.box);
+        GUILayout.BeginArea(new Rect(10, 10, 280, 470), GUI.skin.box);
         GUILayout.Label("DEV PANEL  —  F1 pour fermer (jeu en pause)");
         DrawPanel();
         GUILayout.EndArea();
@@ -162,6 +162,13 @@ public class DevPanel : MonoBehaviour
             SavePrefs();
             if (doorJustOpened) OpenGoalDoors();
         }
+
+        GUILayout.Space(6);
+        GUILayout.Label("— Langue —");
+        if (GUILayout.Button("Langue : " + Loc.Current + "  (clic = suivante)"))
+            Loc.NextLanguage();
+        if (GUILayout.Button("Relire le CSV des textes"))
+            Loc.Reload();
     }
 
     private void ApplyFlags()
