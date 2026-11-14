@@ -78,7 +78,7 @@ public class GameOverUI : MonoBehaviour
         if (gameOverText != null && messages.Length > 0)
         {
             string randomMessage = messages[Random.Range(0, messages.Length)];
-            gameOverText.text = randomMessage;
+            gameOverText.text = Loc.Text(randomMessage);
             StartCoroutine(AnimateText());
         }
 

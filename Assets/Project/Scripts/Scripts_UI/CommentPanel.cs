@@ -57,7 +57,7 @@ public class CommentPanel : MonoBehaviour
     {
         if (currentCoroutine != null)
             StopCoroutine(currentCoroutine);
-        commentText.text = message;
+        commentText.text = Loc.Text(message);
         gameObject.SetActive(true);
         currentCoroutine = StartCoroutine(PopOnlyCoroutine());
     }
@@ -107,7 +107,7 @@ public class CommentPanel : MonoBehaviour
         if (currentCoroutine != null)
             StopCoroutine(currentCoroutine);
 
-        commentText.text = message;
+        commentText.text = Loc.Text(message);
         gameObject.SetActive(true);
         currentCoroutine = StartCoroutine(AnimateCoroutine());
     }

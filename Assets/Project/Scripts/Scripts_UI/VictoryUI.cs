@@ -127,7 +127,7 @@ public class VictoryUI : MonoBehaviour
 
         // Peupler textes
         if (levelCompleteText != null)
-            levelCompleteText.text = levelCompleteMessage;
+            levelCompleteText.text = Loc.Text(levelCompleteMessage);
 
         if (attemptsText != null)
         {
@@ -138,12 +138,12 @@ public class VictoryUI : MonoBehaviour
 
             if (attempts <= 1)
             {
-                attemptsText.text = firstTryMessage;
+                attemptsText.text = Loc.Text(firstTryMessage);
                 firstTryBlink = StartCoroutine(FirstTryBlinkCoroutine());
             }
             else
             {
-                attemptsText.text = attemptsPrefix + attempts;
+                attemptsText.text = Loc.Has("victory.attempts") ? Loc.Get("victory.attempts", attempts) : attemptsPrefix + attempts;
             }
         }
 

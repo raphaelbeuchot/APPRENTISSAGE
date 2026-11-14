@@ -113,7 +113,7 @@ public class MultiLevelStart : MonoBehaviour
 
         TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
         if (readyFont != null) text.font = readyFont;
-        text.text = readyMessage;
+        text.text = Loc.Text(readyMessage);
         text.fontSize = readyFontSize;
         text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;

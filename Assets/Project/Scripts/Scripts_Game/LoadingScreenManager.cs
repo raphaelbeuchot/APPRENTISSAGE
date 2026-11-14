@@ -126,7 +126,7 @@ public class LoadingScreenManager : MonoBehaviour
             UpdatePips(displayFill);
 
             if (loadingText != null)
-                loadingText.text = "Loading...";
+                loadingText.text = Loc.Get("loading");
 
             yield return null;
         }
@@ -134,7 +134,7 @@ public class LoadingScreenManager : MonoBehaviour
         UpdatePips(1f);
 
         if (loadingText != null)
-            loadingText.text = "Loading...";
+            loadingText.text = Loc.Get("loading");
 
         yield return new WaitForSeconds(0.3f);
         op.allowSceneActivation = true;

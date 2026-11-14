@@ -121,7 +121,7 @@ public class CyclePressureGaugeUI : MonoBehaviour
         currentDiameter = Mathf.Lerp(currentDiameter, targetDiameter, Time.deltaTime * diameterLerpSpeed);
 
         if (pressurePercentageText != null)
-            pressurePercentageText.text = "Stress  " + Mathf.RoundToInt(pressureFactor * 100f) + "%";
+            pressurePercentageText.text = Loc.Get("hud.stress", Mathf.RoundToInt(pressureFactor * 100f));
 
         for (int i = 0; i < pips.Count; i++)
         {

@@ -116,7 +116,7 @@ public class MultiRaceManager : MonoBehaviour
         matchOver = MultiMatchScore.GetScore(winnerSide) >= targetScore;
         lastWinnerSide = winnerSide;
 
-        victoryCanvas = ShowHalfScreenMessage(player, "VictoryScreenCanvas", "VictoryText", "VICTORY");
+        victoryCanvas = ShowHalfScreenMessage(player, "VictoryScreenCanvas", "VictoryText", "multi.victory");
 
         OnRaceWon?.Invoke(player);
 
@@ -131,8 +131,8 @@ public class MultiRaceManager : MonoBehaviour
     {
         Debug.Log($"[MultiRace] Ex aequo entre {playerA.name} et {playerB.name}");
 
-        ShowHalfScreenMessage(playerA, "TieScreenCanvas", "TieText", "EX AEQUO");
-        ShowHalfScreenMessage(playerB, "TieScreenCanvas", "TieText", "EX AEQUO");
+        ShowHalfScreenMessage(playerA, "TieScreenCanvas", "TieText", "multi.tie");
+        ShowHalfScreenMessage(playerB, "TieScreenCanvas", "TieText", "multi.tie");
 
         // Un seul redemarrage possible pour toute la course : un seul appel suffit.
         StartCoroutine(RestartOnButtonCoroutine());
@@ -191,7 +191,7 @@ public class MultiRaceManager : MonoBehaviour
 
     private void ShowLoseScreen(GameObject loser)
     {
-        loseCanvas = ShowHalfScreenMessage(loser, "LoseScreenCanvas", "LoseText", "YOU LOSE");
+        loseCanvas = ShowHalfScreenMessage(loser, "LoseScreenCanvas", "LoseText", "multi.lose");
         StartCoroutine(RestartOnButtonCoroutine());
     }
 
@@ -231,7 +231,7 @@ public class MultiRaceManager : MonoBehaviour
 
         TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
         if (endScreenFont != null) text.font = endScreenFont;
-        text.text = message;
+        text.text = Loc.Text(message);
         text.fontSize = 80f;
         text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;
@@ -274,7 +274,7 @@ public class MultiRaceManager : MonoBehaviour
         if (victoryCanvas != null) Destroy(victoryCanvas);
         if (loseCanvas != null) Destroy(loseCanvas);
 
-        string winnerLabel = lastWinnerSide == PlayerScreenSide.Side.Left ? "LEFT" : "RIGHT";
+        string matchWonKey = lastWinnerSide == PlayerScreenSide.Side.Left ? "multi.matchwon.left" : "multi.matchwon.right";
 
         GameObject canvasObj = new GameObject("MatchWonCanvas");
         Canvas canvas = canvasObj.AddComponent<Canvas>();
@@ -304,7 +304,7 @@ public class MultiRaceManager : MonoBehaviour
 
         TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
         if (endScreenFont != null) text.font = endScreenFont;
-        text.text = winnerLabel + " WINS THE MATCH";
+        text.text = Loc.Get(matchWonKey);
         text.fontSize = 120f;
         text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;

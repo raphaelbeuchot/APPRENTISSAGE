@@ -66,7 +66,7 @@ public class CleaningBonusManager : MonoBehaviour
         {
             if (audioSource != null && cleanSound != null)
                 audioSource.PlayOneShot(cleanSound);
-            CommentPanel.Show("Cleaned Up !");
+            CommentPanel.Show("comment.cleanedup");
         }
 
         Debug.Log("[CleaningBonus] Nettoye : " + cleanedCount + " / " + registeredEnemies.Count + " | Dernier : " + isLast);
@@ -76,7 +76,7 @@ public class CleaningBonusManager : MonoBehaviour
     {
         if (audioSource != null && allClearSound != null)
             audioSource.PlayOneShot(allClearSound);
-        CommentPanel.Show("Spick and span !");
+        CommentPanel.Show("comment.spicandspan");
         Debug.Log("[CleaningBonus] Tous les ennemis nettoyes.");
     }
     public void Shutdown()
@@ -97,7 +97,7 @@ public class CleaningBonusManager : MonoBehaviour
     {
         if (audioSource != null && cleanSound != null)
             audioSource.PlayOneShot(cleanSound);
-        CommentPanel.Show("Cleaned Up !");
+        CommentPanel.Show("comment.cleanedup");
     }
     public List<EnemyHealth> GetRegisteredEnemies()
     {

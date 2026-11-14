@@ -22,6 +22,9 @@ public static class Loc
     public static event Action LanguageChanged;
 
     private static Dictionary<string, string[]> table;
+    private static Dictionary<string, string> textToKey;                         // texte normalise -> cle
+    private static Dictionary<string, string> exactToKey;                        // texte exact -> cle
+    private static readonly Dictionary<string, string> rawToKey = new Dictionary<string, string>(); // cache de Text()
     private static Language current;
     private static bool languageReady;
     private static readonly HashSet<string> warnedKeys = new HashSet<string>();
@@ -31,6 +34,8 @@ public static class Loc
     private static void ResetStatics()
     {
         table = null;
+        textToKey = null;
+        rawToKey.Clear();
         languageReady = false;
         LanguageChanged = null;
         warnedKeys.Clear();
@@ -92,10 +97,31 @@ public static class Loc
         }
     }
 
+    // Pour un texte saisi dans l'Inspector ou un asset (catalogue, pupitre, cause de mort...) :
+    // une cle -> traduite ; un texte deja present dans la Sheet (EN ou FR, sans tenir compte des accents,
+    // majuscules, espaces et ponctuation) -> traduit ; sinon renvoye tel quel.
+    public static string Text(string textOrKey)
+    {
+        if (string.IsNullOrEmpty(textOrKey)) return textOrKey ?? "";
+        EnsureTable();
+        if (table.ContainsKey(textOrKey)) return Get(textOrKey);
+
+        if (!rawToKey.TryGetValue(textOrKey, out string key))
+        {
+            // texte exact d'abord ("Press X" et "Press X !" ne different que par la ponctuation)
+            if (!exactToKey.TryGetValue(textOrKey.Trim(), out key))
+                textToKey.TryGetValue(LocCsv.Normalize(textOrKey), out key);
+            rawToKey[textOrKey] = key;
+        }
+        return key != null ? Get(key) : textOrKey;
+    }
+
     // Relit le CSV (apres un nouvel export, sans relancer le Play)
     public static void Reload()
     {
         table = null;
+        textToKey = null;
+        rawToKey.Clear();
         warnedKeys.Clear();
         EnsureTable();
         LanguageChanged?.Invoke();
@@ -130,6 +156,8 @@ public static class Loc
     {
         if (table != null) return;
         table = new Dictionary<string, string[]>();
+        textToKey = new Dictionary<string, string>();
+        exactToKey = new Dictionary<string, string>();
 
         TextAsset asset = Resources.Load<TextAsset>(ResourcePath);
         if (asset == null)
@@ -175,6 +203,14 @@ public static class Loc
             if (table.ContainsKey(key))
                 Debug.LogWarning("[Loc] Cle en double dans le CSV : '" + key + "' (ligne " + (r + 1) + "), la derniere gagne");
             table[key] = texts;
+
+            foreach (string t in texts)
+            {
+                string exact = t.Trim();
+                if (exact.Length > 0 && !exactToKey.ContainsKey(exact)) exactToKey[exact] = key;
+                string n = LocCsv.Normalize(t);
+                if (n.Length > 0 && !textToKey.ContainsKey(n)) textToKey[n] = key;
+            }
         }
     }
 
@@ -194,6 +230,21 @@ public static class Loc
 // Partage avec l'outil editeur LocBranchement.
 public static class LocCsv
 {
+    // Pour reconnaitre un texte : minuscules, sans accents, seulement lettres et chiffres
+    // ("Pit 'em all !" et "Pit'em All" donnent tous deux "pitemall")
+    public static string Normalize(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        string d = s.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(d.Length);
+        foreach (char ch in d)
+        {
+            if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(ch) == System.Globalization.UnicodeCategory.NonSpacingMark) continue;
+            if (char.IsLetterOrDigit(ch)) sb.Append(char.ToLowerInvariant(ch));
+        }
+        return sb.ToString();
+    }
+
     public static List<List<string>> Parse(string text)
     {
         var rows = new List<List<string>>();

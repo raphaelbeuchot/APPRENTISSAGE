@@ -178,7 +178,7 @@ public class LevelSelectUI : MonoBehaviour
 
             if (isRetour)
             {
-                SetEntryVisual(nameText, "RETOUR", isSelected, true, false);
+                SetEntryVisual(nameText, Loc.Get("levelselect.back"), isSelected, true, false);
                 continue;
             }
 
@@ -190,7 +190,7 @@ public class LevelSelectUI : MonoBehaviour
             int total = LevelProgressionManager.Instance.GetTotalCollectiblesForLevel(data.sceneIndex);
             bool hasAllCollectibles = total > 0 && collected >= total;
 
-            string displayName = isUnlocked ? data.levelName + (hasAllCollectibles ? " *" : "") : "???";
+            string displayName = isUnlocked ? Loc.Text(data.levelName) + (hasAllCollectibles ? " *" : "") : "???";
             SetEntryVisual(nameText, displayName, isSelected, isUnlocked, isCompleted);
         }
     }

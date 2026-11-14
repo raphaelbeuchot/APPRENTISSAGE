@@ -58,22 +58,33 @@ Le travail fait sur une machine n'est peut-être pas tout commité ni sauvegard�
   - Est-ce que « Health: 100% / Status: OK » (`StatsText`) est visible, ou est-ce du debug ?
   - Est-ce que `MultiDeviceAssignment` (« clavier », « manette (en attente) ») sert encore ? Il n'est posé dans aucune scène.
 
-## Décision envisagée : un système maison léger
+## Système en place (2026-11-14, validé en jeu)
 
-Le package Unity Localization paraît trop lourd pour environ 105 textes et deux langues. Le système prévu :
-- un CSV `clé ; EN ; FR`, construit à partir de la Google Sheet ;
-- `Loc.Get("clé")` dans le code ;
-- un composant `LocalizedText` à poser sur les textes TMP des scènes et prefabs ;
-- un choix de langue dans les Options.
+Système maison (le package Unity Localization était trop lourd pour ~100 textes et deux langues).
+
+- **`Loc.cs`** (`Scripts/Localization`) lit `Resources/Localization/Loc.csv`.
+  - `Loc.Get("clé")` ou `Loc.Get("clé", valeur)` pour les `{0}`.
+  - `Loc.Text(texte)` pour un texte saisi dans l'Inspector ou un asset (catalogue, pupitre, cause de mort…) : il le retrouve dans la Sheet (EN ou FR, sans tenir compte des accents, majuscules, ponctuation) et le traduit, sinon il le renvoie tel quel.
+  - FR vide → EN. Clé inconnue → la clé s'affiche à l'écran.
+  - Langue sauvegardée dans les PlayerPrefs ; au premier lancement, langue de Windows.
+- **`LocalizedText`** : composant sur un texte TMP fixe, avec sa clé. 57 posés (UI, UI_Multi, UI_ShowTime, tutos des niveaux, MainMenu, MultiStart, scènes multi).
+- **Outil `Game Catalog > Localisation`** (`Editor/LocBranchement.cs`) : « Analyser » (rapport dans `Logs/LocBranchement.txt`, ne modifie rien) puis « Brancher ». À relancer pour un nouveau texte TMP fixe ajouté à la Sheet.
+- **Code branché** : titre animé et noms de niveaux, CommentPanel (tous les messages), Game Over, Victoire, Options, Chargement, jauge de stress, multi.
+- **DevPanel (F1)** : changer de langue, relire le CSV.
+
+### Circuit pour les textes
+
+1. Modifier la Sheet « inventaire_VF_demo ».
+2. Demander à Claude « exporte » : il télécharge la Sheet en CSV dans `Resources/Localization/Loc.csv` et commite. Ne jamais retoucher le CSV à la main.
+3. Attention : si l'EN d'un texte rangé dans le catalogue, un asset ou l'Inspector change (colonne « source »), l'ancien texte n'est plus reconnu : mettre la source à jour en même temps (Claude vérifie à l'export).
 
 ## Prochaines étapes
 
-1. Sauvegarder, commit et push tout ce qui est en cours sur la machine de la maison.
-2. Régler le problème de police (accents).
-3. Créer `Loc.cs`, le CSV et `LocalizedText` (nouveaux fichiers, sans risque de conflit).
-4. Brancher les textes, bloc par bloc : `LevelCatalog`, puis `UI.prefab` et `UI_Multi.prefab`, puis le code, puis les scènes.
-5. Traduire les jeux de mots des titres de niveaux : Handle Hurdles, Row Deal, Purple Pain, Pit 'em all, Heart goes Broom.
-6. Décider du sort du pupitre tuto de TrouNormand.
+1. Régler le problème de police (accents) : sans ça, les é, è, à, ç s'affichent en carrés.
+2. Ajouter le choix de langue dans les Options (`OptionsPanelUI.cs` + une 4e ligne dans `OptionsPanel.prefab`).
+3. Remplir la Sheet : relire les propositions FR, trouver les jeux de mots, trancher tu ou vous, puis exporter.
+4. Décider du sort du pupitre tuto de TrouNormand (4 images de texte anglais).
+5. Restes hors système : « Nettoyage ! » du CommentManager (texte de départ), `StatsText` (debug ?), « Super Panopticon! » de secours dans GameUIManager.
 
 ## Liens avec les autres chantiers (2026-11-13)
 

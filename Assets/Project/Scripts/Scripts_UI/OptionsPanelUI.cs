@@ -127,12 +127,12 @@ public class OptionsPanelUI : MonoBehaviour
         if (OptionsManager.Instance == null) return;
 
         bool gaugeOn = OptionsManager.Instance.gaugeVisible;
-        gaugeText.text = "Timer display     " + (gaugeOn ? "On" : "Off");
+        gaugeText.text = Loc.Get("options.timer", Loc.Get(gaugeOn ? "options.on" : "options.off"));
 
         bool isBanco = OptionsManager.Instance.difficulty == OptionsManager.Difficulty.Banco;
-        difficultyText.text = "Difficulty     " + (isBanco ? "Easy" : "Normal");
+        difficultyText.text = Loc.Get("options.difficulty", Loc.Get(isBanco ? "options.easy" : "options.normal"));
 
-        audioText.text = "Audio";
+        audioText.text = Loc.Get("options.audio");
     }
 
     void UpdateVisuals()

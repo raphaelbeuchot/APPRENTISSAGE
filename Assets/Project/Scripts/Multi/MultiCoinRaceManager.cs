@@ -103,8 +103,8 @@ public class MultiCoinRaceManager : MonoBehaviour
         if (leftScore == rightScore)
         {
             Debug.Log($"[MultiCoinRace] Ex aequo, {leftScore} pieces chacun");
-            if (leftWallet != null) ShowHalfScreenMessage(leftWallet.gameObject, "EX AEQUO");
-            if (rightWallet != null) ShowHalfScreenMessage(rightWallet.gameObject, "EX AEQUO");
+            if (leftWallet != null) ShowHalfScreenMessage(leftWallet.gameObject, "multi.tie");
+            if (rightWallet != null) ShowHalfScreenMessage(rightWallet.gameObject, "multi.tie");
         }
         else
         {
@@ -112,8 +112,8 @@ public class MultiCoinRaceManager : MonoBehaviour
             PlayerCoinWallet loser = leftScore > rightScore ? rightWallet : leftWallet;
             Debug.Log($"[MultiCoinRace] {(leftScore > rightScore ? "Left" : "Right")} gagne, {Mathf.Max(leftScore, rightScore)} contre {Mathf.Min(leftScore, rightScore)}");
 
-            if (winner != null) ShowHalfScreenMessage(winner.gameObject, "VICTORY");
-            if (loser != null) ShowHalfScreenMessage(loser.gameObject, "YOU LOSE");
+            if (winner != null) ShowHalfScreenMessage(winner.gameObject, "multi.victory");
+            if (loser != null) ShowHalfScreenMessage(loser.gameObject, "multi.lose");
         }
 
         StartCoroutine(RestartOnButtonCoroutine());
@@ -167,7 +167,7 @@ public class MultiCoinRaceManager : MonoBehaviour
 
         TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
         if (endScreenFont != null) text.font = endScreenFont;
-        text.text = message;
+        text.text = Loc.Text(message);
         text.fontSize = 80f;
         text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;

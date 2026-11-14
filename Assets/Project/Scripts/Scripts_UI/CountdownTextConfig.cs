@@ -25,9 +25,9 @@ public class CountdownTextConfig : MonoBehaviour
         {
             LevelCatalogEntry entry = catalog.FindByScenePath(SceneManager.GetActiveScene().path);
             if (entry != null)
-                return entry.launchText ?? "";
+                return Loc.Text(entry.launchText ?? "");
         }
-        return titleMessage;
+        return Loc.Text(titleMessage);
     }
 
     public float GetRotationDuration()

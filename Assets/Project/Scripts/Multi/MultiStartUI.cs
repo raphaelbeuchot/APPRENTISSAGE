@@ -502,21 +502,21 @@ public class MultiStartUI : MonoBehaviour
 
     private string BuildCountEntryText(int index)
     {
-        if (index == 0) return "First to 5";
-        if (index == 1) return "First to 10";
+        if (index == 0) return Loc.Get("multi.firstto", 5);
+        if (index == 1) return Loc.Get("multi.firstto", 10);
         if (currentStep == Step.CustomEdit)
-            return $"< First to {customValue} >";
-        return "Custom";
+            return "< " + Loc.Get("multi.firstto", customValue) + " >";
+        return Loc.Get("multi.custom");
     }
 
     private string BuildDurationEntryText(int index)
     {
-        if (index == 0) return "1 min";
-        if (index == 1) return "3 min";
-        if (index == 2) return "5 min";
+        if (index == 0) return Loc.Get("multi.minutes", 1);
+        if (index == 1) return Loc.Get("multi.minutes", 3);
+        if (index == 2) return Loc.Get("multi.minutes", 5);
         if (currentStep == Step.DurationCustomEdit)
-            return $"< {customDurationMinutes} min >";
-        return "Custom";
+            return "< " + Loc.Get("multi.minutes", customDurationMinutes) + " >";
+        return Loc.Get("multi.custom");
     }
 
     void SetTextVisual(TextMeshProUGUI txt, bool isSelected)
