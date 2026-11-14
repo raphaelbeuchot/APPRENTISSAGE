@@ -24,7 +24,9 @@ public class TomatoUI : MonoBehaviour
     private Coroutine refillCoroutine;
     private Vector3 iconBaseScale;
 
-    private void Start()
+    // Awake et non Start : GameUIManager.Start (HideGameplayBars) peut desactiver ce compteur avant
+    // son propre Start, qui ne tournerait alors jamais -> compteur jamais abonne (bug au restart).
+    private void Awake()
     {
         if (throwSystem == null)
         {
