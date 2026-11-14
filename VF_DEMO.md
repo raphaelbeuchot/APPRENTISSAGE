@@ -81,7 +81,11 @@ Système maison (le package Unity Localization était trop lourd pour ~100 texte
 ## Prochaines étapes
 
 1. Régler le problème de police (accents) : sans ça, les é, è, à, ç s'affichent en carrés.
-2. Ajouter le choix de langue dans les Options (`OptionsPanelUI.cs` + une 4e ligne dans `OptionsPanel.prefab`).
+   - 2026-11-14 : la police est *Keep on Truckin* de B.O. Nelson (Brain Eaters Fonts, 2003), « FREEware, NOT Public Domain ». Notre .ttf n'a aucune lettre accentuée.
+   - Font Bros vend une version avec les accents français (payante). Fabricant contacté le 2026-11-14, réponse attendue. Vérifier : même dessin, licence qui couvre l'intégration dans un jeu (App / Game / Embedding, pas seulement Desktop).
+   - Si achat : remplacer le contenu de `Fonts/KeeponTruckin.ttf` sous le même nom (garder le .meta) ; l'asset SDF est en Dynamic, les accents viendront seuls. Vérifier ensuite les mises en page.
+   - En attendant, possible pour la démo de playtest : police de secours (fallback TMP).
+2. ~~Choix de langue dans les Options~~ : fait le 2026-11-14 (4e ligne `LanguageText` de `OptionsPanel.prefab`, gauche/droite).
 3. Remplir la Sheet : relire les propositions FR, trouver les jeux de mots, trancher tu ou vous, puis exporter.
 4. Décider du sort du pupitre tuto de TrouNormand (4 images de texte anglais).
 5. Restes hors système : « Nettoyage ! » du CommentManager (texte de départ), `StatsText` (debug ?), « Super Panopticon! » de secours dans GameUIManager.

@@ -13,6 +13,8 @@ public class OptionsPanelUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI gaugeText;
     [SerializeField] private TextMeshProUGUI difficultyText;
     [SerializeField] private TextMeshProUGUI audioText;
+    [Tooltip("Ligne du choix de langue (vide = ligne absente du menu)")]
+    [SerializeField] private TextMeshProUGUI languageText;
 
     [Header("Visual Settings")]
     [SerializeField] private Color normalColor = Color.white;
@@ -34,6 +36,7 @@ public class OptionsPanelUI : MonoBehaviour
         optionTexts.Add(gaugeText);
         optionTexts.Add(difficultyText);
         optionTexts.Add(audioText);
+        if (languageText != null) optionTexts.Add(languageText);
 
         if (optionsPanel != null)
             optionsPanel.SetActive(false);
@@ -119,6 +122,11 @@ public class OptionsPanelUI : MonoBehaviour
             case 2:
                 // Audio - a implementer
                 break;
+            case 3:
+                int langCount = System.Enum.GetValues(typeof(Language)).Length;
+                int lang = (int)Loc.Current;
+                Loc.SetLanguage((Language)(goLeft ? (lang - 1 + langCount) % langCount : (lang + 1) % langCount));
+                break;
         }
     }
 
@@ -133,6 +141,9 @@ public class OptionsPanelUI : MonoBehaviour
         difficultyText.text = Loc.Get("options.difficulty", Loc.Get(isBanco ? "options.easy" : "options.normal"));
 
         audioText.text = Loc.Get("options.audio");
+
+        if (languageText != null)
+            languageText.text = Loc.Get("options.language", Loc.Get("options.lang." + Loc.Current.ToString().ToLowerInvariant()));
     }
 
     void UpdateVisuals()
