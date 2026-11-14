@@ -31,6 +31,13 @@ public class LoadingScreenManager : MonoBehaviour
     private List<Image> pipImages = new List<Image>();
     private List<Image> outlineImages = new List<Image>();
 
+    void Awake()
+    {
+        // Avant la premiere image : sinon le texte de la scene ("Loading") s'affiche un instant
+        if (loadingText != null)
+            loadingText.text = Loc.Get("loading");
+    }
+
     void Start()
     {
         BuildPips();
