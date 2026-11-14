@@ -671,6 +671,7 @@ GameObject:
   - component: {fileID: 114064261}
   - component: {fileID: 114064260}
   - component: {fileID: 114064259}
+  - component: {fileID: 114064263}
   m_Layer: 0
   m_Name: TMP_Climb
   m_TagString: Untagged
@@ -854,6 +855,19 @@ RectTransform:
   m_AnchoredPosition: {x: 3.1000004, y: 0.10000016}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &114064263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 114064258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: tuto.climb
 --- !u!1 &137405891
 GameObject:
   m_ObjectHideFlags: 0
@@ -17035,9 +17049,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 147f18422723c8744a2302466f1e8be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MetalShutter
-  openHeight: 10
+  mode: 0
   openSpeed: 2
   destroyDelay: 0.5
+  openHeight: 10
+  leftPanel: {fileID: 0}
+  rightPanel: {fileID: 0}
+  slideDistance: 3
 --- !u!1001 &1809569382
 PrefabInstance:
   m_ObjectHideFlags: 0

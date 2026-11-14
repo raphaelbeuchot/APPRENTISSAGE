@@ -8871,6 +8871,7 @@ GameObject:
   - component: {fileID: 799672699}
   - component: {fileID: 799672701}
   - component: {fileID: 799672700}
+  - component: {fileID: 799672702}
   m_Layer: 0
   m_Name: TMP_UP
   m_TagString: Untagged
@@ -9039,6 +9040,19 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &799672702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 799672698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: tuto.up
 --- !u!1001 &811697248
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -20809,9 +20823,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 147f18422723c8744a2302466f1e8be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MetalShutter
-  openHeight: 10
+  mode: 0
   openSpeed: 2
   destroyDelay: 0.5
+  openHeight: 10
+  leftPanel: {fileID: 0}
+  rightPanel: {fileID: 0}
+  slideDistance: 3
 --- !u!1001 &1824664577
 PrefabInstance:
   m_ObjectHideFlags: 0

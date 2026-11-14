@@ -510,6 +510,7 @@ GameObject:
   - component: {fileID: 368631239}
   - component: {fileID: 368631241}
   - component: {fileID: 368631240}
+  - component: {fileID: 368631242}
   m_Layer: 5
   m_Name: Lvl002
   m_TagString: Untagged
@@ -635,6 +636,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 368631238}
   m_CullTransparentMesh: 1
+--- !u!114 &368631242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 368631238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: multi.level.slippery
 --- !u!1 &375199351
 GameObject:
   m_ObjectHideFlags: 0
@@ -1463,10 +1477,16 @@ MonoBehaviour:
   levelRoot: {fileID: 375199351}
   levelEntries:
   - label: {fileID: 1954018229}
+    scene: {fileID: 102900000, guid: 0104ab1ee8baa0447a20364afa3d1d8f, type: 3}
+    scenePath: Assets/Project/Scenes/Level_Race_Lava.unity
     sceneName: Level_Race_Lava
   - label: {fileID: 368631240}
+    scene: {fileID: 102900000, guid: 4e232cffadb7fe14eb3f4742db34a3d1, type: 3}
+    scenePath: Assets/Project/Scenes/Level_Race_Slippery.unity
     sceneName: Level_Race_Slippery
   - label: {fileID: 1366112786}
+    scene: {fileID: 102900000, guid: aab123739b7978f429aaf242bfdc16fa, type: 3}
+    scenePath: Assets/Project/Scenes/Level_Race_Void.unity
     sceneName: Level_Race_Void
   durationRoot: {fileID: 856440395}
   durationEntries:
@@ -1480,6 +1500,8 @@ MonoBehaviour:
   coinLevelRoot: {fileID: 615799795}
   coinLevelEntries:
   - label: {fileID: 1482813997}
+    scene: {fileID: 102900000, guid: 96a0327a4ce5f3c44b4b4da924654d27, type: 3}
+    scenePath: Assets/Project/Scenes/Level_CoinRace_Lava.unity
     sceneName: Level_CoinRace_Lava
   uiAudio: {fileID: 1244228245}
   normalColor: {r: 0.3301887, g: 0.010902463, b: 0.010902463, a: 1}
@@ -1882,6 +1904,7 @@ GameObject:
   - component: {fileID: 1230441047}
   - component: {fileID: 1230441049}
   - component: {fileID: 1230441048}
+  - component: {fileID: 1230441050}
   m_Layer: 5
   m_Name: Coin Race
   m_TagString: Untagged
@@ -2009,6 +2032,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1230441046}
   m_CullTransparentMesh: 1
+--- !u!114 &1230441050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1230441046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: multi.mode.coinrace
 --- !u!114 &1244228245 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 28727920474234348, guid: 74280a7f3ec396f40952694b995666d2, type: 3}
@@ -2031,6 +2067,7 @@ GameObject:
   - component: {fileID: 1254597350}
   - component: {fileID: 1254597352}
   - component: {fileID: 1254597351}
+  - component: {fileID: 1254597353}
   m_Layer: 5
   m_Name: Reach the Door Versus
   m_TagString: Untagged
@@ -2158,6 +2195,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1254597349}
   m_CullTransparentMesh: 1
+--- !u!114 &1254597353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1254597349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: multi.mode.reachdoor
 --- !u!1 &1366112784
 GameObject:
   m_ObjectHideFlags: 0
@@ -2169,6 +2219,7 @@ GameObject:
   - component: {fileID: 1366112785}
   - component: {fileID: 1366112787}
   - component: {fileID: 1366112786}
+  - component: {fileID: 1366112788}
   m_Layer: 5
   m_Name: Lvl003
   m_TagString: Untagged
@@ -2294,6 +2345,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1366112784}
   m_CullTransparentMesh: 1
+--- !u!114 &1366112788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1366112784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: level.void.launch
 --- !u!1 &1406064979
 GameObject:
   m_ObjectHideFlags: 0
@@ -2367,6 +2431,7 @@ GameObject:
   - component: {fileID: 1482813996}
   - component: {fileID: 1482813998}
   - component: {fileID: 1482813997}
+  - component: {fileID: 1482813999}
   m_Layer: 5
   m_Name: Lvl001
   m_TagString: Untagged
@@ -2492,6 +2557,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1482813995}
   m_CullTransparentMesh: 1
+--- !u!114 &1482813999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1482813995}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: multi.level.lavalevel
 --- !u!1 &1594956446
 GameObject:
   m_ObjectHideFlags: 0
@@ -2715,6 +2793,7 @@ GameObject:
   - component: {fileID: 1954018228}
   - component: {fileID: 1954018230}
   - component: {fileID: 1954018229}
+  - component: {fileID: 1954018231}
   m_Layer: 5
   m_Name: Lvl001
   m_TagString: Untagged
@@ -2840,6 +2919,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1954018227}
   m_CullTransparentMesh: 1
+--- !u!114 &1954018231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954018227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: multi.level.lavafloor
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

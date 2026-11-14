@@ -1446,6 +1446,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelEntranceDoor
   door: {fileID: 110420050}
   delayAfterFade: 1.5
+  stayClosedOnRestart: 1
 --- !u!114 &110420050
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7808,6 +7809,12 @@ MonoBehaviour:
   restartSpawnDistance: 1
   mustPutAwayBroom: 0
   putAwayBroomMessage: Pour continuer, merci de deposer votre balai.
+  onActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  onRestart:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!136 &503121591
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -25642,9 +25649,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 147f18422723c8744a2302466f1e8be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MetalShutter
-  openHeight: 10
+  mode: 0
   openSpeed: 2
   destroyDelay: 0.5
+  openHeight: 10
+  leftPanel: {fileID: 0}
+  rightPanel: {fileID: 0}
+  slideDistance: 3
 --- !u!1001 &1805884797
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -25794,6 +25805,7 @@ GameObject:
   - component: {fileID: 1824342108}
   - component: {fileID: 1824342107}
   - component: {fileID: 1824342110}
+  - component: {fileID: 1824342111}
   m_Layer: 0
   m_Name: Press A to Lundge
   m_TagString: Untagged
@@ -25977,6 +25989,19 @@ MonoBehaviour:
   distance: 5
   fadeDuration: 1
   startVisible: 0
+--- !u!114 &1824342111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1824342106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: tuto.lunge
 --- !u!1001 &1825281565
 PrefabInstance:
   m_ObjectHideFlags: 0

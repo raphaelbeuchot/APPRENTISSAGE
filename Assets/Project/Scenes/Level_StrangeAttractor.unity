@@ -553,13 +553,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SplinePitZone
   depth: 1
   splineSampleCount: 64
+  rimShape: 0
   rimMargin: 0
+  rimEllipseCenter: {x: 0, y: 0}
+  rimEllipseRadii: {x: 6, y: 6}
+  rimEllipseSegments: 64
   wallMaterial: {fileID: 2100000, guid: a4067e8f112ca5a47adab30f72b36b9c, type: 2}
   floorMaterial: {fileID: 2100000, guid: 7836f7714fb3dff4c85e7a45809abe37, type: 2}
   rimMaterial: {fileID: 2100000, guid: d9a31509a240b824fb186249449ec8d3, type: 2}
   fillLevel: 0.8
   fillContentType: {fileID: 11400000, guid: 4cdd0114f895ee444a4cadf30e99b37e, type: 2}
   fillMaterial: {fileID: 2100000, guid: 6f509301db35c974690f05670d6d428f, type: 2}
+  spikeDensity: 4
+  spikeRandomness: 1
+  spikeBaseRange: {x: 0.15, y: 0.4}
+  spikeHeightRange: {x: 0.2, y: 0.6}
+  spikeSeed: 0
   quickRectWidth: 6
   quickRectLength: 4
   quickRectRadius: 1
@@ -1617,6 +1626,12 @@ MonoBehaviour:
   restartSpawnDistance: 1
   mustPutAwayBroom: 0
   putAwayBroomMessage: Pour continuer, merci de deposer votre balai.
+  onActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  onRestart:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!23 &193707927
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3803,6 +3818,7 @@ GameObject:
   - component: {fileID: 467172391}
   - component: {fileID: 467172390}
   - component: {fileID: 467172389}
+  - component: {fileID: 467172393}
   m_Layer: 0
   m_Name: TMP_Climb
   m_TagString: Untagged
@@ -3990,6 +4006,19 @@ RectTransform:
   m_AnchoredPosition: {x: 4.25, y: 1.07}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &467172393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 467172388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: tuto.climb
 --- !u!1 &478456909
 GameObject:
   m_ObjectHideFlags: 0
@@ -14375,9 +14404,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 147f18422723c8744a2302466f1e8be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MetalShutter
-  openHeight: 10
+  mode: 0
   openSpeed: 2
   destroyDelay: 0.5
+  openHeight: 10
+  leftPanel: {fileID: 0}
+  rightPanel: {fileID: 0}
+  slideDistance: 3
 --- !u!4 &1815782954 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8614961758245970650, guid: 677a140d1b61c5048999ae3190b663d7, type: 3}

@@ -670,6 +670,7 @@ GameObject:
   - component: {fileID: 4960632862767703009}
   - component: {fileID: 6751497186559363022}
   - component: {fileID: 7777484665193275759}
+  - component: {fileID: 852646467877691697}
   m_Layer: 5
   m_Name: ContinueText
   m_TagString: Untagged
@@ -795,6 +796,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &852646467877691697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1523024644717895851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: common.continue
 --- !u!1 &1658478087089723671
 GameObject:
   m_ObjectHideFlags: 0
@@ -1045,6 +1059,7 @@ GameObject:
   - component: {fileID: 3528081019126213363}
   - component: {fileID: 1616778050937107659}
   - component: {fileID: 4369160552596472394}
+  - component: {fileID: 3860571713429430410}
   m_Layer: 5
   m_Name: Options
   m_TagString: Untagged
@@ -1170,6 +1185,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3860571713429430410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2321503017504668503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: common.options
 --- !u!1 &2374982806830259581
 GameObject:
   m_ObjectHideFlags: 0
@@ -1672,6 +1700,10 @@ MonoBehaviour:
   attemptsText: {fileID: 8300452954798757713}
   levelCompleteMessage: Well Done !
   attemptsPrefix: 'Essais : '
+  firstTryMessage: First try !
+  firstTryColorA: {r: 1, g: 1, b: 1, a: 1}
+  firstTryColorB: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  firstTryBlinkInterval: 0.2
   bgFadeDuration: 0.15
   textSlideDuration: 0.75
   textSlideCurve:
@@ -2179,6 +2211,7 @@ MonoBehaviour:
   delayBetweenTomatoes: 0.12
   punchScale: 1.4
   punchDuration: 0.08
+  throwSystem: {fileID: 0}
 --- !u!1 &4586774744042695647
 GameObject:
   m_ObjectHideFlags: 0
@@ -2929,6 +2962,7 @@ GameObject:
   - component: {fileID: 762028964066524753}
   - component: {fileID: 607595748753976573}
   - component: {fileID: 6029520513401718820}
+  - component: {fileID: 4138788997007177956}
   m_Layer: 5
   m_Name: Continue
   m_TagString: Untagged
@@ -3054,6 +3088,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &4138788997007177956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5872343353360540140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: common.continue
 --- !u!1 &6046485860536181459
 GameObject:
   m_ObjectHideFlags: 0
@@ -3135,6 +3182,7 @@ GameObject:
   - component: {fileID: 757515879105891147}
   - component: {fileID: 580542339762108528}
   - component: {fileID: 3597565601612681983}
+  - component: {fileID: 829045198538443152}
   m_Layer: 5
   m_Name: RestartText
   m_TagString: Untagged
@@ -3262,6 +3310,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &829045198538443152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6236761604090119498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: pause.restart
 --- !u!1 &6346823655831201435
 GameObject:
   m_ObjectHideFlags: 0
@@ -3350,6 +3411,7 @@ GameObject:
   - component: {fileID: 4749104857446601745}
   - component: {fileID: 6699251204918907938}
   - component: {fileID: 723185402676352838}
+  - component: {fileID: 2916636068505915160}
   m_Layer: 5
   m_Name: Quit
   m_TagString: Untagged
@@ -3477,6 +3539,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2916636068505915160
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6464636060409729199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: common.quit
 --- !u!1 &6709369140811881205
 GameObject:
   m_ObjectHideFlags: 0
@@ -3624,6 +3699,7 @@ GameObject:
   - component: {fileID: 6503202341713144718}
   - component: {fileID: 4157626549852351609}
   - component: {fileID: 8508501887940280500}
+  - component: {fileID: 1404081196697479647}
   m_Layer: 5
   m_Name: QuitText
   m_TagString: Untagged
@@ -3751,6 +3827,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1404081196697479647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6969952264643596663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: common.quit
 --- !u!1 &7046775323596979851
 GameObject:
   m_ObjectHideFlags: 0
@@ -4194,6 +4283,7 @@ MonoBehaviour:
   zombies:
   - {fileID: 0}
   pressureGauge: {fileID: 8519633561531100314}
+  pressureGauge2: {fileID: 0}
   creditBar: {fileID: 5536222777654693141}
   enemyIconsContainer: {fileID: 8509988569197014741}
 --- !u!1 &7375506722509377761
@@ -4431,6 +4521,7 @@ GameObject:
   - component: {fileID: 4199092648136267064}
   - component: {fileID: 3879372199207492357}
   - component: {fileID: 1648588100239967701}
+  - component: {fileID: 2515546053695943106}
   m_Layer: 5
   m_Name: MashText
   m_TagString: Untagged
@@ -4556,6 +4647,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2515546053695943106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7943092234411593343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: hud.mash
 --- !u!1 &8060292927166574682
 GameObject:
   m_ObjectHideFlags: 0
@@ -4720,6 +4824,7 @@ GameObject:
   - component: {fileID: 3427982228935504594}
   - component: {fileID: 312960430740672825}
   - component: {fileID: 4411361285967721248}
+  - component: {fileID: 3710513950795705337}
   m_Layer: 5
   m_Name: Restart Level
   m_TagString: Untagged
@@ -4847,6 +4952,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3710513950795705337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8306742915078734714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: pause.restartlevel
 --- !u!1 &8389976339246921982
 GameObject:
   m_ObjectHideFlags: 0
@@ -5115,6 +5233,7 @@ GameObject:
   - component: {fileID: 4204347651250785250}
   - component: {fileID: 2916203411985331610}
   - component: {fileID: 914657238990375814}
+  - component: {fileID: 7357039399738175593}
   m_Layer: 5
   m_Name: ClimbPrompt
   m_TagString: Untagged
@@ -5277,6 +5396,19 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &7357039399738175593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8651137430026284639}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: hud.climb
 --- !u!1 &8673812683245522312
 GameObject:
   m_ObjectHideFlags: 0

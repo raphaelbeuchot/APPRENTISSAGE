@@ -2064,9 +2064,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 147f18422723c8744a2302466f1e8be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MetalShutter
-  openHeight: 10
+  mode: 0
   openSpeed: 2
   destroyDelay: 0.5
+  openHeight: 10
+  leftPanel: {fileID: 0}
+  rightPanel: {fileID: 0}
+  slideDistance: 3
 --- !u!65 &84739773
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -19498,6 +19502,7 @@ GameObject:
   - component: {fileID: 958157566}
   - component: {fileID: 958157565}
   - component: {fileID: 958157568}
+  - component: {fileID: 958157569}
   m_Layer: 0
   m_Name: TMP_Crouch
   m_TagString: Untagged
@@ -19681,6 +19686,19 @@ MonoBehaviour:
   distance: 4.5
   fadeDuration: 1
   startVisible: 0
+--- !u!114 &958157569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 958157564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: tuto.crouch
 --- !u!4 &958791948 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -34792,6 +34810,7 @@ GameObject:
   - component: {fileID: 1551817138}
   - component: {fileID: 1551817137}
   - component: {fileID: 1551817140}
+  - component: {fileID: 1551817141}
   m_Layer: 0
   m_Name: TMP_Camera Toggle
   m_TagString: Untagged
@@ -34979,6 +34998,19 @@ MonoBehaviour:
   distance: 6.5
   fadeDuration: 1
   startVisible: 0
+--- !u!114 &1551817141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1551817136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: tuto.cameratoggle
 --- !u!4 &1557051156 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3872456749971563256, guid: 381e1e7ec9d3bb241bfd25583b688a12, type: 3}
@@ -39192,9 +39224,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 147f18422723c8744a2302466f1e8be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MetalShutter
-  openHeight: 10
+  mode: 0
   openSpeed: 2
   destroyDelay: 0.5
+  openHeight: 10
+  leftPanel: {fileID: 0}
+  rightPanel: {fileID: 0}
+  slideDistance: 3
 --- !u!1001 &1805884797
 PrefabInstance:
   m_ObjectHideFlags: 0

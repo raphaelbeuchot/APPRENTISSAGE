@@ -1567,6 +1567,7 @@ GameObject:
   - component: {fileID: 310841652}
   - component: {fileID: 310841651}
   - component: {fileID: 310841650}
+  - component: {fileID: 310841654}
   m_Layer: 0
   m_Name: Tuto Tomato Throw
   m_TagString: Untagged
@@ -1754,6 +1755,19 @@ RectTransform:
   m_AnchoredPosition: {x: 6.500001, y: 0.5}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &310841654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 310841649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: tuto.tomato.throw
 --- !u!1 &311579449
 GameObject:
   m_ObjectHideFlags: 0
@@ -12106,9 +12120,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 147f18422723c8744a2302466f1e8be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MetalShutter
-  openHeight: 10
+  mode: 0
   openSpeed: 2
   destroyDelay: 0.5
+  openHeight: 10
+  leftPanel: {fileID: 0}
+  rightPanel: {fileID: 0}
+  slideDistance: 3
 --- !u!1001 &1805420319
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12621,6 +12639,7 @@ GameObject:
   - component: {fileID: 1922003313}
   - component: {fileID: 1922003312}
   - component: {fileID: 1922003311}
+  - component: {fileID: 1922003315}
   m_Layer: 0
   m_Name: Tuto Tomato Switch
   m_TagString: Untagged
@@ -12810,6 +12829,19 @@ RectTransform:
   m_AnchoredPosition: {x: 4.0000005, y: 0.04999937}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1922003315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1922003310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: tuto.tomato.switch
 --- !u!1001 &1931360385
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14410,6 +14442,7 @@ GameObject:
   - component: {fileID: 2139617186}
   - component: {fileID: 2139617185}
   - component: {fileID: 2139617184}
+  - component: {fileID: 2139617188}
   m_Layer: 0
   m_Name: Tuto Tomato Lock
   m_TagString: Untagged
@@ -14595,6 +14628,19 @@ RectTransform:
   m_AnchoredPosition: {x: 1.3999996, y: 0.5}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2139617188
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2139617183}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: tuto.tomato.lock
 --- !u!1001 &115993669638194592
 PrefabInstance:
   m_ObjectHideFlags: 0

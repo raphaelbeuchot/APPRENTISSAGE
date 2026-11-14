@@ -2061,6 +2061,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelEntranceDoor
   door: {fileID: 110420050}
   delayAfterFade: 1.5
+  stayClosedOnRestart: 1
 --- !u!114 &110420050
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9312,6 +9313,12 @@ MonoBehaviour:
   restartSpawnDistance: 1
   mustPutAwayBroom: 0
   putAwayBroomMessage: Pour continuer, merci de deposer votre balai.
+  onActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  onRestart:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!136 &503121591
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -11026,13 +11033,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SplinePitZone
   depth: 2
   splineSampleCount: 32
+  rimShape: 0
   rimMargin: 0.5
+  rimEllipseCenter: {x: 0, y: 0}
+  rimEllipseRadii: {x: 6, y: 6}
+  rimEllipseSegments: 64
   wallMaterial: {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
   floorMaterial: {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
   rimMaterial: {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
   fillLevel: 2
   fillContentType: {fileID: 11400000, guid: 9b059aefcb1f25b40850009bafcdee4f, type: 2}
   fillMaterial: {fileID: 2100000, guid: 36275034bf3f2e44798f04cc7e6909f1, type: 2}
+  spikeDensity: 4
+  spikeRandomness: 1
+  spikeBaseRange: {x: 0.15, y: 0.4}
+  spikeHeightRange: {x: 0.2, y: 0.6}
+  spikeSeed: 0
   quickRectWidth: 6
   quickRectLength: 4
   quickRectRadius: 1
@@ -16174,13 +16190,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SplinePitZone
   depth: 2
   splineSampleCount: 32
+  rimShape: 0
   rimMargin: 0.5
+  rimEllipseCenter: {x: 0, y: 0}
+  rimEllipseRadii: {x: 6, y: 6}
+  rimEllipseSegments: 64
   wallMaterial: {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
   floorMaterial: {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
   rimMaterial: {fileID: 2100000, guid: 127d89d2fdbe41f47ad3d19bde245f6e, type: 2}
   fillLevel: 2
   fillContentType: {fileID: 11400000, guid: 9b059aefcb1f25b40850009bafcdee4f, type: 2}
   fillMaterial: {fileID: 2100000, guid: 36275034bf3f2e44798f04cc7e6909f1, type: 2}
+  spikeDensity: 4
+  spikeRandomness: 1
+  spikeBaseRange: {x: 0.15, y: 0.4}
+  spikeHeightRange: {x: 0.2, y: 0.6}
+  spikeSeed: 0
   quickRectWidth: 6
   quickRectLength: 4
   quickRectRadius: 1
@@ -41129,9 +41154,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 147f18422723c8744a2302466f1e8be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MetalShutter
-  openHeight: 10
+  mode: 0
   openSpeed: 2
   destroyDelay: 0.5
+  openHeight: 10
+  leftPanel: {fileID: 0}
+  rightPanel: {fileID: 0}
+  slideDistance: 3
 --- !u!1001 &1805884797
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -41281,6 +41310,7 @@ GameObject:
   - component: {fileID: 1824342108}
   - component: {fileID: 1824342107}
   - component: {fileID: 1824342110}
+  - component: {fileID: 1824342111}
   m_Layer: 0
   m_Name: Press A to Lundge
   m_TagString: Untagged
@@ -41464,6 +41494,19 @@ MonoBehaviour:
   distance: 5
   fadeDuration: 1
   startVisible: 0
+--- !u!114 &1824342111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1824342106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3cf3bd159da4a344b80c24f61ff0cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
+  key: tuto.lunge
 --- !u!4 &1824438473 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1862334792049646112, guid: c68b68511658b8247ba63803a2827209, type: 3}

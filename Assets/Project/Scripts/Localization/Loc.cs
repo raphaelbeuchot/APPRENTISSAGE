@@ -138,7 +138,7 @@ public static class Loc
             return;
         }
 
-        List<List<string>> rows = ParseCsv(asset.text);
+        List<List<string>> rows = LocCsv.Parse(asset.text);
         if (rows.Count == 0) return;
 
         // Colonnes reperees par leur titre : "cle" (avec ou sans accent), puis une colonne par langue
@@ -188,9 +188,13 @@ public static class Loc
     {
         return s.Replace("\\n", "\n");
     }
+}
 
-    // CSV standard : virgules, champs entre guillemets, "" = guillemet, retours a la ligne dans les guillemets
-    private static List<List<string>> ParseCsv(string text)
+// CSV standard : virgules, champs entre guillemets, "" = guillemet, retours a la ligne dans les guillemets.
+// Partage avec l'outil editeur LocBranchement.
+public static class LocCsv
+{
+    public static List<List<string>> Parse(string text)
     {
         var rows = new List<List<string>>();
         var row = new List<string>();
