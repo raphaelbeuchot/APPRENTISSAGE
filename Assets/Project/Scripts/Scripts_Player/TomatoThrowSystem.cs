@@ -22,6 +22,14 @@ public class TomatoThrowSystem : MonoBehaviour
     public event Action<int, int> OnTomatoCountChanged;
     public event Action<int> OnRefill;
 
+    [Header("Animation")]
+    [Tooltip("Calque de l'Animator joue pendant le lock (pose de visee, haut du corps). Place sous Upper Body pour que balai et spray passent devant.")]
+    [SerializeField] private string aimLayerName = "Aim";
+    [Tooltip("Duree du fondu d'entree/sortie de la pose de visee (secondes).")]
+    [SerializeField] private float aimBlendDuration = 0.15f;
+    private Animator animator;
+    private int aimLayerIndex = -1;
+
 
     public bool IsThrowingTomato() => isThrowing;
 
@@ -33,6 +41,13 @@ public class TomatoThrowSystem : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
+        animator = GetComponentInChildren<Animator>();
+        if (animator != null)
+            aimLayerIndex = animator.GetLayerIndex(aimLayerName);
+        if (aimLayerIndex < 0)
+            Debug.LogWarning("TomatoThrowSystem : calque '" + aimLayerName + "' introuvable sur l'Animator "
+                + (animator != null ? animator.name + " (controller " + animator.runtimeAnimatorController?.name + ")" : "ABSENT")
+                + " -> pas de pose de visee.", this);
 
         currentTomatoCount = 0;
         OnTomatoCountChanged?.Invoke(currentTomatoCount, stats.tomatoCount);
@@ -40,9 +55,22 @@ public class TomatoThrowSystem : MonoBehaviour
 
     void Update()
     {
+        UpdateAimLayer();
+
         if (!InputThrowTomatoPressed) return;
         if (!CanThrow()) return;
         ThrowTomato();
+    }
+
+    // Pose de visee sur le haut du corps tant que le lock est actif (le lock n'existe qu'avec des tomates).
+    void UpdateAimLayer()
+    {
+        if (animator == null || aimLayerIndex < 0) return;
+        bool aiming = lockSystem != null && lockSystem.IsLocked && currentTomatoCount > 0
+                      && (health == null || !health.IsDead());
+        float target = aiming ? 1f : 0f;
+        float step = aimBlendDuration > 0f ? Time.deltaTime / aimBlendDuration : 1f;
+        animator.SetLayerWeight(aimLayerIndex, Mathf.MoveTowards(animator.GetLayerWeight(aimLayerIndex), target, step));
     }
 
     bool CanThrow()

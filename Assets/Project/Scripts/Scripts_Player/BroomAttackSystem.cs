@@ -26,6 +26,8 @@ public class BroomAttackSystem : MonoBehaviour
 
     private bool isGrabbed = false;
     private Animator animator;
+    // Par nom et non par numero : le calque Aim (tomates) est insere sous Upper Body.
+    private int UpperBodyLayer => animator.GetLayerIndex("Upper Body");
     void Start()
     {
         if (stats == null)
@@ -180,7 +182,7 @@ public class BroomAttackSystem : MonoBehaviour
         // ACTIVER LE LAYER UPPER BODY + TRIGGER
         if (animator != null)
         {
-            animator.SetLayerWeight(1, 1f);
+            animator.SetLayerWeight(UpperBodyLayer, 1f);
             animator.SetTrigger("BroomAttack");
         }
 
@@ -644,7 +646,7 @@ public class BroomAttackSystem : MonoBehaviour
             broomAttackRoutine = null;
             isAttacking = false;
             if (animator != null)
-                animator.SetLayerWeight(1, 0f);
+                animator.SetLayerWeight(UpperBodyLayer, 0f);
             Debug.Log("BroomAttack: CANCELLED by grab");
         }
     }
@@ -665,7 +667,7 @@ public class BroomAttackSystem : MonoBehaviour
         broomAttackRoutine = null;
         isAttacking = false;
         if (animator != null)
-            animator.SetLayerWeight(1, 0f);
+            animator.SetLayerWeight(UpperBodyLayer, 0f);
         Debug.Log("BroomAttack: CANCELLED by player hit");
     }
 

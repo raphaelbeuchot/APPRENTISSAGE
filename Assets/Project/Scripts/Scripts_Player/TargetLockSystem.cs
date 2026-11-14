@@ -27,6 +27,11 @@ public class TargetLockSystem : MonoBehaviour
     public Transform CurrentTarget => currentTarget;
 
     private PlayerLocalInput localInput;
+    private TomatoThrowSystem tomatoSystem;
+
+    // Le lock ne sert qu'aux tomates : pas de lock a zero tomate, et il se relache
+    // apres la derniere tomate lancee. Sans TomatoThrowSystem, comportement d'avant.
+    private bool HasTomatoes => tomatoSystem == null || tomatoSystem.GetTomatoCount() > 0;
 
     // Multi : input du joueur (PlayerLocalInput) s'il existe, sinon le singleton (solo inchange).
     private bool InputLockOnHeld => localInput != null ? localInput.LockOnHeld : PlayerInputManager.Instance.LockOnHeld;
@@ -37,11 +42,12 @@ public class TargetLockSystem : MonoBehaviour
         if (mainCamera == null)
             mainCamera = Camera.main;
         localInput = GetComponent<PlayerLocalInput>();
+        tomatoSystem = GetComponent<TomatoThrowSystem>();
     }
 
     private void Update()
     {
-        if (InputLockOnHeld)
+        if (InputLockOnHeld && HasTomatoes)
         {
             if (!IsLocked)
             {
