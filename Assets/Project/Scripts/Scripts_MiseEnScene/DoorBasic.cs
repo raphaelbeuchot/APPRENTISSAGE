@@ -65,6 +65,8 @@ public class DoorBasic : MonoBehaviour
 
     private bool isAnimating = false;
     private bool isFinalClose = false;
+    // Positions LOCALES (relatives au parent) : la porte peut etre deplacee avec son parent
+    // (modules de la salle infinie du boss) sans revenir a son ancienne place en s'ouvrant.
     private Vector3 closedPos;
     private Vector3 openPos;
     private Transform playerTransform;
@@ -75,8 +77,9 @@ public class DoorBasic : MonoBehaviour
 
     private void Start()
     {
-        closedPos = transform.position;
-        openPos   = closedPos + Vector3.up * GetDoorHeight();
+        closedPos = transform.localPosition;
+        Vector3 rise = Vector3.up * GetDoorHeight();
+        openPos   = closedPos + (transform.parent != null ? transform.parent.InverseTransformVector(rise) : rise);
 
         IsEnabled = startEnabled;
 
@@ -98,8 +101,9 @@ public class DoorBasic : MonoBehaviour
         if (!IsEnabled || playerTransform == null) return;
 
         // Distance horizontale uniquement (XZ) -- la porte monte en Y, la distance 3D fausserait les checks
+        Vector3 closedWorld = transform.parent != null ? transform.parent.TransformPoint(closedPos) : closedPos;
         float dist = Vector2.Distance(
-            new Vector2(closedPos.x, closedPos.z),
+            new Vector2(closedWorld.x, closedWorld.z),
             new Vector2(playerTransform.position.x, playerTransform.position.z));
 
         // InteractBubble gere sa propre visibilite -- pas d'appel Show/Hide ici
@@ -185,7 +189,7 @@ public class DoorBasic : MonoBehaviour
         if (audioSource != null && closeSound != null)
             audioSource.PlayOneShot(closeSound);
 
-        StartCoroutine(AnimateDoor(transform.position, closedPos, closeDuration, () =>
+        StartCoroutine(AnimateDoor(transform.localPosition, closedPos, closeDuration, () =>
         {
             Debug.Log("[DoorBasic] Refermee.");
             if (isFinalClose)
@@ -213,11 +217,11 @@ public class DoorBasic : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             float t = openCurve.Evaluate(Mathf.Clamp01(elapsed / duration));
-            transform.position = Vector3.Lerp(from, to, t);
+            transform.localPosition = Vector3.Lerp(from, to, t);
             yield return null;
         }
 
-        transform.position = to;
+        transform.localPosition = to;
         isAnimating = false;
         onComplete?.Invoke();
     }
