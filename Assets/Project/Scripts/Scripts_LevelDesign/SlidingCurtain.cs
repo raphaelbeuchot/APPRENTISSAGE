@@ -21,6 +21,9 @@ public class SlidingCurtain : MonoBehaviour
 
     [Header("Ouverture")]
     [SerializeField] private OpeningMode mode = OpeningMode.LateralTwoPanels;
+    [Tooltip("Attente entre l'ordre d'ouverture (Open) et le debut du mouvement (s). Sert a decaler les rideaux " +
+             "d'une cascade lancee par un seul trigger.")]
+    [Min(0f)] [SerializeField] private float delay = 0f;
     [Tooltip("Temps d'ouverture (s).")]
     [SerializeField] private float duration = 1f;
     [Tooltip("Distance parcourue par chaque panneau (m).")]
@@ -53,6 +56,8 @@ public class SlidingCurtain : MonoBehaviour
 
     private IEnumerator OpenRoutine()
     {
+        if (delay > 0f) yield return new WaitForSeconds(delay);
+
         Vector3 right = transform.right;
         Vector3 up = transform.up;
 

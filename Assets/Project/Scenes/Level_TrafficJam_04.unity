@@ -19859,7 +19859,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b6403e8bfb5c314fb2fea30f4fd23ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CurtainTrigger
-  curtain: {fileID: 1403802313}
+  curtains:
+  - {fileID: 1403802313}
+  - {fileID: 2039149997}
+  - {fileID: 846135587}
+  - {fileID: 1372298701}
+  curtain: {fileID: 0}
 --- !u!65 &347757645
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -32794,8 +32799,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1.2000002
-  widthSource: {fileID: 1399701674331303035}
+  usedWidth: 1.1999999
+  widthSource: {fileID: 1386927541}
 --- !u!23 &561584258
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -37027,17 +37032,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1435904409}
   m_SourcePrefab: {fileID: 100100000, guid: 265b95b0768b200439126120894c07a1, type: 3}
---- !u!114 &630568484 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 630568483}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1435904407}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &631527347
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -49084,6 +49078,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b6403e8bfb5c314fb2fea30f4fd23ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CurtainTrigger
+  curtains: []
   curtain: {fileID: 0}
 --- !u!65 &842916929
 BoxCollider:
@@ -49356,6 +49351,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlidingCurtain
   mode: 2
+  delay: 2
   duration: 1
   distance: 3
   leftPanel: {fileID: 0}
@@ -61963,7 +61959,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b6403e8bfb5c314fb2fea30f4fd23ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CurtainTrigger
-  curtain: {fileID: 1372298701}
+  curtains:
+  - {fileID: 1372298701}
+  curtain: {fileID: 0}
 --- !u!65 &1070063341
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -79316,6 +79314,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlidingCurtain
   mode: 0
+  delay: 3
   duration: 1
   distance: 3
   leftPanel: {fileID: 1644610185}
@@ -79823,17 +79822,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1380846529 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 1380846525}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1380846527}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!4 &1381489539 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
@@ -80316,6 +80304,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1386927541 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 1386927537}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1386927539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!114 &1386927546
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -81604,6 +81603,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlidingCurtain
   mode: 0
+  delay: 0
   duration: 1
   distance: 3
   leftPanel: {fileID: 2062144356}
@@ -89371,6 +89371,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b6403e8bfb5c314fb2fea30f4fd23ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CurtainTrigger
+  curtains: []
   curtain: {fileID: 0}
 --- !u!65 &1541134567
 BoxCollider:
@@ -102297,6 +102298,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1741039014 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 1741039010}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1741039012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &1743701351
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -112544,7 +112556,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b6403e8bfb5c314fb2fea30f4fd23ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CurtainTrigger
-  curtain: {fileID: 2039149997}
+  curtains:
+  - {fileID: 2039149997}
+  curtain: {fileID: 0}
 --- !u!65 &1909718474
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -114135,8 +114149,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1
-  widthSource: {fileID: 1380846529}
+  usedWidth: 1.0000001
+  widthSource: {fileID: 1741039014}
 --- !u!23 &1928467117
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -119013,8 +119027,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1.0000004
-  widthSource: {fileID: 630568484}
+  usedWidth: 1
+  widthSource: {fileID: 2098569763}
 --- !u!23 &2015631814
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -119937,7 +119951,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b6403e8bfb5c314fb2fea30f4fd23ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CurtainTrigger
-  curtain: {fileID: 846135587}
+  curtains:
+  - {fileID: 846135587}
+  curtain: {fileID: 0}
 --- !u!65 &2025544920
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -120864,6 +120880,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlidingCurtain
   mode: 2
+  delay: 1
   duration: 1
   distance: 3
   leftPanel: {fileID: 0}
@@ -123883,6 +123900,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1198155867}
   m_SourcePrefab: {fileID: 100100000, guid: 265b95b0768b200439126120894c07a1, type: 3}
+--- !u!114 &2098569763 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 2098569762}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1198155865}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1 &2099640964
 GameObject:
   m_ObjectHideFlags: 0
@@ -126560,17 +126588,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 6547632}
   m_SourcePrefab: {fileID: 100100000, guid: 265b95b0768b200439126120894c07a1, type: 3}
---- !u!114 &1399701674331303035 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 1399701674331303034}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6547626}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!4 &1432951499076031157 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
