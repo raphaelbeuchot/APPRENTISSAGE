@@ -19,11 +19,30 @@ public class BombSpawner : MonoBehaviour
     private GameObject currentBomb;
     private BombProjectile currentBombProjectile;
     private bool isCharging = false;
+    private bool started = false;
 
     void Start()
     {
         SpawnBomb();
+        started = true;
         StartCoroutine(DetectionLoop());
+    }
+
+    // Decocher le script ne suffit pas a arreter une coroutine : on coupe la boucle a la main.
+    // Le lanceur et sa bombe restent en place, inertes (fin du boss Rush Hour IV).
+    void OnDisable()
+    {
+        StopAllCoroutines();
+        StopChargeAudio();
+        if (currentBombProjectile != null)
+            currentBombProjectile.HideChargeLine();
+    }
+
+    // Reactive : la boucle reprend (OnEnable passe avant Start au lancement, d'ou "started")
+    void OnEnable()
+    {
+        if (started)
+            StartCoroutine(DetectionLoop());
     }
 
     IEnumerator DetectionLoop()
