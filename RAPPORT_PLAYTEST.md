@@ -85,6 +85,7 @@
 
 ### Go with the flow (`Level_GoWithTheFlow01`)
 - [ ] UI de victoire sans textes ? (note du 2026-11-06)
+- [ ] Faire un petit couloir pour aller du tapis roulant vers la clé (note du 2026-11-15)
 
 ### Death Row I (`Level_WesternFlow`, « Row Deal »)
 - [ ] Uniformiser les blocks (note du 2026-11-07)
