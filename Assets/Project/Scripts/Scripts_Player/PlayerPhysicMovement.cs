@@ -396,6 +396,13 @@ public class PlayerPhysicsMovement : MonoBehaviour
             return;
         }
 
+        // Pilote automatique : la direction monde imposee remplace le stick (pleine course, pas de dash)
+        if (forcedMoveWorld.HasValue)
+        {
+            moveInput = WorldToCameraInput(forcedMoveWorld.Value);
+            return;
+        }
+
         Vector2 inputVector = InputMove;
 
         // NOUVEAU : Garder la magnitude AVANT de normaliser
@@ -839,6 +846,40 @@ public class PlayerPhysicsMovement : MonoBehaviour
         baseSpeed *= waterSlowdownMultiplier;
 
         return baseSpeed;
+    }
+
+    // === PILOTE AUTOMATIQUE (fin du boss Rush Hour IV, BossEndRun) ===
+    // Direction monde imposee (XZ) : remplace le stick dans HandleInput. null = stick normal.
+    private Vector3? forcedMoveWorld;
+
+    public bool HasForcedMove => forcedMoveWorld.HasValue;
+
+    public void SetForcedMove(Vector3 worldDirection)
+    {
+        worldDirection.y = 0f;
+        if (worldDirection.sqrMagnitude < 0.0001f) { forcedMoveWorld = null; return; }
+        forcedMoveWorld = worldDirection.normalized;
+    }
+
+    public void ClearForcedMove()
+    {
+        forcedMoveWorld = null;
+    }
+
+    // Inverse de GetCameraRelativeMovement : direction monde -> faux stick (x = droite camera, z = avant camera)
+    Vector3 WorldToCameraInput(Vector3 worldDir)
+    {
+        if (cameraTransform == null)
+            return worldDir;
+
+        Vector3 forward = cameraTransform.forward;
+        Vector3 right = cameraTransform.right;
+        forward.y = 0f;
+        right.y = 0f;
+        forward.Normalize();
+        right.Normalize();
+
+        return new Vector3(Vector3.Dot(worldDir, right), 0f, Vector3.Dot(worldDir, forward)).normalized;
     }
 
     Vector3 GetCameraRelativeMovement(Vector3 input)

@@ -45,6 +45,7 @@ public class LevelManager : MonoBehaviour
     private bool pauseBlocked = false;
     public bool IsPauseBlocked => pauseBlocked;
     public void AllowPause() { pauseBlocked = false; }
+    public void BlockPause() { pauseBlocked = true; }
 
     void Awake()
     {

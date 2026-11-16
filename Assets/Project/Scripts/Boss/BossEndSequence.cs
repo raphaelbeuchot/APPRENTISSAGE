@@ -31,6 +31,9 @@ public class BossEndSequence : MonoBehaviour
     [Header("Spheres qui retrecissent")]
     [Tooltip("Duree du retrecissement des spheres jusqu'a zero (s), avant la montee du cylindre.")]
     [Min(0f)] [SerializeField] private float spheresShrinkDuration = 1f;
+    [Tooltip("Depart de la montee du cylindre, compte depuis le DEBUT du retrecissement des spheres (s). " +
+             "Egal a Spheres Shrink Duration = le cylindre attend la fin des spheres ; plus court = chevauchement.")]
+    [Min(0f)] [SerializeField] private float cylinderDelay = 1f;
 
     [Header("Cylindre qui grossit et s'illumine")]
     [Tooltip("Duree de la montee (s) : echelle et emission ensemble.")]
@@ -91,20 +94,10 @@ public class BossEndSequence : MonoBehaviour
     {
         if (delay > 0f) yield return new WaitForSeconds(delay);
 
-        // 1. Spheres : echelle jusqu'a zero, puis cachees
-        if (spheres != null)
-        {
-            Vector3 sphereScale = spheres.localScale;
-            float s0 = Time.time;
-            while (Time.time - s0 < spheresShrinkDuration)
-            {
-                float p = (Time.time - s0) / spheresShrinkDuration;
-                spheres.localScale = sphereScale * (1f - Mathf.SmoothStep(0f, 1f, p));
-                yield return null;
-            }
-            spheres.localScale = Vector3.zero;
-            spheres.gameObject.SetActive(false);
-        }
+        // 1. Spheres : echelle jusqu'a zero, puis cachees (en parallele) ; le cylindre part "Cylinder Delay"
+        //    apres le debut du retrecissement
+        if (spheres != null) StartCoroutine(ShrinkSpheres());
+        if (cylinderDelay > 0f) yield return new WaitForSeconds(cylinderDelay);
 
         if (cylinder == null)
         {
@@ -189,6 +182,20 @@ public class BossEndSequence : MonoBehaviour
 
         Debug.Log("[BOSS END] Decor evacue");
         onDecorEvacuated?.Invoke();
+    }
+
+    private IEnumerator ShrinkSpheres()
+    {
+        Vector3 sphereScale = spheres.localScale;
+        float s0 = Time.time;
+        while (Time.time - s0 < spheresShrinkDuration)
+        {
+            float p = (Time.time - s0) / spheresShrinkDuration;
+            spheres.localScale = sphereScale * (1f - Mathf.SmoothStep(0f, 1f, p));
+            yield return null;
+        }
+        spheres.localScale = Vector3.zero;
+        spheres.gameObject.SetActive(false);
     }
 
     private IEnumerator MovePitLid()
