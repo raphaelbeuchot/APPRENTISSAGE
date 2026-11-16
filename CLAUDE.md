@@ -20,3 +20,9 @@ Lu à chaque démarrage. L'architecture du jeu est dans `Assets/Project/CLAUDE.m
 
 ## Reprise de chantier
 Résumer l'état en quelques lignes, demander l'intention du jour, ne pas partir lire le code tout de suite.
+
+## Méthode (audit du 2026-11-16)
+- Mise en scène à plusieurs déclencheurs (événements, triggers, délais, fondus) : d'abord un **tableau du déroulé** (temps, événement, ce qui part, état obtenu), validé avec l'utilisateur, puis le code.
+- Avant de proposer un branchement : **lire ce qui est déjà branché** dans la scène (UnityEvents, délais, durées, priorités, objets actifs).
+- Rythme testé → commité : pas plus de deux ou trois morceaux non testés à la fois.
+- Textes du jeu en français : c'est l'utilisateur qui les écrit. Pour une ligne de la Sheet VF, fournir clé, EN, contexte, source, et laisser FR vide.
