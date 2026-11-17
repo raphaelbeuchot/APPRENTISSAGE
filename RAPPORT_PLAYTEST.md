@@ -107,3 +107,11 @@
 - Gants de boxe des Hitters, tête du Blinder, Bright Eyes, polish de l'anim climb → `CE_QUI_RESTE_A_FAIRE.md`
 - Points du boss (Cleaned Up, icônes des pupitres, textes de victoire, surcharge avant explosion) → `BOSS_RUSH_HOUR_IV.md`
 - Version française → `VF_DEMO.md`
+
+## Session du 2026-11-16
+
+### AcidFloor II (`Level_Acid_02`, « Heart goes Broom », juste après le Trou normand)
+- [ ] « Cleaned Up ! » ne marchera pas sur les ennemis qui apparaissent plus tard : tous les ennemis ne sont pas actifs dès le début du niveau. À régler (piste à vérifier : ennemis comptés au lancement seulement ?). Peut-être une des causes du « Cleaned Up qui n'a pas marché » de la session du 2026-11-13.
+
+### Trou normand (`Level_TrouNormand`)
+- [ ] Build démo du 2026-11-16 : « ??? » grisé juste après le Trou normand dans la liste des niveaux. Cause : sans victoire, le Trou normand n'était jamais validé, donc Heart goes Broom restait verrouillé. Corrigé dans `TransitionRoomDoor` (valide le niveau en cours avant de charger le suivant, s'il est débloqué et pas encore validé). **À tester** depuis MainMenu : traverser le Trou normand → console « Niveau complete : TrouNormand | Suivant debloque : Heart goes Broom », puis Heart goes Broom visible dans la liste ; vérifier aussi un niveau normal.

@@ -102,6 +102,10 @@ public class TransitionRoomDoor : MonoBehaviour
         // Delai avant fade
         yield return new WaitForSeconds(delayAfterClose);
 
+        // Niveau sans victoire (interlude type Trou normand) : le valider ici pour debloquer le suivant.
+        // Niveaux normaux : deja valides a la victoire, rien ne change. Scene hors catalogue : IsUnlocked faux, rien ne se passe.
+        CompleteCurrentLevelIfNeeded();
+
         // Fade + niveau suivant via SceneFader (loading cache par la porte d'entree)
         int nextScene = GetNextSceneIndex();
         if (nextScene != -1 && SceneFader.Instance != null)
@@ -120,6 +124,16 @@ public class TransitionRoomDoor : MonoBehaviour
     // ============================================
     // HELPERS
     // ============================================
+
+    private void CompleteCurrentLevelIfNeeded()
+    {
+        LevelProgressionManager progression = LevelProgressionManager.Instance;
+        if (progression == null) return;
+
+        int current = SceneManager.GetActiveScene().buildIndex;
+        if (progression.IsUnlocked(current) && !progression.IsCompleted(current))
+            progression.CompleteLevel(current);
+    }
 
     private int GetNextSceneIndex()
     {

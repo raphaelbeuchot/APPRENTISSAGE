@@ -10,7 +10,7 @@ Lu à chaque démarrage. L'architecture du jeu est dans `Assets/Project/CLAUDE.m
 - `NOTES_PLAYTEST.md` : boîte de réception brute (F2 en jeu, notes dictées).
 - `RAPPORT_PLAYTEST.md` : actions propres à un niveau, une session par section.
 - `CE_QUI_RESTE_A_FAIRE.md` : bugs, design, tech, polish qui dépassent un niveau.
-- Un doc par gros chantier : `BOSS_RUSH_HOUR_IV.md`, `VF_DEMO.md`, `MULTIJOUEUR_LOCAL.md`, `PASSAGE_EN_PRODUCTION.md`, `OUTILS_FORMES.md`…
+- Un doc par gros chantier : `BOSS_RUSH_HOUR_IV.md`, `VF_DEMO.md`, `MULTIJOUEUR_LOCAL.md`, `PASSAGE_EN_PRODUCTION.md`, `OUTILS_FORMES.md`, `SORTIE_DEMO.md` (le monde réel : build, version, envoi, testeurs, licences)…
 - Une prise de note de l'utilisateur hors de ces docs : la ranger dedans (par niveau → RAPPORT, sinon → CE_QUI_RESTE ou le doc du chantier).
 
 ## Deux machines (maison, bureau)
