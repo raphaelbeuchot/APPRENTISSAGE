@@ -115,3 +115,4 @@
 
 ### Trou normand (`Level_TrouNormand`)
 - [ ] Build démo du 2026-11-16 : « ??? » grisé juste après le Trou normand dans la liste des niveaux. Cause : sans victoire, le Trou normand n'était jamais validé, donc Heart goes Broom restait verrouillé. Corrigé dans `TransitionRoomDoor` (valide le niveau en cours avant de charger le suivant, s'il est débloqué et pas encore validé). **À tester** depuis MainMenu : traverser le Trou normand → console « Niveau complete : TrouNormand | Suivant debloque : Heart goes Broom », puis Heart goes Broom visible dans la liste ; vérifier aussi un niveau normal.
+- [ ] Au même passage : vérifier que le flou du point de vue est toujours là (profil `CM_PointdeVue`, propre au Trou normand). La profondeur de champ du profil partagé `SampleSceneProfile` a été coupée le 2026-11-17 (invisible, 2,5 ms GPU).
