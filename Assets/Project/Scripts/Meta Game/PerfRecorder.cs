@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Unity.Profiling;
+using Unity.Profiling.LowLevel;
+using Unity.Profiling.LowLevel.Unsafe;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using System;
@@ -144,6 +146,7 @@ public class PerfRecorder : MonoBehaviour
             if (kb.f7Key.wasPressedThisFrame) ToggleLights();
             if (kb.f8Key.wasPressedThisFrame) ToggleReactive();
             if (kb.f9Key.wasPressedThisFrame) WriteSnapshot();
+            if (kb.f4Key.wasPressedThisFrame && !gpuCaptureRunning) StartCoroutine(GpuCapture());
             if (kb.f10Key.wasPressedThisFrame) ToggleSsao();
             if (kb.f11Key.wasPressedThisFrame) ToggleTaa();
             if (kb.f12Key.wasPressedThisFrame) CycleRenderScale();
@@ -365,6 +368,91 @@ public class PerfRecorder : MonoBehaviour
         if (taaOff) s += "taa+";
         if (renderScaleIndex != 0) s += "scale" + RENDER_SCALES[renderScaleIndex].ToString("F2", CultureInfo.InvariantCulture) + "+";
         return s.Length == 0 ? "-" : s.TrimEnd('+');
+    }
+
+    // ============================================
+    // TEMPS GPU PAR ETAPE DU RENDU (F4)
+    // ============================================
+
+    private const int GPU_CAPTURE_FRAMES = 120;
+    private bool gpuCaptureRunning;
+
+    private System.Collections.IEnumerator GpuCapture()
+    {
+        gpuCaptureRunning = true;
+        CultureInfo inv = CultureInfo.InvariantCulture;
+        string date = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("# Temps GPU par etape " + date);
+        sb.AppendLine("scene: " + SceneManager.GetActiveScene().name + " | etat cycle: " + cycleState + " | off: " + OffLabel());
+        sb.AppendLine("ecran: " + Screen.width + "x" + Screen.height + " | GPU: " + SystemInfo.graphicsDeviceName + " | API: " + SystemInfo.graphicsDeviceType);
+        sb.AppendLine("supportsGpuRecorder: " + SystemInfo.supportsGpuRecorder);
+
+        // Marqueurs disponibles : ceux qui mesurent le GPU, sinon ceux de la categorie Render
+        List<ProfilerRecorderHandle> handles = new List<ProfilerRecorderHandle>();
+        ProfilerRecorderHandle.GetAvailable(handles);
+        List<ProfilerRecorderHandle> gpuHandles = new List<ProfilerRecorderHandle>();
+        foreach (ProfilerRecorderHandle h in handles)
+        {
+            ProfilerRecorderDescription d = ProfilerRecorderHandle.GetDescription(h);
+            if ((d.Flags & MarkerFlags.SampleGPU) != 0) gpuHandles.Add(h);
+        }
+        bool flagged = gpuHandles.Count > 0;
+        if (!flagged)
+            foreach (ProfilerRecorderHandle h in handles)
+                if (ProfilerRecorderHandle.GetDescription(h).Category == ProfilerCategory.Render) gpuHandles.Add(h);
+        sb.AppendLine("marqueurs: " + handles.Count + " disponibles, " + gpuHandles.Count + " suivis (" + (flagged ? "marques GPU" : "categorie Render, pas de marque GPU") + ")");
+
+        List<ProfilerRecorder> recorders = new List<ProfilerRecorder>();
+        List<string> names = new List<string>();
+        foreach (ProfilerRecorderHandle h in gpuHandles)
+        {
+            ProfilerRecorder r = new ProfilerRecorder(h, 1, ProfilerRecorderOptions.GpuRecorder | ProfilerRecorderOptions.SumAllSamplesInFrame);
+            r.Start();
+            recorders.Add(r);
+            names.Add(ProfilerRecorderHandle.GetDescription(h).Name);
+        }
+
+        double[] sums = new double[recorders.Count];
+        double gpuTotal = 0;
+        int gpuTotalSamples = 0;
+        Debug.Log("[PerfRecorder] Capture GPU par etape (" + GPU_CAPTURE_FRAMES + " images)...");
+
+        for (int frame = 0; frame < GPU_CAPTURE_FRAMES; frame++)
+        {
+            yield return null;
+            for (int i = 0; i < recorders.Count; i++)
+                sums[i] += recorders[i].LastValue * 1e-6;
+
+            FrameTimingManager.CaptureFrameTimings();
+            if (FrameTimingManager.GetLatestTimings(1, frameTimings) > 0 && frameTimings[0].gpuFrameTime > 0)
+            {
+                gpuTotal += frameTimings[0].gpuFrameTime;
+                gpuTotalSamples++;
+            }
+        }
+
+        foreach (ProfilerRecorder r in recorders) r.Dispose();
+
+        sb.AppendLine("temps GPU total par image (FrameTiming): " + (gpuTotalSamples > 0 ? (gpuTotal / gpuTotalSamples).ToString("F2", inv) + " ms" : "indisponible"));
+        sb.AppendLine("Attention : les etapes s'emboitent (une etape parente contient ses enfants), ne pas additionner.");
+        sb.AppendLine();
+        sb.AppendLine("## Etapes, ms GPU par image (moyenne sur " + GPU_CAPTURE_FRAMES + " images)");
+
+        List<KeyValuePair<string, double>> rows = new List<KeyValuePair<string, double>>();
+        for (int i = 0; i < sums.Length; i++)
+        {
+            double avg = sums[i] / GPU_CAPTURE_FRAMES;
+            if (avg >= 0.005) rows.Add(new KeyValuePair<string, double>(names[i], avg));
+        }
+        foreach (KeyValuePair<string, double> kv in rows.OrderByDescending(k => k.Value))
+            sb.AppendLine("- " + kv.Value.ToString("F3", inv) + " | " + kv.Key);
+        if (rows.Count == 0) sb.AppendLine("(aucune mesure : GPU recorder non pris en charge ici)");
+
+        string path = Path.Combine(Application.persistentDataPath, "gpu_" + date + ".txt");
+        File.WriteAllText(path, sb.ToString());
+        Debug.Log("[PerfRecorder] Temps GPU par etape : " + path);
+        gpuCaptureRunning = false;
     }
 
     // ============================================
