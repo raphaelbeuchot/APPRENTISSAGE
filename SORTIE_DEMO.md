@@ -27,7 +27,7 @@ Rappels :
     - [x] Build en plein écran sur secteur (2026-11-17) : les alertes n'ont plus d'incidence, mais ~40 FPS dans la start zone et partout. Development Build mesuré (2880×1659, Level_Ice) : GPU bloqué à ~22 ms, ombres et Volumes sans effet → **le coût est par pixel**.
     - Éditeur en Game view 2880×1800 (concorde avec le build : 45 FPS contre 42), HandleHurdles, coupures cumulées : rien 22,1 ms → SSAO coupée 19,8 (−2,3) → **TAA coupée 13,7 (−6,1)** → Render Scale 0,75 : 10,0 (plafond éditeur). Ordre des coûts : TAA, puis résolution, puis SSAO (renderer feature de `PC_Renderer`).
     - Suggestion non tranchée : Max = TAA + SSAO + scale 1 ; Haute = SMAA/FXAA + SSAO + scale 1 ; Basse = FXAA, sans SSAO, scale 0,75. Question ouverte : garder la TAA par défaut ?
-    - [ ] Trou de 4 s sans image dans le CSV du Development Build (vers 78 s) : changement de fenêtre ou gel ?
+    - Trou de 4 s sans image dans le CSV du Development Build (vers 78 s) : probablement un changement de fenêtre. À surveiller si ça se reproduit.
     - [ ] Option Qualité dans le menu (Basse / Haute / Max), voulue par l'utilisateur : utile pour les machines modestes ou sur batterie. Contenu à définir.
     - [ ] Petits à-coups : première alerte (préchauffage shader / matériau probable), ~20 Ko alloués par image (GC), à vérifier en Development Build.
 - [ ] **Product Name propre à la démo** dans le profil, sinon la démo partage sa sauvegarde avec le jeu complet (voir `CE_QUI_RESTE_A_FAIRE.md`).
