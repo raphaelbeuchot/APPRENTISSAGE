@@ -4,7 +4,10 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Unity.Profiling;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using System;
+using System.Linq;
+using System.Text;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -14,6 +17,8 @@ using System.IO;
 // (meme dossier que Player.log) : scene, etat du cycle, FPS, temps par image, CPU, GPU, rendu, memoire.
 // Interrupteurs A/B (colonne "off") : F5 ombres, F6 post-process (Volumes), F7 lumieres sauf directionnelles,
 // F8 objets reactifs au cycle (ampoules...). Rien n'est enregistre dans les scenes ; tout revient au changement de scene.
+// F9 : photo de l'image (snapshot_<date>.txt, meme dossier) : cameras, reglages URP, Volumes, lumieres,
+// objets visibles par shader, particules, canvas. En editeur, fermer la Scene view (elle compte comme visible).
 // S'installe tout seul au lancement (rien a poser dans les scenes), editeur et builds de dev seulement.
 public class PerfRecorder : MonoBehaviour
 {
@@ -23,6 +28,15 @@ public class PerfRecorder : MonoBehaviour
     private readonly Dictionary<Volume, bool> savedVolumes = new Dictionary<Volume, bool>();
     private readonly Dictionary<Light, bool> savedLights = new Dictionary<Light, bool>();
     private readonly Dictionary<GameObject, bool> savedReactive = new Dictionary<GameObject, bool>();
+
+    // F10 SSAO, F11 TAA, F12 Render Scale. SSAO et Render Scale modifient l'asset URP :
+    // toujours restaures (changement de scene, arret du Play, fermeture). Ne pas faire Ctrl+S pendant le test.
+    private bool ssaoOff, taaOff;
+    private readonly List<ScriptableRendererFeature> savedSsao = new List<ScriptableRendererFeature>();
+    private readonly Dictionary<UniversalAdditionalCameraData, AntialiasingMode> savedAA = new Dictionary<UniversalAdditionalCameraData, AntialiasingMode>();
+    private static readonly float[] RENDER_SCALES = { 1f, 0.75f, 0.5f };
+    private int renderScaleIndex;
+    private float originalRenderScale = -1f;
 
     private const float SAMPLE_INTERVAL = 0.5f;
 
@@ -69,6 +83,31 @@ public class PerfRecorder : MonoBehaviour
         SentinelCycleManager.OnCycleChanged -= OnCycleChanged;
         SceneManager.sceneLoaded -= OnSceneLoaded;
         StopRecording();
+        RestoreUrpAsset();
+    }
+
+    void OnApplicationQuit()
+    {
+        RestoreUrpAsset();
+    }
+
+    // Remet l'asset URP comme a l'origine (SSAO, Render Scale)
+    private void RestoreUrpAsset()
+    {
+        if (ssaoOff)
+        {
+            foreach (ScriptableRendererFeature f in savedSsao)
+                if (f != null) f.SetActive(true);
+            savedSsao.Clear();
+            ssaoOff = false;
+        }
+        if (originalRenderScale > 0f)
+        {
+            UniversalRenderPipelineAsset urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+            if (urp != null) urp.renderScale = originalRenderScale;
+            originalRenderScale = -1f;
+        }
+        renderScaleIndex = 0;
     }
 
     private void OnCycleChanged(SentinelCycleManager.GameState state)
@@ -85,6 +124,9 @@ public class PerfRecorder : MonoBehaviour
         savedVolumes.Clear();
         savedLights.Clear();
         savedReactive.Clear();
+        RestoreUrpAsset();
+        taaOff = false;
+        savedAA.Clear();
     }
 
     void Update()
@@ -101,6 +143,10 @@ public class PerfRecorder : MonoBehaviour
             if (kb.f6Key.wasPressedThisFrame) TogglePost();
             if (kb.f7Key.wasPressedThisFrame) ToggleLights();
             if (kb.f8Key.wasPressedThisFrame) ToggleReactive();
+            if (kb.f9Key.wasPressedThisFrame) WriteSnapshot();
+            if (kb.f10Key.wasPressedThisFrame) ToggleSsao();
+            if (kb.f11Key.wasPressedThisFrame) ToggleTaa();
+            if (kb.f12Key.wasPressedThisFrame) CycleRenderScale();
         }
 
         if (!recording) return;
@@ -234,6 +280,80 @@ public class PerfRecorder : MonoBehaviour
         Debug.Log("[PerfRecorder] Objets reactifs au cycle " + (reactiveOff ? "coupes (" + savedReactive.Count + ")" : "retablis"));
     }
 
+    private void ToggleSsao()
+    {
+        if (ssaoOff)
+        {
+            foreach (ScriptableRendererFeature f in savedSsao)
+                if (f != null) f.SetActive(true);
+            savedSsao.Clear();
+            ssaoOff = false;
+        }
+        else
+        {
+            savedSsao.Clear();
+            foreach (ScriptableRendererData data in GetRendererDataList())
+            {
+                if (data == null) continue;
+                foreach (ScriptableRendererFeature f in data.rendererFeatures)
+                {
+                    if (f == null || !f.isActive) continue;
+                    if (f.GetType().Name != "ScreenSpaceAmbientOcclusion") continue;
+                    f.SetActive(false);
+                    savedSsao.Add(f);
+                }
+            }
+            ssaoOff = savedSsao.Count > 0;
+        }
+        Debug.Log("[PerfRecorder] SSAO " + (ssaoOff ? "coupee" : "retablie (ou introuvable)"));
+    }
+
+    // La liste des renderers de l'asset URP n'est pas publique : lecture du champ serialise
+    private static ScriptableRendererData[] GetRendererDataList()
+    {
+        UniversalRenderPipelineAsset urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+        if (urp == null) return new ScriptableRendererData[0];
+        System.Reflection.FieldInfo field = typeof(UniversalRenderPipelineAsset).GetField("m_RendererDataList",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        ScriptableRendererData[] list = field != null ? field.GetValue(urp) as ScriptableRendererData[] : null;
+        return list ?? new ScriptableRendererData[0];
+    }
+
+    private void ToggleTaa()
+    {
+        taaOff = !taaOff;
+        if (taaOff)
+        {
+            savedAA.Clear();
+            foreach (Camera c in Camera.allCameras)
+            {
+                UniversalAdditionalCameraData data = c.GetComponent<UniversalAdditionalCameraData>();
+                if (data == null) continue;
+                savedAA[data] = data.antialiasing;
+                data.antialiasing = AntialiasingMode.None;
+            }
+        }
+        else
+        {
+            foreach (KeyValuePair<UniversalAdditionalCameraData, AntialiasingMode> kv in savedAA)
+                if (kv.Key != null) kv.Key.antialiasing = kv.Value;
+            savedAA.Clear();
+        }
+        Debug.Log("[PerfRecorder] Anticrenelage camera " + (taaOff ? "coupe" : "retabli"));
+    }
+
+    private void CycleRenderScale()
+    {
+        UniversalRenderPipelineAsset urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+        if (urp == null) return;
+        if (originalRenderScale < 0f) originalRenderScale = urp.renderScale;
+
+        renderScaleIndex = (renderScaleIndex + 1) % RENDER_SCALES.Length;
+        urp.renderScale = renderScaleIndex == 0 ? originalRenderScale : RENDER_SCALES[renderScaleIndex];
+        if (renderScaleIndex == 0) originalRenderScale = -1f;
+        Debug.Log("[PerfRecorder] Render Scale " + urp.renderScale.ToString("F2", CultureInfo.InvariantCulture));
+    }
+
     private string OffLabel()
     {
         string s = "";
@@ -241,7 +361,181 @@ public class PerfRecorder : MonoBehaviour
         if (postOff) s += "post+";
         if (lightsOff) s += "lumieres+";
         if (reactiveOff) s += "ampoules+";
+        if (ssaoOff) s += "ssao+";
+        if (taaOff) s += "taa+";
+        if (renderScaleIndex != 0) s += "scale" + RENDER_SCALES[renderScaleIndex].ToString("F2", CultureInfo.InvariantCulture) + "+";
         return s.Length == 0 ? "-" : s.TrimEnd('+');
+    }
+
+    // ============================================
+    // PHOTO DE L'IMAGE (F9)
+    // ============================================
+
+    private class ShaderGroup
+    {
+        public int count, transparent;
+        public long tris;
+    }
+
+    private void WriteSnapshot()
+    {
+        CultureInfo inv = CultureInfo.InvariantCulture;
+        StringBuilder sb = new StringBuilder();
+        string date = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+
+        sb.AppendLine("# Snapshot " + date);
+        sb.AppendLine("scene: " + SceneManager.GetActiveScene().name + " | etat cycle: " + cycleState + " | off: " + OffLabel());
+        sb.AppendLine("ecran: " + Screen.width + "x" + Screen.height + " | GPU: " + SystemInfo.graphicsDeviceName);
+
+        // --- URP ---
+        UniversalRenderPipelineAsset urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+        if (urp != null)
+            sb.AppendLine("URP: " + urp.name + " | renderScale " + urp.renderScale.ToString("F2", inv) + " | MSAA " + urp.msaaSampleCount
+                + " | HDR " + urp.supportsHDR + " | shadowDistance " + urp.shadowDistance.ToString("F0", inv));
+
+        // --- Cameras ---
+        sb.AppendLine();
+        sb.AppendLine("## Cameras actives");
+        Camera mainCam = Camera.main;
+        foreach (Camera c in Camera.allCameras)
+        {
+            UniversalAdditionalCameraData data = c.GetComponent<UniversalAdditionalCameraData>();
+            string extra = data != null
+                ? " | type " + data.renderType + " | postFX " + data.renderPostProcessing + " | AA " + data.antialiasing
+                  + " | ombres " + data.renderShadows + " | stack " + (data.cameraStack != null ? data.cameraStack.Count : 0)
+                : "";
+            sb.AppendLine("- " + PathOf(c.transform) + (c == mainCam ? " (MAIN)" : "") + " | depth " + c.depth
+                + " | far " + c.farClipPlane.ToString("F0", inv) + " | rect " + c.rect + " | target " + (c.targetTexture != null ? c.targetTexture.name : "ecran") + extra);
+        }
+
+        // --- Volumes ---
+        sb.AppendLine();
+        sb.AppendLine("## Volumes actifs (* = agit sur la camera main)");
+        Vector3 camPos = mainCam != null ? mainCam.transform.position : Vector3.zero;
+        foreach (Volume v in FindObjectsByType<Volume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            if (!v.enabled) continue;
+            bool acts = v.isGlobal || VolumeContains(v, camPos);
+            VolumeProfile p = v.HasInstantiatedProfile() ? v.profile : v.sharedProfile;
+            string comps = "";
+            if (p != null)
+                foreach (VolumeComponent vc in p.components)
+                    if (vc.active) comps += vc.GetType().Name + " ";
+            sb.AppendLine((acts ? "* " : "- ") + PathOf(v.transform) + " | " + (v.isGlobal ? "global" : "local") + " | prio " + v.priority.ToString("F0", inv)
+                + " | poids " + v.weight.ToString("F2", inv) + " | profil " + (p != null ? p.name : "aucun") + " | " + comps.Trim());
+        }
+
+        // --- Lumieres ---
+        sb.AppendLine();
+        sb.AppendLine("## Lumieres allumees");
+        foreach (Light l in FindObjectsByType<Light>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            if (!l.enabled) continue;
+            sb.AppendLine("- " + PathOf(l.transform) + " | " + l.type + " | intensite " + l.intensity.ToString("F2", inv)
+                + " | portee " + l.range.ToString("F1", inv) + " | ombres " + l.shadows + " | mode " + l.renderMode);
+        }
+
+        // --- Objets visibles par shader ---
+        Dictionary<string, ShaderGroup> byShader = new Dictionary<string, ShaderGroup>();
+        List<KeyValuePair<string, long>> heavy = new List<KeyValuePair<string, long>>();
+        Dictionary<string, int> byRoot = new Dictionary<string, int>();
+        int visible = 0;
+        long totalTris = 0;
+        foreach (Renderer r in FindObjectsByType<Renderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            if (!r.enabled || !r.isVisible) continue;
+            visible++;
+            long tris = TriangleCount(r);
+            totalTris += tris;
+
+            Material m = r.sharedMaterial;
+            string shader = m != null && m.shader != null ? m.shader.name : "(aucun materiau)";
+            bool transp = m != null && m.renderQueue >= 3000;
+            if (!byShader.TryGetValue(shader, out ShaderGroup g)) { g = new ShaderGroup(); byShader[shader] = g; }
+            g.count++;
+            g.tris += tris;
+            if (transp) g.transparent++;
+
+            heavy.Add(new KeyValuePair<string, long>(PathOf(r.transform) + " [" + r.GetType().Name + "]", tris));
+            string root = r.transform.root.name;
+            byRoot[root] = byRoot.TryGetValue(root, out int n) ? n + 1 : 1;
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("## Objets visibles : " + visible + " renderers, " + totalTris + " triangles (meshes seulement)");
+        sb.AppendLine("### Par shader (nombre | transparents | triangles)");
+        foreach (KeyValuePair<string, ShaderGroup> kv in byShader.OrderByDescending(k => k.Value.count))
+            sb.AppendLine("- " + kv.Key + " | " + kv.Value.count + " | " + kv.Value.transparent + " | " + kv.Value.tris);
+
+        sb.AppendLine("### Par objet racine (top 20, nombre de renderers)");
+        foreach (KeyValuePair<string, int> kv in byRoot.OrderByDescending(k => k.Value).Take(20))
+            sb.AppendLine("- " + kv.Key + " | " + kv.Value);
+
+        sb.AppendLine("### Plus gros en triangles (top 15)");
+        foreach (KeyValuePair<string, long> kv in heavy.OrderByDescending(k => k.Value).Take(15))
+            sb.AppendLine("- " + kv.Key + " | " + kv.Value);
+
+        // --- Particules ---
+        sb.AppendLine();
+        int playing = 0, particles = 0;
+        List<KeyValuePair<string, int>> ps = new List<KeyValuePair<string, int>>();
+        foreach (ParticleSystem p in FindObjectsByType<ParticleSystem>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            if (!p.isPlaying) continue;
+            playing++;
+            particles += p.particleCount;
+            ps.Add(new KeyValuePair<string, int>(PathOf(p.transform), p.particleCount));
+        }
+        sb.AppendLine("## Particules : " + playing + " systemes en cours, " + particles + " particules");
+        foreach (KeyValuePair<string, int> kv in ps.OrderByDescending(k => k.Value).Take(10))
+            sb.AppendLine("- " + kv.Key + " | " + kv.Value);
+
+        // --- Canvas ---
+        sb.AppendLine();
+        sb.AppendLine("## Canvas actifs (racines)");
+        foreach (Canvas cv in FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            if (!cv.enabled || !cv.isRootCanvas) continue;
+            int graphics = cv.GetComponentsInChildren<UnityEngine.UI.Graphic>(false).Length;
+            sb.AppendLine("- " + PathOf(cv.transform) + " | " + cv.renderMode + " | " + graphics + " elements graphiques");
+        }
+
+        string path = Path.Combine(Application.persistentDataPath, "snapshot_" + date + ".txt");
+        File.WriteAllText(path, sb.ToString());
+        Debug.Log("[PerfRecorder] Snapshot : " + path);
+    }
+
+    private static bool VolumeContains(Volume v, Vector3 pos)
+    {
+        foreach (Collider col in v.GetComponents<Collider>())
+        {
+            if (!col.enabled) continue;
+            if (Vector3.Distance(col.ClosestPoint(pos), pos) <= v.blendDistance + 0.001f) return true;
+        }
+        return false;
+    }
+
+    private static long TriangleCount(Renderer r)
+    {
+        Mesh mesh = null;
+        if (r is SkinnedMeshRenderer smr) mesh = smr.sharedMesh;
+        else
+        {
+            MeshFilter mf = r.GetComponent<MeshFilter>();
+            if (mf != null) mesh = mf.sharedMesh;
+        }
+        if (mesh == null) return 0;
+        long t = 0;
+        for (int i = 0; i < mesh.subMeshCount; i++) t += (long)mesh.GetIndexCount(i) / 3;
+        return t;
+    }
+
+    private static string PathOf(Transform t)
+    {
+        string p = t.name;
+        int depth = 0;
+        while (t.parent != null && depth < 3) { t = t.parent; p = t.name + "/" + p; depth++; }
+        return p;
     }
 
     // ============================================
