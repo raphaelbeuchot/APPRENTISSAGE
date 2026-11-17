@@ -19,7 +19,14 @@ Rappels :
 ## 2. Build
 
 - [x] Profil `Assets/Settings/Build Profiles/Demo Playtest` : Windows, symbole `DEMO_BUILD`, liste de scènes globale (vérifiée le 2026-11-16 : 42 scènes, tout le catalogue et les 4 courses multi présents).
-- [ ] Premier build complet (lancé le 2026-11-16, pour voir) : noter ici ce qui casse.
+- [x] Premier build complet (2026-11-16) : démo finie sans bug bloquant. Constats :
+  - [ ] « ??? » après le Trou normand : corrigé, à tester (voir `RAPPORT_PLAYTEST.md`).
+  - [ ] `NullReferenceException` dans `OpeningSequenceManager.FranchiSeuil` au début de la partie (`audioSource` ou `celluleGO` vide), sans effet visible. Lu dans `Player.log` (`%USERPROFILE%\AppData\LocalLow\DefaultCompany\APPRENTISSAGE\`).
+  - [ ] **Performances** : le jeu rame en plein écran, chute de framerate à l'alerte. Le portable du test n'a qu'une puce intégrée (Intel Iris Xe) et un écran 2880×1800 ; en fenêtré 1280×720 c'est mieux. Dans l'éditeur (Game view plus petite) : autour de 60 FPS, moins de 15 ms par image. Pistes non tranchées : limiter la résolution de rendu, VSync, mesures (affichage FPS dans le jeu, Profiler sur Development Build).
+    - 2026-11-17, mesures `PerfRecorder` (F3, CSV dans le dossier de `Player.log` ; F5-F8 coupent ombres / post-process / lumières / ampoules) : **le test d'avant était sur batterie**. Sur secteur, éditeur, 1080p, Iris Xe, Level_HandleHurdles : ~97 FPS (10,3 ms), alerte comprise ; tout couper ne gagne que 6 %. Le jeu est sain ; causes probables : batterie + résolution native 2880×1800. Colonne GPU non fiable en éditeur.
+    - [ ] Rejouer le build en plein écran **sur secteur** avec la Game Bar pour confirmer.
+    - [ ] Option Qualité dans le menu (Basse / Haute / Max), voulue par l'utilisateur : utile pour les machines modestes ou sur batterie. Contenu à définir.
+    - [ ] Petits à-coups : première alerte (préchauffage shader / matériau probable), ~20 Ko alloués par image (GC), à vérifier en Development Build.
 - [ ] **Product Name propre à la démo** dans le profil, sinon la démo partage sa sauvegarde avec le jeu complet (voir `CE_QUI_RESTE_A_FAIRE.md`).
 - [ ] **Sauvegarde par identifiant de scène** avant toute distribution (voir `PASSAGE_EN_PRODUCTION.md`, ⏸).
 - [ ] Development Build : **décoché** pour les testeurs (DevPanel et notes F2 disparaissent alors du build).
