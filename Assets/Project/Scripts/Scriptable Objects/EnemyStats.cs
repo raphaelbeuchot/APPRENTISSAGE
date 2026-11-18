@@ -43,13 +43,13 @@ public class EnemyStats : ScriptableObject
 
     [Header("ATTAQUE - GRABBER")]
     public Material windupMaterial;
-    public float grabDuration = 4f;
-    public float biteDamage = 15f;
-    [Range(0f, 1f)]
-    public float oneArmMashReduction = 0.5f;
     public float fakeGrabRange = 3f;
-    public float biteTickDamage = 5f;
-    public float grabWindupDuration = 0.5f;
+    // Grises : plus lus par le code (grab infini sans degats, voir GrabAttack)
+    [Unused] public float grabDuration = 4f;
+    [Unused] public float biteDamage = 15f;
+    [Unused] public float biteTickDamage = 5f;
+    [Unused] public float oneArmMashReduction = 0.5f;
+    [Unused] public float grabWindupDuration = 0.5f;
 
     [Header("ATTAQUE - HITTER")]
     public float meleeDamage = 20f;
