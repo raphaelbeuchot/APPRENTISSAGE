@@ -49,6 +49,26 @@ Pas de marque par niveau : c'est la partie complète qui compte.
 - Dernier niveau = dernier du catalogue : le boss en build démo, le dernier de la liste complète sinon.
 - Test : DevPanel (F1) > « Simuler la fin du jeu (marques) » (bilan de la partie en cours, aides du DevPanel ignorées), « Voir les marques », « Effacer les marques ».
 
+## Écran de fin : piste « fiche participant » (2026-11-19, rien de tranché)
+
+Idée de l'utilisateur : plutôt qu'un texte organique, une fiche comptable dans l'esprit du lore (l'émission note son participant). Partie fixe = la fiche (lisible), le ton passe par les mentions et le verdict.
+
+> Fiche participant — bilan de votre prestation
+> Nombre de détections : 26 (si zéro : « Spectre »)
+> Nombre de morts : 3 (si zéro : « Trompe la mort ! »)
+> Verdict : …
+
+Exemples de verdicts donnés : Spectre + Trompe la mort en Easy → « Trop facile ! Vous devriez essayer en mode Normal » (même logique en Normal → Hard) ; trop de morts → « Pas terrible » ; trop de détections → « Un éléphant dans un magasin de porcelaine ».
+
+Spectre + Trompe la mort = Ghost Survivor, identifiable d'un coup d'œil.
+
+**À décider** :
+1. « Morts » = essais ratés (mort + Restart + quitter, cohérent avec Survivor, mais un Restart s'affiche comme une mort) ou vraies morts seulement (plus honnête, mais Restart avant de mourir → faux « Trompe la mort »). Variante : deux lignes, morts et abandons, « Trompe la mort » si les deux sont à zéro.
+2. Détections = dans les essais réussis seulement (zéro = Spectre = Ghost, cohérent avec le code) ou dans tous les essais (chiffre plus parlant, Spectre plus dur que Ghost).
+3. Règles du verdict, dans l'ordre (ébauche, textes à l'utilisateur) : Spectre + Trompe la mort en Easy / Normal / Hard ; morts > seuil ; détections > seuil ; sinon neutre ; partie non classée (DevPanel). Seuils réglables dans l'Inspector. Les deux à la fois (trop de morts et de détections) : premier verdict qui colle, ou texte dédié ?
+
+Côté code : il faudra deux compteurs cumulés sur la partie (aujourd'hui le bilan ne garde que des oui / non).
+
 ## Suite
 
 1. **Écran de fin du boss** plus travaillé (aujourd'hui `DemoEndPanel`, simple écran d'options) : un texte selon la difficulté, plus Ghost / Survivor / Ghost Survivor de la partie (`RunGhost`, `RunSurvivor`, `RunUnranked`). Textes et forme : l'utilisateur.
