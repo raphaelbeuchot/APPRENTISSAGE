@@ -124,7 +124,14 @@ public class CyclePressureGaugeUI : MonoBehaviour
         float extentCalm = 2f * radius + pipDiameterMin;
         float extentTense = 2f * radius * radiusMinMultiplier + pipDiameterMax;
         float extent = Mathf.Max(extentCalm, extentTense);
-        ((RectTransform)transform).sizeDelta = new Vector2(extent, extent);
+        bool canResize = true;
+#if UNITY_EDITOR
+        // Hors jeu, une instance de prefab dans une scene ne se redimensionne pas : sinon override parasite
+        // dans chaque scene ouverte. La taille est tenue par le prefab (mode Prefab) et recalculee en jeu.
+        if (!Application.isPlaying && UnityEditor.PrefabUtility.IsPartOfPrefabInstance(this)) canResize = false;
+#endif
+        if (canResize)
+            ((RectTransform)transform).sizeDelta = new Vector2(extent, extent);
 
         if (pipSprite == null) return;
         pips.Clear();

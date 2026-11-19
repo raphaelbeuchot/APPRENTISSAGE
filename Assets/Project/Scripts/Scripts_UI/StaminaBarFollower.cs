@@ -135,8 +135,8 @@ public class StaminaBarFollower : MonoBehaviour
         float outlineDiameter = pipDiameter + outlineExtra;
 
         // Le rectangle = la barre dessinee
-        RectTransform selfRT = (RectTransform)transform;
-        selfRT.sizeDelta = new Vector2((totalPips - 1) * step + outlineDiameter, outlineDiameter);
+        if (CanResizeSelf())
+            ((RectTransform)transform).sizeDelta = new Vector2((totalPips - 1) * step + outlineDiameter, outlineDiameter);
 
         RectTransform outlinesRT = CreateStretchedContainer("OutlinesContainer");
         RectTransform pipsRT = CreateStretchedContainer("PipsContainer");
@@ -182,6 +182,16 @@ public class StaminaBarFollower : MonoBehaviour
         }
 
         lastActivePips = totalPips;
+    }
+
+    // Hors jeu, une instance de prefab dans une scene ne se redimensionne pas : sinon override parasite
+    // dans chaque scene ouverte. La taille est tenue par le prefab (mode Prefab) et recalculee en jeu.
+    bool CanResizeSelf()
+    {
+#if UNITY_EDITOR
+        if (!Application.isPlaying && UnityEditor.PrefabUtility.IsPartOfPrefabInstance(this)) return false;
+#endif
+        return true;
     }
 
     RectTransform CreateStretchedContainer(string name)
