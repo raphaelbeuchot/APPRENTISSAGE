@@ -660,11 +660,16 @@ public class EnemyHealth : MonoBehaviour
         isRecovering = false;
         recentlyHitBySentinel = false;
     }
-    public float GetBaseMaxHealth() => stats.maxHealth;
+    // Vie de base = SO x difficulte (pips normaux). Le modificateur de niveau s'ajoute par-dessus (pips bonus).
+    public float GetBaseMaxHealth()
+    {
+        float difficulty = OptionsManager.Instance != null ? OptionsManager.Instance.GetEnemyHealthMultiplier() : 1f;
+        return stats.maxHealth * difficulty;
+    }
     public float GetMaxHealth()
     {
         float multiplier = ModifierApplier.Instance != null ? ModifierApplier.Instance.enemyMaxHealthMultiplier : 1f;
-        return stats.maxHealth * multiplier;
+        return GetBaseMaxHealth() * multiplier;
     }
     public float GetCurrentHealth() => currentHealth;
     public float GetHealthPercentage() => currentHealth / GetMaxHealth();

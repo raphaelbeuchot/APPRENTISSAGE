@@ -4,7 +4,8 @@ public class OptionsManager : MonoBehaviour
 {
     public static OptionsManager Instance { get; private set; }
 
-    public enum Difficulty { Banco, Superbanco }
+    // Banco = Easy, Superbanco = Normal. Ordre sauvegarde en int : ajouter a la fin, ne pas reordonner.
+    public enum Difficulty { Banco, Superbanco, Hard }
 
     private const string KEY_GAUGE = "GaugeVisible";
     private const string KEY_DIFFICULTY = "Difficulty";
@@ -42,9 +43,16 @@ public class OptionsManager : MonoBehaviour
     {
         switch (difficulty)
         {
-            case Difficulty.Superbanco: return maxHealth;
+            case Difficulty.Superbanco:
+            case Difficulty.Hard: return maxHealth;
             default: return maxHealth * 0.5f;
         }
+    }
+
+    // Vie max des ennemis (EnemyHealth), cumulee avec le modificateur de niveau (ModifierApplier)
+    public float GetEnemyHealthMultiplier()
+    {
+        return difficulty == Difficulty.Hard ? 2f : 1f;
     }
 
     void Load()

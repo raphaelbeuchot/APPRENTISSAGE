@@ -137,8 +137,14 @@ public class OptionsPanelUI : MonoBehaviour
         bool gaugeOn = OptionsManager.Instance.gaugeVisible;
         gaugeText.text = Loc.Get("options.timer", Loc.Get(gaugeOn ? "options.on" : "options.off"));
 
-        bool isBanco = OptionsManager.Instance.difficulty == OptionsManager.Difficulty.Banco;
-        difficultyText.text = Loc.Get("options.difficulty", Loc.Get(isBanco ? "options.easy" : "options.normal"));
+        string diffKey;
+        switch (OptionsManager.Instance.difficulty)
+        {
+            case OptionsManager.Difficulty.Banco: diffKey = "options.easy"; break;
+            case OptionsManager.Difficulty.Hard: diffKey = "options.hard"; break;
+            default: diffKey = "options.normal"; break;
+        }
+        difficultyText.text = Loc.Get("options.difficulty", Loc.Get(diffKey));
 
         audioText.text = Loc.Get("options.audio");
 

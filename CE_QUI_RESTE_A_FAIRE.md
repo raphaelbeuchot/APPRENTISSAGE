@@ -34,6 +34,7 @@
   - Level_Epervier02
   - Level_Bowling_001, Level_Epervier01 (pas de réglage dans la scène : valeur du prefab, vide aussi)
   - **Rappel du 2026-11-13** : un « Cleaned Up ! » n'a pas marché dans un ou deux niveaux (lesquels : oublié) → commencer par cette liste (Flower Power II en fait partie), puis les fosses grille (aucun Cleaned Up, voir TECH). Suivi dans `RAPPORT_PLAYTEST.md`, session du 2026-11-13.
+- [ ] 🟡 **Effets de mort des ennemis appelés deux fois** (noté le 2026-11-18, à faire à tête reposée) : dans `EnemyHealth.Die()`, la boucle `foreach (IDeathEffect effect in deathEffects) effect.OnDeath(...)` est copiée deux fois d'affilée → chaque effet de mort (projection du ragdoll, sons, particules…) part deux fois. Introduit le 2025-12-09 (fd4c5836 « fix sortie de pit et ragdoll FX mort »). **Attention** : tous les réglages de ragdoll faits depuis l'ont été avec cette double poussée (« mes ragdolls me paraissaient forts ») → après suppression du doublon, remonter `ragdollForce` / `ragdollTorque` / multiplicateurs dans les SO ennemis, en jeu.
 ---
 
 ## 🎮 GAME DESIGN
