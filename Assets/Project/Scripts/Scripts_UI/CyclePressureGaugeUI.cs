@@ -3,6 +3,11 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+
+// Pips en cercle construits au lancement. En editeur (hors jeu) : apercu des pips au repos, jamais
+// sauvegarde (HideFlags.DontSave). Le RectTransform prend la taille du cercle au plus large
+// (repos ou pression max), centre sur les pips.
+[ExecuteAlways]
 public class CyclePressureGaugeUI : MonoBehaviour
 {
     [Header("References")]
@@ -42,8 +47,17 @@ public class CyclePressureGaugeUI : MonoBehaviour
 
     void Start()
     {
+        if (!Application.isPlaying) return;
 
-        currentRadius = radius; 
+        // Apercu editeur encore present (Enter Play Mode sans rechargement de scene)
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = transform.GetChild(i).gameObject;
+            if ((child.hideFlags & HideFlags.DontSaveInEditor) != 0)
+                Destroy(child);
+        }
+
+        currentRadius = radius;
         currentDiameter = pipDiameterMin;
         BuildPips();
         if (pressurePercentageText == null)
@@ -52,16 +66,66 @@ public class CyclePressureGaugeUI : MonoBehaviour
 
     void OnEnable()
     {
+#if UNITY_EDITOR
+        if (!Application.isPlaying) { QueuePreview(); return; }
+#endif
         EnemyHealth.OnAnyEnemyDeath += OnEnemyKilled;
     }
 
     void OnDisable()
     {
+#if UNITY_EDITOR
+        // Pas de destruction directe ici : interdit pendant la desactivation du parent
+        if (!Application.isPlaying) { QueuePreview(); return; }
+#endif
         EnemyHealth.OnAnyEnemyDeath -= OnEnemyKilled;
     }
 
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (!Application.isPlaying) QueuePreview();
+    }
+
+    void QueuePreview()
+    {
+        UnityEditor.EditorApplication.delayCall -= RefreshPreview;
+        UnityEditor.EditorApplication.delayCall += RefreshPreview;
+    }
+
+    void RefreshPreview()
+    {
+        if (this == null || Application.isPlaying) return;
+
+        // Ne detruit que les objets d'apercu, jamais un enfant pose a la main (texte du pourcentage)
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = transform.GetChild(i).gameObject;
+            if ((child.hideFlags & HideFlags.DontSaveInEditor) != 0)
+                DestroyImmediate(child);
+        }
+        if (!isActiveAndEnabled) return;
+
+        currentDiameter = pipDiameterMin;
+        BuildPips();
+        foreach (Image img in pips)
+        {
+            img.color = colorInactive;
+            img.gameObject.hideFlags = HideFlags.DontSave;
+            foreach (Component c in img.GetComponents<Component>())
+                c.hideFlags = HideFlags.DontSave;
+        }
+    }
+#endif
+
     void BuildPips()
     {
+        // Le rectangle = le cercle au plus large : au repos, ou a pression max (rayon reduit, pips plus gros)
+        float extentCalm = 2f * radius + pipDiameterMin;
+        float extentTense = 2f * radius * radiusMinMultiplier + pipDiameterMax;
+        float extent = Mathf.Max(extentCalm, extentTense);
+        ((RectTransform)transform).sizeDelta = new Vector2(extent, extent);
+
         if (pipSprite == null) return;
         pips.Clear();
         for (int i = 0; i < pipCount; i++)
@@ -71,7 +135,9 @@ public class CyclePressureGaugeUI : MonoBehaviour
             Image img = go.AddComponent<Image>();
             img.sprite = pipSprite;
             img.type = Image.Type.Simple;
+            img.raycastTarget = false;
             RectTransform rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.sizeDelta = new Vector2(currentDiameter, currentDiameter);
             float t = (float)i / pipCount;
             float angle = Mathf.PI * 0.5f - t * Mathf.PI * 2f;
@@ -100,6 +166,7 @@ public class CyclePressureGaugeUI : MonoBehaviour
 
     void Update()
     {
+        if (!Application.isPlaying) return;
         if (cycleManager == null || pips.Count == 0) return;
 
         if (OptionsManager.Instance != null && !OptionsManager.Instance.gaugeVisible)

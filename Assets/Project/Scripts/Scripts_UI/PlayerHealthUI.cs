@@ -3,6 +3,10 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
+// Pips construits au lancement. En editeur (hors jeu) : apercu des vrais pips, jamais sauvegarde
+// (HideFlags.DontSave), pour poser la barre sans lancer le jeu.
+// Le RectTransform prend la taille de la barre (pips poses depuis le bord gauche) : pivot conseille (0, 0.5).
+[ExecuteAlways]
 public class PlayerHealthUI : MonoBehaviour
 {
     [Header("References")]
@@ -15,6 +19,8 @@ public class PlayerHealthUI : MonoBehaviour
     [SerializeField] private float outlineExtra = 4f;
     [SerializeField] private float overlapRatio = 0.5f;
     [SerializeField] private float healthPerPip = 10f;
+    [Tooltip("Editeur seulement : vie max utilisee pour l'apercu hors jeu")]
+    [SerializeField] private float previewMaxHealth = 100f;
 
     [Header("Sprite")]
     [SerializeField] private Sprite pipSprite;
@@ -44,9 +50,58 @@ public class PlayerHealthUI : MonoBehaviour
 
     private void OnEnable()
     {
+#if UNITY_EDITOR
+        if (!Application.isPlaying) { QueuePreview(); return; }
+#endif
         if (!showHealthBar) { gameObject.SetActive(false); return; }
         StartCoroutine(InitCoroutine());
     }
+
+#if UNITY_EDITOR
+    private void OnDisable()
+    {
+        // Pas de destruction directe ici : interdit pendant la desactivation du parent
+        if (!Application.isPlaying) QueuePreview();
+    }
+
+    private void OnValidate()
+    {
+        if (!Application.isPlaying) QueuePreview();
+    }
+
+    void QueuePreview()
+    {
+        UnityEditor.EditorApplication.delayCall -= RefreshPreview;
+        UnityEditor.EditorApplication.delayCall += RefreshPreview;
+    }
+
+    void RefreshPreview()
+    {
+        if (this == null || Application.isPlaying) return;
+        ClearPreview();
+        if (!isActiveAndEnabled || !showHealthBar) return;
+
+        BuildPips(previewMaxHealth, previewMaxHealth, true);
+        foreach (Transform t in transform.GetComponentsInChildren<Transform>(true))
+        {
+            if (t == transform) continue;
+            t.gameObject.hideFlags = HideFlags.DontSave;
+            foreach (Component c in t.GetComponents<Component>())
+                c.hideFlags = HideFlags.DontSave;
+        }
+    }
+
+    // Ne detruit que les objets d'apercu, jamais un enfant pose a la main
+    void ClearPreview()
+    {
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = transform.GetChild(i).gameObject;
+            if ((child.hideFlags & HideFlags.DontSaveInEditor) != 0)
+                DestroyImmediate(child);
+        }
+    }
+#endif
 
     private IEnumerator InitCoroutine()
     {
@@ -66,7 +121,7 @@ public class PlayerHealthUI : MonoBehaviour
         baseMaxHealth = playerHealth.GetBaseMaxHealth();
         realMaxHealth = playerHealth.GetMaxHealth();
 
-        BuildPips();
+        BuildPips(baseMaxHealth, realMaxHealth, false);
 
         if (!subscribed)
         {
@@ -76,10 +131,11 @@ public class PlayerHealthUI : MonoBehaviour
         OnHealthChanged(playerHealth.GetCurrentHealth(), realMaxHealth);
     }
 
-    void BuildPips()
+    void BuildPips(float baseMax, float realMax, bool preview)
     {
-        foreach (Transform child in transform)
-            Destroy(child.gameObject);
+        if (!preview)
+            foreach (Transform child in transform)
+                Destroy(child.gameObject);
 
         outlineImages.Clear();
         pipImages.Clear();
@@ -87,44 +143,47 @@ public class PlayerHealthUI : MonoBehaviour
         pipActive.Clear();
         fadeCoroutines.Clear();
 
-        GameObject outlinesGO = new GameObject("OutlinesContainer");
-        outlinesGO.transform.SetParent(transform, false);
-        outlinesGO.AddComponent<RectTransform>().anchoredPosition = Vector2.zero;
-
-        GameObject pipsGO = new GameObject("PipsContainer");
-        pipsGO.transform.SetParent(transform, false);
-        pipsGO.AddComponent<RectTransform>().anchoredPosition = Vector2.zero;
-
-        normalPipCount = Mathf.Max(1, Mathf.RoundToInt(baseMaxHealth / healthPerPip));
-        int bonusPipCount = realMaxHealth > baseMaxHealth
-            ? Mathf.Max(1, Mathf.RoundToInt((realMaxHealth - baseMaxHealth) / healthPerPip))
+        normalPipCount = Mathf.Max(1, Mathf.RoundToInt(baseMax / healthPerPip));
+        int bonusPipCount = realMax > baseMax
+            ? Mathf.Max(1, Mathf.RoundToInt((realMax - baseMax) / healthPerPip))
             : 0;
         totalPips = normalPipCount + bonusPipCount;
 
         float step = pipDiameter * overlapRatio;
         float outlineDiameter = pipDiameter + outlineExtra;
 
+        // Le rectangle = la barre dessinee
+        RectTransform selfRT = (RectTransform)transform;
+        selfRT.sizeDelta = new Vector2((totalPips - 1) * step + outlineDiameter, outlineDiameter);
+
+        RectTransform outlinesRT = CreateStretchedContainer("OutlinesContainer");
+        RectTransform pipsRT = CreateStretchedContainer("PipsContainer");
+
         for (int i = 0; i < totalPips; i++)
         {
-            float x = i * step;
+            float x = outlineDiameter * 0.5f + i * step;
             bool bonus = i >= normalPipCount;
 
             GameObject outlineGO = new GameObject("Outline_" + i);
-            outlineGO.transform.SetParent(outlinesGO.transform, false);
+            outlineGO.transform.SetParent(outlinesRT, false);
             Image outlineImg = outlineGO.AddComponent<Image>();
             outlineImg.sprite = pipSprite;
             outlineImg.color = outlineColorDefault;
+            outlineImg.raycastTarget = false;
             RectTransform outlineRT = outlineGO.GetComponent<RectTransform>();
+            outlineRT.anchorMin = outlineRT.anchorMax = new Vector2(0f, 0.5f);
             outlineRT.sizeDelta = new Vector2(outlineDiameter, outlineDiameter);
             outlineRT.anchoredPosition = new Vector2(x, 0f);
             outlineImages.Add(outlineImg);
 
             GameObject pipGO = new GameObject("Pip_" + i);
-            pipGO.transform.SetParent(pipsGO.transform, false);
+            pipGO.transform.SetParent(pipsRT, false);
             Image pipImg = pipGO.AddComponent<Image>();
             pipImg.sprite = pipSprite;
             pipImg.color = bonus ? bonusColorActive : pipColorActive;
+            pipImg.raycastTarget = false;
             RectTransform pipRT = pipGO.GetComponent<RectTransform>();
+            pipRT.anchorMin = pipRT.anchorMax = new Vector2(0f, 0.5f);
             pipRT.sizeDelta = new Vector2(pipDiameter, pipDiameter);
             pipRT.anchoredPosition = new Vector2(x, 0f);
             pipImages.Add(pipImg);
@@ -139,6 +198,18 @@ public class PlayerHealthUI : MonoBehaviour
             outlineImages[i].transform.SetSiblingIndex(totalPips - 1 - i);
             pipImages[i].transform.SetSiblingIndex(totalPips - 1 - i);
         }
+    }
+
+    RectTransform CreateStretchedContainer(string name)
+    {
+        GameObject go = new GameObject(name, typeof(RectTransform));
+        RectTransform rt = (RectTransform)go.transform;
+        rt.SetParent(transform, false);
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
+        return rt;
     }
 
     void OnHealthChanged(float currentHealth, float _)
