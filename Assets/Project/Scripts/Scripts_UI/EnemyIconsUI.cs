@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+// Icones instanciees au lancement dans iconsContainer. En editeur (hors jeu) : apercu de
+// previewIconCount icones, jamais sauvegardees (HideFlags.DontSave), pour poser la barre sans lancer le jeu.
+[ExecuteAlways]
 public class EnemyIconsUI : MonoBehaviour
 {
     [Header("References")]
@@ -15,6 +18,8 @@ public class EnemyIconsUI : MonoBehaviour
     [SerializeField] private float flashDuration = 1f;
     [Tooltip("Vider la barre : delai entre deux icones retirees, de la derniere a la premiere (0 = tout d'un coup).")]
     [SerializeField] private float clearDelayBetweenIcons = 0.1f;
+    [Tooltip("Editeur seulement : nombre d'icones de l'apercu hors jeu")]
+    [SerializeField] private int previewIconCount = 15;
 
     private List<EnemyIconDisplay> enemyIcons = new List<EnemyIconDisplay>();
     private AudioSource audioSource;
@@ -24,10 +29,71 @@ public class EnemyIconsUI : MonoBehaviour
 
     private void Awake()
     {
+        if (!Application.isPlaying) return;
+
+        // Apercu editeur encore present (Enter Play Mode sans rechargement de scene)
+        if (iconsContainer != null)
+            for (int i = iconsContainer.childCount - 1; i >= 0; i--)
+            {
+                GameObject child = iconsContainer.GetChild(i).gameObject;
+                if ((child.hideFlags & HideFlags.DontSaveInEditor) != 0)
+                    Destroy(child);
+            }
+
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
     }
+
+#if UNITY_EDITOR
+    private void OnEnable()
+    {
+        if (!Application.isPlaying) QueuePreview();
+    }
+
+    private void OnDisable()
+    {
+        // Pas de destruction directe ici : interdit pendant la desactivation du parent
+        if (!Application.isPlaying) QueuePreview();
+    }
+
+    private void OnValidate()
+    {
+        if (!Application.isPlaying) QueuePreview();
+    }
+
+    void QueuePreview()
+    {
+        UnityEditor.EditorApplication.delayCall -= RefreshPreview;
+        UnityEditor.EditorApplication.delayCall += RefreshPreview;
+    }
+
+    void RefreshPreview()
+    {
+        if (this == null || Application.isPlaying || iconsContainer == null) return;
+
+        // Ne detruit que les icones d'apercu, jamais un enfant pose a la main
+        for (int i = iconsContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = iconsContainer.GetChild(i).gameObject;
+            if ((child.hideFlags & HideFlags.DontSaveInEditor) != 0)
+                DestroyImmediate(child);
+        }
+        if (!isActiveAndEnabled || iconPrefab == null) return;
+
+        for (int n = 0; n < previewIconCount; n++)
+        {
+            GameObject iconGO = Instantiate(iconPrefab, iconsContainer);
+            iconGO.name = "PreviewIcon_" + n;
+            foreach (Transform t in iconGO.GetComponentsInChildren<Transform>(true))
+            {
+                t.gameObject.hideFlags = HideFlags.DontSave;
+                foreach (Component c in t.GetComponents<Component>())
+                    c.hideFlags = HideFlags.DontSave;
+            }
+        }
+    }
+#endif
 
     public void SpawnIconsForEnemies()
     {
