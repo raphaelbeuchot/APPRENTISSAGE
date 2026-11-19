@@ -43,18 +43,15 @@ public class OptionsManager : MonoBehaviour
 
     public float GetSentinelDamage(float baseDamage, float maxHealth)
     {
-        switch (difficulty)
-        {
-            case Difficulty.Superbanco:
-            case Difficulty.Hard: return maxHealth;
-            default: return maxHealth * 0.5f;
-        }
+        // Sentinelle one-shot en Hard seulement ; Easy et Normal : deux touches
+        return difficulty == Difficulty.Hard ? maxHealth : maxHealth * 0.5f;
     }
 
-    // Vie max des ennemis (EnemyHealth), cumulee avec le modificateur de niveau (ModifierApplier)
+    // Vie max des ennemis (EnemyHealth), cumulee avec le modificateur de niveau (ModifierApplier).
+    // x2 en Normal et en Hard, x1 en Easy.
     public float GetEnemyHealthMultiplier()
     {
-        return difficulty == Difficulty.Hard ? 2f : 1f;
+        return difficulty == Difficulty.Banco ? 1f : 2f;
     }
 
     void Load()
