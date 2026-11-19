@@ -17,6 +17,13 @@ public class SoloPanelUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI continueText;
     [SerializeField] private TextMeshProUGUI optionsText;
 
+    [Header("Choix de difficulte (apres New Game)")]
+    [Tooltip("Lignes affichees a la place du menu apres New Game, dans l'ordre Easy / Normal / Hard. " +
+             "Textes remplis par le code. Vides = New Game lance directement avec la difficulte deja enregistree.")]
+    [SerializeField] private TextMeshProUGUI easyText;
+    [SerializeField] private TextMeshProUGUI normalText;
+    [SerializeField] private TextMeshProUGUI hardText;
+
     [Header("Audio")]
     [SerializeField] private UIAudioPlayer uiAudio;
 
@@ -27,6 +34,10 @@ public class SoloPanelUI : MonoBehaviour
     [SerializeField] private float transitionSpeed = 10f;
 
     private List<TextMeshProUGUI> menuTexts = new List<TextMeshProUGUI>();
+    // Easy / Normal / Hard, meme ordre que OptionsManager.Difficulty (index = valeur de l'enum)
+    private List<TextMeshProUGUI> difficultyTexts = new List<TextMeshProUGUI>();
+    private bool choosingDifficulty = false;
+    private List<TextMeshProUGUI> CurrentTexts => choosingDifficulty ? difficultyTexts : menuTexts;
     private int currentSelection = 0;
     private Vector3 normalScale = Vector3.one;
     private bool isOpen = false;
@@ -55,6 +66,14 @@ public class SoloPanelUI : MonoBehaviour
             menuTexts.Add(optionsText);
         }
 
+        if (easyText != null && normalText != null && hardText != null)
+        {
+            difficultyTexts.Add(easyText);
+            difficultyTexts.Add(normalText);
+            difficultyTexts.Add(hardText);
+        }
+        ShowDifficultyChoice(false);
+
         if (soloPanel != null)
             soloPanel.SetActive(false);
     }
@@ -80,15 +99,33 @@ public class SoloPanelUI : MonoBehaviour
     {
         Vector2 input = PlayerInputManager.Instance.MoveInput;
 
-        if (input.y > 0.5f)
+        int count = CurrentTexts.Count;
+
+        // Choix de difficulte : lignes cote a cote, navigation gauche / droite
+        if (choosingDifficulty)
         {
-            currentSelection = (currentSelection - 1 + menuTexts.Count) % menuTexts.Count;
+            if (input.x < -0.5f)
+            {
+                currentSelection = (currentSelection - 1 + count) % count;
+                navigationCooldown = cooldownDuration;
+                if (uiAudio != null) uiAudio.PlayLeft();
+            }
+            else if (input.x > 0.5f)
+            {
+                currentSelection = (currentSelection + 1) % count;
+                navigationCooldown = cooldownDuration;
+                if (uiAudio != null) uiAudio.PlayRight();
+            }
+        }
+        else if (input.y > 0.5f)
+        {
+            currentSelection = (currentSelection - 1 + count) % count;
             navigationCooldown = cooldownDuration;
             if (uiAudio != null) uiAudio.PlayUp();
         }
         else if (input.y < -0.5f)
         {
-            currentSelection = (currentSelection + 1) % menuTexts.Count;
+            currentSelection = (currentSelection + 1) % count;
             navigationCooldown = cooldownDuration;
             if (uiAudio != null) uiAudio.PlayDown();
         }
@@ -102,12 +139,26 @@ public class SoloPanelUI : MonoBehaviour
         if (Input.GetButtonDown("Cancel"))
         {
             if (uiAudio != null) uiAudio.PlayB();
-            Close();
+            if (choosingDifficulty)
+            {
+                ShowDifficultyChoice(false);
+                currentSelection = 0;
+            }
+            else
+            {
+                Close();
+            }
         }
     }
 
     void SelectCurrentOption()
     {
+        if (choosingDifficulty)
+        {
+            StartNewGame((OptionsManager.Difficulty)currentSelection);
+            return;
+        }
+
         if (!hasSave)
         {
             switch (currentSelection)
@@ -127,8 +178,42 @@ public class SoloPanelUI : MonoBehaviour
         }
     }
 
+    // New Game ouvre le choix de difficulte (sur place, a la place des lignes du menu) ;
+    // la partie ne demarre qu'a la validation. Lignes non branchees : demarrage direct.
     void NewGame()
     {
+        if (difficultyTexts.Count == 0)
+        {
+            Debug.LogWarning("[SoloPanelUI] Lignes Easy / Normal / Hard non branchees : New Game sans choix de difficulte.");
+            StartNewGame(OptionsManager.Instance != null ? OptionsManager.Instance.difficulty : OptionsManager.Difficulty.Superbanco);
+            return;
+        }
+
+        ShowDifficultyChoice(true);
+        currentSelection = (int)OptionsManager.Difficulty.Superbanco;
+    }
+
+    void ShowDifficultyChoice(bool show)
+    {
+        choosingDifficulty = show && difficultyTexts.Count > 0;
+
+        foreach (TextMeshProUGUI t in menuTexts)
+            if (t != null) t.gameObject.SetActive(!choosingDifficulty);
+
+        string[] keys = { "options.easy", "options.normal", "options.hard" };
+        for (int i = 0; i < difficultyTexts.Count; i++)
+        {
+            difficultyTexts[i].gameObject.SetActive(choosingDifficulty);
+            if (choosingDifficulty) difficultyTexts[i].text = Loc.Get(keys[i]);
+        }
+    }
+
+    // Difficulte figee dans la sauvegarde : seul endroit ou elle s'ecrit
+    void StartNewGame(OptionsManager.Difficulty difficulty)
+    {
+        if (OptionsManager.Instance != null)
+            OptionsManager.Instance.SetDifficulty(difficulty);
+
         if (uiAudio != null) uiAudio.PlayNewGameAndSurvive();
 
         if (LevelProgressionManager.Instance != null)
@@ -155,15 +240,16 @@ public class SoloPanelUI : MonoBehaviour
 
     void UpdateVisuals()
     {
-        for (int i = 0; i < menuTexts.Count; i++)
+        List<TextMeshProUGUI> texts = CurrentTexts;
+        for (int i = 0; i < texts.Count; i++)
         {
-            if (menuTexts[i] == null) continue;
+            if (texts[i] == null) continue;
 
             Color targetColor = (i == currentSelection) ? selectedColor : normalColor;
-            menuTexts[i].color = Color.Lerp(menuTexts[i].color, targetColor, Time.unscaledDeltaTime * transitionSpeed);
+            texts[i].color = Color.Lerp(texts[i].color, targetColor, Time.unscaledDeltaTime * transitionSpeed);
 
             Vector3 targetScale = (i == currentSelection) ? normalScale * selectedScale : normalScale;
-            menuTexts[i].transform.localScale = Vector3.Lerp(menuTexts[i].transform.localScale, targetScale, Time.unscaledDeltaTime * transitionSpeed);
+            texts[i].transform.localScale = Vector3.Lerp(texts[i].transform.localScale, targetScale, Time.unscaledDeltaTime * transitionSpeed);
         }
     }
 
@@ -176,6 +262,7 @@ public class SoloPanelUI : MonoBehaviour
     {
         isOpen = true;
         currentSelection = 0;
+        ShowDifficultyChoice(false);
         if (soloPanel != null)
             soloPanel.SetActive(true);
     }

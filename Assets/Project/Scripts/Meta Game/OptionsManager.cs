@@ -32,6 +32,8 @@ public class OptionsManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    // Difficulte de la partie en cours : ecrite seulement a Nouvelle partie (SoloPanelUI), puis
+    // relue telle quelle par Continuer et l'ecran de choix de niveaux. Plus modifiable dans les Options.
     public void SetDifficulty(Difficulty value)
     {
         difficulty = value;

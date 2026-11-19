@@ -11,6 +11,7 @@ public class OptionsPanelUI : MonoBehaviour
 
     [Header("Option Texts")]
     [SerializeField] private TextMeshProUGUI gaugeText;
+    [Tooltip("Plus affichee (difficulte choisie a Nouvelle partie) : masquee au lancement, les lignes suivantes remontent")]
     [SerializeField] private TextMeshProUGUI difficultyText;
     [SerializeField] private TextMeshProUGUI audioText;
     [Tooltip("Ligne du choix de langue (vide = ligne absente du menu)")]
@@ -33,10 +34,18 @@ public class OptionsPanelUI : MonoBehaviour
     {
         if (uiAudio == null) uiAudio = FindObjectOfType<UIAudioPlayer>();
 
+        // Difficulte = choix de partie (SoloPanelUI, Nouvelle partie), figee dans la sauvegarde :
+        // plus de ligne dans les Options, ni menu ni pause. Les lignes suivantes remontent d'un cran.
+        List<Vector3> slots = new List<Vector3>();
+        foreach (TextMeshProUGUI line in new[] { gaugeText, difficultyText, audioText, languageText })
+            if (line != null) slots.Add(line.transform.position);
+
         optionTexts.Add(gaugeText);
-        optionTexts.Add(difficultyText);
         optionTexts.Add(audioText);
         if (languageText != null) optionTexts.Add(languageText);
+        for (int i = 0; i < optionTexts.Count && i < slots.Count; i++)
+            optionTexts[i].transform.position = slots[i];
+        if (difficultyText != null) difficultyText.gameObject.SetActive(false);
 
         if (optionsPanel != null)
             optionsPanel.SetActive(false);
@@ -106,28 +115,18 @@ public class OptionsPanelUI : MonoBehaviour
     {
         if (OptionsManager.Instance == null) return;
 
-        switch (currentSelection)
+        TextMeshProUGUI line = optionTexts[currentSelection];
+        if (line == gaugeText)
         {
-            case 0:
-                OptionsManager.Instance.SetGaugeVisible(!OptionsManager.Instance.gaugeVisible);
-                break;
-            case 1:
-                int diffCount = System.Enum.GetValues(typeof(OptionsManager.Difficulty)).Length;
-                int current = (int)OptionsManager.Instance.difficulty;
-                int next = goLeft
-                    ? (current - 1 + diffCount) % diffCount
-                    : (current + 1) % diffCount;
-                OptionsManager.Instance.SetDifficulty((OptionsManager.Difficulty)next);
-                break;
-            case 2:
-                // Audio - a implementer
-                break;
-            case 3:
-                int langCount = System.Enum.GetValues(typeof(Language)).Length;
-                int lang = (int)Loc.Current;
-                Loc.SetLanguage((Language)(goLeft ? (lang - 1 + langCount) % langCount : (lang + 1) % langCount));
-                break;
+            OptionsManager.Instance.SetGaugeVisible(!OptionsManager.Instance.gaugeVisible);
         }
+        else if (line == languageText)
+        {
+            int langCount = System.Enum.GetValues(typeof(Language)).Length;
+            int lang = (int)Loc.Current;
+            Loc.SetLanguage((Language)(goLeft ? (lang - 1 + langCount) % langCount : (lang + 1) % langCount));
+        }
+        // audioText : a implementer
     }
 
     void UpdateTexts()
@@ -136,15 +135,6 @@ public class OptionsPanelUI : MonoBehaviour
 
         bool gaugeOn = OptionsManager.Instance.gaugeVisible;
         gaugeText.text = Loc.Get("options.timer", Loc.Get(gaugeOn ? "options.on" : "options.off"));
-
-        string diffKey;
-        switch (OptionsManager.Instance.difficulty)
-        {
-            case OptionsManager.Difficulty.Banco: diffKey = "options.easy"; break;
-            case OptionsManager.Difficulty.Hard: diffKey = "options.hard"; break;
-            default: diffKey = "options.normal"; break;
-        }
-        difficultyText.text = Loc.Get("options.difficulty", Loc.Get(diffKey));
 
         audioText.text = Loc.Get("options.audio");
 
