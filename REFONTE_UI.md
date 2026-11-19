@@ -7,11 +7,11 @@
 
 - **Cadre TV recentré** (`UI_Images/Vignette_002.png`, 2a0a8ee0) : le trou de l'écran est maintenant pile au centre de l'image 1920×1080 (x 375-1544, y 93-986 → **1170 × 894 px**, centre 960 × 540). Colonnes et lignes uniformes ajoutées / retirées, rien de redessiné. Format quasi 4:3 ; zone utile sûre ≈ **1170 × 880 centrée** (coins arrondis et bord bombé). Tout ce qui était calé à la main sur l'ancien trou (décalé d'environ 57 px à gauche, 3 px en bas) est à recaler.
 - **Trou rendu symétrique haut/bas et gauche/droite** (2026-11-19) : le quart bas-gauche du rectangle noir recopié en miroir sur les trois autres (les coins du haut étaient plus arrondis, 49-58 px contre ~12 en bas). Bois, panneaux, bouton intacts ; même fichier, même GUID.
-- **`ScreenArea`** posée dans le prefab `UI` (2026-11-19) : enfant de `CadreTV`, ancre centre, pos 0,0, **1100 × 890**. Enfant `Guide` (Image magenta translucide, étirée, Raycast Target décoché) pour la voir ; à couper avant un build.
+- **`ScreenArea`** posée dans le prefab `UI` (2026-11-19) : enfant de `CadreTV`, ancre centre, pos 0,0, **1100 × 830** (recalée après l'étape 2). Enfant `Guide` (Image magenta translucide, étirée, Raycast Target décoché) pour la voir ; à couper avant un build.
 - **Aperçu en éditeur** (2026-11-19) : `PlayerHealthUI`, `StaminaBarFollower`, `CyclePressureGaugeUI`, `EnemyIconsUI` en `[ExecuteAlways]` ; hors jeu, les vrais pips / icônes sont construits en `HideFlags.DontSave` (jamais sauvegardés, seuls eux sont détruits au rafraîchissement). Champs « Preview… » (vie 100, stamina 100, 15 icônes). Barres : le RectTransform prend la taille du dessin, pips depuis le bord gauche, pivot (0, 0.5). Gauge : carré du cercle au plus large (repos ou pression max). `TomatoUI` : rien à faire (rien de construit).
 - Éléments de jeu rattachés à `ScreenArea` et reposés.
 - **Aperçu sans override** : hors jeu, une instance de prefab dans une scène ne se redimensionne pas (`PrefabUtility.IsPartOfPrefabInstance`), la taille est tenue par le prefab (45c60d31).
-- **Étape 2 faite** (2026-11-19) : `CadreTV` en ancre centre, taille fixe 1920 × 1080 (il était étiré, 1200 de haut dans une Game view en 16:10) ; 4 bandes noires autour (`CadreHaut/Bas` 300 px, `CadreGauche/Droit` 500 px) pour les formats ≠ 16:9. `Vignette_002` en Compression None (couleurs exactes). Reste : recaler `ScreenArea` sur le trou non déformé. **Poser l'UI en Game view 1920×1080**, le 16:10 ne sert qu'à vérifier.
+- **Étape 2 faite** (2026-11-19) : `CadreTV` en ancre centre, taille fixe 1920 × 1080 (il était étiré, 1200 de haut dans une Game view en 16:10) ; 4 bandes noires autour (`CadreHaut/Bas` 300 px, `CadreGauche/Droit` 500 px) pour les formats ≠ 16:9. `Vignette_002` en Compression None (couleurs exactes). `ScreenArea` recalée (1100 × 830) et éléments reposés. **Poser l'UI en Game view 1920×1080**, le 16:10 ne sert qu'à vérifier.
 - Bruit de commit connu : `Level_Go For a Spin` reçoit 18 overrides `m_Mesh` vides à chaque sauvegarde (MeshFilter des BallStack portés par des zombies, mesh reconstruit au chargement) ; sans effet, pas lié à l'UI.
 - Utilisé par : prefab `UI`, `UI_ShowTime`, scènes MainMenu, LoadingScreen, MultiStart, Level_GoWithTheFlow01, Level_LavaTrain02. `Vignette_Multi_001` = UI_Multi seul ; `VignetteTest` = vieilles scènes (LevelSelect, TutoChoice, WheelOfFortune) et `TVFrame_StencilWrite.mat` ; `Vignette_001` = inutilisée.
 
@@ -41,11 +41,11 @@
 - **Construit au lancement** : le code remplit un conteneur, il ne décide pas où il est. Conteneur posé et dimensionné dans l'éditeur ; éventuellement une commande « Prévisualiser » qui construit en éditeur.
 - **Décor du mode Prefab** : Project Settings > Editor > *UI Environment* = une scène avec Canvas + cadre TV → un prefab d'UI s'édite dans la TV.
 
-## Ordre d'attaque proposé (non tranché)
+## Ordre d'attaque (validé le 2026-11-19)
 
-1. `ScreenArea` calée sur le trou ; éléments de jeu reparentés et ancrés dessus ; reposés une fois dans l'éditeur.
-2. Cadre TV qui garde ses proportions en 16:10 (réglage de l'image ou Aspect Ratio Fitter) au lieu de s'étirer.
-3. Aperçu en éditeur des barres à pips et de la gauge.
+1. `ScreenArea` calée sur le trou ; éléments de jeu reparentés et ancrés dessus ; reposés une fois dans l'éditeur. **Fait.**
+2. Cadre TV qui garde ses proportions en 16:10 (réglage de l'image ou Aspect Ratio Fitter) au lieu de s'étirer. **Fait.**
+3. Aperçu en éditeur des barres à pips et de la gauge. **Fait** (+ icônes d'ennemis).
 4. Layout Groups dans les menus (pause, victoire, options, Solo).
 5. Overrides des 6 scènes : relire, retirer.
 6. Multi (`UI_Multi`, copie indépendante) avec la même méthode.
