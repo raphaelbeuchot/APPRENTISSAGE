@@ -1,0 +1,53 @@
+# Refonte de l'UI
+
+> Chantier ouvert le 2026-11-19. Reprise : « on attaque la refonte UI ».
+> Problème de départ : poser une UI, c'est « j'entre une valeur, je lance le jeu pour voir si c'est au bon endroit ». Écrans imbriqués (cadre TV), barres construites au lancement.
+
+## Fait
+
+- **Cadre TV recentré** (`UI_Images/Vignette_002.png`, 2a0a8ee0) : le trou de l'écran est maintenant pile au centre de l'image 1920×1080 (x 375-1544, y 93-986 → **1170 × 894 px**, centre 960 × 540). Colonnes et lignes uniformes ajoutées / retirées, rien de redessiné. Format quasi 4:3 ; zone utile sûre ≈ **1170 × 880 centrée** (coins arrondis et bord bombé). Tout ce qui était calé à la main sur l'ancien trou (décalé d'environ 57 px à gauche, 3 px en bas) est à recaler.
+- Utilisé par : prefab `UI`, `UI_ShowTime`, scènes MainMenu, LoadingScreen, MultiStart, Level_GoWithTheFlow01, Level_LavaTrain02. `Vignette_Multi_001` = UI_Multi seul ; `VignetteTest` = vieilles scènes (LevelSelect, TutoChoice, WheelOfFortune) et `TVFrame_StencilWrite.mat` ; `Vignette_001` = inutilisée.
+
+## Relevé du prefab UI (solo), 2026-11-19
+
+- **Canvas** : Screen Space Overlay, Canvas Scaler 1920×1080 en mode **Expand**. En 16:9 = la référence. En 16:10 (portables), le Canvas grandit en hauteur et **`CadreTV`, étiré sur tout le Canvas (ancres 0,0 → 1,1), se déforme** : le trou perd forme et centrage.
+- **Éléments de jeu enfants de `CadreTV` mais ancrés aux coins du Canvas**, positions à la main :
+  - `PlayerHealthBar` (`PlayerHealthUI`), `StaminaBar` (`StaminaBarFollower`), `SprayAmmoPanel`, `PressureGauge` (`CyclePressureGaugeUI`), `BonusBarContainer` (inactif) : ancre haut gauche (ex. pos 373.536, -202.559).
+  - `TomatoUI` : bas gauche. `CreditBar` : bas droite.
+  - Aucune boîte « écran de la TV » comme repère.
+- **Menus** (`PausePanel`, `VictoryContiner`, `GameOverPanel`) : centrés sur le Canvas, lignes posées une à une (0, -40, -80, -120). Pas de Layout Group (sauf icônes de spray).
+- **Prefabs imbriqués** : CommentManager, OptionsPanel (sous Canvas), EnemyIconsContainer (sous CadreTV).
+- **Construit / déplacé par le code au lancement** :
+  - `PlayerHealthUI`, `StaminaBarFollower` : pips et contours créés un par un, positions calculées. En éditeur : une boîte vide de 150×10. **Source principale du « je lance pour voir ».**
+  - `CyclePressureGaugeUI` : pips disposés en cercle par le code.
+  - `SprayAmmoUI` : icônes instanciées, rangées par un Horizontal Layout Group (sain).
+  - `VictoryUI` : anime des glissements, part de la position de l'éditeur et y revient (pas gênant).
+  - `OptionsPanelUI`, `SoloPanelUI` : décalage des lignes en code (ajouté le 2026-11-19 pour la difficulté) ; un Layout Group le rendrait inutile.
+- **Scènes** : 38 utilisent UI ; **6 déplacent des éléments par override** (positions, tailles, ancres) : Level_Flower02 (10), Level_WesternCanyon (5), Level_GoWithTheFlow01 (2), Level_LavaTrain03 (1), OLD/Level_EpervierLoop01 (7), OLD/Level_Tuto01 (10). À regarder et sans doute retirer pour que le prefab décide seul.
+
+## Techniques (discutées le 2026-11-19)
+
+- **`ScreenArea`** : un RectTransform vide calé sur le trou de la TV (≈ 1170 × 880, centré) ; tout ce qui s'affiche « dans la TV » en devient enfant et s'ancre dessus. Pour les écrans imbriqués : chaque niveau = une boîte, son contenu s'ancre dedans.
+- **Éditeur = jeu** : Game view en résolution fixe 1920×1080 (pas Free Aspect) ; Scene view en 2D avec l'outil Rect (T) ; panneaux laissés actifs dans la scène, cachés par le code au lancement (déjà le cas de `DemoEndPanel`, `OptionsPanelUI`), œil de la Hierarchy pour les masquer pendant l'édition.
+- **Rectangles guides** : Image semi-transparente colorée sur chaque boîte (Raycast Target décoché), une couleur par niveau d'imbrication, sous un objet `Debug_Guides` à désactiver avant le build.
+- **Layout Groups** plutôt que positions à la main : ils ignorent les enfants désactivés.
+- **Construit au lancement** : le code remplit un conteneur, il ne décide pas où il est. Conteneur posé et dimensionné dans l'éditeur ; éventuellement une commande « Prévisualiser » qui construit en éditeur.
+- **Décor du mode Prefab** : Project Settings > Editor > *UI Environment* = une scène avec Canvas + cadre TV → un prefab d'UI s'édite dans la TV.
+
+## Ordre d'attaque proposé (non tranché)
+
+1. `ScreenArea` calée sur le trou ; éléments de jeu reparentés et ancrés dessus ; reposés une fois dans l'éditeur.
+2. Cadre TV qui garde ses proportions en 16:10 (réglage de l'image ou Aspect Ratio Fitter) au lieu de s'étirer.
+3. Aperçu en éditeur des barres à pips et de la gauge.
+4. Layout Groups dans les menus (pause, victoire, options, Solo).
+5. Overrides des 6 scènes : relire, retirer.
+6. Multi (`UI_Multi`, copie indépendante) avec la même méthode.
+
+## Bug lié
+
+- **Barre de vie à 2 pips au lancement** (noté le 2026-11-19, aussi dans `CE_QUI_RESTE_A_FAIRE.md`) : vie à 100, 25 pips par barre, mais 2 pips affichés. Override sur UI / `PlayerHealthUI` ? Pas encore enquêté.
+
+## Idées liées (pour plus tard)
+
+- Loading screen : cercles concentriques qui s'effacent un par un depuis l'extérieur (`CE_QUI_RESTE_A_FAIRE.md`, Polish).
+- Écran de fin « fiche participant » (`DIFFICULTE_ET_PARTIE.md`).
