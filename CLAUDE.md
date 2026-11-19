@@ -13,9 +13,9 @@ Lu à chaque démarrage. L'architecture du jeu est dans `Assets/Project/CLAUDE.m
 - Un doc par gros chantier : `BOSS_RUSH_HOUR_IV.md`, `VF_DEMO.md`, `REFONTE_UI.md`, `DIFFICULTE_ET_PARTIE.md`, `MULTIJOUEUR_LOCAL.md`, `PASSAGE_EN_PRODUCTION.md`, `OUTILS_FORMES.md`, `SORTIE_DEMO.md` (le monde réel : build, version, envoi, testeurs, licences)…
 - Une prise de note de l'utilisateur hors de ces docs : la ranger dedans (par niveau → RAPPORT, sinon → CE_QUI_RESTE ou le doc du chantier).
 
-## Deux machines (maison, bureau)
-- La mémoire de Claude ne suit pas d'une machine à l'autre : ce qui doit suivre va dans un doc du repo.
-- Au démarrage : `git status` et dernier commit. Avant de toucher une scène ou un prefab, s'assurer que l'autre poste a sauvegardé, commité, poussé, et qu'on a pullé.
+## Git
+- Une seule machine en pratique (l'autre est rarissime) : ne pas poser la question « l'autre poste a-t-il poussé ? ».
+- Au démarrage : `git status` et dernier commit. Modifs en attente : les commiter sans demander (diff --stat vérifié).
 - `Assets/Project/Fonts/KeeponTruckin SDF.asset` est toujours modifié (police TMP en mode Dynamic) : ne pas le commiter avec le reste.
 
 ## Reprise de chantier

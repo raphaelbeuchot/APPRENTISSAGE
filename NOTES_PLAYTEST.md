@@ -80,3 +80,7 @@
   si la poutre tombe, on est bloques dans le niveau. la poutre est un piege voulu (equilibre precaire, tombe si on passe trop lentement) -> il faut en faire reapparaitre une neuve a l'emplacement initial (piste : un switch). ne pas detruire les anciennes : les poutres tombees restent et illustrent nos echecs. au restart, on repart de zero (une seule poutre)
 - [x] **General** — 2026-11-06 — note dictee (hors F2)
   polish de l'animation climb : ok vue de dos, mais de face vraiment pas clean du tout
+- [ ] **Level_TrafficJam_01** — 2026-11-18 22:51 — pos (3.8, 0.2, -1.9)
+  rush hour 1 : le spawn du perso ets u peu haut, on a un mvt de camera)
+- [ ] **Level_Acid_02** — 2026-11-19 18:18 — pos (4.4, -1.0, 38.0)
+  probleme sur ce niveau : les enemys sot desactivés (sauf le premier), afin den epas abpoir les lasers de detection des la premiere salle. mais probeme : si on fait ça, les enemys sotn actifs au depart ne sont pas enregistres dans le deomcpte d'enemys (et donc pressur gauge aux fraises, etc)
