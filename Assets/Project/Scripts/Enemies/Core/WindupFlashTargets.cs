@@ -15,18 +15,29 @@ public class WindupFlashTargets : MonoBehaviour
 
     public bool HasTargets => targets != null && targets.Length > 0;
 
+    // Originaux memorises une seule fois au lancement : s'ils etaient pris au debut de chaque flash,
+    // un autre flash en cours (detection blanche d'EnemyDetectionFeedback) serait pris pour l'original
+    // et restaure pour de bon (ennemi reste blanc, meme mort).
+    void Start()
+    {
+        CaptureOriginals();
+    }
+
+    void CaptureOriginals()
+    {
+        if (!HasTargets) return;
+        originals = new Material[targets.Length][];
+        for (int i = 0; i < targets.Length; i++)
+            if (targets[i] != null) originals[i] = targets[i].sharedMaterials;
+    }
+
     // Appelable a chaque frame : reapplique le materiau si un autre feedback l'a remplace entre-temps
     public void Flash(Material mat)
     {
         if (mat == null || !HasTargets) return;
 
-        if (!isFlashing)
-        {
-            originals = new Material[targets.Length][];
-            for (int i = 0; i < targets.Length; i++)
-                if (targets[i] != null) originals[i] = targets[i].sharedMaterials;
-            isFlashing = true;
-        }
+        if (originals == null) CaptureOriginals(); // Flash appele avant Start
+        isFlashing = true;
 
         for (int i = 0; i < targets.Length; i++)
         {
