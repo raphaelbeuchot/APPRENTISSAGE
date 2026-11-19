@@ -88,3 +88,10 @@ Rappels :
 
 - [ ] Remercier les testeurs.
 - [ ] Trier les retours, décider de la suite (démo publique, éditeur, autoédition : voir la décision du 2026-10-25 dans `CE_QUI_RESTE_A_FAIRE.md`).
+
+## Sauvegarde et plateforme (question ouverte, 2026-11-19, non tranchée)
+
+- Aujourd'hui toute la progression est en `PlayerPrefs` : sous Windows, dans le registre de la session → déjà liée au compte Windows de l'utilisateur. Suffit pour la démo.
+- Sortie Steam : Steam Cloud synchronise des fichiers, pas le registre → passer la sauvegarde dans un fichier (`Application.persistentDataPath`). Peu de scripts concernés (`LevelProgressionManager`, `OptionsManager`, `CollectibleManager`, `LevelStatsTracker`…).
+- « Effacer la sauvegarde » façon reset d'Isaac : option à ajouter si voulue ; effacerait aussi la trace « jeu terminé en X » (`DIFFICULTE_ET_PARTIE.md`).
+- Les marques de fin de partie pourraient aussi devenir des succès Steam.

@@ -7,4 +7,8 @@ public static class DevFlags
 
     // SentinelDetector ignore les joueurs (pas de tir, pas de silhouette, pas d'alarme)
     public static bool SentinelIgnoresPlayer;
+
+    // Vrai des qu'une aide du DevPanel a servi dans la session (option cochee, essais remis a 1) :
+    // la partie en cours devient "non classee" (pas de marques de fin de jeu, LevelProgressionManager)
+    public static bool UsedThisSession;
 }

@@ -68,7 +68,17 @@ public class BossEndRun : MonoBehaviour
     {
         if (ending) return;
         ending = true;
+        RecordVictory();
         StartCoroutine(EndRoutine());
+    }
+
+    // Pas d'ecran de victoire classique dans le boss : la victoire s'enregistre ici, comme
+    // LevelManager le fait ailleurs. Dernier niveau de la campagne -> bilan et marques de fin de jeu.
+    private void RecordVictory()
+    {
+        if (LevelStatsTracker.Instance != null) LevelStatsTracker.Instance.OnLevelCompleted();
+        if (LevelProgressionManager.Instance != null)
+            LevelProgressionManager.Instance.CompleteLevel(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }
 
     private IEnumerator EndRoutine()

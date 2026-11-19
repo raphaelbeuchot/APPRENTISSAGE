@@ -31,10 +31,28 @@
 
   `options.easy` et `options.normal` sont maintenant lues par `SoloPanelUI` (source à mettre à jour dans la Sheet). `options.difficulty` n'est plus affichée nulle part.
 
-## Suite (décidée le 2026-11-19)
+## Bilan de partie et marques de fin de jeu (codé et validé le 2026-11-19)
 
-1. **Trace permanente « jeu terminé en X »** : écrite quand on finit le dernier niveau de la campagne. Doit survivre à New Game (`ResetProgression`), donc stockée à part ; Easy, Normal, Hard peuvent s'accumuler au fil des parties. Pas de marque par niveau : c'est la partie complète qui compte.
-2. **Affichage sur l'écran de choix de niveaux** (dispo en fin de jeu) : un seul emplacement pour toute la partie, pas par ligne (pas de souci avec la liste déroulante). Visuel à décider par l'utilisateur.
+Pas de marque par niveau : c'est la partie complète qui compte.
+
+| Marque | Condition sur la partie |
+|---|---|
+| Finished | dernier niveau de la campagne réussi |
+| Survivor | chaque niveau réussi au premier essai (`LevelStatsTracker.AttemptCount` : mort, Restart, quitter / Continuer rechargent le niveau = un essai) |
+| Ghost | l'essai réussi de chaque niveau sans détection (recommencer est permis) |
+| Ghost Survivor | les deux dans la même partie |
+
+- `LevelProgressionManager` : bilan de partie (`RunSurvivor`, `RunGhost`, `RunUnranked`, `RunFinished`) enregistré avec la sauvegarde, remis à neuf à New Game, mis à jour à chaque niveau réussi. Au dernier niveau, les marques s'ajoutent à la difficulté de la partie (`GetEndingMarks(difficulté)`), **permanentes** : ni New Game ni le changement d'ordre du catalogue ne les effacent.
+- Pas de bilan pour un niveau lancé hors MainMenu, ni en rejouant après la fin du jeu.
+- Toute aide du DevPanel (option cochée, « Essais remis à 1 ») → partie non classée, aucune marque.
+- Boss Rush Hour IV : pas d'écran de victoire classique ; la victoire est enregistrée par `BossEndRun.End` (trigger B). **Branchement pas encore vu en jeu** : à vérifier la prochaine fois que le boss est joué en entier depuis le MainMenu (Console : « Jeu termine en … »).
+- Dernier niveau = dernier du catalogue : le boss en build démo, le dernier de la liste complète sinon.
+- Test : DevPanel (F1) > « Simuler la fin du jeu (marques) » (bilan de la partie en cours, aides du DevPanel ignorées), « Voir les marques », « Effacer les marques ».
+
+## Suite
+
+1. **Écran de fin du boss** plus travaillé (aujourd'hui `DemoEndPanel`, simple écran d'options) : un texte selon la difficulté, plus Ghost / Survivor / Ghost Survivor de la partie (`RunGhost`, `RunSurvivor`, `RunUnranked`). Textes et forme : l'utilisateur.
+2. **Affichage des marques sur l'écran de choix de niveaux** (dispo en fin de jeu) : un seul emplacement, pas par ligne. Visuel à décider par l'utilisateur.
 
 ## Constats
 

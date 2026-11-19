@@ -65,6 +65,7 @@ public class DevPanel : MonoBehaviour
     private IEnumerator ApplyNextFrame()
     {
         yield return null;
+        if (AnyOptionActive()) DevFlags.UsedThisSession = true;
         if (forceLoadout) ApplyLoadout();
         if (openDoor) OpenGoalDoors();
     }
@@ -149,8 +150,20 @@ public class DevPanel : MonoBehaviour
         GUI.enabled = stats != null;
         string attemptsLabel = stats != null ? " (actuel : " + stats.AttemptCount + ")" : "";
         if (GUILayout.Button("Essais remis a 1" + attemptsLabel))
+        {
             stats.SetCurrentRunAsFirstAttempt();
+            DevFlags.UsedThisSession = true;
+        }
         GUI.enabled = true;
+
+        // Fin de jeu simulee : bilan de la partie en cours + l'essai en cours compte comme reussi
+        LevelProgressionManager progression = LevelProgressionManager.Instance;
+        if (GUILayout.Button("Simuler la fin du jeu (marques)"))
+            progression.DevSimulateGameEnd();
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Voir les marques")) progression.DevLogEndingMarks();
+        if (GUILayout.Button("Effacer les marques")) progression.DevClearEndingMarks();
+        GUILayout.EndHorizontal();
 
         if (newInvincible != invincible || newNoDetection != noDetection || newOpenDoor != openDoor)
         {
@@ -160,6 +173,7 @@ public class DevPanel : MonoBehaviour
             openDoor = newOpenDoor;
             ApplyFlags();
             SavePrefs();
+            if (AnyOptionActive()) DevFlags.UsedThisSession = true;
             if (doorJustOpened) OpenGoalDoors();
         }
 

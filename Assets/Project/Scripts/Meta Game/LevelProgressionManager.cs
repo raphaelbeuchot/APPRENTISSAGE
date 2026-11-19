@@ -63,6 +63,25 @@ public class LevelProgressionManager : MonoBehaviour
     // dans la liste, donc si l'ordre change, la progression est remise a zero (sinon decalage silencieux)
     private const string PREFS_CATALOG_SIGNATURE = "CatalogSignature";
 
+    // --- Bilan de la partie en cours (remis a zero a New Game) ---
+    // Survivor : chaque niveau reussi au premier essai (LevelStatsTracker.AttemptCount, mort, Restart
+    // et quitter/Continuer rechargent le niveau). Ghost : l'essai reussi de chaque niveau sans detection.
+    // Non classee : une aide du DevPanel a servi. Terminee : dernier niveau de la campagne reussi.
+    private const string PREFS_RUN_SURVIVOR = "RunSurvivor";
+    private const string PREFS_RUN_GHOST = "RunGhost";
+    private const string PREFS_RUN_UNRANKED = "RunUnranked";
+    private const string PREFS_RUN_FINISHED = "RunFinished";
+    // --- Marques de fin de jeu, par difficulte (permanentes : ni New Game ni le catalogue ne les effacent) ---
+    private const string PREFS_ENDING_MARKS = "EndingMarks_"; // + (int)OptionsManager.Difficulty
+
+    [System.Flags]
+    public enum EndingMark { None = 0, Finished = 1, Ghost = 2, Survivor = 4, GhostSurvivor = 8 }
+
+    public bool RunSurvivor { get; private set; }
+    public bool RunGhost { get; private set; }
+    public bool RunUnranked { get; private set; }
+    public bool RunFinished { get; private set; }
+
     void Awake()
     {
         if (_instance != null && _instance != this)
@@ -124,6 +143,13 @@ public class LevelProgressionManager : MonoBehaviour
             return;
         }
 
+        // Bilan de partie : seulement pendant la vraie partie (pas en test editeur, pas en rejouant apres la fin)
+        if (saveEnabled && !RunFinished)
+        {
+            UpdateRunRecord();
+            if (idx == levels.Count - 1) FinishRun();
+        }
+
         completedLevels.Add(idx);
 
         if (idx + 1 < levels.Count)
@@ -132,6 +158,92 @@ public class LevelProgressionManager : MonoBehaviour
 
         Save();
         Debug.Log("[LevelProgression] Niveau complete : " + levels[idx].levelName + " | Suivant debloque : " + (idx + 1 < levels.Count ? levels[idx + 1].levelName : "aucun"));
+    }
+
+    // Lit les stats de l'essai qui vient de reussir (LevelStatsTracker, sur le LevelManager de chaque niveau)
+    private void UpdateRunRecord()
+    {
+        if (DevFlags.UsedThisSession) RunUnranked = true;
+
+        LevelStatsTracker stats = LevelStatsTracker.Instance;
+        if (stats == null)
+        {
+            Debug.LogWarning("[LevelProgression] Pas de LevelStatsTracker : Ghost et Survivor perdus pour cette partie.");
+            RunSurvivor = false;
+            RunGhost = false;
+            return;
+        }
+
+        if (stats.AttemptCount > 1) RunSurvivor = false;
+        if (stats.DetectionCount > 0) RunGhost = false;
+        Debug.Log("[LevelProgression] Bilan de partie : Survivor " + RunSurvivor + " | Ghost " + RunGhost + (RunUnranked ? " | NON CLASSEE (DevPanel)" : ""));
+    }
+
+    // Dernier niveau reussi : la partie est close, ses marques s'ajoutent a celles de sa difficulte
+    private void FinishRun()
+    {
+        RunFinished = true;
+
+        if (RunUnranked)
+        {
+            Debug.Log("[LevelProgression] Jeu termine, partie non classee (DevPanel) : aucune marque.");
+            return;
+        }
+        if (OptionsManager.Instance == null)
+        {
+            Debug.LogWarning("[LevelProgression] Jeu termine mais OptionsManager absent : difficulte inconnue, aucune marque.");
+            return;
+        }
+        FinishRunFor(OptionsManager.Instance.difficulty);
+    }
+
+    private void FinishRunFor(OptionsManager.Difficulty difficulty)
+    {
+        EndingMark marks = EndingMark.Finished;
+        if (RunGhost) marks |= EndingMark.Ghost;
+        if (RunSurvivor) marks |= EndingMark.Survivor;
+        if (RunGhost && RunSurvivor) marks |= EndingMark.GhostSurvivor;
+
+        string key = PREFS_ENDING_MARKS + (int)difficulty;
+        PlayerPrefs.SetInt(key, PlayerPrefs.GetInt(key, 0) | (int)marks);
+        PlayerPrefs.Save();
+        Debug.Log("[LevelProgression] Jeu termine en " + difficulty + " : " + marks);
+    }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    // DevPanel : fin de jeu simulee avec le bilan de la partie en cours (DevPanel ignore, sinon toujours
+    // non classee), puis marques affichees. Le bilan reste ouvert : on peut recommencer.
+    public void DevSimulateGameEnd()
+    {
+        bool unranked = RunUnranked;
+        UpdateRunRecord();
+        RunUnranked = unranked;
+
+        bool hadOptions = OptionsManager.Instance != null;
+        if (!hadOptions) Debug.Log("[LevelProgression] TEST : OptionsManager absent (niveau lance hors MainMenu), marques en " + OptionsManager.Difficulty.Superbanco);
+        FinishRunFor(hadOptions ? OptionsManager.Instance.difficulty : OptionsManager.Difficulty.Superbanco);
+        DevLogEndingMarks();
+    }
+
+    public void DevLogEndingMarks()
+    {
+        foreach (OptionsManager.Difficulty d in System.Enum.GetValues(typeof(OptionsManager.Difficulty)))
+            Debug.Log("[LevelProgression] Marques " + d + " : " + GetEndingMarks(d));
+    }
+
+    public void DevClearEndingMarks()
+    {
+        foreach (OptionsManager.Difficulty d in System.Enum.GetValues(typeof(OptionsManager.Difficulty)))
+            PlayerPrefs.DeleteKey(PREFS_ENDING_MARKS + (int)d);
+        PlayerPrefs.Save();
+        Debug.Log("[LevelProgression] TEST : marques de fin de jeu effacees.");
+    }
+#endif
+
+    /// <summary>Marques de fin de jeu obtenues pour une difficulte, toutes parties confondues.</summary>
+    public EndingMark GetEndingMarks(OptionsManager.Difficulty difficulty)
+    {
+        return (EndingMark)PlayerPrefs.GetInt(PREFS_ENDING_MARKS + (int)difficulty, 0);
     }
 
     public bool IsCompleted(int sceneIndex)
@@ -159,6 +271,12 @@ public class LevelProgressionManager : MonoBehaviour
         unlockedLevels.Clear();
         if (levels.Count > 0) unlockedLevels.Add(0);
         if (levels.Count > 1) unlockedLevels.Add(1);
+        // Nouvelle partie : bilan remis a neuf (les marques de fin de jeu restent)
+        RunSurvivor = true;
+        RunGhost = true;
+        RunUnranked = false;
+        RunFinished = false;
+        DevFlags.UsedThisSession = false;
         Save(force: true);
         Debug.Log("[LevelProgression] Progression reinitalisee.");
         if (CollectibleManager.Instance != null)
@@ -231,6 +349,10 @@ public class LevelProgressionManager : MonoBehaviour
         PlayerPrefs.SetString(PREFS_UNLOCKED, SerializeSet(unlockedLevels));
         PlayerPrefs.SetString(PREFS_CATALOG_SIGNATURE, ComputeCatalogSignature());
         PlayerPrefs.SetInt("LastUnlockedLevel", lastUnlockedLevelIndex);
+        PlayerPrefs.SetInt(PREFS_RUN_SURVIVOR, RunSurvivor ? 1 : 0);
+        PlayerPrefs.SetInt(PREFS_RUN_GHOST, RunGhost ? 1 : 0);
+        PlayerPrefs.SetInt(PREFS_RUN_UNRANKED, RunUnranked ? 1 : 0);
+        PlayerPrefs.SetInt(PREFS_RUN_FINISHED, RunFinished ? 1 : 0);
         PlayerPrefs.Save();
     }
 
@@ -239,6 +361,11 @@ public class LevelProgressionManager : MonoBehaviour
         completedLevels = DeserializeSet(PlayerPrefs.GetString(PREFS_COMPLETED, ""));
         unlockedLevels = DeserializeSet(PlayerPrefs.GetString(PREFS_UNLOCKED, ""));
         lastUnlockedLevelIndex = PlayerPrefs.GetInt("LastUnlockedLevel", -1);
+        // Partie commencee avant ce bilan : pas de preuve, donc ni Ghost ni Survivor (0 par defaut)
+        RunSurvivor = PlayerPrefs.GetInt(PREFS_RUN_SURVIVOR, 0) == 1;
+        RunGhost = PlayerPrefs.GetInt(PREFS_RUN_GHOST, 0) == 1;
+        RunUnranked = PlayerPrefs.GetInt(PREFS_RUN_UNRANKED, 0) == 1;
+        RunFinished = PlayerPrefs.GetInt(PREFS_RUN_FINISHED, 0) == 1;
 
         // Ordre du catalogue change depuis la derniere sauvegarde -> progression remise a zero.
         // Pas d'empreinte (sauvegarde anterieure a ce controle) : on adopte l'ordre actuel sans rien effacer.
