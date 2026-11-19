@@ -6,6 +6,8 @@
 ## Fait
 
 - **Cadre TV recentré** (`UI_Images/Vignette_002.png`, 2a0a8ee0) : le trou de l'écran est maintenant pile au centre de l'image 1920×1080 (x 375-1544, y 93-986 → **1170 × 894 px**, centre 960 × 540). Colonnes et lignes uniformes ajoutées / retirées, rien de redessiné. Format quasi 4:3 ; zone utile sûre ≈ **1170 × 880 centrée** (coins arrondis et bord bombé). Tout ce qui était calé à la main sur l'ancien trou (décalé d'environ 57 px à gauche, 3 px en bas) est à recaler.
+- **Trou rendu symétrique haut/bas et gauche/droite** (2026-11-19) : le quart bas-gauche du rectangle noir recopié en miroir sur les trois autres (les coins du haut étaient plus arrondis, 49-58 px contre ~12 en bas). Bois, panneaux, bouton intacts ; même fichier, même GUID.
+- **`ScreenArea`** posée dans le prefab `UI` (2026-11-19) : enfant de `CadreTV`, ancre centre, pos 0,0, **1100 × 890**. Enfant `Guide` (Image magenta translucide, étirée, Raycast Target décoché) pour la voir ; à couper avant un build.
 - Utilisé par : prefab `UI`, `UI_ShowTime`, scènes MainMenu, LoadingScreen, MultiStart, Level_GoWithTheFlow01, Level_LavaTrain02. `Vignette_Multi_001` = UI_Multi seul ; `VignetteTest` = vieilles scènes (LevelSelect, TutoChoice, WheelOfFortune) et `TVFrame_StencilWrite.mat` ; `Vignette_001` = inutilisée.
 
 ## Relevé du prefab UI (solo), 2026-11-19
