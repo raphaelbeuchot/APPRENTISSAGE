@@ -53,12 +53,23 @@ public class MultiCoinRaceManager : MonoBehaviour
 
         if (coinSpawner == null)
             coinSpawner = FindFirstObjectByType<CoinSpawner>();
+
+        // Chrono cache jusqu'a StartRound (meme frame que ShowGameplayBars : apparait avec les autres barres)
+        SetTimersVisible(false);
+    }
+
+    private void SetTimersVisible(bool visible)
+    {
+        if (timerTexts == null) return;
+        foreach (TextMeshProUGUI t in timerTexts)
+            if (t != null) t.gameObject.SetActive(visible);
     }
 
     // Appele par MultiLevelStart au moment ou le rideau commence a se lever (StartOpening()),
     // pas au Start() de la scene : le chrono ne doit pas tourner pendant "Get ready"/le rideau ferme.
     public void StartRound()
     {
+        SetTimersVisible(true);
         StartCoroutine(CountdownRoutine());
     }
 
