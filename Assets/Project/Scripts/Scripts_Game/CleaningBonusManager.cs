@@ -57,8 +57,10 @@ public class CleaningBonusManager : MonoBehaviour
         if (CleaningCreditManager.Instance != null)
             CleaningCreditManager.Instance.AddCredit();
 
-        if (enemyIconsUI != null && corpse.sourceEnemy != null)
-            enemyIconsUI.SetIconCleaned(corpse.sourceEnemy);
+        // Toutes les barres d'icones (une par joueur en multi, une seule en solo)
+        if (corpse.sourceEnemy != null)
+            foreach (EnemyIconsUI bar in FindObjectsByType<EnemyIconsUI>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                bar.SetIconCleaned(corpse.sourceEnemy);
 
         bool isLast = cleanedCount >= registeredEnemies.Count;
 

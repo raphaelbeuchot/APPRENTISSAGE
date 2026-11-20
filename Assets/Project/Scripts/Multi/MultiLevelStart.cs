@@ -165,8 +165,8 @@ public class MultiLevelStart : MonoBehaviour
         if (gameManager != null)
             gameManager.StartGameCycle();
 
-        EnemyIconsUI enemyIconsUI = FindAnyObjectByType<EnemyIconsUI>();
-        if (enemyIconsUI != null)
+        // Une barre d'icones par joueur (une par moitie d'ecran) : les remplir toutes
+        foreach (EnemyIconsUI enemyIconsUI in FindObjectsByType<EnemyIconsUI>(FindObjectsSortMode.None))
             enemyIconsUI.SpawnIconsForEnemies();
 
         CorpseIconsUI corpseIconsUI = FindAnyObjectByType<CorpseIconsUI>();
