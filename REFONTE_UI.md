@@ -52,6 +52,9 @@
    - **Vignette recentrée** (2026-11-20) : `Vignette_Multi_001` était décalée (marges 68/60 en largeur, 68/72 en hauteur, quelques pixels transparents en haut à droite). Refaite : noir de **64 px partout en largeur** (bords et milieu), 70 px en haut et en bas, trous **864 × 940** (x 64-927 et 992-1855, y 70-1009), coins d'origine. Compression None. Même GUID.
    - Écart accepté : les caméras filment chacune une moitié d'écran (centre x 480 pour J1), le centre du trou est à 496, soit 16 px. Invisible en jeu. Correction possible par le Viewport Rect des caméras (X 0.0333 / 0.5167, W 0.45), écartée pour l'instant : lie les caméras au dessin de la vignette.
    - **Étape 2 faite** (2026-11-20, f0b04540) : `CadreTV` de `UI_Multi` fixe 1920 × 1080 au centre, 4 bandes noires copiées du solo.
+   - **ScreenArea_J1 / J2** (2026-11-20, 48e99404) : posées à la main sous `CadreTV` (X ∓464, 840 × 910), UI de chaque joueur rangée dedans (vie, stamina, gauge, tomates, score).
+   - **Barre de vie du J2 dans le prefab** : avant, ajoutée en scène (Race_Lava et CoinRace_Lava seulement). `PlayerHealthUI` a un champ **Side** (Aucun / Left / Right) : Player Health vide → joueur du bon côté via `PlayerScreenSide` ; Aucun = solo inchangé. J1 = Left, J2 = Right.
+   - Reste : la stamina et les tomates du J2 trouvent leur joueur par un override de scène (même principe que Side possible sur `StaminaBarFollower` / `TomatoUI`) ; overrides `playerHealth` de la barre J1 dans les 4 scènes, inutiles maintenant ; 4 overrides orphelins dans Race_Lava ; Pause du multi sans Layout Group.
    - Relevé : 4 scènes (CoinRace_Lava, Race_Lava, Race_Slippery, Race_Void). `CadreTV` étiré sur le Canvas, pas de `ScreenArea`, éléments sous `CadreTV` posés à la main ; une seule barre de vie (stamina, gauge, tomates en double J1/J2) ; Pause sans Layout Group.
 
 ## Bug lié
