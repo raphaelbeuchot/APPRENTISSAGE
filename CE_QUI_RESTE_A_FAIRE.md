@@ -14,7 +14,7 @@
 
 ## 🐛 BUGS
 
-- [ ] 🟡 **Barre de vie à 2 pips au lancement** (noté le 2026-11-19) : vie à 100, 25 pips par barre, mais la barre affiche 2 pips. Override quelque part sur UI (`PlayerHealthUI`) ? À enquêter.
+- [x] **Barre de vie à 2 pips au lancement** (noté le 2026-11-19) : override 50 PV par pip dans GoWithTheFlow01, retiré le 2026-11-20 (035f801e).
 
 - [ ] 🟡 **PauseMenuUI** — désactiver l'accès au pause menu dans la StartRoom, ou au moins bloquer tant que le fade-in initial n'est pas terminé
 - [x] 🟡 **Strange Attractor — silhouette blanche à la première attraction** — **résolu le 2026-10-12** (noté le 2026-10-09) : la première fois que le joueur est attiré, sa silhouette apparaît en **blanc** (comme une détection de la sentinelle) au lieu du **jaune** attendu ; les attractions suivantes sont bien en jaune. **Diagnostiqué et corrigé le 2026-10-12** : le prefab `Player/Prefabs/Player.prefab` avait `isCurrentlyDetected: 1` enregistré (champ public de `PlayerDetectionFeedback`, donc sauvegardé) → chaque niveau démarrait « déjà détecté par la sentinelle » sans aucun `OnDetected`. Invisible tant que le premier rafraîchissement de la silhouette vient de la sentinelle (qui lève la détection) ; dans Strange Attractor, il vient du BrightEyes → le blanc gagne sur le jaune jusqu'au feu vert. Correctif : `isCurrentlyDetected` en `[System.NonSerialized]` (idem `EnemyDetectionFeedback`). Piste : le **laser de sentinelle blanc au respawn** en multi (`MULTIJOUEUR_LOCAL.md`, clos sans reproduction) lit ce même champ (`SentinelLaserManager`) → peut-être la même cause.

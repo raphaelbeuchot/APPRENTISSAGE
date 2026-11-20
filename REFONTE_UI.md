@@ -47,12 +47,12 @@
 2. Cadre TV qui garde ses proportions en 16:10 (réglage de l'image ou Aspect Ratio Fitter) au lieu de s'étirer. **Fait.**
 3. Aperçu en éditeur des barres à pips et de la gauge. **Fait** (+ icônes d'ennemis).
 4. Layout Groups dans les menus (pause, victoire, options, Solo). **Fait le 2026-11-20** pour Pause, Options, Solo : conteneur `Lignes` (Vertical Layout Group Middle Center + Content Size Fitter Preferred Size) ; difficulté du Solo dans `Difficulte` (Horizontal, Control Child Size Width). Le code de décalage des lignes est retiré (OptionsPanelUI, SoloPanelUI). Game Over : une seule ligne, rien à faire. **Victoire reportée** (écran à revoir). Leçon : un Layout Group ne centre que si le contenu tient dans le conteneur, d'où le Content Size Fitter.
-5. Overrides des 6 scènes : relire, retirer. **Fait le 2026-11-20** (scènes OLD ignorées) : GoWithTheFlow01 (cadre écrasé à hauteur 0, barre de vie à 50 PV par pip = bug des 2 pips), Flower02 (matériau stencil, icône dollar, positions crédit), WesternCanyon (positions/tailles des barres, icônes, IconContainer, texte crédit, CommentManager en double ; Bubble Container gardé, sert au BubbleManager), LavaTrain03 (position CreditBar, CommentManager en double). **Reste** : les enfants des Layout Groups des menus (Pause, Options) réapparaissent en overrides d'ancres / positions à chaque sauvegarde de scène (34 lignes) ; sans effet en jeu mais bruit de commit ; à régler côté prefab (valeurs stockées ≠ valeurs recalculées).
+5. Overrides des 6 scènes : relire, retirer. **Fait le 2026-11-20** (scènes OLD ignorées) : GoWithTheFlow01 (cadre écrasé à hauteur 0, barre de vie à 50 PV par pip = bug des 2 pips), Flower02 (matériau stencil, icône dollar, positions crédit), WesternCanyon (positions/tailles des barres, icônes, IconContainer, texte crédit, CommentManager en double ; Bubble Container gardé, sert au BubbleManager), LavaTrain03 (position CreditBar, CommentManager en double). Overrides des Layout Groups « à chaque sauvegarde » : **non reproduit le 2026-11-20** (LavaTrain03 sauvegardée, rien ; aucun override sur `Lignes` dans aucune scène). Note fausse, retirée.
 6. Multi (`UI_Multi`, copie indépendante) avec la même méthode.
 
 ## Bug lié
 
-- **Barre de vie à 2 pips au lancement** (noté le 2026-11-19, aussi dans `CE_QUI_RESTE_A_FAIRE.md`) : vie à 100, 25 pips par barre, mais 2 pips affichés. Override sur UI / `PlayerHealthUI` ? Pas encore enquêté.
+- **Barre de vie à 2 pips au lancement** : **réglé** à l'étape 5 (override 50 PV par pip dans GoWithTheFlow01, 035f801e).
 
 ## Idées liées (pour plus tard)
 
