@@ -192,6 +192,22 @@ public class LevelManager : MonoBehaviour
         if (PostVictorySequencer.Instance != null)
             PostVictorySequencer.Instance.FreezeEnemies();
 
+        // Joueur arrete net au contact : sans ca le Rigidbody garde sa vitesse de course (script de mouvement
+        // coupe) et glisse pendant le VictoryScale, et l'Animator continue de courir puis finit sa transition
+        // vers l'idle a la reapparition. Animator remis a l'arret ici : transition terminee pendant qu'il est cache.
+        if (player != null)
+        {
+            player.ForceStop();
+            Rigidbody playerRb = player.GetComponent<Rigidbody>();
+            if (playerRb != null && !playerRb.isKinematic) playerRb.angularVelocity = Vector3.zero;
+            Animator playerAnimator = player.GetComponentInChildren<Animator>();
+            if (playerAnimator != null)
+            {
+                playerAnimator.SetFloat("SpeedX", 0f);
+                playerAnimator.SetFloat("SpeedZ", 0f);
+            }
+        }
+
         // Joueur retenu dans une boite jusqu'a la salle de transition (pas de chute hors du decor)
         PostVictoryBounds.Activate(player);
         Debug.Log("=== NIVEAU COMPLETE! ===");
