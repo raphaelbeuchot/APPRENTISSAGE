@@ -11,6 +11,9 @@ public class PlayerHealthUI : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private PlayerHealth playerHealth;
+    public enum ScreenSideFilter { Aucun, Left, Right }
+    [Tooltip("Multi : si Player Health est vide, prendre le joueur de ce cote (PlayerScreenSide). Aucun = premier joueur trouve (solo).")]
+    [SerializeField] private ScreenSideFilter side = ScreenSideFilter.Aucun;
 
     [Header("Config")]
     [SerializeField] private bool showHealthBar = true;
@@ -105,12 +108,15 @@ public class PlayerHealthUI : MonoBehaviour
 
     private IEnumerator InitCoroutine()
     {
-        if (playerHealth == null)
+        if (playerHealth == null && side != ScreenSideFilter.Aucun)
+            playerHealth = FindPlayerHealthOnSide(side == ScreenSideFilter.Right ? PlayerScreenSide.Side.Right : PlayerScreenSide.Side.Left);
+
+        if (playerHealth == null && side == ScreenSideFilter.Aucun)
             playerHealth = FindObjectOfType<PlayerHealth>();
 
         if (playerHealth == null)
         {
-            Debug.LogError("PlayerHealthUI: PlayerHealth non trouve !");
+            Debug.LogError("PlayerHealthUI: PlayerHealth non trouve ! (cote : " + side + ")");
             yield break;
         }
 
@@ -129,6 +135,16 @@ public class PlayerHealthUI : MonoBehaviour
             subscribed = true;
         }
         OnHealthChanged(playerHealth.GetCurrentHealth(), realMaxHealth);
+    }
+
+    static PlayerHealth FindPlayerHealthOnSide(PlayerScreenSide.Side wanted)
+    {
+        foreach (PlayerHealth ph in FindObjectsOfType<PlayerHealth>())
+        {
+            PlayerScreenSide s = ph.GetComponentInParent<PlayerScreenSide>();
+            if (s != null && s.side == wanted) return ph;
+        }
+        return null;
     }
 
     void BuildPips(float baseMax, float realMax, bool preview)
