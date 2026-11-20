@@ -86,3 +86,9 @@
   probleme sur ce niveau : les enemys sot desactivés (sauf le premier), afin den epas abpoir les lasers de detection des la premiere salle. mais probeme : si on fait ça, les enemys sotn actifs au depart ne sont pas enregistres dans le deomcpte d'enemys (et donc pressur gauge aux fraises, etc)
 - [ ] **Level_GoWithTheFlow01** — 2026-11-20 11:39 — pos (4.0, 0.1, 9.9)
   sol tro pbas de la zone ou ets la clé, ca accroche quand on revient sue le convoyeor
+- [ ] **Level_Race_Lava** — 2026-11-20 17:50 — pos (0.3, 0.0, 6.1)
+  enorme bu ici : player 1 dans a vae ais pas mort et capable de bouger
+- [ ] **Level_Race_Lava** — 2026-11-20 17:50 — pos (0.3, 0.0, 6.1)
+  jeu cassé du coup
+- [ ] **Level_CoinRace_Lava** — 2026-11-20 18:08 — pos (3.0, 0.0, 5.8)
+  il faut desactivzer les enemuys a la victoire
