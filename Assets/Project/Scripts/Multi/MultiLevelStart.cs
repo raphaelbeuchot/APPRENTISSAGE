@@ -74,6 +74,12 @@ public class MultiLevelStart : MonoBehaviour
         GameUIManager gameUIManager = FindAnyObjectByType<GameUIManager>();
         if (gameUIManager != null) gameUIManager.ShowGameplayBars();
 
+        // Scores (courses) et compteurs de pieces (Coin Race) : apparaissent avec les barres
+        foreach (MultiScoreDisplay score in FindObjectsByType<MultiScoreDisplay>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            score.SetVisible(true);
+        foreach (CoinWalletDisplay coins in FindObjectsByType<CoinWalletDisplay>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            coins.SetVisible(true);
+
         SwitchToNormalCameras();
 
         if (countdownManager != null && countdownManager.gameObject.activeInHierarchy)

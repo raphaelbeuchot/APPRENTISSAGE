@@ -17,6 +17,18 @@ public class CoinWalletDisplay : MonoBehaviour
     [Tooltip("Couleur quand le joueur est derriere")]
     [SerializeField] private Color trailingColor = Color.red;
 
+    // Cache jusqu'a ce que MultiLevelStart affiche les barres de jeu (Awake : avant tout Start)
+    private void Awake()
+    {
+        SetVisible(false);
+    }
+
+    public void SetVisible(bool visible)
+    {
+        if (leftText != null) leftText.gameObject.SetActive(visible);
+        if (rightText != null) rightText.gameObject.SetActive(visible);
+    }
+
     private void Update()
     {
         int left = leftWallet != null ? leftWallet.Count : 0;
