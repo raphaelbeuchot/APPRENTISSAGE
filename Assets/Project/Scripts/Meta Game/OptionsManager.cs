@@ -9,6 +9,11 @@ public class OptionsManager : MonoBehaviour
 
     private const string KEY_GAUGE = "GaugeVisible";
     private const string KEY_DIFFICULTY = "Difficulty";
+    private const string KEY_VOLUME = "MasterVolume";
+
+    // Volume general en crans de 10 % (0 a 10), applique a AudioListener.volume (tous les sons)
+    public const int VolumeSteps = 10;
+    public int volumeStep { get; private set; } = VolumeSteps;
 
     public bool gaugeVisible { get; private set; } = true;
     public Difficulty difficulty { get; private set; } = Difficulty.Superbanco;
@@ -41,6 +46,14 @@ public class OptionsManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    public void SetVolumeStep(int step)
+    {
+        volumeStep = Mathf.Clamp(step, 0, VolumeSteps);
+        AudioListener.volume = volumeStep / (float)VolumeSteps;
+        PlayerPrefs.SetInt(KEY_VOLUME, volumeStep);
+        PlayerPrefs.Save();
+    }
+
     public float GetSentinelDamage(float baseDamage, float maxHealth)
     {
         // Sentinelle one-shot en Hard seulement ; Easy et Normal : deux touches
@@ -58,5 +71,7 @@ public class OptionsManager : MonoBehaviour
     {
         gaugeVisible = PlayerPrefs.GetInt(KEY_GAUGE, 1) == 1;
         difficulty = (Difficulty)PlayerPrefs.GetInt(KEY_DIFFICULTY, (int)Difficulty.Superbanco);
+        volumeStep = Mathf.Clamp(PlayerPrefs.GetInt(KEY_VOLUME, VolumeSteps), 0, VolumeSteps);
+        AudioListener.volume = volumeStep / (float)VolumeSteps;
     }
 }

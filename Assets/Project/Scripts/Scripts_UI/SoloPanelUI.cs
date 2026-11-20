@@ -54,8 +54,8 @@ public class SoloPanelUI : MonoBehaviour
 
         if (!hasSave)
         {
+            // Masquee : le Vertical Layout Group du conteneur Lignes fait remonter Options
             continueText.gameObject.SetActive(false);
-            optionsText.transform.position = continueText.transform.position;
             menuTexts.Add(newGameText);
             menuTexts.Add(optionsText);
         }

@@ -35,16 +35,11 @@ public class OptionsPanelUI : MonoBehaviour
         if (uiAudio == null) uiAudio = FindObjectOfType<UIAudioPlayer>();
 
         // Difficulte = choix de partie (SoloPanelUI, Nouvelle partie), figee dans la sauvegarde :
-        // plus de ligne dans les Options, ni menu ni pause. Les lignes suivantes remontent d'un cran.
-        List<Vector3> slots = new List<Vector3>();
-        foreach (TextMeshProUGUI line in new[] { gaugeText, difficultyText, audioText, languageText })
-            if (line != null) slots.Add(line.transform.position);
-
+        // plus de ligne dans les Options, ni menu ni pause. Masquee : le Vertical Layout Group
+        // du conteneur Lignes fait remonter les suivantes.
         optionTexts.Add(gaugeText);
         optionTexts.Add(audioText);
         if (languageText != null) optionTexts.Add(languageText);
-        for (int i = 0; i < optionTexts.Count && i < slots.Count; i++)
-            optionTexts[i].transform.position = slots[i];
         if (difficultyText != null) difficultyText.gameObject.SetActive(false);
 
         if (optionsPanel != null)
@@ -126,7 +121,10 @@ public class OptionsPanelUI : MonoBehaviour
             int lang = (int)Loc.Current;
             Loc.SetLanguage((Language)(goLeft ? (lang - 1 + langCount) % langCount : (lang + 1) % langCount));
         }
-        // audioText : a implementer
+        else if (line == audioText)
+        {
+            OptionsManager.Instance.SetVolumeStep(OptionsManager.Instance.volumeStep + (goLeft ? -1 : 1));
+        }
     }
 
     void UpdateTexts()
@@ -136,7 +134,7 @@ public class OptionsPanelUI : MonoBehaviour
         bool gaugeOn = OptionsManager.Instance.gaugeVisible;
         gaugeText.text = Loc.Get("options.timer", Loc.Get(gaugeOn ? "options.on" : "options.off"));
 
-        audioText.text = Loc.Get("options.audio");
+        audioText.text = Loc.Get("options.volume", OptionsManager.Instance.volumeStep * 100 / OptionsManager.VolumeSteps);
 
         if (languageText != null)
             languageText.text = Loc.Get("options.language", Loc.Get("options.lang." + Loc.Current.ToString().ToLowerInvariant()));

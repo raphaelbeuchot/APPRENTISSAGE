@@ -46,7 +46,7 @@
 1. `ScreenArea` calée sur le trou ; éléments de jeu reparentés et ancrés dessus ; reposés une fois dans l'éditeur. **Fait.**
 2. Cadre TV qui garde ses proportions en 16:10 (réglage de l'image ou Aspect Ratio Fitter) au lieu de s'étirer. **Fait.**
 3. Aperçu en éditeur des barres à pips et de la gauge. **Fait** (+ icônes d'ennemis).
-4. Layout Groups dans les menus (pause, victoire, options, Solo).
+4. Layout Groups dans les menus (pause, victoire, options, Solo). **Fait le 2026-11-20** pour Pause, Options, Solo : conteneur `Lignes` (Vertical Layout Group Middle Center + Content Size Fitter Preferred Size) ; difficulté du Solo dans `Difficulte` (Horizontal, Control Child Size Width). Le code de décalage des lignes est retiré (OptionsPanelUI, SoloPanelUI). Game Over : une seule ligne, rien à faire. **Victoire reportée** (écran à revoir). Leçon : un Layout Group ne centre que si le contenu tient dans le conteneur, d'où le Content Size Fitter.
 5. Overrides des 6 scènes : relire, retirer.
 6. Multi (`UI_Multi`, copie indépendante) avec la même méthode.
 
