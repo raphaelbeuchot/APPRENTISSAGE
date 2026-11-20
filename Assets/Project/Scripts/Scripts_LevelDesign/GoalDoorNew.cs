@@ -97,6 +97,14 @@ public class GoalDoorNew : MonoBehaviour
         if (playerAnimator != null && IsMultiRace())
             playerAnimator.speed = 0f;
 
+        // Multi : le joueur arrive sort des cibles des ennemis (l'autre joueur reste chasse jusqu'a la fin)
+        if (IsMultiRace())
+        {
+            PlayerHealth reachedHealth = player.GetComponent<PlayerHealth>();
+            if (reachedHealth != null)
+                reachedHealth.IgnoredByEnemies = true;
+        }
+
         PlayerDetectionFeedback pdf = player.GetComponent<PlayerDetectionFeedback>();
         if (pdf != null)
             pdf.ResetForVictory();

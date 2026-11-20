@@ -479,6 +479,14 @@ public class EnemyAI_AStar : MonoBehaviour
             return;
         }
 
+        // Multi : cible arrivee a la porte -> poursuite forcee abandonnee (detection normale ci-dessous)
+        if (isForcedChase && targetHuman != null)
+        {
+            PlayerHealth forcedTargetHealth = targetHuman.GetComponent<PlayerHealth>();
+            if (forcedTargetHealth != null && forcedTargetHealth.IgnoredByEnemies)
+                isForcedChase = false;
+        }
+
         if (isForcedChase && targetHuman != null)
         {
             currentState = State.Chasing;
@@ -496,7 +504,7 @@ public class EnemyAI_AStar : MonoBehaviour
         foreach (Collider hit in hits)
         {
             PlayerHealth humanHealth = hit.GetComponent<PlayerHealth>();
-            if (humanHealth != null && !humanHealth.IsDead())
+            if (humanHealth != null && !humanHealth.IsDead() && !humanHealth.IgnoredByEnemies)
             {
                 float distance = Vector3.Distance(transform.position, hit.transform.position);
                 Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;

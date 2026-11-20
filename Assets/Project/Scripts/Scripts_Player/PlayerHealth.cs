@@ -207,5 +207,9 @@ public class PlayerHealth : MonoBehaviour
     public float GetCurrentHealth() => currentHealth;
     public float GetHealthPercentage() => currentHealth / GetMaxHealth();
     public bool IsDead() => isDead;
+
+    // Multi : joueur arrive a la porte (pose par GoalDoorNew). Les ennemis l'ignorent comme un mort,
+    // il reste vulnerable aux degats de zone. Toujours faux en solo ; remis a faux au rechargement de scene.
+    public bool IgnoredByEnemies { get; set; }
     public bool IsCritical() => GetHealthPercentage() <= 0.25f;
 }
