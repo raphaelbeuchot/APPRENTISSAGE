@@ -17,11 +17,18 @@ public class MultiCoinRaceManager : MonoBehaviour
     [Tooltip("Vide = auto-trouve dans la scene.")]
     [SerializeField] private CoinSpawner coinSpawner;
     [SerializeField] private TMP_FontAsset endScreenFont;
-    [Tooltip("Delai avant que A (ou Entree au clavier) relance le niveau depuis l'ecran de fin.")]
+    [Tooltip("Delai (temps reel) avant que A (ou Entree au clavier) relance le niveau depuis l'ecran de fin.")]
     [SerializeField] private float restartPromptDelay = 2f;
+    [Tooltip("Jingle joue a la fin de la manche (en 2D). Vide = pas de son.")]
+    [SerializeField] private AudioClip endRoundSound;
+    [Tooltip("Dans les X dernieres secondes, le chrono passe a la couleur ci-dessous.")]
+    [SerializeField] private float lastSecondsThreshold = 10f;
+    [SerializeField] private Color lastSecondsColor = Color.red;
 
     private PlayerCoinWallet leftWallet;
     private PlayerCoinWallet rightWallet;
+    private AudioSource audioSource;
+    private readonly List<Color> timerBaseColors = new List<Color>();
 
     public float TimeRemaining { get; private set; }
 
@@ -38,6 +45,15 @@ public class MultiCoinRaceManager : MonoBehaviour
             roundDuration = RoundDurationOverride.Value;
 
         TimeRemaining = roundDuration;
+
+        // Son en 2D : signal "meta" comme l'ecran de fin, entendu pareil des deux cotes
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 0f;
+
+        // Couleur posee a la main sur chaque chrono, rendue tant qu'on n'est pas dans les dernieres secondes
+        if (timerTexts != null)
+            foreach (TextMeshProUGUI t in timerTexts)
+                timerBaseColors.Add(t != null ? t.color : Color.white);
 
         foreach (PlayerCoinWallet wallet in FindObjectsByType<PlayerCoinWallet>(FindObjectsSortMode.None))
         {
@@ -79,9 +95,15 @@ public class MultiCoinRaceManager : MonoBehaviour
 
         int seconds = Mathf.CeilToInt(Mathf.Max(0f, TimeRemaining));
         string text = $"{seconds / 60:00}:{seconds % 60:00}";
+        bool lastSeconds = TimeRemaining <= lastSecondsThreshold;
 
-        foreach (TextMeshProUGUI t in timerTexts)
-            if (t != null) t.text = text;
+        for (int i = 0; i < timerTexts.Count; i++)
+        {
+            TextMeshProUGUI t = timerTexts[i];
+            if (t == null) continue;
+            t.text = text;
+            t.color = lastSeconds ? lastSecondsColor : timerBaseColors[i];
+        }
     }
 
     private IEnumerator CountdownRoutine()
@@ -110,6 +132,17 @@ public class MultiCoinRaceManager : MonoBehaviour
 
         if (leftWallet != null) FreezePlayer(leftWallet.gameObject);
         if (rightWallet != null) FreezePlayer(rightWallet.gameObject);
+
+        // Arret sur image au buzzer : ennemis, pieces, ragdolls, particules figes d'un coup.
+        // Pause bloquee : sinon Resume() remettrait le temps a 1 sous l'ecran de fin.
+        // Le temps repasse a 1 au rechargement (RestartOnButtonCoroutine, et GameManager.Start).
+        LevelManager levelManager = FindFirstObjectByType<LevelManager>();
+        if (levelManager != null)
+            levelManager.BlockPause();
+        Time.timeScale = 0f;
+
+        if (endRoundSound != null)
+            audioSource.PlayOneShot(endRoundSound);
 
         if (leftScore == rightScore)
         {
@@ -189,7 +222,8 @@ public class MultiCoinRaceManager : MonoBehaviour
     // Coin Race reste hors du score First to Ten, une manche = un ecran, pas de notion de match.
     private IEnumerator RestartOnButtonCoroutine()
     {
-        yield return new WaitForSeconds(restartPromptDelay);
+        // Temps reel : le jeu est en pause (timeScale 0), un WaitForSeconds ne finirait jamais
+        yield return new WaitForSecondsRealtime(restartPromptDelay);
 
         while (!RestartButtonPressed())
             yield return null;
@@ -197,6 +231,7 @@ public class MultiCoinRaceManager : MonoBehaviour
         while (RestartButtonHeld())
             yield return null;
 
+        Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
