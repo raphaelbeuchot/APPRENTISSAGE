@@ -167,7 +167,20 @@ public class RoundedBlock : MonoBehaviour
         {
             mc.sharedMesh = null; // force la mise a jour du collider
             mc.sharedMesh = generatedMesh;
+            RefreshPathfinding(mc);
         }
+    }
+
+    // Le scan A* du lancement peut passer avant cette reconstruction (collider encore vide : ni sol ni trous vus).
+    // On rescanne donc la zone du bloc. Si le scan n'a pas encore eu lieu, il verra le bloc de toute facon.
+    void RefreshPathfinding(MeshCollider mc)
+    {
+        if (!Application.isPlaying || AstarPath.active == null) return;
+        Bounds b = mc.bounds;
+        b.Expand(1f); // une marge pour recalculer aussi les cases du bord
+        Pathfinding.GraphUpdateObject guo = new Pathfinding.GraphUpdateObject(b);
+        guo.updatePhysics = true;
+        AstarPath.active.UpdateGraphs(guo);
     }
 
     // Autant de materiaux que de sous-meshes : un materiau en trop serait redessine par-dessus le dernier
