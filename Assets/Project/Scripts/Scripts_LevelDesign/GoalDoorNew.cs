@@ -21,6 +21,7 @@ public class GoalDoorNew : MonoBehaviour
     [Tooltip("Bond de l'emission au contact, en intensite HDR (meme unite que le champ Intensity du selecteur de couleur : +1 = x2). Puis descente a zero pendant le fondu")]
     [SerializeField] private float reachedEmissionBoost = 5f;
     private Coroutine fadeRoutine;
+    private bool fadeStarted;
 
     [Header("Audio")]
     public AudioClip doorReachedSound;
@@ -117,8 +118,10 @@ public class GoalDoorNew : MonoBehaviour
             if (audioSource != null && doorReachedSound != null)
                 audioSource.PlayOneShot(doorReachedSound);
 
-            if (reachedFadeDuration > 0f && doorRenderer != null)
-                fadeRoutine = StartCoroutine(FadeOutDoor());
+            // Course multi : la porte reste visible pour le perdant, MultiRaceManager appelle FadeOut()
+            // a son arrivee ou a la fin de son compte a rebours.
+            if (!IsMultiRace())
+                FadeOut();
 
             //if (victoryEffectPrefab != null)
               //  Instantiate(victoryEffectPrefab, transform.position, Quaternion.identity);
@@ -135,6 +138,15 @@ public class GoalDoorNew : MonoBehaviour
 
         //if (destroyPlayerOnReach)
             //Destroy(player, 2f);
+    }
+
+    // Fondu de sortie de la porte (une seule fois).
+    public void FadeOut()
+    {
+        if (fadeStarted) return;
+        fadeStarted = true;
+        if (reachedFadeDuration > 0f && doorRenderer != null)
+            fadeRoutine = StartCoroutine(FadeOutDoor());
     }
 
     // Alpha du materiau (instance propre a cette porte) ramene a zero : _BaseColor (URP Lit), sinon _Color.
@@ -214,6 +226,7 @@ public class GoalDoorNew : MonoBehaviour
     public void ResetDoor()
     {
         hasBeenReached = false;
+        fadeStarted = false;
         isActive = false;
         // UpdateVisuals remet le materiau d'origine (alpha plein)
         if (fadeRoutine != null) { StopCoroutine(fadeRoutine); fadeRoutine = null; }

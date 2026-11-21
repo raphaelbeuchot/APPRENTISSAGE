@@ -29,6 +29,14 @@ public class MultiRaceManager : MonoBehaviour
     [Tooltip("Duree d'entree du texte des ecrans de fin : VICTORY descend, YOU LOSE monte, EX AEQUO tourne. 0 = apparition seche.")]
     [SerializeField] private float introDuration = 1f;
 
+    [Header("Compte a rebours du perdant")]
+    [Tooltip("TimerText de la moitie gauche (UI_Multi). Seul celui du perdant s'allume, pendant loseCountdownDuration. Vide = pas d'affichage.")]
+    [SerializeField] private TextMeshProUGUI leftTimerText;
+    [SerializeField] private TextMeshProUGUI rightTimerText;
+    [SerializeField] private Color loseCountdownColor = Color.red;
+    [Tooltip("Joue a chaque seconde du compte a rebours (pas a 0 : c'est le son d'elimination). Vide = pas de son.")]
+    [SerializeField] private AudioClip loseCountdownTickSound;
+
     public GameObject Winner { get; private set; }
     public event Action<GameObject> OnRaceWon;
 
@@ -97,6 +105,7 @@ public class MultiRaceManager : MonoBehaviour
         if (player == pendingLoser)
         {
             pendingLoser = null;
+            goalDoor.FadeOut();
             ShowLoseScreen(player);
         }
     }
@@ -122,9 +131,13 @@ public class MultiRaceManager : MonoBehaviour
 
         OnRaceWon?.Invoke(player);
 
+        // La porte reste visible tant que l'autre joueur peut encore l'atteindre (GoalDoorNew ne la fait
+        // plus disparaitre seule en multi) : fondu a son arrivee ou a la fin de son compte a rebours.
         pendingLoser = FindTheOtherPlayer(player);
         if (pendingLoser != null)
             StartCoroutine(LoseCountdownCoroutine(pendingLoser));
+        else
+            goalDoor.FadeOut();
     }
 
     // Ex aequo : les deux joueurs ont touche la porte a moins de tieWindow d'intervalle.
@@ -132,6 +145,8 @@ public class MultiRaceManager : MonoBehaviour
     private void HandleTie(GameObject playerA, GameObject playerB)
     {
         Debug.Log($"[MultiRace] Ex aequo entre {playerA.name} et {playerB.name}");
+
+        goalDoor.FadeOut();
 
         ShowHalfScreenMessage(playerA, "TieScreenCanvas", "TieText", "multi.tie", EndScreenTextIntro.Mode.Spin);
         ShowHalfScreenMessage(playerB, "TieScreenCanvas", "TieText", "multi.tie", EndScreenTextIntro.Mode.Spin);
@@ -153,7 +168,33 @@ public class MultiRaceManager : MonoBehaviour
 
     private IEnumerator LoseCountdownCoroutine(GameObject loser)
     {
-        yield return new WaitForSeconds(loseCountdownDuration);
+        // Chrono sur la moitie d'ecran du perdant : MM:SS, couleur loseCountdownColor, un tic par seconde affichee
+        PlayerScreenSide loserScreenSide = loser.GetComponent<PlayerScreenSide>();
+        bool loserIsRight = loserScreenSide != null && loserScreenSide.side == PlayerScreenSide.Side.Right;
+        TextMeshProUGUI timer = loserIsRight ? rightTimerText : leftTimerText;
+        if (timer != null)
+        {
+            timer.color = loseCountdownColor;
+            timer.gameObject.SetActive(true);
+        }
+
+        float remaining = loseCountdownDuration;
+        int lastShown = -1;
+        while (remaining > 0f && pendingLoser == loser)
+        {
+            int seconds = Mathf.CeilToInt(remaining);
+            if (seconds != lastShown)
+            {
+                lastShown = seconds;
+                if (timer != null) timer.text = $"{seconds / 60:00}:{seconds % 60:00}";
+                if (loseCountdownTickSound != null) audioSource.PlayOneShot(loseCountdownTickSound);
+            }
+            yield return null;
+            remaining -= Time.deltaTime;
+        }
+
+        if (timer != null)
+            timer.gameObject.SetActive(false);
 
         // A fini entre-temps (pendingLoser efface par HandlePlayerReached) : rien a faire.
         if (pendingLoser != loser) yield break;
@@ -162,6 +203,8 @@ public class MultiRaceManager : MonoBehaviour
         if (loserHealth == null) yield break;
 
         Debug.Log($"[MultiRace] {loser.name} n'a pas fini a temps : elimination");
+
+        goalDoor.FadeOut();
 
         // Desactive le respawn AVANT la mort forcee : sans ca MultiRespawn le remettrait en jeu normalement.
         // Aussi si deja mort (lave, sentinelle...) : sinon il respawnerait et continuerait sans ecran de fin.
