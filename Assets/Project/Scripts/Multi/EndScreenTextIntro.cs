@@ -20,7 +20,7 @@ public class EndScreenTextIntro : MonoBehaviour
         intro.mode = mode;
         intro.duration = duration;
         // Hors champ des cette frame (distance provisoire), sinon le texte s'afficherait une frame a sa place finale
-        intro.distance = 1080f;
+        intro.distance = 600f;
         intro.Apply(0f);
     }
 
@@ -32,11 +32,15 @@ public class EndScreenTextIntro : MonoBehaviour
 
     private void Start()
     {
-        // Hauteur de la moitie d'ecran (le fond parent) : le texte part juste hors champ.
-        // Lue ici et pas a la creation : le canvas vient d'etre cree, sa taille n'est connue qu'une frame plus tard.
+        // Texte centre : il part juste derriere le bord (demi-hauteur de l'ecran + demi-hauteur du texte),
+        // pour entrer dans le champ des la premiere image.
+        // Lu ici et pas a la creation : le canvas vient d'etre cree, sa taille n'est connue qu'une frame plus tard.
         RectTransform parent = rect.parent as RectTransform;
-        distance = parent != null && parent.rect.height > 0f ? parent.rect.height : 1080f;
-        Apply(0f);
+        float halfScreen = parent != null && parent.rect.height > 0f ? parent.rect.height * 0.5f : 540f;
+        TMPro.TMP_Text text = GetComponent<TMPro.TMP_Text>();
+        float halfText = text != null ? text.preferredHeight * 0.5f : 60f;
+        distance = halfScreen + halfText;
+        Apply(Mathf.Clamp01(elapsed / Mathf.Max(duration, 0.0001f)));
     }
 
     private void Update()
