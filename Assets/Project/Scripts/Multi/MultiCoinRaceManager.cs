@@ -24,6 +24,8 @@ public class MultiCoinRaceManager : MonoBehaviour
     [Tooltip("Dans les X dernieres secondes, le chrono passe a la couleur ci-dessous.")]
     [SerializeField] private float lastSecondsThreshold = 10f;
     [SerializeField] private Color lastSecondsColor = Color.red;
+    [Tooltip("Duree d'entree du texte des ecrans de fin : VICTORY descend, YOU LOSE monte, EX AEQUO tourne. 0 = apparition seche.")]
+    [SerializeField] private float introDuration = 1f;
 
     private PlayerCoinWallet leftWallet;
     private PlayerCoinWallet rightWallet;
@@ -147,8 +149,8 @@ public class MultiCoinRaceManager : MonoBehaviour
         if (leftScore == rightScore)
         {
             Debug.Log($"[MultiCoinRace] Ex aequo, {leftScore} pieces chacun");
-            if (leftWallet != null) ShowHalfScreenMessage(leftWallet.gameObject, "multi.tie");
-            if (rightWallet != null) ShowHalfScreenMessage(rightWallet.gameObject, "multi.tie");
+            if (leftWallet != null) ShowHalfScreenMessage(leftWallet.gameObject, "multi.tie", EndScreenTextIntro.Mode.Spin);
+            if (rightWallet != null) ShowHalfScreenMessage(rightWallet.gameObject, "multi.tie", EndScreenTextIntro.Mode.Spin);
         }
         else
         {
@@ -156,8 +158,8 @@ public class MultiCoinRaceManager : MonoBehaviour
             PlayerCoinWallet loser = leftScore > rightScore ? rightWallet : leftWallet;
             Debug.Log($"[MultiCoinRace] {(leftScore > rightScore ? "Left" : "Right")} gagne, {Mathf.Max(leftScore, rightScore)} contre {Mathf.Min(leftScore, rightScore)}");
 
-            if (winner != null) ShowHalfScreenMessage(winner.gameObject, "multi.victory");
-            if (loser != null) ShowHalfScreenMessage(loser.gameObject, "multi.lose");
+            if (winner != null) ShowHalfScreenMessage(winner.gameObject, "multi.victory", EndScreenTextIntro.Mode.SlideDown);
+            if (loser != null) ShowHalfScreenMessage(loser.gameObject, "multi.lose", EndScreenTextIntro.Mode.SlideUp);
         }
 
         StartCoroutine(RestartOnButtonCoroutine());
@@ -178,7 +180,7 @@ public class MultiCoinRaceManager : MonoBehaviour
 
     // Repris de MultiRaceManager.ShowHalfScreenMessage : overlay noir alpha 0.5 + texte,
     // sur la moitie d'ecran du joueur concerne (PlayerScreenSide, defaut Left si absent).
-    private void ShowHalfScreenMessage(GameObject player, string message)
+    private void ShowHalfScreenMessage(GameObject player, string message, EndScreenTextIntro.Mode intro)
     {
         PlayerScreenSide screenSide = player.GetComponent<PlayerScreenSide>();
         bool isRight = screenSide != null && screenSide.side == PlayerScreenSide.Side.Right;
@@ -216,6 +218,8 @@ public class MultiCoinRaceManager : MonoBehaviour
         text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;
         text.raycastTarget = false;
+
+        EndScreenTextIntro.Play(textObj, intro, introDuration);
     }
 
     // Repris de MultiRaceManager.RestartOnButtonCoroutine, sans la branche MultiMatchScore/MATCH WON :

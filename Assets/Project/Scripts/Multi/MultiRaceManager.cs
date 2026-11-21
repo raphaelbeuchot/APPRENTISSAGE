@@ -26,6 +26,8 @@ public class MultiRaceManager : MonoBehaviour
     [SerializeField] private float tieWindow = 0.5f;
     [Tooltip("Nombre de manches a gagner pour remporter le match (First to X). En attendant un menu d'options, se regle ici.")]
     [SerializeField] private int targetScore = 10;
+    [Tooltip("Duree d'entree du texte des ecrans de fin : VICTORY descend, YOU LOSE monte, EX AEQUO tourne. 0 = apparition seche.")]
+    [SerializeField] private float introDuration = 1f;
 
     public GameObject Winner { get; private set; }
     public event Action<GameObject> OnRaceWon;
@@ -116,7 +118,7 @@ public class MultiRaceManager : MonoBehaviour
         matchOver = MultiMatchScore.GetScore(winnerSide) >= targetScore;
         lastWinnerSide = winnerSide;
 
-        victoryCanvas = ShowHalfScreenMessage(player, "VictoryScreenCanvas", "VictoryText", "multi.victory");
+        victoryCanvas = ShowHalfScreenMessage(player, "VictoryScreenCanvas", "VictoryText", "multi.victory", EndScreenTextIntro.Mode.SlideDown);
 
         OnRaceWon?.Invoke(player);
 
@@ -131,8 +133,8 @@ public class MultiRaceManager : MonoBehaviour
     {
         Debug.Log($"[MultiRace] Ex aequo entre {playerA.name} et {playerB.name}");
 
-        ShowHalfScreenMessage(playerA, "TieScreenCanvas", "TieText", "multi.tie");
-        ShowHalfScreenMessage(playerB, "TieScreenCanvas", "TieText", "multi.tie");
+        ShowHalfScreenMessage(playerA, "TieScreenCanvas", "TieText", "multi.tie", EndScreenTextIntro.Mode.Spin);
+        ShowHalfScreenMessage(playerB, "TieScreenCanvas", "TieText", "multi.tie", EndScreenTextIntro.Mode.Spin);
 
         // Un seul redemarrage possible pour toute la course : un seul appel suffit.
         StartCoroutine(RestartOnButtonCoroutine());
@@ -191,14 +193,14 @@ public class MultiRaceManager : MonoBehaviour
 
     private void ShowLoseScreen(GameObject loser)
     {
-        loseCanvas = ShowHalfScreenMessage(loser, "LoseScreenCanvas", "LoseText", "multi.lose");
+        loseCanvas = ShowHalfScreenMessage(loser, "LoseScreenCanvas", "LoseText", "multi.lose", EndScreenTextIntro.Mode.SlideUp);
         StartCoroutine(RestartOnButtonCoroutine());
     }
 
     // Overlay noir alpha 0.5 + texte, sur la moitie d'ecran du joueur concerne (PlayerScreenSide,
     // defaut Left si absent). Partage entre l'ecran VICTORY (gagnant) et YOU LOSE (perdant).
     // Retourne le canvas cree pour que l'appelant puisse le detruire plus tard (ecran MATCH WON).
-    private GameObject ShowHalfScreenMessage(GameObject player, string canvasName, string textName, string message)
+    private GameObject ShowHalfScreenMessage(GameObject player, string canvasName, string textName, string message, EndScreenTextIntro.Mode intro)
     {
         PlayerScreenSide screenSide = player.GetComponent<PlayerScreenSide>();
         bool isRight = screenSide != null && screenSide.side == PlayerScreenSide.Side.Right;
@@ -236,6 +238,8 @@ public class MultiRaceManager : MonoBehaviour
         text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;
         text.raycastTarget = false;
+
+        EndScreenTextIntro.Play(textObj, intro, introDuration);
 
         return canvasObj;
     }
