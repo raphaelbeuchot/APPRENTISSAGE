@@ -46,8 +46,14 @@ public class SplinePitFillController : MonoBehaviour
 
         if (!activeCoroutines.ContainsKey(go))
         {
+            // Inscrit AVANT de lancer : le premier coup part dans StartCoroutine meme. S'il tue, la coroutine
+            // se retire deja de la liste ; inscrire apres la reinscrirait pour rien, et le joueur resterait
+            // "en train de bruler" dans cette fosse (pas de sortie : collider coupe a la mort) -> immunise
+            // apres un respawn multi.
+            activeCoroutines[go] = null;
             Coroutine c = StartCoroutine(DamageCoroutine(go, interactable));
-            activeCoroutines[go] = c;
+            if (activeCoroutines.ContainsKey(go))
+                activeCoroutines[go] = c;
         }
     }
 
