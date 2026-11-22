@@ -123,9 +123,13 @@ public class MainMenuUI : MonoBehaviour
 
     void UpdateVisuals()
     {
+        // Options ouvertes (depuis le panneau Solo) : menu racine masque, comme les lignes du Solo
+        bool optionsOpen = soloPanelUI != null && soloPanelUI.OptionsOpen;
+
         for (int i = 0; i < menuTexts.Count; i++)
         {
             if (menuTexts[i] == null) continue;
+            menuTexts[i].enabled = !optionsOpen;
 
             Color targetColor = (i == currentSelection) ? selectedColor : normalColor;
             menuTexts[i].color = Color.Lerp(menuTexts[i].color, targetColor, Time.unscaledDeltaTime * transitionSpeed);

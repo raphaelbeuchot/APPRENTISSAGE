@@ -81,7 +81,13 @@ public class SoloPanelUI : MonoBehaviour
     void Update()
     {
         if (!isOpen) return;
-        if (optionsPanelUI != null && optionsPanelUI.IsOpen()) return;
+
+        // Options ouvertes par-dessus : lignes masquees (sinon visibles a travers un fond d'options
+        // transparent). Seul l'affichage est coupe : le Layout Group ne bouge pas.
+        bool optionsOpen = OptionsOpen;
+        foreach (TextMeshProUGUI t in CurrentTexts)
+            if (t != null) t.enabled = !optionsOpen;
+        if (optionsOpen) return;
 
         if (navigationCooldown > 0f)
         {
@@ -275,4 +281,7 @@ public class SoloPanelUI : MonoBehaviour
     }
 
     public bool IsOpen() => isOpen;
+
+    // Lu par MainMenuUI pour masquer aussi le menu racine sous les options
+    public bool OptionsOpen => optionsPanelUI != null && optionsPanelUI.IsOpen();
 }

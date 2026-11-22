@@ -145,9 +145,14 @@ public class PauseMenuUI : MonoBehaviour
 
     void UpdateVisuals()
     {
+        // Options ouvertes par-dessus : lignes de la pause masquees (sinon visibles a travers un fond
+        // d'options transparent). Seul l'affichage est coupe : le Layout Group ne bouge pas.
+        bool optionsOpen = optionsPanelUI != null && optionsPanelUI.IsOpen();
+
         for (int i = 0; i < menuTexts.Count; i++)
         {
             if (menuTexts[i] == null) continue;
+            menuTexts[i].enabled = !optionsOpen;
 
             // Couleur cible
             Color targetColor = (i == currentSelection) ? selectedColor : normalColor;
