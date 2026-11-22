@@ -123,13 +123,14 @@ public class MainMenuUI : MonoBehaviour
 
     void UpdateVisuals()
     {
-        // Options ouvertes (depuis le panneau Solo) : menu racine masque, comme les lignes du Solo
-        bool optionsOpen = soloPanelUI != null && soloPanelUI.OptionsOpen;
+        // Panneau Solo ouvert (et les Options, ouvertes depuis lui) : menu racine masque. Les panneaux
+        // n'ont pas de fond opaque (fond = couleur de la camera), rien d'autre ne le cacherait.
+        bool hidden = soloPanelUI != null && soloPanelUI.IsOpen();
 
         for (int i = 0; i < menuTexts.Count; i++)
         {
             if (menuTexts[i] == null) continue;
-            menuTexts[i].enabled = !optionsOpen;
+            menuTexts[i].enabled = !hidden;
 
             Color targetColor = (i == currentSelection) ? selectedColor : normalColor;
             menuTexts[i].color = Color.Lerp(menuTexts[i].color, targetColor, Time.unscaledDeltaTime * transitionSpeed);
