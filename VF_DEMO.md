@@ -88,7 +88,7 @@ Système maison (le package Unity Localization était trop lourd pour ~100 texte
 2. ~~Choix de langue dans les Options~~ : fait le 2026-11-14 (4e ligne `LanguageText` de `OptionsPanel.prefab`, gauche/droite).
 3. Remplir la Sheet : relire les propositions FR, trouver les jeux de mots, trancher tu ou vous, puis exporter.
 4. Décider du sort du pupitre tuto de TrouNormand (4 images de texte anglais).
-5. **Lignes à ajouter à la Sheet** (2026-11-20, après `options.normal`, FR à écrire) — connecteur Google Sheets branché sur claude.ai le 2026-11-20, à relancer Claude Code pour que je les écrive moi-même :
+5. **Lignes ajoutées à la Sheet le 2026-11-22** par Claude via le connecteur Google Sheets (lignes 53-54, FR vide à écrire par l'utilisateur, puis « exporte ») ; contexte / source de `options.easy` et `options.normal` mis à jour (SoloPanelUI.cs, MultiStartUI.cs). Claude peut écrire dans la Sheet lui-même (onglet unique « Untitled ») :
    - `Options | options.hard | Hard | (FR) | Solo : choix de difficulté (valeur) | SoloPanelUI.cs | à côté de options.easy / options.normal` — la clé manquait, le jeu affiche « options.hard ».
    - `Options | options.volume | Volume     {0}% | (FR) | Options : ligne du volume général | OptionsPanelUI.cs | phrase assemblée dans le code : {0} = 0 à 100, par crans de 10`.
    - `options.audio` ne sert plus (remplacée par `options.volume`).
