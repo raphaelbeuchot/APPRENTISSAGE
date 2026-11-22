@@ -36,11 +36,11 @@ MonoBehaviour:
   attackRange: 1
   attackCooldown: 2
   windupMaterial: {fileID: 2100000, guid: f0de86f2557323747b1bea6982df5e7c, type: 2}
+  fakeGrabRange: 3
   grabDuration: 5
   biteDamage: 5
-  oneArmMashReduction: 0.5
-  fakeGrabRange: 3
   biteTickDamage: 5
+  oneArmMashReduction: 0.5
   grabWindupDuration: 1
   meleeDamage: 25
   meleeKnockbackForce: 6
@@ -48,6 +48,9 @@ MonoBehaviour:
   hitWindupSound: {fileID: 8300000, guid: aca18f2b7f7101e4588b63a4eb766645, type: 3}
   hitLandSound: {fileID: 8300000, guid: 91e8960fd08d8be4f843b69e73a708b1, type: 3}
   hitWindupFailSound: {fileID: 8300000, guid: 8ba920da84e23fb428dfc1b8cc242150, type: 3}
+  hitLandEffect: {fileID: 0}
+  hitLandEffectHeight: 1
+  hitLandEffectLifetime: 2
   spitDamage: 15
   spitSpeed: 10
   spitRange: 15
@@ -90,7 +93,7 @@ MonoBehaviour:
   ragdollForce: 4
   ragdollTorque: 10
   meleeForceMultiplier: 1
-  sentinelForceMultiplier: 5
+  sentinelForceMultiplier: 7
   corpseData:
     projectionMass: 10
     projectionDrag: 0.5

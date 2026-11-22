@@ -602,6 +602,9 @@ public class EnemyHealth : MonoBehaviour
             Debug.LogWarning($"NO DEATH EFFECTS FOUND on {gameObject.name}!");
         }
 
+        // Doublon de la boucle ci-dessus (effets de mort joues deux fois depuis fd4c5836). Commente le 2026-11-22,
+        // valide en jeu (forces de ragdoll remontees dans les SO ennemis). Garde en commentaire au cas ou il servait a quelque chose.
+        /*
         if (deathEffects != null && deathEffects.Length > 0)
         {
             foreach (IDeathEffect effect in deathEffects)
@@ -614,6 +617,7 @@ public class EnemyHealth : MonoBehaviour
                 }
             }
         }
+        */
 
         if (!hasExplosionEffect)
         {
