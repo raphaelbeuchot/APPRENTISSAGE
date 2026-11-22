@@ -90,5 +90,5 @@
   enorme bu ici : player 1 dans a vae ais pas mort et capable de bouger
 - [ ] **Level_Race_Lava** — 2026-11-20 17:50 — pos (0.3, 0.0, 6.1)
   jeu cassé du coup
-- [ ] **Level_CoinRace_Lava** — 2026-11-20 18:08 — pos (3.0, 0.0, 5.8)
-  il faut desactivzer les enemuys a la victoire
+- [x] **Level_CoinRace_Lava** — 2026-11-20 18:08 — pos (3.0, 0.0, 5.8)
+  il faut desactivzer les enemuys a la victoire -> regle le 2026-11-21 : arret sur image au buzzer (timeScale 0), ennemis figes
