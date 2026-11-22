@@ -32,8 +32,8 @@
 - [ ] ⚪ **Spray mis en mémoire pendant un coup de balai** (noté le 2026-10-30) : depuis le retrait du `animator.Rebind()` en fin de coup de balai (`BroomAttackSystem.PerformBroomAttack`, il relançait la locomotion → saccade très visible en marchant), un spray demandé pendant le coup part après coup (buffering). Les triggers `BroomAttack` / `SprayAttack` sont remis à zéro en fin de coup, mais ça ne suffit pas. Pas gênant tant que le spray n'est pas en jeu ; à revoir s'il revient.
 - [ ] 🟡 **Icône pas nettoyée quand un cadavre tombe dans une fosse** (noté le 2026-11-09) : « Cleaned Up ! » s'affiche mais l'icône reste dans la barre. Cause : champ `Enemy Icons UI` vide sur `CleaningManager` (`CleaningBonusManager`) dans la scène ; les icônes s'affichent quand même (elles cherchent n'importe quelle barre), mais le nettoyage ne sait pas à quelle barre parler. Corrigé dans **Level_TrafficJam_04** (confirmé en jeu). **Correctif** : glisser `EnemyIconsContainer` dans le champ. **Mêmes scènes à vérifier puis corriger** (champ vide relevé le 2026-11-09 dans les fichiers ; pas vérifié en jeu, certaines n'affichent peut-être pas la barre) :
   - Level_TrafficJam_02, Level_TrafficJam_03
-  - Level_Flower02
-  - Level_LavaTrain01
+  - Level_Flower02 (corrigé le 2026-11-22, d549ae15)
+  - Level_LavaTrain01 (corrigé le 2026-11-22, d549ae15)
   - Level_Epervier02
   - Level_Bowling_001, Level_Epervier01 (pas de réglage dans la scène : valeur du prefab, vide aussi)
   - **Rappel du 2026-11-13** : un « Cleaned Up ! » n'a pas marché dans un ou deux niveaux (lesquels : oublié) → commencer par cette liste (Flower Power II en fait partie), puis les fosses grille (aucun Cleaned Up, voir TECH). Suivi dans `RAPPORT_PLAYTEST.md`, session du 2026-11-13.
