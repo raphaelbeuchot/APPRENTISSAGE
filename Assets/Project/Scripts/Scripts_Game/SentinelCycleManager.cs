@@ -597,6 +597,10 @@ public class SentinelCycleManager : MonoBehaviour
 
         gameStarted = false;
 
+        // Porte atteinte pendant un feu rouge : sans ca le spot reste allume sur le joueur pendant la victoire
+        if (playerSpotLight != null)
+            playerSpotLight.enabled = false;
+
         if (alertCoroutine != null)
         {
             StopCoroutine(alertCoroutine);
