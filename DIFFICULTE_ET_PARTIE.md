@@ -20,6 +20,9 @@
   - Continue et l'écran de choix de niveaux relisent la difficulté enregistrée.
   - Ligne Difficulté retirée de tous les panneaux Options (menu et pause) : masquée au lancement par `OptionsPanelUI`, les lignes suivantes remontent. Plus moyen de la changer en cours de partie.
   - Les trois lignes (Easy, Normal, Hard) sont dans le panneau Solo du MainMenu, branchées sur `SoloPanelUI`. Sans elles, New Game lance directement (avertissement Console).
+- **Difficulté en multi** (2026-11-22) : étape Difficulté dans `MultiStartUI`, juste avant le choix du niveau (Race : Mode → Manches → Difficulté → Niveau ; Coin Race : Mode → Durée → Difficulté → Niveau). Easy / Normal / Hard côte à côte (`difficultyRoot`, Horizontal Layout Group), Normal présélectionné à chaque fois (pas de mémoire, décidé). Mêmes clés de texte que le solo.
+  - Difficulté de **match** dans `OptionsManager` (`SetMatchDifficulty`), en mémoire seulement : jamais écrite dans PlayerPrefs, la partie solo n'est pas touchée. Les manches qui rechargent la scène la gardent. Effacée à l'arrivée sur le MainMenu (`MainMenuUI.Awake`) et par `SetDifficulty` (New Game solo).
+  - Lignes non branchées : étape sautée (avertissement), le match prend la difficulté du solo.
 
 ## À faire tout de suite
 

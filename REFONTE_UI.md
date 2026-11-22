@@ -55,6 +55,7 @@
    - **ScreenArea_J1 / J2** (2026-11-20, 48e99404) : posées à la main sous `CadreTV` (X ∓464, 840 × 910), UI de chaque joueur rangée dedans (vie, stamina, gauge, tomates, score).
    - **Barre de vie du J2 dans le prefab** : avant, ajoutée en scène (Race_Lava et CoinRace_Lava seulement). `PlayerHealthUI` a un champ **Side** (Aucun / Left / Right) : Player Health vide → joueur du bon côté via `PlayerScreenSide` ; Aucun = solo inchangé. J1 = Left, J2 = Right.
    - Reste : la stamina et les tomates du J2 trouvent leur joueur par un override de scène (même principe que Side possible sur `StaminaBarFollower` / `TomatoUI`) ; overrides `playerHealth` de la barre J1 dans les 4 scènes, inutiles maintenant ; 4 overrides orphelins dans Race_Lava ; Pause du multi sans Layout Group.
+   - **Scène MultiStart** (2026-11-22) : chaque étape (`modeRoot`, `countRoot`, `durationRoot`, `levelroot`, `coinLevelRoot`) en Vertical Layout Group Middle Center + Content Size Fitter Preferred Size, pivot 0.5 ; `ListContainer` vide supprimé ; `difficultyRoot` en Horizontal. Spacing de `Lignes` de l'OptionsPanel passé à 40 dans le prefab.
    - Relevé : 4 scènes (CoinRace_Lava, Race_Lava, Race_Slippery, Race_Void). `CadreTV` étiré sur le Canvas, pas de `ScreenArea`, éléments sous `CadreTV` posés à la main ; une seule barre de vie (stamina, gauge, tomates en double J1/J2) ; Pause sans Layout Group.
 
 ## Bug lié

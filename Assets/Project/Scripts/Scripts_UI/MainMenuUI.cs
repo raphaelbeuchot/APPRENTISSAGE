@@ -31,6 +31,9 @@ public class MainMenuUI : MonoBehaviour
     void Awake()
     {
         if (uiAudio == null) uiAudio = FindObjectOfType<UIAudioPlayer>();
+
+        // Retour du multi : le solo retrouve sa propre difficulte (celle de la partie enregistree)
+        if (OptionsManager.Instance != null) OptionsManager.Instance.ClearMatchDifficulty();
     }
 
     void Start()

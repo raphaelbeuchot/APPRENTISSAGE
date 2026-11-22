@@ -16,7 +16,13 @@ public class OptionsManager : MonoBehaviour
     public int volumeStep { get; private set; } = VolumeSteps;
 
     public bool gaugeVisible { get; private set; } = true;
-    public Difficulty difficulty { get; private set; } = Difficulty.Superbanco;
+    // Difficulte lue par le jeu : celle du match multi si elle est reglee, sinon celle de la partie solo
+    public Difficulty difficulty => matchDifficulty ?? savedDifficulty;
+    private Difficulty savedDifficulty = Difficulty.Superbanco;
+
+    // Difficulte d'un match multi (MultiStartUI) : en memoire seulement, jamais ecrite dans PlayerPrefs,
+    // pour ne pas toucher a la partie solo. Effacee au retour au MainMenu (MainMenuUI).
+    private Difficulty? matchDifficulty = null;
 
     void Awake()
     {
@@ -41,9 +47,20 @@ public class OptionsManager : MonoBehaviour
     // relue telle quelle par Continuer et l'ecran de choix de niveaux. Plus modifiable dans les Options.
     public void SetDifficulty(Difficulty value)
     {
-        difficulty = value;
+        matchDifficulty = null;
+        savedDifficulty = value;
         PlayerPrefs.SetInt(KEY_DIFFICULTY, (int)value);
         PlayerPrefs.Save();
+    }
+
+    public void SetMatchDifficulty(Difficulty value)
+    {
+        matchDifficulty = value;
+    }
+
+    public void ClearMatchDifficulty()
+    {
+        matchDifficulty = null;
     }
 
     public void SetVolumeStep(int step)
@@ -70,7 +87,7 @@ public class OptionsManager : MonoBehaviour
     void Load()
     {
         gaugeVisible = PlayerPrefs.GetInt(KEY_GAUGE, 1) == 1;
-        difficulty = (Difficulty)PlayerPrefs.GetInt(KEY_DIFFICULTY, (int)Difficulty.Superbanco);
+        savedDifficulty = (Difficulty)PlayerPrefs.GetInt(KEY_DIFFICULTY, (int)Difficulty.Superbanco);
         volumeStep = Mathf.Clamp(PlayerPrefs.GetInt(KEY_VOLUME, VolumeSteps), 0, VolumeSteps);
         AudioListener.volume = volumeStep / (float)VolumeSteps;
     }

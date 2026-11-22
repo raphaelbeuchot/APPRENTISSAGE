@@ -10,7 +10,7 @@ using System.Collections.Generic;
 // de scene entre elles) : le retour entre etapes est instantane.
 public class MultiStartUI : MonoBehaviour
 {
-    private enum Step { Mode, Count, CustomEdit, Level, Duration, DurationCustomEdit, CoinLevel }
+    private enum Step { Mode, Count, CustomEdit, Level, Duration, DurationCustomEdit, CoinLevel, Difficulty }
     private enum GameMode { Race, CoinRace }
 
     [System.Serializable]
@@ -66,6 +66,12 @@ public class MultiStartUI : MonoBehaviour
     [SerializeField] private GameObject coinLevelRoot;
     [SerializeField] private List<LevelEntry> coinLevelEntries;
 
+    [Header("Avant le niveau (les deux modes) : difficulte (navigation horizontale)")]
+    [Tooltip("Parent des 3 lignes, actif uniquement pendant cette etape. Vide = etape sautee, difficulte du solo.")]
+    [SerializeField] private GameObject difficultyRoot;
+    [Tooltip("3 lignes dans l'ordre Easy / Normal / Hard (meme ordre que OptionsManager.Difficulty). Textes ecrits par le script.")]
+    [SerializeField] private List<TextMeshProUGUI> difficultyEntries;
+
     [Header("Audio (optionnel, meme pattern que LevelSelectUI)")]
     [SerializeField] private UIAudioPlayer uiAudio;
 
@@ -86,6 +92,9 @@ public class MultiStartUI : MonoBehaviour
     private int customDurationMinutes;
     private int chosenDurationSeconds = 180;
     private int coinLevelSelection = 0;
+    // Index = valeur de OptionsManager.Difficulty ; pas retenu d'un match a l'autre, Normal a chaque fois
+    private int difficultySelection = (int)OptionsManager.Difficulty.Superbanco;
+    private bool difficultyChosen = false;
 
     private float navigationCooldown = 0f;
     private const float cooldownDuration = 0.2f;
@@ -127,6 +136,66 @@ public class MultiStartUI : MonoBehaviour
             case Step.Duration: HandleDurationNavigation(); break;
             case Step.DurationCustomEdit: HandleDurationCustomEditNavigation(); break;
             case Step.CoinLevel: HandleCoinLevelNavigation(); break;
+            case Step.Difficulty: HandleDifficultyNavigation(); break;
+        }
+    }
+
+    private bool HasDifficultyStep => difficultyRoot != null && difficultyEntries != null && difficultyEntries.Count == 3;
+
+    // Apres manches (Race) ou duree (Coin Race) : choix de difficulte, puis niveau.
+    // Lignes non branchees : etape sautee (avertissement), le match garde la difficulte du solo.
+    private void EnterDifficultyStep()
+    {
+        difficultyChosen = false;
+        if (!HasDifficultyStep)
+        {
+            Debug.LogWarning("[MultiStartUI] Lignes Easy / Normal / Hard non branchees : pas de choix de difficulte.");
+            currentStep = chosenMode == GameMode.Race ? Step.Level : Step.CoinLevel;
+            return;
+        }
+        difficultySelection = (int)OptionsManager.Difficulty.Superbanco;
+        currentStep = Step.Difficulty;
+    }
+
+    // Retour depuis l'ecran de niveau : vers la difficulte, ou vers l'etape d'avant si elle est sautee
+    private void BackFromLevelStep()
+    {
+        if (HasDifficultyStep) currentStep = Step.Difficulty;
+        else currentStep = chosenMode == GameMode.Race ? Step.Count : Step.Duration;
+    }
+
+    private void HandleDifficultyNavigation()
+    {
+        Vector2 input = PlayerInputManager.Instance.MoveInput;
+        int count = difficultyEntries.Count;
+
+        if (input.x < -0.5f)
+        {
+            difficultySelection = (difficultySelection - 1 + count) % count;
+            navigationCooldown = cooldownDuration;
+            if (uiAudio != null) uiAudio.PlayLeft();
+        }
+        else if (input.x > 0.5f)
+        {
+            difficultySelection = (difficultySelection + 1) % count;
+            navigationCooldown = cooldownDuration;
+            if (uiAudio != null) uiAudio.PlayRight();
+        }
+
+        if (AnyFaceButtonPressed())
+        {
+            if (uiAudio != null) uiAudio.PlayA();
+            navigationCooldown = cooldownDuration;
+            difficultyChosen = true;
+            currentStep = chosenMode == GameMode.Race ? Step.Level : Step.CoinLevel;
+        }
+
+        if (Input.GetButtonDown("Cancel"))
+        {
+            if (uiAudio != null) uiAudio.PlayB();
+            difficultyChosen = false;
+            currentStep = chosenMode == GameMode.Race ? Step.Count : Step.Duration;
+            navigationCooldown = cooldownDuration;
         }
     }
 
@@ -187,8 +256,8 @@ public class MultiStartUI : MonoBehaviour
             if (uiAudio != null) uiAudio.PlayA();
             navigationCooldown = cooldownDuration;
 
-            if (countSelection == 0) { chosenTarget = 5; currentStep = Step.Level; }
-            else if (countSelection == 1) { chosenTarget = 10; currentStep = Step.Level; }
+            if (countSelection == 0) { chosenTarget = 5; EnterDifficultyStep(); }
+            else if (countSelection == 1) { chosenTarget = 10; EnterDifficultyStep(); }
             else { currentStep = Step.CustomEdit; }
         }
 
@@ -221,7 +290,7 @@ public class MultiStartUI : MonoBehaviour
         {
             if (uiAudio != null) uiAudio.PlayA();
             chosenTarget = customValue;
-            currentStep = Step.Level;
+            EnterDifficultyStep();
             navigationCooldown = cooldownDuration;
         }
 
@@ -261,7 +330,7 @@ public class MultiStartUI : MonoBehaviour
         if (Input.GetButtonDown("Cancel"))
         {
             if (uiAudio != null) uiAudio.PlayB();
-            currentStep = Step.Count;
+            BackFromLevelStep();
             navigationCooldown = cooldownDuration;
         }
     }
@@ -288,9 +357,9 @@ public class MultiStartUI : MonoBehaviour
             if (uiAudio != null) uiAudio.PlayA();
             navigationCooldown = cooldownDuration;
 
-            if (durationSelection == 0) { chosenDurationSeconds = 60; currentStep = Step.CoinLevel; }
-            else if (durationSelection == 1) { chosenDurationSeconds = 180; currentStep = Step.CoinLevel; }
-            else if (durationSelection == 2) { chosenDurationSeconds = 300; currentStep = Step.CoinLevel; }
+            if (durationSelection == 0) { chosenDurationSeconds = 60; EnterDifficultyStep(); }
+            else if (durationSelection == 1) { chosenDurationSeconds = 180; EnterDifficultyStep(); }
+            else if (durationSelection == 2) { chosenDurationSeconds = 300; EnterDifficultyStep(); }
             else { currentStep = Step.DurationCustomEdit; }
         }
 
@@ -323,7 +392,7 @@ public class MultiStartUI : MonoBehaviour
         {
             if (uiAudio != null) uiAudio.PlayA();
             chosenDurationSeconds = customDurationMinutes * 60;
-            currentStep = Step.CoinLevel;
+            EnterDifficultyStep();
             navigationCooldown = cooldownDuration;
         }
 
@@ -363,7 +432,7 @@ public class MultiStartUI : MonoBehaviour
         if (Input.GetButtonDown("Cancel"))
         {
             if (uiAudio != null) uiAudio.PlayB();
-            currentStep = Step.Duration;
+            BackFromLevelStep();
             navigationCooldown = cooldownDuration;
         }
     }
@@ -389,6 +458,15 @@ public class MultiStartUI : MonoBehaviour
     {
         // Appele la frame de la validation : on sait encore quel appareil a appuye.
         MultiDeviceAssignment.AssignFromConfirm(MultiDeviceAssignment.DetectConfirmDevice());
+
+        // Difficulte du match : en memoire seulement, la partie solo n'est pas touchee
+        if (difficultyChosen)
+        {
+            if (OptionsManager.Instance != null)
+                OptionsManager.Instance.SetMatchDifficulty((OptionsManager.Difficulty)difficultySelection);
+            else
+                Debug.LogWarning("[MultiStartUI] Pas d'OptionsManager (scene lancee sans passer par le MainMenu) : difficulte ignoree.");
+        }
 
         if (string.IsNullOrEmpty(entry.scenePath))
         {
@@ -497,6 +575,20 @@ public class MultiStartUI : MonoBehaviour
         {
             for (int i = 0; i < coinLevelEntries.Count; i++)
                 SetTextVisual(coinLevelEntries[i].label, coinLevelStep && i == coinLevelSelection);
+        }
+
+        bool difficultyStep = currentStep == Step.Difficulty;
+        if (difficultyRoot != null) difficultyRoot.SetActive(difficultyStep);
+
+        if (difficultyEntries != null)
+        {
+            string[] keys = { "options.easy", "options.normal", "options.hard" };
+            for (int i = 0; i < difficultyEntries.Count && i < keys.Length; i++)
+            {
+                if (difficultyEntries[i] == null) continue;
+                if (difficultyStep) difficultyEntries[i].text = Loc.Get(keys[i]);
+                SetTextVisual(difficultyEntries[i], difficultyStep && i == difficultySelection);
+            }
         }
     }
 
