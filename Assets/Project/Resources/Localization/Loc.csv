@@ -6,7 +6,7 @@ Niveaux,level.spin,Go for a Spin !,C'est parti pour un tour,Nom + titre de lance
 Niveaux,level.hurdles,Handle Hurdles,,Nom + titre de lancement,LevelCatalog : HandleHurdles (levelName + launchText),jeu de mots : à trouver
 Niveaux,level.attractor,Strange Attractor,Attracteur étrange,Nom + titre de lancement,LevelCatalog : StrangeAttractor (levelName + launchText),
 Niveaux,level.flow,Go with the Flow !,Suivre le courant,Nom + titre de lancement,LevelCatalog : GoWithTheFlow01 (levelName « Go with the flow » + launchText),levelName sans majuscule ni « ! » : un seul texte proposé
-Niveaux,level.rush.launch,Rush Hour !,Herue de pointe,Titre de lancement,LevelCatalog : TrafficJam_01 (launchText),
+Niveaux,level.rush.launch,Rush Hour !,Heure de pointe,Titre de lancement,LevelCatalog : TrafficJam_01 (launchText),
 Niveaux,level.rush1.name,Rush Hour I,Heure de pointe I,Nom dans la sélection de niveau,LevelCatalog : TrafficJam_01 (levelName),
 Niveaux,level.rush4.name,Rush Hour IV,Heure de pointe IV,Nom dans la sélection de niveau (boss),LevelCatalog : TrafficJam_04 (levelName),
 Niveaux,level.rush4.launch,Super Banco !,Super Banco !,Titre de lancement (boss),LevelCatalog : TrafficJam_04 (launchText),référence télé : garder tel quel ?
@@ -48,8 +48,10 @@ Options,options.timer,Timer display     {0},Affichage du chrono     {0},Options 
 Options,options.difficulty,Difficulty     {0},Difficulté     {0},Options : ligne difficulté,OptionsPanelUI.cs,phrase assemblée dans le code : {0} = Easy / Normal
 Options,options.on,On,Oui,Options : valeur,OptionsPanelUI.cs,
 Options,options.off,Off,Non,Options : valeur,OptionsPanelUI.cs,
-Options,options.easy,Easy,Facile,Options : valeur,OptionsPanelUI.cs,
-Options,options.normal,Normal,Normal,Options : valeur,OptionsPanelUI.cs,
+Options,options.easy,Easy,Facile,"Choix de difficulté (Solo > New Game, MultiStart)","SoloPanelUI.cs, MultiStartUI.cs",
+Options,options.normal,Normal,Normal,"Choix de difficulté (Solo > New Game, MultiStart)","SoloPanelUI.cs, MultiStartUI.cs",
+Options,options.hard,Hard,Difficile,"Choix de difficulté (Solo > New Game, MultiStart)","SoloPanelUI.cs, MultiStartUI.cs",à côté de options.easy / options.normal
+Options,options.volume,Volume     {0}%,Volume     {0}%,Options : ligne du volume général,OptionsPanelUI.cs,"phrase assemblée dans le code : {0} = 0 à 100, par crans de 10"
 Options,options.audio,Audio,Audio,Options : ligne audio,OptionsPanelUI.cs,
 Options,options.language,Language     {0},Langue     {0},Options : choix de la langue,à créer,nouveau texte pour le choix de langue
 Options,options.lang.en,English,English,Options : valeur,à créer,nom de chaque langue écrit dans sa propre langue
