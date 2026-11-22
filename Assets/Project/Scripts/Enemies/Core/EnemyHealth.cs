@@ -88,6 +88,10 @@ public class EnemyHealth : MonoBehaviour
         maxTheoreticalStun = stats.sprayStunDuration;
         SetupDeathEffect();
         SetupHealthBar();
+
+        // Ennemi active en cours de partie (trigger de salle) : s'ajoute au total, a la liste a nettoyer
+        // et aux icones si le niveau le demande (GameManager.addEnemiesActivatedLater). Start = une seule fois.
+        GameManager.RegisterEnemyActivatedLater(this);
     }
 
     void SetupHealthBar()

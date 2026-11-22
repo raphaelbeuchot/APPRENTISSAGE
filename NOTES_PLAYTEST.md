@@ -82,8 +82,8 @@
   polish de l'animation climb : ok vue de dos, mais de face vraiment pas clean du tout
 - [x] **Level_TrafficJam_01** — 2026-11-18 22:51 — pos (3.8, 0.2, -1.9)
   rush hour 1 : le spawn du perso ets u peu haut, on a un mvt de camera) -> regle le 2026-11-21
-- [ ] **Level_Acid_02** — 2026-11-19 18:18 — pos (4.4, -1.0, 38.0)
-  probleme sur ce niveau : les enemys sot desactivés (sauf le premier), afin den epas abpoir les lasers de detection des la premiere salle. mais probeme : si on fait ça, les enemys sotn actifs au depart ne sont pas enregistres dans le deomcpte d'enemys (et donc pressur gauge aux fraises, etc)
+- [x] **Level_Acid_02** — 2026-11-19 18:18 — pos (4.4, -1.0, 38.0)
+  probleme sur ce niveau : les enemys sot desactivés (sauf le premier), afin den epas abpoir les lasers de detection des la premiere salle. mais probeme : si on fait ça, les enemys sotn actifs au depart ne sont pas enregistres dans le deomcpte d'enemys (et donc pressur gauge aux fraises, etc) -> regle le 2026-11-22 : case Add Enemies Activated Later du GameManager (ennemis ajoutes au total, a la liste a nettoyer et a la barre quand ils s activent)
 - [x] **Level_GoWithTheFlow01** — 2026-11-20 11:39 — pos (4.0, 0.1, 9.9)
   sol tro pbas de la zone ou ets la clé, ca accroche quand on revient sue le convoyeor -> regle le 2026-11-21
 - [ ] **Level_Race_Lava** — 2026-11-20 17:50 — pos (0.3, 0.0, 6.1)

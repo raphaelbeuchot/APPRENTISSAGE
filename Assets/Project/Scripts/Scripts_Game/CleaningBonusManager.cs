@@ -101,6 +101,16 @@ public class CleaningBonusManager : MonoBehaviour
             audioSource.PlayOneShot(cleanSound);
         CommentPanel.Show("comment.cleanedup");
     }
+    // Ennemi active en cours de partie (GameManager.RegisterEnemyActivatedLater). Memes exclusions qu'au lancement.
+    // Retourne false s'il n'est pas ajoute (BrightEyes, deja present).
+    public bool RegisterEnemy(EnemyHealth enemy)
+    {
+        if (enemy == null || registeredEnemies.Contains(enemy)) return false;
+        if (enemy.GetComponent<BrightEyesController>() != null) return false;
+        registeredEnemies.Add(enemy);
+        return true;
+    }
+
     public List<EnemyHealth> GetRegisteredEnemies()
     {
         return registeredEnemies;

@@ -32,7 +32,14 @@ public class GameManager : MonoBehaviour
     public bool zombieStunBySentinel = false;
 
     [Header("Enemy Tracking")]
+    [Tooltip("Coche : un ennemi desactive au lancement puis active en cours de partie (trigger de salle) s'ajoute au total, " +
+             "a la liste a nettoyer et a la barre d'icones au moment ou il s'active. Laisser decoche au boss (il gere sa barre).")]
+    public bool addEnemiesActivatedLater = false;
     public int totalEnemies = 0;
+
+    // Ennemis deja comptes (lancement + ajoutes ensuite) : evite les doublons, l'ordre des Start n'etant pas garanti
+    private readonly System.Collections.Generic.HashSet<EnemyHealth> countedEnemies = new System.Collections.Generic.HashSet<EnemyHealth>();
+    private bool startCountDone;
     public int enemiesKilled = 0;
 
     private SentinelDetector detector;
@@ -85,9 +92,27 @@ public class GameManager : MonoBehaviour
 
     void CountEnemiesAtStart()
     {
-        EnemyHealth[] allEnemies = FindObjectsOfType<EnemyHealth>();
-        foreach (EnemyHealth enemy in allEnemies)
-            totalEnemies++;
+        foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None))
+            if (countedEnemies.Add(enemy))
+                totalEnemies++;
+        startCountDone = true;
+    }
+
+    // Appele par EnemyHealth.Start. Un ennemi deja actif au lancement est compte par CountEnemiesAtStart
+    // (doublon ignore, quel que soit l'ordre des Start) ; un ennemi active plus tard n'est ajoute que si
+    // addEnemiesActivatedLater est coche : total, liste a nettoyer, une icone de plus sur chaque barre.
+    public static void RegisterEnemyActivatedLater(EnemyHealth enemy)
+    {
+        GameManager gm = FindFirstObjectByType<GameManager>();
+        if (gm == null || !gm.addEnemiesActivatedLater || !gm.startCountDone) return;
+        if (!gm.countedEnemies.Add(enemy)) return;
+
+        gm.totalEnemies++;
+        bool added = CleaningBonusManager.Instance != null && CleaningBonusManager.Instance.RegisterEnemy(enemy);
+        if (added)
+            foreach (EnemyIconsUI bar in FindObjectsByType<EnemyIconsUI>(FindObjectsSortMode.None))
+                bar.AddIconForEnemy(enemy);
+        Debug.Log("[GameManager] Ennemi active en cours de partie : " + enemy.name + " (total " + gm.totalEnemies + ")");
     }
 
     public void OnEnemyKilled()

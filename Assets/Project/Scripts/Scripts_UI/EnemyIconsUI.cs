@@ -97,10 +97,33 @@ public class EnemyIconsUI : MonoBehaviour
 
     public void SpawnIconsForEnemies()
     {
+        // Copie : la liste du CleaningBonusManager peut grandir pendant l'apparition des icones
+        // (ennemi active en cours de partie), on ne parcourt pas une liste qui change.
         List<EnemyHealth> validEnemies = null;
         if (CleaningBonusManager.Instance != null)
-            validEnemies = CleaningBonusManager.Instance.GetRegisteredEnemies();
+            validEnemies = new List<EnemyHealth>(CleaningBonusManager.Instance.GetRegisteredEnemies());
+        startSpawnRequested = true;
         spawnCoroutine = StartCoroutine(SpawnIconsCoroutine(validEnemies));
+    }
+
+    private bool startSpawnRequested;
+
+    // Ennemi active en cours de partie (GameManager.RegisterEnemyActivatedLater) : une icone de plus en bout de barre.
+    // Avant l'apparition des icones du depart : rien, l'ennemi est deja dans la liste qu'elle affichera.
+    public void AddIconForEnemy(EnemyHealth enemy)
+    {
+        if (!startSpawnRequested || enemy == null || iconPrefab == null) return;
+
+        GameObject iconGO = Instantiate(iconPrefab, iconsContainer);
+        EnemyIconDisplay iconDisplay = iconGO.GetComponent<EnemyIconDisplay>();
+        if (iconDisplay != null)
+        {
+            iconDisplay.Initialize(enemy, this);
+            enemyIcons.Add(iconDisplay);
+        }
+
+        if (audioSource != null && iconPopSound != null)
+            audioSource.PlayOneShot(iconPopSound);
     }
 
     /// <summary>
