@@ -111,6 +111,8 @@
 
 *(son, feel, visuel, animations, feedbacks)*
 
+- [ ] 🟢 **Corps du joueur sur tapis roulant** (2026-11-23) : la rotplat entraîne maintenant le ragdoll du joueur mort (b961c1b3, `PlayerRagdoll.IsActive`) ; le `ConveyorBelt` emporte les cadavres d'ennemis mais pas encore celui du joueur. Même ajout à faire, plus tard.
+
 - [ ] ⚪ **Loading screen — cercles concentriques** (idée du 2026-11-19, à discuter) : des cercles concentriques qui s'effacent un par un, depuis l'extérieur.
 
 - [x] 🟡 **Lava Train — chaîne et roues crantées** (clos le 2026-10-30) : `LavaTrainChain` (chaîne le long de la spline, creux sous le wagon du joueur, maillons qui défilent à la vitesse du train) et `LavaTrainGears` (prefab `Gear_001` à chaque knot, tourne avec le train) posés sur le `LavaTrain Manager` des 3 Lava Train ; tout se règle dans le SO partagé `LavaTrain_01` (sections Chain et Gears). Matériau `Maillon_LavaTrain` (copie Opaque + Alpha Clipping de `Maillon_04` : en Transparent la chaîne était masquée jusqu'au cycle sentinelle). Nouvel outil maison `GearShape` (roue crantée paramétrique). Essai abandonné : chaînes tendues sur tout le niveau (illisible). Mis de côté : réglage de longueur des maillons en mètres, creux peu visible sur les tronçons en Z (accepté). Le BoxCollider du prefab `Gear_001` est gardé volontairement (autres usages dans d'autres niveaux).
