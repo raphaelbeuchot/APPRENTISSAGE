@@ -58,6 +58,8 @@ public class BossPhaseManager : MonoBehaviour
     [SerializeField] private AudioClip pupitreSound;
     [Tooltip("Dernier pupitre de la phase (lance la transition). Vide = pas de son.")]
     [SerializeField] private AudioClip lastPupitreSound;
+    [Tooltip("Dernier pupitre de la derniere phase (fin du combat). Vide = Last Pupitre Sound.")]
+    [SerializeField] private AudioClip finalPupitreSound;
 
     [Header("Reprise du cycle")]
     [Tooltip("Le cycle repart apres une transition (fin du Resume Delay). Ex : BossSentinelRotator.Resume.")]
@@ -273,7 +275,10 @@ public class BossPhaseManager : MonoBehaviour
         Debug.Log($"[BOSS PHASES] {phase.label} : {done}/{phase.pupitres.Count}");
 
         bool last = done >= phase.pupitres.Count;
-        PlaySound(last ? lastPupitreSound : pupitreSound);
+        bool finalPhase = currentPhaseIndex >= phases.Count - 1;
+        if (!last) PlaySound(pupitreSound);
+        else if (finalPhase && finalPupitreSound != null) PlaySound(finalPupitreSound);
+        else PlaySound(lastPupitreSound);
 
         lastActivatedPupitre = pupitre;
         if (last)

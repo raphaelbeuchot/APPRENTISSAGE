@@ -7827,6 +7827,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &133825755 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 133825751}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133825753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &136846385
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -26931,6 +26942,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1879608397}
   m_SourcePrefab: {fileID: 100100000, guid: 265b95b0768b200439126120894c07a1, type: 3}
+--- !u!114 &427916403 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 427916402}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1879608395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &428051588
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -34288,7 +34310,7 @@ MonoBehaviour:
   shrinkDuration: 0.4
   growDuration: 0.2
   usedWidth: 1.2000002
-  widthSource: {fileID: 1399701674331303035}
+  widthSource: {fileID: 1402757534}
 --- !u!23 &561584258
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -38664,17 +38686,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1435904409}
   m_SourcePrefab: {fileID: 100100000, guid: 265b95b0768b200439126120894c07a1, type: 3}
---- !u!114 &630568484 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 630568483}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1435904407}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &631527347
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -58959,6 +58970,7 @@ MonoBehaviour:
             m_CallState: 2
   pupitreSound: {fileID: 8300000, guid: 62f4ad0c7ae6fe943969201fd267ad42, type: 3}
   lastPupitreSound: {fileID: 8300000, guid: ced217ac06076bb47a47376573e82021, type: 3}
+  finalPupitreSound: {fileID: 8300000, guid: 66f5647459bc04147be64765d5fd4af9, type: 3}
   onCycleResumed:
     m_PersistentCalls:
       m_Calls:
@@ -59014,6 +59026,18 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 115993669638194594}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1435894346}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
@@ -83823,17 +83847,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1380846529 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 1380846525}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1380846527}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!4 &1381489539 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
@@ -85524,6 +85537,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1402757534 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 1402757530}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1402757532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &1402812139
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -87348,7 +87372,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5871758403430879850, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
   m_PrefabInstance: {fileID: 115993669638194592}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1435894346}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d938481c7e262cc40a04543d2d349ed3, type: 3}
@@ -87718,6 +87742,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
+--- !u!1 &1435894346 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 65819721561945527, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+  m_PrefabInstance: {fileID: 115993669638194592}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1435904407 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6551538502164727277, guid: 265b95b0768b200439126120894c07a1, type: 3}
@@ -119612,8 +119641,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1
-  widthSource: {fileID: 1380846529}
+  usedWidth: 1.0000001
+  widthSource: {fileID: 133825755}
 --- !u!23 &1928467117
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -124848,8 +124877,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1.0000004
-  widthSource: {fileID: 630568484}
+  usedWidth: 1.0000001
+  widthSource: {fileID: 427916403}
 --- !u!23 &2015631814
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -132689,17 +132718,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 6547632}
   m_SourcePrefab: {fileID: 100100000, guid: 265b95b0768b200439126120894c07a1, type: 3}
---- !u!114 &1399701674331303035 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 1399701674331303034}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6547626}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!4 &1432951499076031157 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
@@ -132736,8 +132754,8 @@ MonoBehaviour:
   epervierManagerLoop: {fileID: 0}
   canyonTileManager: {fileID: 0}
   goalDoorTransform: {fileID: 871157101}
-  greenLightMusicLoop: {fileID: 8300000, guid: a1a73840f35e47241afa0cb03a80fa2d, type: 3}
-  redLightMusicLoop: {fileID: 8300000, guid: 33baaeebfb1ef4e4eb5c2b1e532c20a5, type: 3}
+  greenLightMusicLoop: {fileID: 8300000, guid: ed32453f0c3b65a47bafb531110b2593, type: 3}
+  redLightMusicLoop: {fileID: 8300000, guid: f16672545473e0b46b0f4f004af5b45b, type: 3}
   alertSound: {fileID: 8300000, guid: e2f2c96e2e7377d42a45d074be9c7031, type: 3}
   alertIgnitionSound: {fileID: 8300000, guid: d43733bf375d9894aafe4cbd8c38ba6d, type: 3}
   maxMusicPitch: 1.5
@@ -132794,8 +132812,8 @@ MonoBehaviour:
   explosionSound: {fileID: 8300000, guid: 001b59c5be6a94a4b8732639fd875040, type: 3}
   sparksPrefab: {fileID: 4253818877063138869, guid: 982d236f2482cea46858de30015316d4, type: 3}
   sparksCount: {x: 3, y: 5}
-  sparksCountPerPhase: 2
-  sparksCountMax: 10
+  sparksCountPerPhase: 5
+  sparksCountMax: 30
   sparksArcAngle: 60
   onLastCircleExploded:
     m_PersistentCalls:
