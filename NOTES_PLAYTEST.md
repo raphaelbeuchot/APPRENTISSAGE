@@ -92,3 +92,5 @@
   jeu cassé du coup
 - [x] **Level_CoinRace_Lava** — 2026-11-20 18:08 — pos (3.0, 0.0, 5.8)
   il faut desactivzer les enemuys a la victoire -> regle le 2026-11-21 : arret sur image au buzzer (timeScale 0), ennemis figes
+- [ ] **Level_TrafficJam_04** — 2026-11-23 21:12 — pos (48.7, -0.4, 73.1)
+  toutes les portes sauf la finale door doivent etre non ouvrables, et avec le voyant rouge
