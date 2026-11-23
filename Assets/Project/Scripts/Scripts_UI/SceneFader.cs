@@ -9,6 +9,12 @@ public class SceneFader : MonoBehaviour
     public static SceneFader Instance { get; private set; }
 
     [SerializeField] private float fadeDuration = 0.4f;
+    [Tooltip("Images gardees au noir apres le chargement, avant d'eclaircir (les premieres images d'un niveau sont lentes)")]
+    [SerializeField] private int blackFramesAfterLoad = 3;
+
+    // Plafond du temps compte par image pendant un fondu : une image lente (chargement, shaders)
+    // ne doit pas avaler le fondu d'un coup
+    private const float MaxFadeStep = 1f / 30f;
 
     public event Action OnFadeOutComplete;
 
@@ -113,6 +119,7 @@ public class SceneFader : MonoBehaviour
             yield return null;
 
         yield return null; // frame pour que Start() s'execute
+        for (int i = 0; i < blackFramesAfterLoad; i++) yield return null;
 
         yield return StartCoroutine(Fade(1f, 0f));
 
@@ -139,6 +146,7 @@ public class SceneFader : MonoBehaviour
         // Attendre que la scene soit chargee
         yield return null;
         yield return null;
+        for (int i = 0; i < blackFramesAfterLoad; i++) yield return null;
 
         // Fade out (noir -> transparent)
         yield return StartCoroutine(Fade(1f, 0f));
@@ -151,7 +159,7 @@ public class SceneFader : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += Mathf.Min(Time.unscaledDeltaTime, MaxFadeStep);
             float alpha = Mathf.Lerp(from, to, elapsed / fadeDuration);
             SetAlpha(alpha);
             yield return null;
