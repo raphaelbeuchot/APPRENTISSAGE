@@ -142,10 +142,17 @@ public class GameUIManager : MonoBehaviour
         CheckGrabStatus();
     }
 
+    // Vie au dernier evenement (-1 = pas encore recue)
+    private float lastHealth = -1f;
+
     void OnPlayerDamaged(float currentHealth, float maxHealth)
     {
-        // Flash de degats seulement
-        StartCoroutine(DamageFlash());
+        // Flash seulement si la vie baisse. L'annonce de la vie de depart (PlayerHealth.Start, vie
+        // pleine), un soin ou une resurrection ne flashent pas (avant : flash rouge au lancement du niveau).
+        bool tookDamage = currentHealth < maxHealth - 0.01f
+                          && (lastHealth < 0f || currentHealth < lastHealth - 0.01f);
+        lastHealth = currentHealth;
+        if (tookDamage) StartCoroutine(DamageFlash());
     }
 
     IEnumerator DamageFlash()
