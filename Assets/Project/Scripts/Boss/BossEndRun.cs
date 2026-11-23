@@ -8,7 +8,8 @@ using UnityEngine.UI;
 ///
 /// Branchement (Event "On Object Enter" des CinemachineTriggerAction, layer Human) :
 /// - trigger A -> Play() : le joueur perd la main, course automatique ;
-/// - trigger B, apres le dernier texte -> End() : fondu au noir (Fade Image) et volume des pas a zero
+/// - trigger B, apres le dernier texte -> Stop() : fin de la course, le joueur reprend la main ;
+/// - trigger de la porte finale -> End() : fondu au noir (Fade Image) et volume des pas a zero
 ///   pendant "Fade Duration", puis le perso est fige et le panneau de fin (DemoEndPanel) s'affiche.
 /// </summary>
 public class BossEndRun : MonoBehaviour
@@ -28,6 +29,9 @@ public class BossEndRun : MonoBehaviour
     [Min(0f)] [SerializeField] private float fadeDuration = 4f;
     [Tooltip("Panneau de fin (EndChoicesPanel), affiche une fois le noir atteint.")]
     [SerializeField] private DemoEndPanel endPanel;
+    [Tooltip("Porte finale (DoorBasic). Quand elle a fini de se refermer derriere le joueur (ForceClose) : " +
+             "coupure nette au noir et panneau de fin, sans fondu. Vide = rien.")]
+    [SerializeField] private DoorBasic finalDoor;
 
     private PlayerPhysicsMovement player;
     private bool playing;
@@ -38,11 +42,13 @@ public class BossEndRun : MonoBehaviour
     {
         SetFadeAlpha(0f);
         if (fadeImage != null) fadeImage.raycastTarget = false;
+        if (finalDoor != null) finalDoor.OnDoorForceClosed += EndNow;
     }
 
     private void OnDestroy()
     {
         if (player != null) player.ClearForcedMove();
+        if (finalDoor != null) finalDoor.OnDoorForceClosed -= EndNow;
     }
 
     [ContextMenu("Play")]
@@ -63,13 +69,35 @@ public class BossEndRun : MonoBehaviour
         Debug.Log("[BOSS END RUN] Le joueur perd la main");
     }
 
+    // Fin de la course automatique : le joueur reprend la main (il va lui-meme vers la porte finale,
+    // dont le trigger appelle End()).
+    [ContextMenu("Stop")]
+    public void Stop()
+    {
+        if (!playing || ending) return;
+        playing = false;
+        if (player != null) player.ClearForcedMove();
+        if (PlayerInputManager.Instance != null) PlayerInputManager.Instance.IsLocked = false;
+        Debug.Log("[BOSS END RUN] Course arretee, le joueur reprend la main");
+    }
+
     [ContextMenu("End")]
     public void End()
     {
         if (ending) return;
         ending = true;
         RecordVictory();
-        StartCoroutine(EndRoutine());
+        StartCoroutine(EndRoutine(fadeDuration));
+    }
+
+    // Coupure nette : noir et panneau de fin dans la meme frame (porte finale refermee)
+    [ContextMenu("End Now (coupure nette)")]
+    public void EndNow()
+    {
+        if (ending) return;
+        ending = true;
+        RecordVictory();
+        StartCoroutine(EndRoutine(0f));
     }
 
     // Pas d'ecran de victoire classique dans le boss : la victoire s'enregistre ici, comme
@@ -81,9 +109,9 @@ public class BossEndRun : MonoBehaviour
             LevelProgressionManager.Instance.CompleteLevel(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }
 
-    private IEnumerator EndRoutine()
+    private IEnumerator EndRoutine(float duration)
     {
-        Debug.Log("[BOSS END RUN] Fondu au noir");
+        Debug.Log(duration > 0f ? "[BOSS END RUN] Fondu au noir" : "[BOSS END RUN] Coupure nette au noir");
         LevelManager lm = FindObjectOfType<LevelManager>();
         if (lm != null) lm.BlockPause();
 
@@ -98,9 +126,9 @@ public class BossEndRun : MonoBehaviour
 
         // 1. Noir et pas qui s'eteignent ensemble ; le perso continue de courir dessous
         float t0 = Time.unscaledTime;
-        while (Time.unscaledTime - t0 < fadeDuration)
+        while (Time.unscaledTime - t0 < duration)
         {
-            float p = (Time.unscaledTime - t0) / fadeDuration;
+            float p = (Time.unscaledTime - t0) / duration;
             SetFadeAlpha(p);
             if (steps != null) steps.volume = stepsVolume * (1f - p);
             yield return null;
