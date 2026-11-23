@@ -225,6 +225,22 @@ public class LevelProgressionManager : MonoBehaviour
         DevLogEndingMarks();
     }
 
+    // DevPanel : debloque tous les niveaux de la campagne jusqu'a la scene donnee comprise (test d'un niveau
+    // lance hors ordre, ex. Trou normand). En memoire seulement : lance hors MainMenu, rien n'est sauvegarde ;
+    // depuis MainMenu, ca partirait avec la prochaine sauvegarde.
+    public void DevUnlockUpTo(int sceneIndex)
+    {
+        int idx = GetLevelIndex(sceneIndex);
+        if (idx == -1)
+        {
+            Debug.LogWarning("[LevelProgression] TEST : scene " + sceneIndex + " hors catalogue, rien de debloque.");
+            return;
+        }
+        for (int i = 0; i <= idx; i++) unlockedLevels.Add(i);
+        if (lastUnlockedLevelIndex < idx) lastUnlockedLevelIndex = idx;
+        Debug.Log("[LevelProgression] TEST : niveaux debloques jusqu'a " + levels[idx].levelName + " compris.");
+    }
+
     public void DevLogEndingMarks()
     {
         foreach (OptionsManager.Difficulty d in System.Enum.GetValues(typeof(OptionsManager.Difficulty)))

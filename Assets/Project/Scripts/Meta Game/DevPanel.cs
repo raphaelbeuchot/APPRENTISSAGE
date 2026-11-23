@@ -165,6 +165,13 @@ public class DevPanel : MonoBehaviour
         if (GUILayout.Button("Effacer les marques")) progression.DevClearEndingMarks();
         GUILayout.EndHorizontal();
 
+        // Test d'un niveau lance hors ordre de la campagne (ex. Trou normand) : le rend debloque
+        if (GUILayout.Button("Debloquer jusqu'ici"))
+        {
+            progression.DevUnlockUpTo(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+            DevFlags.UsedThisSession = true;
+        }
+
         if (newInvincible != invincible || newNoDetection != noDetection || newOpenDoor != openDoor)
         {
             bool doorJustOpened = newOpenDoor && !openDoor;
