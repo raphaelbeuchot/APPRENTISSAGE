@@ -12,12 +12,18 @@ public class BrightEyesController : MonoBehaviour
     public Renderer flameRenderer;
 
     [Header("Health Bar")]
+    [Tooltip("Decoche : pas de barre de vie (un seul coup le tue, la barre ne descendrait jamais).")]
+    [SerializeField] private bool showHealthBar = false;
     public EnemyHealthBarUI healthBarUI;
 
     [Header("Enemy Attraction")]
     [SerializeField] private float enemyDetectionRange = 8f;
     [SerializeField] private float enemyAttractionForce = 3f;
     [SerializeField] private LayerMask enemyLayer;
+
+    [Header("Spheres en detection")]
+    [Tooltip("Spheres affichees seulement quand le joueur est detecte (ex. Sphere 2, 3, 4) ; les autres pulsent en permanence. Vide = toutes en permanence.")]
+    [SerializeField] private List<GameObject> detectionSpheres = new List<GameObject>();
 
     private GameManager gameManager;
     private Transform player;
@@ -38,10 +44,20 @@ public class BrightEyesController : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
         SetupHealthBar();
+        SetDetectionSpheres(false);
+    }
+
+    void SetDetectionSpheres(bool visible)
+    {
+        if (isDead) return; // la mort les fait retrecir puis les coupe (ShrinkAndDisableSpheres)
+        foreach (GameObject s in detectionSpheres)
+            if (s != null) s.SetActive(visible);
     }
 
     void SetupHealthBar()
     {
+        if (!showHealthBar) return;
+
         if (healthBarUI == null)
         {
             EnemyHealthBarManager manager = FindFirstObjectByType<EnemyHealthBarManager>();
@@ -188,6 +204,7 @@ public class BrightEyesController : MonoBehaviour
 
     void NotifyBrightEyesDetected()
     {
+        SetDetectionSpheres(true);
         PlayerDetectionFeedback feedback = player.GetComponent<PlayerDetectionFeedback>();
         if (feedback != null)
             feedback.OnBrightEyesDetected();
@@ -195,6 +212,7 @@ public class BrightEyesController : MonoBehaviour
 
     void NotifyBrightEyesNoLongerDetected()
     {
+        SetDetectionSpheres(false);
         PlayerDetectionFeedback feedback = player.GetComponent<PlayerDetectionFeedback>();
         if (feedback != null)
             feedback.OnBrightEyesNoLongerDetected();
