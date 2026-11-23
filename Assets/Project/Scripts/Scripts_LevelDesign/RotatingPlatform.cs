@@ -13,6 +13,8 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
     private HashSet<EnemyAI_AStar> enemiesOnPlatform = new HashSet<EnemyAI_AStar>();
     private HashSet<RagdollDeathEffect> corpsesOnPlatform = new HashSet<RagdollDeathEffect>();
     private HashSet<PhysicsProp> propsOnPlatform = new HashSet<PhysicsProp>();
+    // Corps du joueur mort (ragdoll actif), entraine comme les cadavres d'ennemis
+    private HashSet<PlayerRagdoll> playerBodiesOnPlatform = new HashSet<PlayerRagdoll>();
 
 
     private Dictionary<RagdollDeathEffect, float> corpseCooldowns = new Dictionary<RagdollDeathEffect, float>();
@@ -94,6 +96,15 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
             prop.transform.position = pivotPoint + directionFromPivot;
             prop.transform.Rotate(Vector3.up, angleThisFrame);
         }
+        // Multi : un joueur qui respawn (ragdoll desactive) sort de la liste
+        playerBodiesOnPlatform.RemoveWhere(body => body == null || !body.IsActive);
+        foreach (PlayerRagdoll body in playerBodiesOnPlatform)
+        {
+            Vector3 directionFromPivot = body.transform.position - pivotPoint;
+            directionFromPivot = Quaternion.Euler(0f, angleThisFrame, 0f) * directionFromPivot;
+            body.transform.position = pivotPoint + directionFromPivot;
+            body.transform.Rotate(Vector3.up, angleThisFrame);
+        }
 
     }
     public void RemoveCorpse(RagdollDeathEffect corpse)
@@ -155,6 +166,10 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
         PhysicsProp prop = collision.gameObject.GetComponent<PhysicsProp>();
         if (prop != null && !propsOnPlatform.Contains(prop))
             propsOnPlatform.Add(prop);
+
+        PlayerRagdoll playerBody = collision.gameObject.GetComponentInParent<PlayerRagdoll>();
+        if (playerBody != null && playerBody.IsActive)
+            playerBodiesOnPlatform.Add(playerBody);
     }
 
     void OnCollisionExit(Collision collision)
@@ -172,6 +187,9 @@ public class RotatingPlatform : MonoBehaviour, IMovingPlatform
         PhysicsProp prop = collision.gameObject.GetComponent<PhysicsProp>();
         if (prop != null)
             propsOnPlatform.Remove(prop);
+        PlayerRagdoll playerBody = collision.gameObject.GetComponentInParent<PlayerRagdoll>();
+        if (playerBody != null)
+            playerBodiesOnPlatform.Remove(playerBody);
     }
 
     void OnDestroy()

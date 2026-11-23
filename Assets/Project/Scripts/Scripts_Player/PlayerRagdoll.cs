@@ -18,6 +18,10 @@ public class PlayerRagdoll : MonoBehaviour
     private bool mainWasKinematic;
     private bool mainColliderWasEnabled;
 
+    // Vrai entre Activate() et Deactivate() : le composant est aussi sur le joueur vivant,
+    // les plateformes s'en servent pour n'entrainer que le corps.
+    public bool IsActive { get; private set; }
+
     void Awake()
     {
         // GetComponentsInChildren inclut le root, on filtrera mainRigidbody
@@ -111,6 +115,8 @@ public class PlayerRagdoll : MonoBehaviour
 
     private void SetRagdollActive(bool active)
     {
+        IsActive = active;
+
         foreach (Rigidbody rb in boneRigidbodies)
         {
             if (rb == mainRigidbody) continue;
