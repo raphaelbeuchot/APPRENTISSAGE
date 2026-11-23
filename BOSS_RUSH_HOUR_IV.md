@@ -45,9 +45,9 @@ Le flow complet du niveau, étape par étape (codé / branché / à faire / pist
   - Montée en charge sur place (`Charge Duration`) : émission + `Charge Intensity` crans (comme l'Intensity HDR, +1 = ×2, montée linéaire), vers le blanc (`Charge Whiteness`).
   - Puis **les vraies ampoules** projetées (`CycleReactiveRenderer` coupé, détachées de la sentinelle), rebonds par raycasts sur `Collision Layers` = Ground + Obstacle (`Bounce`, `Friction`, `Settle Speed`) ; émission qui redescend à zéro pendant `Lifetime`, puis rétrécissement et destruction (**décidé** : elles disparaissent). Pas de Rigidbody ni de collider : aucune interaction avec le joueur ni les zombies (**décidé**).
   - `Sentinel Shot Duration` réglé à 5 s pour couvrir la séquence.
-  - Restent : étincelles (champ prêt, pas de prefab) ; ~~caméra sentinelle masquable par les grands panneaux~~ (réglé, 2026-11-23 : les éléments s'effacent quand la sentinelle s'approche) ; shake + léger zoom pendant la charge et à l'explosion (piste : Perlin noise sur `CM_SentinelCamera` piloté par le script ; non tranché).
+  - Restent : étincelles (champ prêt, pas de prefab) ; ~~caméra sentinelle masquable par les grands panneaux~~ (réglé, 2026-11-23 : les éléments s'effacent quand la sentinelle s'approche) ; ~~shake + léger zoom~~ (abandonné pour la démo, 2026-11-23 ; piste gardée : Perlin noise sur `CM_SentinelCamera`).
 - Caméra : `BossCage` n'a plus de caméras ; le plan sentinelle et le plan d'installation sont sur `BossTransition`.
-- Ensuite : ~~texte « Phase N » + jingle~~ (pas la peine a priori, 2026-11-23) ; pièges et décor qui se réinstallent ; musique par phase (clips encore `private`). Autres types d'ennemis (essaims, BrightEyes, bombes) non gérés par la transition.
+- Ensuite : ~~texte « Phase N » + jingle~~ (pas la peine a priori, 2026-11-23) ; pièges et décor qui se réinstallent ; musique par phase (clips encore `private` ; pas faite le 2026-11-23, à reprendre). Autres types d'ennemis (essaims, BrightEyes, bombes) non gérés par la transition.
 
 **Ordre de travail d'origine**, pour mémoire : 1. ~~Caméra~~ 2. ~~Cycle~~ 3. ~~Pupitres et phases~~ (reste : abattre un cercle, figer le joueur, mise en place) 4. Cercles abattables 5. Géant (SO dédié, œil et lumière sur sa tête) 6. Fin (lasers, passerelle, pupitre central, sortie).
 
