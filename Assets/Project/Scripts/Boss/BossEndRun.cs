@@ -10,7 +10,7 @@ using UnityEngine.UI;
 /// - trigger A -> Play() : le joueur perd la main, course automatique ;
 /// - trigger B, apres le dernier texte -> Stop() : fin de la course, le joueur reprend la main ;
 /// - trigger de la porte finale -> End() : fondu au noir (Fade Image) et volume des pas a zero
-///   pendant "Fade Duration", puis le perso est fige et le panneau de fin (DemoEndPanel) s'affiche.
+///   pendant "Fade Duration", puis le perso est fige ; ecran noir, un appui (apres Black Screen Lock) = menu principal.
 /// </summary>
 public class BossEndRun : MonoBehaviour
 {
@@ -23,14 +23,14 @@ public class BossEndRun : MonoBehaviour
     [SerializeField] private Vector3 runDirection = Vector3.right;
 
     [Header("Fin")]
-    [Tooltip("Image UI noire plein ecran, sous le panneau de fin (alpha remis a 0 au lancement).")]
+    [Tooltip("Image UI noire plein ecran, ecran de fin (alpha remis a 0 au lancement).")]
     [SerializeField] private Image fadeImage;
     [Tooltip("Duree du passage au noir (s).")]
     [Min(0f)] [SerializeField] private float fadeDuration = 4f;
-    [Tooltip("Panneau de fin (EndChoicesPanel), affiche une fois le noir atteint.")]
-    [SerializeField] private DemoEndPanel endPanel;
+    [Tooltip("Ecran noir : duree (s) pendant laquelle aucun appui n'est pris en compte. Ensuite, un appui = menu principal.")]
+    [Min(0f)] [SerializeField] private float blackScreenLock = 2f;
     [Tooltip("Porte finale (DoorBasic). Quand elle a fini de se refermer derriere le joueur (ForceClose) : " +
-             "coupure nette au noir et panneau de fin, sans fondu. Vide = rien.")]
+             "coupure nette au noir, sans fondu. Vide = rien.")]
     [SerializeField] private DoorBasic finalDoor;
 
     private PlayerPhysicsMovement player;
@@ -90,7 +90,7 @@ public class BossEndRun : MonoBehaviour
         StartCoroutine(EndRoutine(fadeDuration));
     }
 
-    // Coupure nette : noir et panneau de fin dans la meme frame (porte finale refermee)
+    // Coupure nette : noir dans la meme frame (porte finale refermee)
     [ContextMenu("End Now (coupure nette)")]
     public void EndNow()
     {
@@ -151,10 +151,15 @@ public class BossEndRun : MonoBehaviour
             }
         }
 
-        // 3. Panneau de fin
-        Debug.Log("[BOSS END RUN] Panneau de fin");
-        if (endPanel != null) endPanel.Show();
-        else Debug.LogWarning("[BOSS END RUN] Pas de panneau de fin assigne", this);
+        // 3. Ecran noir : rien pendant blackScreenLock, puis n'importe quel appui -> menu principal
+        Debug.Log("[BOSS END RUN] Ecran noir");
+        yield return new WaitForSecondsRealtime(blackScreenLock);
+        yield return new WaitUntil(() => Input.anyKeyDown);
+
+        Debug.Log("[BOSS END RUN] Retour au menu principal");
+        Time.timeScale = 1f;
+        if (PlayerInputManager.Instance != null) PlayerInputManager.Instance.IsLocked = false;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 
     private void Update()

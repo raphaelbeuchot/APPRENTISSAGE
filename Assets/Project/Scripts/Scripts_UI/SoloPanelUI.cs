@@ -229,12 +229,11 @@ public class SoloPanelUI : MonoBehaviour
         SceneManager.LoadScene(1);
     }
 
+    // Continuer -> ecran LevelSelect (on voit ou on en est et on choisit), comme LevelManager.LoadLevelSelect :
+    // ecran de chargement puis LevelSelect (index 2). Avant le 2026-11-23 : lancait le dernier niveau debloque.
     void Continue()
     {
-        int idx = LevelProgressionManager.Instance.lastUnlockedLevelIndex;
-        if (idx < 0 || idx >= LevelProgressionManager.Instance.levels.Count)
-            idx = 0;
-        LoadingScreenManager.TargetSceneIndex = LevelProgressionManager.Instance.levels[idx].sceneIndex;
+        LoadingScreenManager.TargetSceneIndex = 2;
         SceneManager.LoadScene(1);
     }
 

@@ -49,6 +49,34 @@ public class SceneFader : MonoBehaviour
         rt.offsetMax = Vector2.zero;
 
         fadeImage.raycastTarget = false;
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    // Scene chargee en pleine transition (apres les Awake, avant la premiere image) : le noir passe
+    // tout de suite sur l'image de la nouvelle scene, ou sur le noir du fader si elle n'en a pas.
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (isFading) SetAlpha(1f);
+    }
+
+    // Noir sous le cadre TV (ScreenFadeTarget de la scene) si present, sinon le noir du fader (devant tout)
+    private void SetAlpha(float alpha)
+    {
+        if (ScreenFadeTarget.Current != null)
+        {
+            ScreenFadeTarget.Current.SetAlpha(alpha);
+            fadeImage.color = new Color(0f, 0f, 0f, 0f);
+        }
+        else
+        {
+            fadeImage.color = new Color(0f, 0f, 0f, alpha);
+        }
     }
 
     public void FadeToScene(int sceneIndex)
@@ -125,9 +153,9 @@ public class SceneFader : MonoBehaviour
         {
             elapsed += Time.unscaledDeltaTime;
             float alpha = Mathf.Lerp(from, to, elapsed / fadeDuration);
-            fadeImage.color = new Color(0f, 0f, 0f, alpha);
+            SetAlpha(alpha);
             yield return null;
         }
-        fadeImage.color = new Color(0f, 0f, 0f, to);
+        SetAlpha(to);
     }
 }
