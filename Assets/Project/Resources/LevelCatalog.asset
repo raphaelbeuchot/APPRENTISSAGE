@@ -24,8 +24,8 @@ MonoBehaviour:
       status: 0
       detail: 
     - id: enemies
-      status: 0
-      detail: 
+      status: 2
+      detail: Zombie_Hitter_Classic (EnemyAI_AStar) + 3 autre(s)
     - id: brightEyes
       status: 0
       detail: 
@@ -1236,8 +1236,8 @@ MonoBehaviour:
     inDemo: 1
     observed:
     - id: tomatoCrate
-      status: 0
-      detail: 
+      status: 2
+      detail: TomatoCrate (TomatoCrate)
     - id: enemies
       status: 2
       detail: ENEMIES/ZombieChaser01 (EnemyAI_AStar) + 21 autre(s)
@@ -1278,9 +1278,8 @@ MonoBehaviour:
       status: 2
       detail: VICTORY/TRANSITIONROOM/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
     - id: victoryBounds
-      status: 1
-      detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
-        apres la victoire'
+      status: 2
+      detail: VICTORY/PostVictoryBounds (contient GoalDoor et salle de transition)
     - id: uiAudio
       status: 2
       detail: UI_Audio (UIAudioPlayer)
@@ -1362,7 +1361,7 @@ MonoBehaviour:
       detail: 
     - id: enemies
       status: 2
-      detail: ENEMIES/Zombie_Hitter_RockVariant (EnemyAI_AStar) + 13 autre(s)
+      detail: ENEMIES/Zombie_Hitter_RockVariant (EnemyAI_AStar) + 19 autre(s)
     - id: brightEyes
       status: 0
       detail: 
@@ -1546,14 +1545,14 @@ MonoBehaviour:
       status: 0
       detail: 
     - id: enemies
-      status: 0
-      detail: 
+      status: 2
+      detail: ZombieGrabber (EnemyAI_AStar) + 5 autre(s)
     - id: brightEyes
       status: 0
       detail: 
     - id: bombs
       status: 2
-      detail: BombSpawner (BombSpawner)
+      detail: BombSpawner (BombSpawner) + 2 autre(s)
     - id: broomPedestal
       status: 0
       detail: 
@@ -1721,7 +1720,7 @@ MonoBehaviour:
     collectibleIDs: []
   - scene: {fileID: 102900000, guid: ad868371203801a41ae24c658fd59220, type: 3}
     levelName: Rush Hour IV
-    launchText: Super Banco !
+    launchText: Super banco !
     hasBroom: 1
     hasSpray: 0
     inDemo: 1
@@ -1760,15 +1759,16 @@ MonoBehaviour:
       status: 0
       detail: 
     - id: curtain
-      status: 2
-      detail: DECOR FOND/EndCurtain (EndCurtainRise)
+      status: 0
+      detail: 
     - id: circles
       status: 1
       detail: 'Hors des objets tagues Sentinel (montent grace a la rustine) : SENTINELPIVOT/ConcentricCircles
         Manager. Les taguer ou les ranger sous un objet tague.'
     - id: transitionRoom
-      status: 0
-      detail: 
+      status: 2
+      detail: Module01/Door_Module01/TransitionDoorPrefab/TransitionDoor (TransitionRoomDoor)
+        + 36 autre(s)
     - id: victoryBounds
       status: 1
       detail: 'Pas de boite PostVictoryBounds : le joueur peut tomber hors du decor
@@ -1781,4 +1781,4 @@ MonoBehaviour:
       detail: 
     scenePath: Assets/Project/Scenes/Level_TrafficJam_04.unity
     collectibleIDs: []
-  lastAnalysis: 13/11/2026 a 19:36
+  lastAnalysis: 23/11/2026 a 14:54
