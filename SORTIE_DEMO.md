@@ -79,7 +79,7 @@ Rappels :
 
 À vérifier même pour un playtest privé, et indispensable pour une démo publique.
 
-- [ ] Police KeeponTruckin : licence d'intégration dans un jeu (voir `VF_DEMO.md`, Font Bros contacté le 2026-11-14).
+- [ ] Police KeeponTruckin : licence d'intégration dans un jeu (voir `VF_DEMO.md`, Font Bros contacté le 2026-11-14). **Décidé le 2026-11-23** : version avec accents trouvée par l’utilisateur, utilisée pour la démo de playtest fermé sans licence achetée ; achat (licence jeu) ensuite selon les retours.
 - [ ] Musiques et sons : origine et licence de chacun.
 - [ ] Assets achetés ou gratuits (modèles, textures, packages) : licences.
 - [ ] Écran ou fichier de crédits : *à décider*.
