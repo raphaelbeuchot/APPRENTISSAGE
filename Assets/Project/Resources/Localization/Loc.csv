@@ -62,7 +62,7 @@ Jeu,hud.stress,Stress  {0}%,Stress  {0} %,HUD : jauge de la sentinelle,CyclePres
 Jeu,hud.stats,Health: 100%\nStatus: OK,Santé : 100 %\nÉtat : OK,HUD,UI.prefab + UI_Multi.prefab (StatsText),objet inactif : sans doute du debug → à retirer de la liste ?
 Jeu,player.standup,Press A to stand up,Appuyez sur A pour vous relever,Message après une chute,PlayerAnimationEvents.cs,
 Jeu,opening.pressx,Press X,Appuyez sur X,Ouverture d'It's Show Time,OpeningSequenceManager.cs + scène It's Show Time (OpeningManager),
-Jeu,lavatrain.hold,Hold X to stop,Maintenez X pour arrêter,Message du train de lave,LavaTrain_01.asset (holdMessage),
+Jeu,lavatrain.hold,Hold X to stop,Maintenez X pour immobiliser la plateforme,Message du train de lave,LavaTrain_01.asset (holdMessage),
 Jeu,pupitre.putawaybroom,"To continue, please put down your broom.","Pour continuer, merci de déposer votre balai.",Message du pupitre,"PupitreInteraction.cs (valeur par défaut, identique dans 25 scènes)","déjà en français dans le jeu, écrit sans accent"
 Jeu,broompedestal.approach,Please deposit your broom.,Veuillez laisser votre balai ici.,Message du présentoir à balai,BROOMPEDESTAL.prefab (approachMessage),presque le même sens que le pupitre : fusionner les deux ?
 Jeu,comment.cleanedup,Cleaned Up !,Nettoyage !,Commentaire : tous les cadavres balayés (aussi au boss),CleaningBonusManager.cs,
@@ -72,12 +72,12 @@ Jeu,countdown.fallback,Super Panopticon!,Super Panopticon !,Titre de lancement d
 Fin de niveau,victory.complete,Well Done !,Bravissimo !,Écran de victoire,UI.prefab + UI_Multi.prefab (VictoryUI : levelCompleteMessage),la valeur par défaut du code (« LEVEL COMPLETE ») ne s'affiche pas
 Fin de niveau,victory.attempts,Attempts: {0},Essais : {0},Écran de victoire : nombre d'essais,VictoryUI.cs (attemptsPrefix « Essais : »),déjà en français dans le jeu ; phrase assemblée dans le code
 Fin de niveau,victory.firsttry,First try !,Du premier coup !,Écran de victoire,UI.prefab (VictoryUI : firstTryMessage),
-Fin de niveau,transition.door,Good job. See you next week.,Bon travail. A la semaine prochaine.,Message de la porte de la salle de transition,TRANSITIONROOM.prefab (override de doorOpenMessage),
+Fin de niveau,transition.door,Good job. See you next week.,Bon travail. À la semaine prochaine.,Message de la porte de la salle de transition,TRANSITIONROOM.prefab (override de doorOpenMessage),
 Fin de niveau,transition.door.default,Step through to advance,Passez la porte pour continuer,Message de la porte (valeur par défaut),TransitionDoorPrefab.prefab (doorOpenMessage),remplacé dans TRANSITIONROOM : s'affiche quelque part ?
 Game Over,gameover.sentinel,You moved,Vous avez bougé,Game Over : tué par la sentinelle,Death_Sentinel.asset + UI.prefab (GameOverUI),
-Game Over,gameover.lava,You burned,Vous avez brûlé,Game Over : lave,Death_Lava.asset,
-Game Over,gameover.acid,DISSOLVED !,DISSOUS !,Game Over : acide,Death_Acid.asset,
-Game Over,gameover.outofbounds,"WRONG WAY, STAR !","PAS PAR LÀ, LA STAR !",Game Over : sortie du niveau,Death_OutOfBounds.asset,
+Game Over,gameover.lava,You burned,Torréfaction !,Game Over : lave,Death_Lava.asset,
+Game Over,gameover.acid,DISSOLVED !,Dissolution !,Game Over : acide,Death_Acid.asset,
+Game Over,gameover.outofbounds,"WRONG WAY, STAR !","Pas par là, champion !",Game Over : sortie du niveau,Death_OutOfBounds.asset,
 Game Over,gameover.default.1,RED MEANS DEAD !,,Game Over (messages par défaut du code),GameOverUI.cs,ne s'affichent pas : UI.prefab ne garde que « You moved » → à garder ?
 Game Over,gameover.default.2,DEAD MAN !,,Game Over (messages par défaut du code),GameOverUI.cs,idem
 Game Over,gameover.default.3,RESTLESS IS DEATH !,,Game Over (messages par défaut du code),GameOverUI.cs,idem
