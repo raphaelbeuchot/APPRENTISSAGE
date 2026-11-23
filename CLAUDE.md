@@ -25,4 +25,4 @@ Résumer l'état en quelques lignes, demander l'intention du jour, ne pas partir
 - Mise en scène à plusieurs déclencheurs (événements, triggers, délais, fondus) : d'abord un **tableau du déroulé** (temps, événement, ce qui part, état obtenu), validé avec l'utilisateur, puis le code.
 - Avant de proposer un branchement : **lire ce qui est déjà branché** dans la scène (UnityEvents, délais, durées, priorités, objets actifs).
 - Rythme testé → commité : pas plus de deux ou trois morceaux non testés à la fois.
-- Textes du jeu en français : c'est l'utilisateur qui les écrit. Pour une ligne de la Sheet VF, fournir clé, EN, contexte, source, et laisser FR vide.
+- Sheet VF (inventaire_VF_demo) : **par défaut c'est Claude qui écrit dedans** (connecteur Google Sheets, onglet « Untitled ») et qui fait l'export vers `Loc.csv`, sans demander à l'utilisateur de le faire. Le français reste à l'utilisateur : FR vide s'il ne l'a pas donné, sinon recopier le sien tel quel.

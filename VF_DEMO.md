@@ -74,7 +74,7 @@ Système maison (le package Unity Localization était trop lourd pour ~100 texte
 
 ### Circuit pour les textes
 
-1. Modifier la Sheet « inventaire_VF_demo ».
+1. **Par défaut, Claude fait tout (décidé le 2026-11-23)** : il écrit les lignes dans la Sheet « inventaire_VF_demo » via le connecteur Google Sheets (onglet « Untitled »), puis exporte et commite, sans demander à l'utilisateur de le faire. FR : celui de l'utilisateur s'il l'a donné, sinon vide.
 2. Demander à Claude « exporte » : il télécharge la Sheet en CSV dans `Resources/Localization/Loc.csv` et commite. Ne jamais retoucher le CSV à la main.
 3. Attention : si l'EN d'un texte rangé dans le catalogue, un asset ou l'Inspector change (colonne « source »), l'ancien texte n'est plus reconnu : mettre la source à jour en même temps (Claude vérifie à l'export).
 
