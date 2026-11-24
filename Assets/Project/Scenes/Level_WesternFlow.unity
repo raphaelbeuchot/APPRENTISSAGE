@@ -8145,6 +8145,7 @@ GameObject:
   - component: {fileID: 748550126}
   - component: {fileID: 748550128}
   - component: {fileID: 748550127}
+  - component: {fileID: 748550129}
   m_Layer: 3
   m_Name: Poutre
   m_TagString: Untagged
@@ -8329,6 +8330,18 @@ MonoBehaviour:
   customHoleCorners: 0
   holeRadius: 0.2
   separateMaterials: 1
+--- !u!114 &748550129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 748550119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4c6fad480830004e8bae105f359ff6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResetToStartPose
 --- !u!1 &761952909
 GameObject:
   m_ObjectHideFlags: 0
@@ -21314,10 +21327,10 @@ MonoBehaviour:
   onPressed:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2073143949}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 748550129}
+        m_TargetAssemblyTypeName: ResetToStartPose, Assembly-CSharp
+        m_MethodName: ResetPose
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -22754,7 +22767,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2073143950
 Transform:
   m_ObjectHideFlags: 0
