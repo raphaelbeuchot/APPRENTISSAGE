@@ -46,7 +46,7 @@ Rappels :
 - [ ] Partie complète jouée **sur une autre machine** que celle du build, du menu au boss, puis une course multi.
 - [ ] Test avec les manettes que les testeurs auront probablement (Xbox, PlayStation), et au clavier si c'est prévu.
 - [ ] **Écran titre** (noté le 2026-11-24) : à faire avant l'envoi.
-- [ ] **Écran des commandes** (noté le 2026-11-24) : surtout pour le clavier, les textes de tuto en jeu étant faits pour la manette. Question ouverte : un écran aussi pour la manette ?
+- [x] ~~**Écran des commandes**~~ (noté le 2026-11-24) : remplacé le jour même par des textes de tuto qui affichent la touche du dernier appareil utilisé (manette Xbox / clavier) : `InputPrompts`, balises `[Action]` dans la Sheet VF (515ffe30, 887bc974). Restent : repositionner les textes dans les scènes (surtout TomatoFest), tester GoWithTheFlow01 et le Trou normand, FR de `input.leftShift`.
 - [ ] **Splash screen** (Player Settings du profil > Splash Image) : à regarder, garder ou couper le logo Unity, ajouter le sien.
 
 ## 3. Version
