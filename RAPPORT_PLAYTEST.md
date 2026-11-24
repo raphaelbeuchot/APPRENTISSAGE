@@ -89,7 +89,7 @@
 
 ### Death Row I (`Level_WesternFlow`, « Row Deal »)
 - [ ] Uniformiser les blocks (note du 2026-11-07)
-- [ ] Poutre piège : si elle tombe, on est bloqué dans le niveau (note du 2026-11-07). Elle est voulue (équilibre précaire, tombe si on passe trop lentement) → en faire réapparaître une neuve à l'emplacement initial (piste : un switch). Ne pas détruire les anciennes : les poutres tombées restent et illustrent nos échecs. Au restart, on repart de zéro (une seule poutre).
+- [x] Poutre piège : si elle tombe, on est bloqué dans le niveau (note du 2026-11-07). Elle est voulue (équilibre précaire, tombe si on passe trop lentement) → en faire réapparaître une neuve à l'emplacement initial (piste : un switch). Ne pas détruire les anciennes : les poutres tombées restent et illustrent nos échecs. Au restart, on repart de zéro (une seule poutre). **Fait le 2026-11-24** (9ccee379) : pupitre (`InteractSwitch`) → pince `BeamClaw` qui remonte la poutre hors écran et la repose à sa place (`ResetToStartPose`). Décidé : la même poutre est récupérée, plus de poutres tombées laissées au sol.
 
 ### Flower Power II (`Level_Flower02`, celui avec les bombes)
 - [x] Il manque une StartRoom (2026-11-13 : StartRoom avec porte d'entrée ; au passage colliders adaptés à `ClimbableObject`, VictoryManager revu, `PostVictoryBounds` ajoutée ; flow complet testé)
