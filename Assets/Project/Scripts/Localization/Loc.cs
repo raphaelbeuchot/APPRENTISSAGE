@@ -12,6 +12,7 @@ public enum Language { EN, FR }
 //   Loc.Get("menu.newgame")            -> texte dans la langue courante
 //   Loc.Get("options.timer", "On")     -> remplit {0}, {1}...
 //   Loc.SetLanguage(Language.FR)       -> sauvegarde + previent les LocalizedText
+//   "Press [Sprint]" dans la Sheet      -> touche de l'action selon manette / clavier (InputPrompts)
 //
 // Texte FR vide -> texte EN. Cle inconnue -> la cle elle-meme s'affiche (oubli visible a l'ecran).
 public static class Loc
@@ -82,7 +83,7 @@ public static class Loc
 
         string text = texts[(int)Current];
         if (string.IsNullOrEmpty(text)) text = texts[(int)Language.EN];
-        return text ?? "";
+        return InputPrompts.Apply(text ?? "");
     }
 
     public static string Get(string key, params object[] args)
@@ -113,7 +114,7 @@ public static class Loc
                 textToKey.TryGetValue(LocCsv.Normalize(textOrKey), out key);
             rawToKey[textOrKey] = key;
         }
-        return key != null ? Get(key) : textOrKey;
+        return key != null ? Get(key) : InputPrompts.Apply(textOrKey);
     }
 
     // Relit le CSV (apres un nouvel export, sans relancer le Play)

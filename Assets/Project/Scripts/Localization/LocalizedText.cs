@@ -22,12 +22,14 @@ public class LocalizedText : MonoBehaviour
     void OnEnable()
     {
         Loc.LanguageChanged += Refresh;
+        InputPrompts.DeviceChanged += Refresh;
         Refresh();
     }
 
     void OnDisable()
     {
         Loc.LanguageChanged -= Refresh;
+        InputPrompts.DeviceChanged -= Refresh;
     }
 
     public void SetKey(string newKey)
