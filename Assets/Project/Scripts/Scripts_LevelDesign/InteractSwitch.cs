@@ -22,6 +22,10 @@ public class InteractSwitch : MonoBehaviour
     [SerializeField] private float pressDistance = 0.1f;
     [SerializeField] private float pressDuration = 0.15f;
 
+    [Header("Son a l'appui (vide = rien)")]
+    [SerializeField] private AudioClip pressSound;
+    [SerializeField] [Range(0f, 1f)] private float pressVolume = 1f;
+
     [Header("Effets")]
     [SerializeField] private UnityEvent onPressed;
 
@@ -31,6 +35,7 @@ public class InteractSwitch : MonoBehaviour
     private Transform player;
     private Vector3 restLocalPos;
     private Coroutine pressRoutine;
+    private AudioSource audioSource;
 
     private void Awake()
     {
@@ -65,6 +70,16 @@ public class InteractSwitch : MonoBehaviour
         {
             if (pressRoutine != null) StopCoroutine(pressRoutine);
             pressRoutine = StartCoroutine(PressCoroutine());
+        }
+
+        if (pressSound != null)
+        {
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.playOnAwake = false;
+            }
+            audioSource.PlayOneShot(pressSound, pressVolume);
         }
 
         Debug.Log("[InteractSwitch] Appui : " + name);
