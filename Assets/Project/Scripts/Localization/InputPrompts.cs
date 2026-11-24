@@ -117,7 +117,8 @@ public static class InputPrompts
             string control = ControlName(path);
             if (!b.isComposite && Loc.Has("input." + control)) return Loc.Get("input." + control);
             if (current == Device.Gamepad && !b.isComposite && xboxNames.TryGetValue(control, out string xbox)) return xbox;
-            return action.GetBindingDisplayString(i);
+            // sans "Hold" / "Press" des interactions ("Hold Tab" -> "Tab")
+            return action.GetBindingDisplayString(i, InputBinding.DisplayStringOptions.DontIncludeInteractions);
         }
         return "?";
     }
