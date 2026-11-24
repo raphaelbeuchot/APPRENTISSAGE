@@ -14,7 +14,7 @@ public class LavaTrainSettings : ScriptableObject
     public float startInertia = 25f;
 
     [Header("Comment")]
-    public string holdMessage = "Hold X to stop";
+    public string holdMessage = "lavatrain.hold"; // cle de la Sheet (ou texte)
     public bool showMessageOnce = true;
 
     [Header("Audio")]

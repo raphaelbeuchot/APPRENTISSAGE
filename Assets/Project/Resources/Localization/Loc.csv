@@ -56,13 +56,13 @@ Options,options.audio,Audio,Audio,Options : ligne audio,OptionsPanelUI.cs,
 Options,options.language,Language     {0},Langue     {0},Options : choix de la langue,à créer,nouveau texte pour le choix de langue
 Options,options.lang.en,English,English,Options : valeur,à créer,nom de chaque langue écrit dans sa propre langue
 Options,options.lang.fr,Français,Français,Options : valeur,à créer,
-Jeu,hud.mash,Press X !,Appuyez sur X !,HUD : quand un ennemi vous attrape,UI.prefab + UI_Multi.prefab (MashText),
-Jeu,hud.climb,CLIMB:\nHold direction + X,GRIMPER :\nMaintenir direction + X,HUD : invite d'escalade,UI.prefab (ClimbPrompt),déjà en français dans le jeu
+Jeu,hud.mash,Press [MashEscape] !,Appuyez sur [MashEscape] !,HUD : quand un ennemi vous attrape,UI.prefab + UI_Multi.prefab (MashText),
+Jeu,hud.climb,CLIMB:\nHold direction + [Interact],GRIMPER :\nMaintenir direction + [Interact],HUD : invite d'escalade,UI.prefab (ClimbPrompt),déjà en français dans le jeu
 Jeu,hud.stress,Stress  {0}%,Stress  {0} %,HUD : jauge de la sentinelle,CyclePressureGaugeUI.cs,phrase assemblée dans le code ; objet inactif dans le prefab : visible en jeu ?
 Jeu,hud.stats,Health: 100%\nStatus: OK,Santé : 100 %\nÉtat : OK,HUD,UI.prefab + UI_Multi.prefab (StatsText),objet inactif : sans doute du debug → à retirer de la liste ?
-Jeu,player.standup,Press A to stand up,Appuyez sur A pour vous relever,Message après une chute,PlayerAnimationEvents.cs,
-Jeu,opening.pressx,Press X,Appuyez sur X,Ouverture d'It's Show Time,OpeningSequenceManager.cs + scène It's Show Time (OpeningManager),
-Jeu,lavatrain.hold,Hold X to stop,Maintenez X pour immobiliser la plateforme,Message du train de lave,LavaTrain_01.asset (holdMessage),
+Jeu,player.standup,Press [Sprint] to stand up,Appuyez sur [Sprint] pour vous relever,Message après une chute,PlayerAnimationEvents.cs,
+Jeu,opening.pressx,Press [Interact],Appuyez sur [Interact],Ouverture d'It's Show Time,OpeningSequenceManager.cs + scène It's Show Time (OpeningManager),
+Jeu,lavatrain.hold,Hold [Interact] to stop,Maintenez [Interact] pour immobiliser la plateforme,Message du train de lave,LavaTrain_01.asset (holdMessage = clé lavatrain.hold),
 Jeu,pupitre.putawaybroom,"To continue, please put down your broom.","Pour continuer, merci de déposer votre balai.",Message du pupitre,"PupitreInteraction.cs (valeur par défaut, identique dans 25 scènes)","déjà en français dans le jeu, écrit sans accent"
 Jeu,broompedestal.approach,Please deposit your broom.,Veuillez laisser votre balai ici.,Message du présentoir à balai,BROOMPEDESTAL.prefab (approachMessage),presque le même sens que le pupitre : fusionner les deux ?
 Jeu,comment.cleanedup,Cleaned Up !,Nettoyage !,Commentaire : tous les cadavres balayés (aussi au boss),CleaningBonusManager.cs,
@@ -84,14 +84,14 @@ Game Over,gameover.default.3,RESTLESS IS DEATH !,,Game Over (messages par défau
 Game Over,gameover.default.4,THE URGE TO BUDGE !,,Game Over (messages par défaut du code),GameOverUI.cs,idem (rime)
 Game Over,gameover.default.5,ONE MOVE TOO FAR !,,Game Over (messages par défaut du code),GameOverUI.cs,idem
 Tutos,tuto.lunge,Press [Sprint]\nto Lunge,Appuyez sur [Sprint]\npour bondir,Panneau dans le niveau,"8 scènes : Go For a Spin (actif) ; Ice, Acid_01, Acid_02, Casino, CoinRace_Lava, Race_Lava, Race_Slippery (inactif)",faute EN corrigée (Lundge → Lunge)
-Tutos,tuto.climb,Move forward\nand press X\nto Climb,Avancez\net appuyez sur X\npour grimper,Panneau dans le niveau,"HandleHurdles, StrangeAttractor (TMP_Climb)",HandleHurdles décale les lignes avec des espaces
-Tutos,tuto.crouch,Press B to Crouch,Appuyez sur B pour vous baisser,Panneau dans le niveau,GoWithTheFlow01 (TMP_Crouch),
-Tutos,tuto.cameratoggle,Press Y\nto check\nthe line of fire,Appuyez sur Y\npour voir\nla ligne de tir,Panneau dans le niveau,GoWithTheFlow01 (TMP_Camera Toggle),objet inactif : sert encore ?
+Tutos,tuto.climb,Move forward\nand press [Interact]\nto Climb,Avancez\net appuyez sur [Interact]\npour grimper,Panneau dans le niveau,"HandleHurdles, StrangeAttractor (TMP_Climb)",HandleHurdles décale les lignes avec des espaces
+Tutos,tuto.crouch,Press [Crouch] to Crouch,Appuyez sur [Crouch] pour vous baisser,Panneau dans le niveau,GoWithTheFlow01 (TMP_Crouch),
+Tutos,tuto.cameratoggle,Press [ToggleCameraView]\nto check\nthe line of fire,Appuyez sur [ToggleCameraView]\npour voir\nla ligne de tir,Panneau dans le niveau,GoWithTheFlow01 (TMP_Camera Toggle),objet inactif : à déplacer dans Strange Attractor ?
 Tutos,tuto.up,Up,Haut,Panneau dans le niveau,WesternFlow (TMP_UP),objet inactif : sert encore ?
-Tutos,tuto.tomato.throw,Throw\nPress R1,Lancer\nAppuyez sur R1,Panneau dans le niveau,TomatoFest_01 (Tuto Tomato Throw),"boutons PlayStation ici, Xbox ailleurs (A, B, X, Y)"
-Tutos,tuto.tomato.lock,Lock-on\nHold L1,Verrouillage\nMaintenez L1,Panneau dans le niveau,TomatoFest_01 (Tuto Tomato Lock),
-Tutos,tuto.tomato.switch,Hold L1 and\nMove Right Stick\nto Switch target,Maintenez L1 et\nbougez le stick droit\npour changer de cible,Panneau dans le niveau,TomatoFest_01 (Tuto Tomato Switch),
-Tutos,tuto.broomattack,Press L2 to\nhit with the broom,Appuyez sur L2 pour\nfrapper au balai,Panneau dans le niveau,TrouNormand (TMP_BROOMATTACK),déjà en français dans le jeu
+Tutos,tuto.tomato.throw,Throw\nPress [ThrowTomato],Lancer\nAppuyez sur [ThrowTomato],Panneau dans le niveau,TomatoFest_01 (Tuto Tomato Throw),"boutons PlayStation ici, Xbox ailleurs (A, B, X, Y)"
+Tutos,tuto.tomato.lock,Lock-on\nHold [LockOn],Verrouillage\nMaintenez [LockOn],Panneau dans le niveau,TomatoFest_01 (Tuto Tomato Lock),
+Tutos,tuto.tomato.switch,Hold [LockOn] and\nuse [SwitchTarget]\nto switch target,Maintenez [LockOn] et\nutilisez [SwitchTarget]\npour changer de cible,Panneau dans le niveau,TomatoFest_01 (Tuto Tomato Switch),
+Tutos,tuto.broomattack,Press [BroomAttack] to\nhit with the broom,Appuyez sur [BroomAttack] pour\nfrapper au balai,Panneau dans le niveau,TrouNormand (TMP_BROOMATTACK),déjà en français dans le jeu
 Tutos,trounormand.quit,Press A to quit,A pour quitter,TrouNormand : quitter un écran,TrouNormand (AnyButtonText),déjà en français dans le jeu ; objet inactif au départ
 Multi,multi.getready,Get ready,Préparez-vous,Avant le compte à rebours,MultiLevelStart.cs (+ 4 scènes multi),
 Multi,multi.victory,VICTORY,VICTOIRE,Fin de manche : gagnant,MultiRaceManager.cs + MultiCoinRaceManager.cs,

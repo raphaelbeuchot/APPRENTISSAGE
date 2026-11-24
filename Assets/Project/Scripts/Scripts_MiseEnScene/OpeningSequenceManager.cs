@@ -40,7 +40,7 @@ public class OpeningSequenceManager : MonoBehaviour
 
     [Header("Lever")]
     [SerializeField] private float delaiAvantPrompt = 2f;
-    [SerializeField] private string textePrompt = "Press X";
+    [SerializeField] private string textePrompt = "opening.pressx"; // cle de la Sheet (ou texte)
 
     private Transform player;
     private bool wakeUpDone = false;

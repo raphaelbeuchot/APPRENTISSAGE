@@ -30,6 +30,7 @@ public static class InputPrompts
         { "leftShoulder", "LB" }, { "rightShoulder", "RB" },
         { "leftTrigger", "LT" }, { "rightTrigger", "RT" },
         { "leftStick", "Left Stick" }, { "rightStick", "Right Stick" },
+        { "leftStick/x", "Left Stick" }, { "rightStick/x", "Right Stick" },
         { "leftStickPress", "LS" }, { "rightStickPress", "RS" },
         { "start", "Menu" }, { "select", "View" }, { "dpad", "D-Pad" },
     };
