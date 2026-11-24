@@ -23,6 +23,11 @@ public class SoloPanelUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI easyText;
     [SerializeField] private TextMeshProUGUI normalText;
     [SerializeField] private TextMeshProUGUI hardText;
+    [Tooltip("Optionnel : legende de la difficulte en surbrillance (cles difficulty.easy/normal/hard.desc). " +
+             "Visible seulement pendant le choix de difficulte.")]
+    [SerializeField] private TextMeshProUGUI difficultyLegend;
+    private static readonly string[] legendKeys = { "difficulty.easy.desc", "difficulty.normal.desc", "difficulty.hard.desc" };
+    private int legendShown = -1;
 
     [Header("Audio")]
     [SerializeField] private UIAudioPlayer uiAudio;
@@ -99,6 +104,16 @@ public class SoloPanelUI : MonoBehaviour
         }
 
         UpdateVisuals();
+        UpdateLegend();
+    }
+
+    // Texte de la legende change seulement quand la selection change
+    void UpdateLegend()
+    {
+        if (difficultyLegend == null || !choosingDifficulty) return;
+        if (currentSelection == legendShown || currentSelection >= legendKeys.Length) return;
+        legendShown = currentSelection;
+        difficultyLegend.text = Loc.Get(legendKeys[currentSelection]);
     }
 
     void HandleNavigation()
@@ -212,6 +227,9 @@ public class SoloPanelUI : MonoBehaviour
             difficultyTexts[i].gameObject.SetActive(choosingDifficulty);
             if (choosingDifficulty) difficultyTexts[i].text = Loc.Get(keys[i]);
         }
+
+        if (difficultyLegend != null) difficultyLegend.gameObject.SetActive(choosingDifficulty);
+        legendShown = -1;
     }
 
     // Difficulte figee dans la sauvegarde : seul endroit ou elle s'ecrit

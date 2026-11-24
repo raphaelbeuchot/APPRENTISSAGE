@@ -71,6 +71,11 @@ public class MultiStartUI : MonoBehaviour
     [SerializeField] private GameObject difficultyRoot;
     [Tooltip("3 lignes dans l'ordre Easy / Normal / Hard (meme ordre que OptionsManager.Difficulty). Textes ecrits par le script.")]
     [SerializeField] private List<TextMeshProUGUI> difficultyEntries;
+    [Tooltip("Optionnel : legende de la difficulte en surbrillance (cles difficulty.easy/normal/hard.desc). " +
+             "Hors du difficultyRoot (son Layout Group la rangerait dans la ligne) ; visible seulement pendant cette etape.")]
+    [SerializeField] private TextMeshProUGUI difficultyLegend;
+    private static readonly string[] legendKeys = { "difficulty.easy.desc", "difficulty.normal.desc", "difficulty.hard.desc" };
+    private int legendShown = -1;
 
     [Header("Audio (optionnel, meme pattern que LevelSelectUI)")]
     [SerializeField] private UIAudioPlayer uiAudio;
@@ -589,6 +594,18 @@ public class MultiStartUI : MonoBehaviour
                 if (difficultyStep) difficultyEntries[i].text = Loc.Get(keys[i]);
                 SetTextVisual(difficultyEntries[i], difficultyStep && i == difficultySelection);
             }
+        }
+
+        // Legende de la difficulte en surbrillance (meme cles que le solo)
+        if (difficultyLegend != null)
+        {
+            difficultyLegend.gameObject.SetActive(difficultyStep);
+            if (difficultyStep && difficultySelection != legendShown && difficultySelection < legendKeys.Length)
+            {
+                legendShown = difficultySelection;
+                difficultyLegend.text = Loc.Get(legendKeys[difficultySelection]);
+            }
+            if (!difficultyStep) legendShown = -1;
         }
     }
 
