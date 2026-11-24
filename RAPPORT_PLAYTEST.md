@@ -111,7 +111,7 @@
 ## Session du 2026-11-16
 
 ### AcidFloor II (`Level_Acid_02`, « Heart goes Broom », juste après le Trou normand)
-- [ ] « Cleaned Up ! » ne marchera pas sur les ennemis qui apparaissent plus tard : tous les ennemis ne sont pas actifs dès le début du niveau. À régler (piste à vérifier : ennemis comptés au lancement seulement ?). Peut-être une des causes du « Cleaned Up qui n'a pas marché » de la session du 2026-11-13.
+- [x] « Cleaned Up ! » ne marchera pas sur les ennemis qui apparaissent plus tard : tous les ennemis ne sont pas actifs dès le début du niveau. À régler (piste à vérifier : ennemis comptés au lancement seulement ?). Peut-être une des causes du « Cleaned Up qui n'a pas marché » de la session du 2026-11-13. **Réglé le 2026-11-22** (6f6bd2ba) : case `Add Enemies Activated Later` du GameManager, branchée dans Heart goes Broom ; à cocher dans tout autre niveau où des ennemis s activent en cours de partie.
 
 ### Trou normand (`Level_TrouNormand`)
 - [x] Build démo du 2026-11-16 : « ??? » grisé juste après le Trou normand dans la liste des niveaux. Cause : sans victoire, le Trou normand n'était jamais validé, donc Heart goes Broom restait verrouillé. Corrigé dans `TransitionRoomDoor` (valide le niveau en cours avant de charger le suivant, s'il est débloqué et pas encore validé). **À tester** depuis MainMenu : traverser le Trou normand → console « Niveau complete : TrouNormand | Suivant debloque : Heart goes Broom », puis Heart goes Broom visible dans la liste ; vérifier aussi un niveau normal. **Testé le 2026-11-24** (Trou normand lancé de l éditeur + DevPanel « Debloquer jusqu ici ») : Heart goes Broom débloqué.
