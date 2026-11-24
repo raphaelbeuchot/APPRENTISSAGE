@@ -56,6 +56,7 @@ public class MainMenuUI : MonoBehaviour
     void HandleNavigation()
     {
         if (soloPanelUI != null && soloPanelUI.IsOpen()) return;
+        if (TitleScreen.IsShowing) return;
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -125,7 +126,8 @@ public class MainMenuUI : MonoBehaviour
     {
         // Panneau Solo ouvert (et les Options, ouvertes depuis lui) : menu racine masque. Les panneaux
         // n'ont pas de fond opaque (fond = couleur de la camera), rien d'autre ne le cacherait.
-        bool hidden = soloPanelUI != null && soloPanelUI.IsOpen();
+        // Ecran titre a l'ecran : idem
+        bool hidden = (soloPanelUI != null && soloPanelUI.IsOpen()) || TitleScreen.IsShowing;
 
         for (int i = 0; i < menuTexts.Count; i++)
         {
