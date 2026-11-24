@@ -34,7 +34,11 @@ Rappels :
     - Trou de 4 s sans image dans le CSV du Development Build (vers 78 s) : probablement un changement de fenêtre. À surveiller si ça se reproduit.
     - [ ] Option Qualité dans le menu (Basse / Haute / Max), voulue par l'utilisateur : utile pour les machines modestes ou sur batterie. Contenu à définir.
     - [ ] Petits à-coups : première alerte (préchauffage shader / matériau probable), ~20 Ko alloués par image (GC), à vérifier en Development Build.
-- [ ] **Product Name propre à la démo** dans le profil, sinon la démo partage sa sauvegarde avec le jeu complet (voir `CE_QUI_RESTE_A_FAIRE.md`).
+- [x] **Product Name propre à la démo** dans le profil, sinon la démo partage sa sauvegarde avec le jeu complet. **Fait le 2026-11-24** (override des Player Settings dans le profil, 347ba30b) :
+  - Company `deBrume` (nom de société envisagé, pas encore créée ; rien trouvé sous ce nom exact sur le web, voisin : Brume Studio, Belgique ; marques INPI / EUIPO pas vérifiées), Product `Grand Panoptique Demo`, Version `0.1.0`. Pas de numéro dans le Product Name : il changerait l'adresse de la sauvegarde à chaque version.
+  - Logs, notes F2 et relevés de perf du build démo : `%USERPROFILE%\AppData\LocalLow\deBrume\Grand Panoptique Demo\`.
+  - L'override copie **tous** les Player Settings : icône, splash, résolution… se règlent désormais dans le profil pour la démo.
+  - Ne plus changer Company / Product une fois le premier build envoyé (les testeurs perdraient leur sauvegarde).
 - [ ] **Sauvegarde par identifiant de scène** avant toute distribution (voir `PASSAGE_EN_PRODUCTION.md`, ⏸).
 - [ ] **Liste des shaders à jour** juste avant le build : Project Settings > Graphics > onglet Built-In > Shader Loading → **Clear**, jouer chaque niveau de la démo (alerte, tir, mort, victoire, multi, boss), puis **Save to asset** sur `Assets/Settings/ShaderVariants_Demo` (déjà branché dans Preload Shaders, préparé au lancement du jeu). Save to asset remplace le fichier, on ne peut pas le compléter : tout rejouer d'un coup.
 - [x] Sons (2026-11-17, 0870d6c1) : bruitages en Preload Audio Data (chargés avec la scène), musiques d'ambiance en Streaming. Un nouveau son importé doit avoir Preload Audio Data coché.
@@ -45,7 +49,7 @@ Rappels :
 ## 3. Version
 
 - [ ] **Numéro de version visible dans le menu** (ex. « Démo playtest v0.1 »), lu automatiquement dans les Player Settings pour ne jamais être faux.
-- [ ] Noter ici, pour chaque build envoyé : version, date, commit.
+- [ ] Noter ici, pour chaque build envoyé : version, date, commit. Usage : `majeur.mineur.correctif`, 0.x avant la sortie ; correction de bugs → 0.1.1, vraie passe de retouches → 0.2.0.
 
 | Version | Date | Commit | Envoyé à | Remarques |
 |---|---|---|---|---|
