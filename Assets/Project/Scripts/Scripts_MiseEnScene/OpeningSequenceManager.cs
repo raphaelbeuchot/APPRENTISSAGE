@@ -179,7 +179,9 @@ public class OpeningSequenceManager : MonoBehaviour
         if (sonGrille != null)
             audioSource.PlayOneShot(sonGrille);
 
-        celluleGO.SetActive(false);
+        // Vide dans It's Show Time (obsolete, 2026-11-24) : plus d'erreur au franchissement du seuil
+        if (celluleGO != null)
+            celluleGO.SetActive(false);
 
         // foreach (Collider c in blockerColliders)
         //     c.enabled = true;
