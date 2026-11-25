@@ -8769,12 +8769,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BrightEyesController
   stats: {fileID: 11400000, guid: 56f8281de24256a43a9268333d0e4791, type: 2}
   flameRenderer: {fileID: 496632967}
+  showHealthBar: 0
   healthBarUI: {fileID: 0}
   enemyDetectionRange: 8
   enemyAttractionForce: 3
   enemyLayer:
     serializedVersion: 2
     m_Bits: 0
+  detectionSpheres: []
 --- !u!65 &496632966
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8988,6 +8990,12 @@ MonoBehaviour:
   restartSpawnDistance: 1
   mustPutAwayBroom: 0
   putAwayBroomMessage: Pour continuer, merci de deposer votre balai.
+  onActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  onRestart:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!136 &503121591
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -11061,6 +11069,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1697455044}
     m_Modifications:
+    - target: {fileID: 4947582672625674766, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Name
       value: ZombieChaser
@@ -11104,6 +11116,10 @@ PrefabInstance:
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7445211839705852150, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8763219841184811985, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: targetHuman
@@ -13151,6 +13167,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5203711346584509891, guid: ea3a1f07eee322b46bdac64f5a56bb5c, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5781334577023210688, guid: ea3a1f07eee322b46bdac64f5a56bb5c, type: 3}
       propertyPath: stats
       value: 
@@ -13518,6 +13538,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1697455044}
     m_Modifications:
+    - target: {fileID: 4947582672625674766, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Name
       value: ZombieChaser (2)
@@ -13565,6 +13589,10 @@ PrefabInstance:
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7445211839705852150, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8763219841184811985, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: targetHuman
@@ -15245,6 +15273,10 @@ PrefabInstance:
     - target: {fileID: 4295875408224688438, guid: ea3a1f07eee322b46bdac64f5a56bb5c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5203711346584509891, guid: ea3a1f07eee322b46bdac64f5a56bb5c, type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5781334577023210688, guid: ea3a1f07eee322b46bdac64f5a56bb5c, type: 3}
       propertyPath: stats
@@ -20053,6 +20085,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1697455044}
     m_Modifications:
+    - target: {fileID: 4947582672625674766, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Name
       value: ZombieChaser (1)
@@ -20108,6 +20144,10 @@ PrefabInstance:
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7445211839705852150, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8763219841184811985, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: targetHuman
@@ -23656,6 +23696,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1697455044}
     m_Modifications:
+    - target: {fileID: 4947582672625674766, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Name
       value: ZombieChaser (3)
@@ -23703,6 +23747,10 @@ PrefabInstance:
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7445211839705852150, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8763219841184811985, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: targetHuman
@@ -29741,6 +29789,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1697455044}
     m_Modifications:
+    - target: {fileID: 4947582672625674766, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5248851035368284380, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_Name
       value: ZombieChaser (4)
@@ -29788,6 +29840,10 @@ PrefabInstance:
     - target: {fileID: 7332359733098145596, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7445211839705852150, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8763219841184811985, guid: d4796a24e32bcc6449d58b16bcff8e94, type: 3}
       propertyPath: targetHuman
@@ -30617,9 +30673,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 147f18422723c8744a2302466f1e8be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MetalShutter
-  openHeight: 10
+  mode: 0
   openSpeed: 2
   destroyDelay: 0.5
+  openHeight: 10
+  leftPanel: {fileID: 0}
+  rightPanel: {fileID: 0}
+  slideDistance: 3
 --- !u!1001 &1805884797
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -36327,6 +36387,22 @@ PrefabInstance:
       propertyPath: fadeDuration
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1936788373635787632, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1936788373635787632, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1936788373635787632, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1936788373635787632, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2880000189980898460, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: cycleManager
       value: 
@@ -36335,6 +36411,14 @@ PrefabInstance:
       propertyPath: victorySound
       value: 
       objectReference: {fileID: 8300000, guid: 66f5647459bc04147be64765d5fd4af9, type: 3}
+    - target: {fileID: 3246229247410415100, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3246229247410415100, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3488911472616675715, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: playerMovement
       value: 
@@ -36351,6 +36435,38 @@ PrefabInstance:
       propertyPath: m_Material
       value: 
       objectReference: {fileID: 2100000, guid: 59d5ff126df09b24fbc82a107531a9ed, type: 2}
+    - target: {fileID: 4541578358180687613, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4541578358180687613, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4541578358180687613, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4541578358180687613, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4762466228196680399, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4762466228196680399, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4762466228196680399, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4762466228196680399, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5592999826705333007, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: titleMessage
       value: Flower Power !
@@ -36371,10 +36487,42 @@ PrefabInstance:
       propertyPath: m_Color.r
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5804752813730235028, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5804752813730235028, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5804752813730235028, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5804752813730235028, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5891596634492253031, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: playerHealth
       value: 
       objectReference: {fileID: 1871075794}
+    - target: {fileID: 6089746120784981575, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6089746120784981575, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6089746120784981575, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6089746120784981575, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6269731636678902259, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: sprayBar
       value: 
@@ -36391,8 +36539,56 @@ PrefabInstance:
       propertyPath: cycleManager
       value: 
       objectReference: {fileID: 2103414916}
+    - target: {fileID: 7513593800393006118, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7513593800393006118, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7513593800393006118, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7513593800393006118, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7805074012068730662, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7805074012068730662, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7805074012068730662, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7805074012068730662, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8068068744078149362, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
       propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8781858614003181993, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8781858614003181993, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8781858614003181993, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8781858614003181993, guid: 4d19d98467aff354da8990f2e9cc18ba, type: 3}
+      propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -37439,6 +37635,10 @@ PrefabInstance:
       propertyPath: startZoneTransform
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: greenLightMusicLoop
+      value: 
+      objectReference: {fileID: 8300000, guid: 98f87380a51366540af68264b9b1d380, type: 3}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: redLightDirectional
       value: 
