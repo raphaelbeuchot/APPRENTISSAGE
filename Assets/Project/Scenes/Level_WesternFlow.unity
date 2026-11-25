@@ -378,6 +378,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 320870997}
     - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: layersToHideOnVictory.m_Bits
+      value: 264
+      objectReference: {fileID: 0}
+    - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
       propertyPath: objectsToHideOnVictory.Array.size
       value: 7
       objectReference: {fileID: 0}
@@ -8202,7 +8206,6 @@ GameObject:
   - component: {fileID: 748550127}
   - component: {fileID: 748550129}
   - component: {fileID: 748550130}
-  - component: {fileID: 748550131}
   m_Layer: 3
   m_Name: Poutre
   m_TagString: Untagged
@@ -8432,108 +8435,6 @@ MonoBehaviour:
   ascendSound: {fileID: 8300000, guid: ebbe55e0355b4ed4ea2416ccdcff2f0f, type: 3}
   soundVolume: 1
   hangingAngularDamping: 1
---- !u!153 &748550131
-ConfigurableJoint:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 748550119}
-  serializedVersion: 4
-  m_ConnectedBody: {fileID: 2094460797}
-  m_ConnectedArticulationBody: {fileID: 0}
-  m_Anchor: {x: -0.0000006556511, y: 0, z: 1.589999}
-  m_Axis: {x: 1, y: 0, z: 0}
-  m_AutoConfigureConnectedAnchor: 0
-  m_ConnectedAnchor: {x: 0, y: 0, z: 0}
-  m_SecondaryAxis: {x: 0, y: 1, z: 0}
-  m_XMotion: 0
-  m_YMotion: 0
-  m_ZMotion: 0
-  m_AngularXMotion: 2
-  m_AngularYMotion: 2
-  m_AngularZMotion: 2
-  m_LinearLimitSpring:
-    spring: 0
-    damper: 0
-  m_LinearLimit:
-    limit: 0
-    bounciness: 0
-    contactDistance: 0
-  m_AngularXLimitSpring:
-    spring: 0
-    damper: 0
-  m_LowAngularXLimit:
-    limit: 0
-    bounciness: 0
-    contactDistance: 0
-  m_HighAngularXLimit:
-    limit: 0
-    bounciness: 0
-    contactDistance: 0
-  m_AngularYZLimitSpring:
-    spring: 0
-    damper: 0
-  m_AngularYLimit:
-    limit: 0
-    bounciness: 0
-    contactDistance: 0
-  m_AngularZLimit:
-    limit: 0
-    bounciness: 0
-    contactDistance: 0
-  m_TargetPosition: {x: 0, y: 0, z: 0}
-  m_TargetVelocity: {x: 0, y: 0, z: 0}
-  m_XDrive:
-    serializedVersion: 4
-    positionSpring: 0
-    positionDamper: 0
-    maximumForce: 3.4028233e+38
-    useAcceleration: 0
-  m_YDrive:
-    serializedVersion: 4
-    positionSpring: 0
-    positionDamper: 0
-    maximumForce: 3.4028233e+38
-    useAcceleration: 0
-  m_ZDrive:
-    serializedVersion: 4
-    positionSpring: 0
-    positionDamper: 0
-    maximumForce: 3.4028233e+38
-    useAcceleration: 0
-  m_TargetRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_TargetAngularVelocity: {x: 0, y: 0, z: 0}
-  m_RotationDriveMode: 0
-  m_AngularXDrive:
-    serializedVersion: 4
-    positionSpring: 0
-    positionDamper: 0
-    maximumForce: 3.4028233e+38
-    useAcceleration: 0
-  m_AngularYZDrive:
-    serializedVersion: 4
-    positionSpring: 0
-    positionDamper: 0
-    maximumForce: 3.4028233e+38
-    useAcceleration: 0
-  m_SlerpDrive:
-    serializedVersion: 4
-    positionSpring: 0
-    positionDamper: 0
-    maximumForce: 3.4028233e+38
-    useAcceleration: 0
-  m_ProjectionMode: 0
-  m_ProjectionDistance: 0.1
-  m_ProjectionAngle: 180
-  m_ConfiguredInWorldSpace: 0
-  m_SwapBodies: 0
-  m_BreakForce: Infinity
-  m_BreakTorque: Infinity
-  m_EnableCollision: 0
-  m_EnablePreprocessing: 1
-  m_MassScale: 1
-  m_ConnectedMassScale: 1
 --- !u!1 &761952909
 GameObject:
   m_ObjectHideFlags: 0

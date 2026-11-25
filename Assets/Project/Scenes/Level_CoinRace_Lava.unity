@@ -11526,6 +11526,8 @@ MonoBehaviour:
   quickRectRadius: 1
   quickRectBulgeX: 0
   quickRectBulgeZ: 0
+  safetyKillDelay: 3
+  safetyChecksPerSecond: 5
 --- !u!4 &578174839
 Transform:
   m_ObjectHideFlags: 0
@@ -12010,6 +12012,8 @@ MonoBehaviour:
   quickRectRadius: 1
   quickRectBulgeX: 0
   quickRectBulgeZ: 0
+  safetyKillDelay: 3
+  safetyChecksPerSecond: 5
 --- !u!4 &620716156
 Transform:
   m_ObjectHideFlags: 0
@@ -17536,6 +17540,8 @@ MonoBehaviour:
   quickRectRadius: 1
   quickRectBulgeX: 0
   quickRectBulgeZ: 0
+  safetyKillDelay: 3
+  safetyChecksPerSecond: 5
 --- !u!4 &933889756
 Transform:
   m_ObjectHideFlags: 0
@@ -46162,7 +46168,7 @@ GameObject:
   - component: {fileID: 1867388496}
   - component: {fileID: 1867388495}
   m_Layer: 0
-  m_Name: Pit_Right (1)
+  m_Name: Empty_Pit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46203,6 +46209,8 @@ MonoBehaviour:
   quickRectRadius: 1
   quickRectBulgeX: 0
   quickRectBulgeZ: 0
+  safetyKillDelay: 3
+  safetyChecksPerSecond: 5
 --- !u!4 &1867388496
 Transform:
   m_ObjectHideFlags: 0
@@ -57172,6 +57180,10 @@ PrefabInstance:
       propertyPath: startZoneTransform
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
+      propertyPath: greenLightMusicLoop
+      value: 
+      objectReference: {fileID: 8300000, guid: 98f87380a51366540af68264b9b1d380, type: 3}
     - target: {fileID: 7569270378770535786, guid: 5c9cf84b1affccd4c902568735cfc0db, type: 3}
       propertyPath: redLightDirectional
       value: 
