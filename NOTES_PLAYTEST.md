@@ -86,10 +86,10 @@
   probleme sur ce niveau : les enemys sot desactivés (sauf le premier), afin den epas abpoir les lasers de detection des la premiere salle. mais probeme : si on fait ça, les enemys sotn actifs au depart ne sont pas enregistres dans le deomcpte d'enemys (et donc pressur gauge aux fraises, etc) -> regle le 2026-11-22 : case Add Enemies Activated Later du GameManager (ennemis ajoutes au total, a la liste a nettoyer et a la barre quand ils s activent)
 - [x] **Level_GoWithTheFlow01** — 2026-11-20 11:39 — pos (4.0, 0.1, 9.9)
   sol tro pbas de la zone ou ets la clé, ca accroche quand on revient sue le convoyeor -> regle le 2026-11-21
-- [ ] **Level_Race_Lava** — 2026-11-20 17:50 — pos (0.3, 0.0, 6.1)
-  enorme bu ici : player 1 dans a vae ais pas mort et capable de bouger
-- [ ] **Level_Race_Lava** — 2026-11-20 17:50 — pos (0.3, 0.0, 6.1)
-  jeu cassé du coup
+- [x] **Level_Race_Lava** — 2026-11-20 17:50 — pos (0.3, 0.0, 6.1)
+  enorme bu ici : player 1 dans a vae ais pas mort et capable de bouger -> filet de securite ajoute le 2026-11-25 (SplinePitZone : mort forcee apres 3 s dans la lave ou l acide, warning [SplinePitZone] Filet de securite dans le Player.log si le trigger rate) ; cause exacte inconnue, a surveiller
+- [x] **Level_Race_Lava** — 2026-11-20 17:50 — pos (0.3, 0.0, 6.1)
+  jeu cassé du coup -> voir la note precedente
 - [x] **Level_CoinRace_Lava** — 2026-11-20 18:08 — pos (3.0, 0.0, 5.8)
   il faut desactivzer les enemuys a la victoire -> regle le 2026-11-21 : arret sur image au buzzer (timeScale 0), ennemis figes
 - [x] **Level_TrafficJam_04** — 2026-11-23 21:12 — pos (48.7, -0.4, 73.1)

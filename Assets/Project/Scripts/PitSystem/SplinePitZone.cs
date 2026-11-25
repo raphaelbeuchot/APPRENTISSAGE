@@ -66,10 +66,109 @@ public class SplinePitZone : MonoBehaviour
     public PitContentType.ContentCategory FillCategory =>
         fillContentType != null ? fillContentType.category : PitContentType.ContentCategory.Empty;
 
+    // Filet de securite (lave, acide) : independant des triggers. Si le SplinePit_FillTrigger rate un joueur
+    // (pas d'entree vue, sortie fantome), le joueur reste dans le liquide sans mourir (bug Race_Lava 2026-11-20).
+    // Quelques fois par seconde : pieds dans le contour (vu de haut) et sous la surface -> au bout du delai, mort.
+    [Header("Filet de securite (lave, acide)")]
+    [Tooltip("Temps passe dans le liquide (pieds sous la surface) avant la mort forcee, si le trigger a rate le joueur")]
+    public float safetyKillDelay = 3f;
+    [Tooltip("Nombre de verifications par seconde")]
+    public float safetyChecksPerSecond = 5f;
+
+    private Vector2[] safetyContour;   // contour en X / Z locaux
+    private float safetyMinX, safetyMaxX, safetyMinZ, safetyMaxZ, safetySurfaceY;
+    private float safetyCheckTimer, safetyListTimer;
+    private PlayerPitInteractable[] safetyPlayers = new PlayerPitInteractable[0];
+    private readonly System.Collections.Generic.Dictionary<PlayerPitInteractable, float> safetyTimeInside =
+        new System.Collections.Generic.Dictionary<PlayerPitInteractable, float>();
+
     private void Start()
     {
         if (AstarPath.active != null)
             ApplyAStarWalkability();
+        InitSafetyKill();
+    }
+
+    private void InitSafetyKill()
+    {
+        safetyContour = null;
+        if (FillCategory != PitContentType.ContentCategory.InstantKill || fillLevel <= 0f) return;
+        SplineContainer sc = GetSplineContainer();
+        if (sc == null || sc.Spline.Count < 3) return;
+
+        Vector3[] contourWorld = SplinePitMeshGenerator.SampleSpline(sc, splineSampleCount);
+        if (contourWorld.Length < 3) return;
+        safetyContour = new Vector2[contourWorld.Length];
+        safetyMinX = safetyMinZ = float.MaxValue;
+        safetyMaxX = safetyMaxZ = float.MinValue;
+        float rimY = 0f;
+        for (int i = 0; i < contourWorld.Length; i++)
+        {
+            Vector3 p = transform.InverseTransformPoint(contourWorld[i]);
+            if (i == 0) rimY = p.y;
+            safetyContour[i] = new Vector2(p.x, p.z);
+            safetyMinX = Mathf.Min(safetyMinX, p.x); safetyMaxX = Mathf.Max(safetyMaxX, p.x);
+            safetyMinZ = Mathf.Min(safetyMinZ, p.z); safetyMaxZ = Mathf.Max(safetyMaxZ, p.z);
+        }
+        // Meme surface que le SplinePit_FillTrigger (GenerateMeshes)
+        safetySurfaceY = rimY - depth + fillLevel;
+    }
+
+    private void Update()
+    {
+        if (safetyContour == null || safetyChecksPerSecond <= 0f) return;
+
+        // Liste des joueurs rafraichie chaque seconde (multi : joueurs crees apres le chargement)
+        safetyListTimer -= Time.deltaTime;
+        if (safetyListTimer <= 0f)
+        {
+            safetyListTimer = 1f;
+            safetyPlayers = FindObjectsOfType<PlayerPitInteractable>();
+        }
+
+        safetyCheckTimer += Time.deltaTime;
+        float interval = 1f / safetyChecksPerSecond;
+        if (safetyCheckTimer < interval) return;
+        float elapsed = safetyCheckTimer;
+        safetyCheckTimer = 0f;
+
+        foreach (PlayerPitInteractable player in safetyPlayers)
+        {
+            if (player == null) continue;
+            if (!player.CanTakePitDamage() || !IsInsideLiquid(player.transform.position))
+            {
+                safetyTimeInside.Remove(player);
+                continue;
+            }
+
+            float t;
+            safetyTimeInside.TryGetValue(player, out t);
+            t += elapsed;
+            safetyTimeInside[player] = t;
+            if (t < safetyKillDelay) continue;
+
+            safetyTimeInside.Remove(player);
+            Debug.LogWarning("[SplinePitZone] Filet de securite : " + player.name + " dans " + name + " depuis " +
+                             t.ToString("F1") + " s sans mourir (le trigger l'a rate) -> mort forcee");
+            player.TakePitDamage(100000f, PitDamageType.InstantKill);
+        }
+    }
+
+    // Pieds (pivot du joueur) sous la surface et dans le contour, vu de haut
+    private bool IsInsideLiquid(Vector3 worldFeet)
+    {
+        Vector3 p = transform.InverseTransformPoint(worldFeet);
+        if (p.y >= safetySurfaceY) return false;
+        if (p.x < safetyMinX || p.x > safetyMaxX || p.z < safetyMinZ || p.z > safetyMaxZ) return false;
+
+        bool inside = false;
+        for (int i = 0, j = safetyContour.Length - 1; i < safetyContour.Length; j = i++)
+        {
+            Vector2 a = safetyContour[i], b = safetyContour[j];
+            if ((a.y > p.z) != (b.y > p.z) && p.x < (b.x - a.x) * (p.z - a.y) / (b.y - a.y) + a.x)
+                inside = !inside;
+        }
+        return inside;
     }
 
     public SplineContainer GetSplineContainer()
