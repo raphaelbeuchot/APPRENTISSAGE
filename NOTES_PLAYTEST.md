@@ -98,3 +98,39 @@
   chnager texte "Lancer RB" -> regle le 2026-11-24 (touches selon l appareil)
 - [x] **Level_WesternCanyon** — 2026-11-25 11:42 — pos (1.4, 0.0, -1.6)
   changer l'apparence du bloat -> regle le 2026-11-25
+- [ ] **Level_Ice** — 2026-11-25 22:04 — pos (1.4, 0.0, -2.6)
+  une modification generale : le etxte qu s'affiche a lfin des niveaux a l'activatin de la porte de fin, il faut q'uilr reste jusqu'au fade out
+- [ ] **Level_Ice** — 2026-11-25 22:05 — pos (4.9, 0.0, 32.2)
+  faire diapraitres les falre a la victory
+- [ ] **Level_Go For a Spin** — 2026-11-25 22:07 — pos (4.5, 0.1, -1.5)
+  bug a regler : quand on est sur une rotplat, on peut se faire tirer dessus deux fois de suite sans coold won, en cumulant un tir a cause de la rotation et un crouch. i ldoit manquer un cas codé ici
+- [ ] **Level_Go For a Spin** — 2026-11-25 22:08 — pos (4.4, 0.0, 31.6)
+  changer la 'pparition des textes commentaires, au lieu d'un pop : un fade in fade out
+- [ ] **Level_HandleHurdles** — 2026-11-25 22:09 — pos (4.6, 0.3, -1.5)
+  titre fancais de handle hurdles :  "Défaire le mur"
+- [ ] **Level_HandleHurdles** — 2026-11-25 22:10 — pos (4.9, 0.1, 9.9)
+  sur le premier mur : rajouter collider climbamble obkject comme sur le sconde
+- [ ] **Level_StrangeAttractor** — 2026-11-25 22:12 — pos (4.3, 0.1, 22.9)
+  la platform de finn 'ets pas en obstacle ? elle n'arrete pas le laser, en tt cas pas entierement
+- [ ] **Level_LavaTrain01** — 2026-11-25 22:20 — pos (2.0, 0.1, 15.4)
+  repositionner commei i lfaut le sparticules au dessus de la lave (voire les enlever carrement)
+- [ ] **Level_LavaTrain01** — 2026-11-25 22:22 — pos (3.0, 0.3, 30.7)
+  tiens ? la platforme finale reapparait a la vin apres victory. f=verifier son layer
+- [ ] **Level_TrouNormand** — 2026-11-25 22:24 — pos (-8.9, -0.2, -2.3)
+  verifier hauteru du perso au spawn, petit mvt intempestif de camera
+- [ ] **Level_TrouNormand** — 2026-11-25 22:25 — pos (9.0, -0.2, -3.0)
+  suppr le dummy ds le couloir
+- [ ] **Level_TrouNormand** — 2026-11-25 22:26 — pos (16.7, 0.1, 15.4)
+  mes dumy ontt tous bougé ! wtf ??
+- [ ] **Level_TrouNormand** — 2026-11-25 22:26 — pos (17.5, 0.1, 14.5)
+  quand j'appui esur entree ils bougent tous ???
+- [ ] **Level_TrouNormand** — 2026-11-25 22:27 — pos (22.1, 1.0, 26.5)
+  projecteur juste avant acenseur a detailler plus car ils otn au premeir plan
+- [ ] **Level_TrouNormand** — 2026-11-25 22:29 — pos (50.7, 10.6, 46.6)
+  changer imperativement le texte de la porte du fond
+- [ ] **Level_Acid_02** — 2026-11-25 22:32 — pos (3.3, 0.2, 44.0)
+  faire disapraitre le decor a la fin : les lampes, les murs de l aslalleronde
+- [ ] **Level_Acid_01** — 2026-11-25 22:34 — pos (13.0, 5.9, 43.4)
+  ah on a le mme bug que ds western cayon il y a qques jour : perso deplacé vers la guache, un collider invisible ?
+- [ ] **Level_Pit'em All** — 2026-11-25 22:36 — pos (4.4, 0.3, -1.2)
+  placer le coffre a tomates comme il faut
