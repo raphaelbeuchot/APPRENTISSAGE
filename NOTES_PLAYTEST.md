@@ -96,5 +96,5 @@
   toutes les portes sauf la finale door doivent etre non ouvrables, et avec le voyant rouge
 - [x] **Level_TomatoFest_01** — 2026-11-24 18:48 — pos (5.1, 0.1, 4.5)
   chnager texte "Lancer RB" -> regle le 2026-11-24 (touches selon l appareil)
-- [ ] **Level_WesternCanyon** — 2026-11-25 11:42 — pos (1.4, 0.0, -1.6)
-  changer l'apparence du bloat
+- [x] **Level_WesternCanyon** — 2026-11-25 11:42 — pos (1.4, 0.0, -1.6)
+  changer l'apparence du bloat -> regle le 2026-11-25
