@@ -18,6 +18,8 @@ public class FloorCharacterReflection : MonoBehaviour
     public const string TextureName = "_FloorReflectionTex";
     private const string PlaneName = "_FloorReflectionPlane";
     private const string MatrixName = "_FloorReflectionVP";
+    private const string FadeName = "_FloorReflectionFade";
+    private const string CamPosName = "_FloorReflectionCamPos";
 
     [Tooltip("Shader Hidden/FloorReflectionSilhouette (Project/Shaders)")]
     [SerializeField] private Shader silhouetteShader;
@@ -29,13 +31,24 @@ public class FloorCharacterReflection : MonoBehaviour
     [SerializeField] private LayerMask excludedLayers = 0;
     [Tooltip("Frequence de recherche des personnages (s) : ennemis qui apparaissent, meshes actives")]
     [SerializeField] private float refreshInterval = 1f;
+    [Header("Attenuation")]
+    [Tooltip("Hauteur au-dessus de la glace (m) ou le reflet a disparu : franc aux pieds, efface vers la tete. 0 = pas d'attenuation")]
+    [SerializeField] private float fadeHeight = 0f;
+    [Tooltip("Distance a la camera (m) en dessous de laquelle le reflet est plein (voir Debug Camera Distance en jeu)")]
+    [SerializeField] private float distanceFadeStart = 0f;
+    [Tooltip("Distance a la camera (m) au-dela de laquelle le reflet a disparu. 0 = pas d'attenuation")]
+    [SerializeField] private float distanceFadeEnd = 0f;
+
     [Header("Debug")]
+    [Tooltip("En jeu : distance entre la camera et le joueur le plus proche (m), pour regler Distance Fade Start / End")]
+    [SerializeField] private float debugCameraDistance;
     [Tooltip("En jeu : derniere texture du reflet (double-clic pour la voir). Blanc = silhouette")]
     [SerializeField] private RenderTexture debugTexture;
     private int lastRendererCount = -1;
 
     private Material silhouetteMaterial;
     private readonly List<Renderer> renderers = new List<Renderer>();
+    private PlayerHealth[] players = new PlayerHealth[0];
     private readonly Dictionary<Camera, RenderTexture> textures = new Dictionary<Camera, RenderTexture>();
     private CommandBuffer cmd;
     private float refreshTimer;
@@ -84,7 +97,8 @@ public class FloorCharacterReflection : MonoBehaviour
     private void CollectRenderers()
     {
         renderers.Clear();
-        foreach (PlayerHealth p in FindObjectsOfType<PlayerHealth>()) AddRenderers(p.gameObject);
+        players = FindObjectsOfType<PlayerHealth>();
+        foreach (PlayerHealth p in players) AddRenderers(p.gameObject);
         foreach (EnemyHealth e in FindObjectsOfType<EnemyHealth>()) AddRenderers(e.gameObject);
         if (renderers.Count != lastRendererCount)
         {
@@ -125,6 +139,9 @@ public class FloorCharacterReflection : MonoBehaviour
         cmd.ClearRenderTarget(false, true, Color.clear);
         cmd.SetGlobalMatrix(MatrixName, proj * view);
         cmd.SetGlobalVector(PlaneName, plane);
+        cmd.SetGlobalVector(FadeName, new Vector4(fadeHeight, distanceFadeStart, distanceFadeEnd, 0f));
+        Vector3 camPos = cam.transform.position;
+        cmd.SetGlobalVector(CamPosName, new Vector4(camPos.x, camPos.y, camPos.z, 0f));
         foreach (Renderer r in renderers)
         {
             if (r == null || !r.enabled || !r.gameObject.activeInHierarchy) continue;
@@ -135,6 +152,11 @@ public class FloorCharacterReflection : MonoBehaviour
         cmd.SetGlobalTexture(TextureName, rt);
         Graphics.ExecuteCommandBuffer(cmd);
         debugTexture = rt;
+
+        float closest = float.MaxValue;
+        foreach (PlayerHealth p in players)
+            if (p != null) closest = Mathf.Min(closest, Vector3.Distance(cam.transform.position, p.transform.position));
+        if (closest < float.MaxValue) debugCameraDistance = closest;
     }
 
     private RenderTexture GetTexture(Camera cam)
