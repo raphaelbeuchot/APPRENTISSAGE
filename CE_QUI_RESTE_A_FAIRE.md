@@ -78,7 +78,6 @@
 
 ## 🏗️ TECH / ARCHITECTURE
 
-
 - [ ] 🟡 **Point de spawn du joueur dans la zone de départ** (noté le 2026-11-25) : aujourd’hui le Player est placé à la main dans chaque scène (spawn trop haut de Rush Hour 1, réglé le 2026-11-21). Suggestion, non tranchée : un objet vide `PlayerSpawn` dans le prefab `StartZone_8` (23 scènes) et un petit script qui pose le Player dessus au chargement (rayon vers le sol). Avant de coder : lire l’ordre d’initialisation (caméra Cinemachine, sentinelle, porte d’entrée) pour éviter le mouvement de caméra au départ ; ne rien faire sans point de spawn (boss, Trou normand, multi) ; case « ignorer » sur l’instance. Touche au départ du joueur → checklist solo.
 - [ ] ⚪ **KeeponTruckin SDF.asset — toujours dirty** : font TMP en mode Dynamic (m_AtlasPopulationMode: 1), Unity régénère la glyph table à chaque session. Fix rapide : `git update-index --skip-worktree` sur le fichier. Fix propre : passer en mode Static dans Unity (bake tous les caractères utilisés)
 
