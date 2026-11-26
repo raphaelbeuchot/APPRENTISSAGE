@@ -101,7 +101,7 @@ public class OpeningSequenceManager : MonoBehaviour
 
         yield return new WaitForSeconds(delaiAvantPrompt);
 
-        CommentPanel.ShowPersistent(textePrompt);
+        CommentPanel.ShowPersistent(textePrompt, CommentStyle.Fade);
 
         yield return new WaitUntil(() => PlayerInputManager.Instance.InteractPressed);
 

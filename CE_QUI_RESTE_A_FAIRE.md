@@ -115,7 +115,7 @@
 *(son, feel, visuel, animations, feedbacks)*
 
 - [ ] 🟡 **Texte de fin de niveau jusqu’au fondu** (note F2 du 2026-11-25, Level_Ice, tous niveaux) : le texte qui s’affiche à l’activation de la porte de fin doit rester jusqu’au fondu de sortie.
-- [ ] 🟢 **Textes de commentaire en fondu** (note F2 du 2026-11-25, Go For a Spin) : apparition et disparition en fondu au lieu d’un pop.
+- [x] 🟢 **Textes de commentaire en fondu** (note F2 du 2026-11-25, Go For a Spin) : apparition et disparition en fondu au lieu d’un pop. **Fait le 2026-11-26** pour les invites (Press X, balai, pupitre, train, TutoFreezeTile, standup) : `CommentPanel` a un style Pop / Fade choisi à l’appel, `Hide()` suit le style en cours, fondus de 0,6 s (prefab `CommentManager`). Le nettoyage garde le pop (voulu). Le lore de la TransitionRoom (`TransitionRoomDoor`) reste à discuter : apparition, persistance, forme.
 
 - [ ] 🟢 **Corps du joueur sur tapis roulant** (2026-11-23) : la rotplat entraîne maintenant le ragdoll du joueur mort (b961c1b3, `PlayerRagdoll.IsActive`) ; le `ConveyorBelt` emporte les cadavres d'ennemis mais pas encore celui du joueur. Même ajout à faire, plus tard.
 

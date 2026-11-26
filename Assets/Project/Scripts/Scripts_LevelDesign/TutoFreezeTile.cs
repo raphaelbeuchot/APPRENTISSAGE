@@ -167,7 +167,7 @@ public class TutoFreezeTile : MonoBehaviour
 
         // 5 spawns effectues
         cycleRunning = false;
-        CommentPanel.Show("Sweep the corpses away");
+        CommentPanel.Show("Sweep the corpses away", CommentStyle.Fade);
 
         if (playerOnTile)
             waitingForFinalExit = true;

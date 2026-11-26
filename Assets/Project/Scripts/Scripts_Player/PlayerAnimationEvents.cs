@@ -35,7 +35,7 @@ public class PlayerAnimationEvents : MonoBehaviour
 
     public void OnReadyToStandUp()
     {
-        CommentPanel.ShowPersistent("player.standup");
+        CommentPanel.ShowPersistent("player.standup", CommentStyle.Fade);
     }
     public void OnDashSound()
     {

@@ -158,7 +158,7 @@ public class BroomPedestal : MonoBehaviour
     {
         if (string.IsNullOrEmpty(approachMessage) || show == messageShown) return;
         messageShown = show;
-        if (show) CommentPanel.ShowPersistent(approachMessage);
+        if (show) CommentPanel.ShowPersistent(approachMessage, CommentStyle.Fade);
         else CommentPanel.Hide();
     }
 

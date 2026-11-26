@@ -122,7 +122,7 @@ public class PupitreInteraction : MonoBehaviour
         {
             if (mustPutAwayBroom && loadout != null && loadout.hasBroom)
             {
-                CommentPanel.Show(putAwayBroomMessage);
+                CommentPanel.Show(putAwayBroomMessage, CommentStyle.Fade);
                 return;
             }
 

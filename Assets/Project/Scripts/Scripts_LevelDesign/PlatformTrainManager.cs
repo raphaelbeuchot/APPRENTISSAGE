@@ -100,7 +100,7 @@ public class PlatformTrainManager : MonoBehaviour
         {
             if (!settings.showMessageOnce || !messageShown)
             {
-                CommentPanel.Show(settings.holdMessage);
+                CommentPanel.Show(settings.holdMessage, CommentStyle.Fade);
                 messageShown = true;
             }
 
