@@ -131,7 +131,7 @@
 - [ ] Premier mur : ajouter le collider `ClimbableObject`, comme sur le second
 
 ### Strange Attractor (`Level_StrangeAttractor`)
-- [ ] La plateforme de fin n'arrête pas le laser, ou pas entièrement : pas en Obstacle ?
+- [x] La plateforme de fin n'arrête pas le laser, ou pas entièrement : pas en Obstacle ? **Réglé le 2026-11-26** : `Cube (4)` passé de Default à Obstacle.
 
 ### Lava Train I (`Level_LavaTrain01`)
 - [ ] Repositionner les particules au-dessus de la lave, ou les enlever
