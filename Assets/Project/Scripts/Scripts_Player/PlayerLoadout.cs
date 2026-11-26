@@ -50,6 +50,15 @@ public class PlayerLoadout : MonoBehaviour
         if (sprayObject != null) sprayObject.SetActive(hasSpray);
     }
 
+    // Affichage seul du balai (renderers), sans toucher au GameObject ni au loadout.
+    // Ex. LevelEntranceDoor : balai cache tant que la porte d'entree n'est pas ouverte (il depassait de la porte).
+    public void SetBroomVisible(bool visible)
+    {
+        if (broomObject == null) return;
+        foreach (Renderer r in broomObject.GetComponentsInChildren<Renderer>(true))
+            r.enabled = visible;
+    }
+
     public void RestoreLevelLoadout()
     {
         ApplyLoadout(levelBroom, levelSpray);

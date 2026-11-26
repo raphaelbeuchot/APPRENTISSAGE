@@ -27,6 +27,8 @@ public class LevelEntranceDoor : MonoBehaviour
     // Lu dans Awake : CountdownManager efface la cle dans son Start.
     private bool isRestart;
 
+    private PlayerLoadout loadout;
+
     // ============================================
     // UNITY LIFECYCLE
     // ============================================
@@ -39,6 +41,10 @@ public class LevelEntranceDoor : MonoBehaviour
     private void Start()
     {
         if (isRestart && stayClosedOnRestart) return;
+
+        // Balai cache jusqu'a l'ouverture de la porte (il depassait derriere la porte fermee)
+        loadout = FindObjectOfType<PlayerLoadout>();
+        if (loadout != null) loadout.SetBroomVisible(false);
 
         if (SceneFader.Instance != null && SceneFader.Instance.IsFading)
             SceneFader.Instance.OnFadeOutComplete += OnSceneReady;
@@ -76,5 +82,6 @@ public class LevelEntranceDoor : MonoBehaviour
     {
         yield return new WaitForSeconds(delayAfterFade);
         door?.AutoOpen();
+        if (loadout != null) loadout.SetBroomVisible(true);
     }
 }
