@@ -148,8 +148,12 @@ public class DoorBasic : MonoBehaviour
     }
 
     /// <summary>Ferme la porte apres franchissement — bulle desactivee, event OnDoorForceClosed.</summary>
+    /// Version sans parametre : c'est celle que les UnityEvents de l'Inspector retrouvent
+    /// (ils ne voient pas une methode a parametre, meme facultatif ; ex. DOOR FINALE du boss).
+    public void ForceClose() => ForceClose(false);
+
     /// keepComment : laisse le texte du CommentPanel affiche (l'appelant le cache lui-meme, ex. TransitionRoomDoor au debut du fondu).
-    public void ForceClose(bool keepComment = false)
+    public void ForceClose(bool keepComment)
     {
         if (!IsOpen || isAnimating) return;
         isFinalClose = true;
