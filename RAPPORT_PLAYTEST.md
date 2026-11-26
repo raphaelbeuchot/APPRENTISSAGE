@@ -116,3 +116,44 @@
 ### Trou normand (`Level_TrouNormand`)
 - [x] Build démo du 2026-11-16 : « ??? » grisé juste après le Trou normand dans la liste des niveaux. Cause : sans victoire, le Trou normand n'était jamais validé, donc Heart goes Broom restait verrouillé. Corrigé dans `TransitionRoomDoor` (valide le niveau en cours avant de charger le suivant, s'il est débloqué et pas encore validé). **À tester** depuis MainMenu : traverser le Trou normand → console « Niveau complete : TrouNormand | Suivant debloque : Heart goes Broom », puis Heart goes Broom visible dans la liste ; vérifier aussi un niveau normal. **Testé le 2026-11-24** (Trou normand lancé de l éditeur + DevPanel « Debloquer jusqu ici ») : Heart goes Broom débloqué.
 - [x] Au même passage : vérifier que le flou du point de vue est toujours là (profil `CM_PointdeVue`, propre au Trou normand). La profondeur de champ du profil partagé `SampleSceneProfile` a été coupée le 2026-11-17 (invisible, 2,5 ms GPU). **Vérifié le 2026-11-24** : flou présent.
+
+## Session du 2026-11-25 (notes F2, 22:04 – 22:36)
+
+### Ice (`Level_Ice`)
+- [ ] Faire disparaître les flares à la victoire
+
+### Go for a Spin (`Level_Go For a Spin`)
+- Double tir sans temps de recharge sur rotplat → `CE_QUI_RESTE_A_FAIRE.md` (BUGS)
+- Fondu des textes de commentaire → `CE_QUI_RESTE_A_FAIRE.md` (POLISH)
+
+### Handle Hurdles (`Level_HandleHurdles`)
+- [ ] Titre français : « Défaire le mur » (Sheet VF)
+- [ ] Premier mur : ajouter le collider `ClimbableObject`, comme sur le second
+
+### Strange Attractor (`Level_StrangeAttractor`)
+- [ ] La plateforme de fin n'arrête pas le laser, ou pas entièrement : pas en Obstacle ?
+
+### Lava Train I (`Level_LavaTrain01`)
+- [ ] Repositionner les particules au-dessus de la lave, ou les enlever
+- [ ] La plateforme finale réapparaît après la victoire : vérifier son layer
+
+### Trou normand (`Level_TrouNormand`)
+- [ ] Hauteur du perso au spawn, petit mouvement de caméra parasite
+- [ ] Supprimer le dummy du couloir
+- [ ] Les dummies ont tous bougé, et ils bougent quand on appuie sur Entrée
+- [ ] Projecteurs juste avant l'ascenseur : à détailler, ils sont au premier plan
+- [ ] **Changer impérativement le texte de la porte du fond**
+
+### AcidFloor II (`Level_Acid_02`)
+- [ ] Faire disparaître le décor à la fin : les lampes, les murs de la salle ronde
+
+### AcidFloor I (`Level_Acid_01`)
+- [ ] Perso poussé vers la gauche, collider invisible ? Même symptôme que dans Western Canyon il y a quelques jours
+
+### Pit'em All (`Level_Pit'em All`)
+- [ ] Placer le coffre à tomates comme il faut
+
+### Renvoyé dans `CE_QUI_RESTE_A_FAIRE.md`
+- Texte de fin de niveau qui doit rester jusqu'au fondu (POLISH)
+- Fondu des textes de commentaire (POLISH)
+- Double tir sur rotplat (BUGS)
