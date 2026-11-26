@@ -148,7 +148,7 @@
 - [x] Faire disparaître le décor à la fin : les lampes, les murs de la salle ronde (2026-11-26)
 
 ### AcidFloor I (`Level_Acid_01`)
-- [ ] Perso poussé vers la gauche, collider invisible ? Même symptôme que dans Western Canyon il y a quelques jours
+- [x] Perso poussé vers la gauche, collider invisible ? Même symptôme que dans Western Canyon il y a quelques jours. **Réglé le 2026-11-26** : même cause, plancher de `PostVictoryBounds` au-dessus du sol, abaissé.
 
 ### Pit'em All (`Level_Pit'em All`)
 - [x] Placer le coffre à tomates comme il faut (2026-11-26)
