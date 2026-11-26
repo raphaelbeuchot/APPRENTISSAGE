@@ -61,6 +61,17 @@ public class PlayerVictoryScale : MonoBehaviour
     {
         if (playerMeshRenderer != null)
             playerMeshRenderer.enabled = true;
+        SetWeaponsVisible(true);
+    }
+
+    // Balai et spray suivent le mesh du perso (ils restaient affiches seuls pendant les vagues)
+    private void SetWeaponsVisible(bool visible)
+    {
+        PlayerLoadout loadout = GetComponentInParent<PlayerLoadout>();
+        if (loadout == null) loadout = GetComponentInChildren<PlayerLoadout>();
+        if (loadout == null) return;
+        loadout.SetBroomVisible(visible);
+        loadout.SetSprayVisible(visible);
     }
 
     public void TriggerScale()
@@ -71,6 +82,7 @@ public class PlayerVictoryScale : MonoBehaviour
         playerMeshRenderer.BakeMesh(bakedMesh);
         cachedSpawnPos = playerMeshRenderer.transform.position;
         playerMeshRenderer.enabled = false;
+        SetWeaponsVisible(false);
 
         IsComplete = false;
         skipRequested = false;

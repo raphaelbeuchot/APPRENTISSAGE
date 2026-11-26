@@ -150,7 +150,7 @@
   idem
 - [x] **Level_LavaTrain03** — 2026-11-26 15:39 — pos (3.7, 0.4, 29.2)
   globalement  probleme des barres de vie ennemis en mod enormal et dur. quand un ennmy a perdu de la vie, lla detection fait bug la barre (un cercl ebanc, l'autre couleur rempli)
-- [ ] **Level_Flower02** — 2026-11-26 15:41 — pos (4.2, 0.7, 32.3)
+- [x] **Level_Flower02** — 2026-11-26 15:41 — pos (4.2, 0.7, 32.3)
   pb le balai disaprait pas en mm tps que le jouer dans la phase victory
 - [x] **Level_Casino** — 2026-11-26 15:43 — pos (3.7, 0.0, 32.1)
   les flares a faire disparaitre. creer u gab entre zone blanche et jaune car enemy ne marhce pas sur zone jaune

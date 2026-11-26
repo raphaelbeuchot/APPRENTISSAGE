@@ -59,6 +59,14 @@ public class PlayerLoadout : MonoBehaviour
             r.enabled = visible;
     }
 
+    // Affichage seul du spray (renderers), meme principe. Ex. PlayerVictoryScale : cache avec le perso.
+    public void SetSprayVisible(bool visible)
+    {
+        if (sprayObject == null) return;
+        foreach (Renderer r in sprayObject.GetComponentsInChildren<Renderer>(true))
+            r.enabled = visible;
+    }
+
     public void RestoreLevelLoadout()
     {
         ApplyLoadout(levelBroom, levelSpray);
