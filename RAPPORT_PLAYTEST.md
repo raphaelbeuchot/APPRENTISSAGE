@@ -120,7 +120,7 @@
 ## Session du 2026-11-25 (notes F2, 22:04 – 22:36)
 
 ### Ice (`Level_Ice`)
-- [ ] Faire disparaître les flares à la victoire
+- [x] Faire disparaître les flares à la victoire (2026-11-26)
 
 ### Go for a Spin (`Level_Go For a Spin`)
 - Double tir sans temps de recharge sur rotplat → `CE_QUI_RESTE_A_FAIRE.md` (BUGS)
@@ -145,13 +145,13 @@
 - [ ] **Changer impérativement le texte de la porte du fond**
 
 ### AcidFloor II (`Level_Acid_02`)
-- [ ] Faire disparaître le décor à la fin : les lampes, les murs de la salle ronde
+- [x] Faire disparaître le décor à la fin : les lampes, les murs de la salle ronde (2026-11-26)
 
 ### AcidFloor I (`Level_Acid_01`)
 - [ ] Perso poussé vers la gauche, collider invisible ? Même symptôme que dans Western Canyon il y a quelques jours
 
 ### Pit'em All (`Level_Pit'em All`)
-- [ ] Placer le coffre à tomates comme il faut
+- [x] Placer le coffre à tomates comme il faut (2026-11-26)
 
 ### Renvoyé dans `CE_QUI_RESTE_A_FAIRE.md`
 - Texte de fin de niveau qui doit rester jusqu'au fondu (POLISH)

@@ -14908,6 +14908,8 @@ MonoBehaviour:
   quickRectRadius: 2.94
   quickRectBulgeX: 0
   quickRectBulgeZ: 0
+  safetyKillDelay: 3
+  safetyChecksPerSecond: 5
 --- !u!1001 &239341221
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15715,6 +15717,18 @@ PrefabInstance:
       propertyPath: 'objectsToHide.Array.data[0]'
       value: 
       objectReference: {fileID: 279519657}
+    - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: layersToHideOnVictory.m_Bits
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: objectsToHideOnVictory.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7058463422556532622, guid: 8ba5a126d09a3c04b871c37148afda3c, type: 3}
+      propertyPath: 'objectsToHideOnVictory.Array.data[0]'
+      value: 
+      objectReference: {fileID: 872921483}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -50180,6 +50194,8 @@ MonoBehaviour:
   quickRectRadius: 0.75
   quickRectBulgeX: 0
   quickRectBulgeZ: 0
+  safetyKillDelay: 3
+  safetyChecksPerSecond: 5
 --- !u!4 &848334044
 Transform:
   m_ObjectHideFlags: 0
@@ -84417,6 +84433,8 @@ MonoBehaviour:
   quickRectRadius: 2.45
   quickRectBulgeX: 0
   quickRectBulgeZ: 0
+  safetyKillDelay: 3
+  safetyChecksPerSecond: 5
 --- !u!1001 &1431514778
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -87317,6 +87335,8 @@ MonoBehaviour:
   quickRectRadius: 1
   quickRectBulgeX: 0
   quickRectBulgeZ: 0
+  safetyKillDelay: 3
+  safetyChecksPerSecond: 5
 --- !u!4 &1455131346
 Transform:
   m_ObjectHideFlags: 0
@@ -103809,7 +103829,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1729937633
 Transform:
   m_ObjectHideFlags: 0
@@ -116825,6 +116845,8 @@ MonoBehaviour:
   quickRectRadius: 3.92
   quickRectBulgeX: 0
   quickRectBulgeZ: 0
+  safetyKillDelay: 3
+  safetyChecksPerSecond: 5
 --- !u!1001 &1966544781
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -124375,6 +124397,8 @@ MonoBehaviour:
   quickRectRadius: 0
   quickRectBulgeX: 0
   quickRectBulgeZ: 0
+  safetyKillDelay: 3
+  safetyChecksPerSecond: 5
 --- !u!4 &2109066733
 Transform:
   m_ObjectHideFlags: 0
