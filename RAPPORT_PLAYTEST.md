@@ -128,7 +128,7 @@
 
 ### Handle Hurdles (`Level_HandleHurdles`)
 - [x] Titre français : « Défaire le mur » (Sheet VF) (2026-11-26, exporté)
-- [ ] Premier mur : ajouter le collider `ClimbableObject`, comme sur le second
+- [x] Premier mur : ajouter le collider `ClimbableObject`, comme sur le second. **Réglé le 2026-11-26** : le cube dédié existait, remis à la bonne échelle ; `Cube (6)` (copie avec `ClimbableObject`) gardé désactivé, volontaire.
 
 ### Strange Attractor (`Level_StrangeAttractor`)
 - [x] La plateforme de fin n'arrête pas le laser, ou pas entièrement : pas en Obstacle ? **Réglé le 2026-11-26** : `Cube (4)` passé de Default à Obstacle.
@@ -139,7 +139,7 @@
 
 ### Trou normand (`Level_TrouNormand`)
 - [ ] Hauteur du perso au spawn, petit mouvement de caméra parasite
-- [ ] Supprimer le dummy du couloir
+- [x] ~~Supprimer le dummy du couloir~~ : sans objet, le dummy y avait été projeté par le bug de la pause F2 (réglé, `PhysicsProp`).
 - [x] Les dummies ont tous bougé, et ils bougent quand on appuie sur Entrée. **Réglé le 2026-11-26** : `PhysicsProp` ajoutait sa gravité en plus dans `Update` ; pendant la pause de F2 (timeScale 0), la force s’empilait et partait d’un coup à la reprise. Passée en `FixedUpdate` (concerne tous les props, menu pause compris).
 - [ ] Projecteurs juste avant l'ascenseur : à détailler, ils sont au premier plan
 - [ ] **Changer impérativement le texte de la porte du fond**
