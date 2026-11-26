@@ -136,17 +136,17 @@
   ah on a le mme bug que ds western cayon il y a qques jour : perso deplacé vers la guache, un collider invisible ?
 - [x] **Level_Pit'em All** — 2026-11-25 22:36 — pos (4.4, 0.3, -1.2)
   placer le coffre a tomates comme il faut
-- [ ] **Level_HandleHurdles** — 2026-11-26 14:49 — pos (4.9, 0.8, 29.6)
+- [x] **Level_HandleHurdles** — 2026-11-26 14:49 — pos (4.9, 0.8, 29.6)
   changer les coulzeurs victoyr scales. appliquer l'override de sprmeiers niveaux sur le prefa b?
-- [ ] **Level_LavaTrain01** — 2026-11-26 14:57 — pos (4.0, 0.3, 29.2)
+- [x] **Level_LavaTrain01** — 2026-11-26 14:57 — pos (4.0, 0.3, 29.2)
   idem changer couleur victoryscale
-- [ ] **Level_LavaTrain02** — 2026-11-26 14:58 — pos (3.8, 0.4, 29.6)
+- [x] **Level_LavaTrain02** — 2026-11-26 14:58 — pos (3.8, 0.4, 29.6)
   idem
-- [ ] **Level_Pit'em All** — 2026-11-26 15:10 — pos (0.2, 0.9, 29.1)
+- [x] **Level_Pit'em All** — 2026-11-26 15:10 — pos (0.2, 0.9, 29.1)
   idem
-- [ ] **Level_WesternCanyon** — 2026-11-26 15:11 — pos (3.2, -0.1, 29.1)
+- [x] **Level_WesternCanyon** — 2026-11-26 15:11 — pos (3.2, -0.1, 29.1)
   idsem
-- [ ] **Level_LavaTrain03** — 2026-11-26 15:39 — pos (3.7, 0.4, 29.2)
+- [x] **Level_LavaTrain03** — 2026-11-26 15:39 — pos (3.7, 0.4, 29.2)
   idem
 - [ ] **Level_LavaTrain03** — 2026-11-26 15:39 — pos (3.7, 0.4, 29.2)
   globalement  probleme des barres de vie ennemis en mod enormal et dur. quand un ennmy a perdu de la vie, lla detection fait bug la barre (un cercl ebanc, l'autre couleur rempli)

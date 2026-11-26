@@ -483,6 +483,7 @@ GameObject:
   - component: {fileID: 6716210810580982141}
   - component: {fileID: 5886150620188446577}
   - component: {fileID: 5742306782079411465}
+  - component: {fileID: 681298490263782770}
   - component: {fileID: 4829273372821787564}
   - component: {fileID: 158569115125722414}
   - component: {fileID: 8814719026016554961}
@@ -833,6 +834,33 @@ MonoBehaviour:
   onlyOwnTargetGroups: 0
   deathCameraSlideDuration: 1
   deathCameraSlideAmount: 0.85
+--- !u!114 &681298490263782770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5794444067654349612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e156bccbc89a7e459a6e7ad8ff1d370, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerVictoryScale
+  victoryMaterial: {fileID: 2100000, guid: b14bf26a08503cd4782622d56faa3de9, type: 2}
+  waveCount: 10
+  delayBetweenWaves: 0.25
+  colors:
+  - {r: 0.8113208, g: 0.42213574, b: 0, a: 1}
+  - {r: 0.8443396, g: 0.31928408, b: 0, a: 1}
+  - {r: 0.995283, g: 0.9452011, b: 0.71359915, a: 1}
+  - {r: 0.5660378, g: 0.16820933, b: 0.16820933, a: 1}
+  - {r: 0.43867922, g: 0.24914742, b: 0.111739054, a: 1}
+  - {r: 0.754717, g: 0.116942056, b: 0.11035956, a: 1}
+  - {r: 0.754717, g: 0.42354918, b: 0.017799927, a: 1}
+  - {r: 0.67071766, g: 0.6981132, b: 0.07573871, a: 1}
+  - {r: 0.30867165, g: 0.21137415, b: 0.4716981, a: 1}
+  - {r: 1, g: 0.96871734, b: 0.740566, a: 1}
+  skipGracePeriod: 0.3
 --- !u!114 &4829273372821787564
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1193,9 +1221,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4bdb850d593401a46822f25f152638d7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8517695988637832975}
-    - targetCorrespondingSourceObject: {fileID: 4831018558786363571, guid: 4bdb850d593401a46822f25f152638d7, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2390640153932763705}
     - targetCorrespondingSourceObject: {fileID: 1082271958561512970, guid: 4bdb850d593401a46822f25f152638d7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2746826089310239603}
@@ -2001,38 +2026,6 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!1 &5471817284978064633 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4831018558786363571, guid: 4bdb850d593401a46822f25f152638d7, type: 3}
-  m_PrefabInstance: {fileID: 640906551379516490}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &2390640153932763705
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5471817284978064633}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e156bccbc89a7e459a6e7ad8ff1d370, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerVictoryScale
-  victoryMaterial: {fileID: 2100000, guid: b14bf26a08503cd4782622d56faa3de9, type: 2}
-  waveCount: 10
-  delayBetweenWaves: 0.25
-  colors:
-  - {r: 0, g: 0.09032578, b: 0.5568628, a: 1}
-  - {r: 0.754717, g: 0.3048465, b: 0, a: 1}
-  - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 0.92156863, g: 0.83749473, b: 0.5803922, a: 1}
-  - {r: 1, g: 0.7507595, b: 0.2216981, a: 1}
-  - {r: 0.8396226, g: 0.29108593, b: 0, a: 1}
-  - {r: 1, g: 0.24280253, b: 0, a: 1}
-  - {r: 1, g: 0.91750526, b: 0.509434, a: 1}
-  - {r: 1, g: 0.4039216, b: 0, a: 1}
-  - {r: 0.3679245, g: 0, b: 0, a: 1}
-  skipGracePeriod: 0.3
 --- !u!4 &5969681608571144585 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6502182839619065283, guid: 4bdb850d593401a46822f25f152638d7, type: 3}
