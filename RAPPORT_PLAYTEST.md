@@ -127,7 +127,7 @@
 - Fondu des textes de commentaire → `CE_QUI_RESTE_A_FAIRE.md` (POLISH)
 
 ### Handle Hurdles (`Level_HandleHurdles`)
-- [ ] Titre français : « Défaire le mur » (Sheet VF)
+- [x] Titre français : « Défaire le mur » (Sheet VF) (2026-11-26, exporté)
 - [ ] Premier mur : ajouter le collider `ClimbableObject`, comme sur le second
 
 ### Strange Attractor (`Level_StrangeAttractor`)
