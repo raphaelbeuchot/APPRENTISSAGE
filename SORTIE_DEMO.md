@@ -39,7 +39,7 @@ Rappels :
   - Logs, notes F2 et relevés de perf du build démo : `%USERPROFILE%\AppData\LocalLow\deBrume\Grand Panoptique Demo\`.
   - L'override copie **tous** les Player Settings : icône, splash, résolution… se règlent désormais dans le profil pour la démo.
   - Ne plus changer Company / Product une fois le premier build envoyé (les testeurs perdraient leur sauvegarde).
-- [ ] **Sauvegarde par identifiant de scène** avant toute distribution (voir `PASSAGE_EN_PRODUCTION.md`, ⏸).
+- [ ] **Sauvegarde par identifiant de scène** : **avant la démo publique**, pas nécessaire pour le playtest privé (décidé le 2026-11-26 : en privé, si l’ordre change entre deux builds, on demande aux testeurs de recommencer une partie). Voir `PASSAGE_EN_PRODUCTION.md`, ⏸.
 - [ ] **Liste des shaders à jour** juste avant le build : Project Settings > Graphics > onglet Built-In > Shader Loading → **Clear**, jouer chaque niveau de la démo (alerte, tir, mort, victoire, multi, boss), puis **Save to asset** sur `Assets/Settings/ShaderVariants_Demo` (déjà branché dans Preload Shaders, préparé au lancement du jeu). Save to asset remplace le fichier, on ne peut pas le compléter : tout rejouer d'un coup.
 - [x] Sons (2026-11-17, 0870d6c1) : bruitages en Preload Audio Data (chargés avec la scène), musiques d'ambiance en Streaming. Un nouveau son importé doit avoir Preload Audio Data coché.
 - [ ] Development Build : **décoché** pour les testeurs (DevPanel et notes F2 disparaissent alors du build).
