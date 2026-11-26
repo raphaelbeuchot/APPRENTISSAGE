@@ -65,6 +65,7 @@ public class DoorBasic : MonoBehaviour
 
     private bool isAnimating = false;
     private bool isFinalClose = false;
+    private bool keepCommentOnClose = false;
     // Positions LOCALES (relatives au parent) : la porte peut etre deplacee avec son parent
     // (modules de la salle infinie du boss) sans revenir a son ancienne place en s'ouvrant.
     private Vector3 closedPos;
@@ -147,10 +148,12 @@ public class DoorBasic : MonoBehaviour
     }
 
     /// <summary>Ferme la porte apres franchissement — bulle desactivee, event OnDoorForceClosed.</summary>
-    public void ForceClose()
+    /// keepComment : laisse le texte du CommentPanel affiche (l'appelant le cache lui-meme, ex. TransitionRoomDoor au debut du fondu).
+    public void ForceClose(bool keepComment = false)
     {
         if (!IsOpen || isAnimating) return;
         isFinalClose = true;
+        keepCommentOnClose = keepComment;
         Close();
     }
 
@@ -184,7 +187,9 @@ public class DoorBasic : MonoBehaviour
         if (isAnimating || !IsOpen) return;
         IsOpen = false;
 
-        CommentPanel.Hide();
+        if (!keepCommentOnClose)
+            CommentPanel.Hide();
+        keepCommentOnClose = false;
 
         if (audioSource != null && closeSound != null)
             audioSource.PlayOneShot(closeSound);

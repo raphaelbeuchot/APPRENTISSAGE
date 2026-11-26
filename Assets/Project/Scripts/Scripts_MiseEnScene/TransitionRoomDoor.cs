@@ -81,7 +81,7 @@ public class TransitionRoomDoor : MonoBehaviour
     private void HandleDoorOpened()
     {
         if (!string.IsNullOrEmpty(doorOpenMessage))
-            CommentPanel.ShowPersistent(doorOpenMessage);
+            CommentPanel.ShowPersistent(doorOpenMessage, CommentStyle.Fade);
     }
 
     // ============================================
@@ -92,8 +92,8 @@ public class TransitionRoomDoor : MonoBehaviour
     {
         Debug.Log("[TransitionRoomDoor] Joueur entre — sequence de chargement.");
 
-        // Fermer la porte derriere le joueur
-        door?.ForceClose();
+        // Fermer la porte derriere le joueur (le texte reste jusqu'au debut du fondu)
+        door?.ForceClose(keepComment: true);
 
         // Attendre la fin de l'animation de fermeture
         if (door != null)
@@ -105,6 +105,9 @@ public class TransitionRoomDoor : MonoBehaviour
         // Niveau sans victoire (interlude type Trou normand) : le valider ici pour debloquer le suivant.
         // Niveaux normaux : deja valides a la victoire, rien ne change. Scene hors catalogue : IsUnlocked faux, rien ne se passe.
         CompleteCurrentLevelIfNeeded();
+
+        // Le texte de la porte part en fondu au debut du fondu de sortie
+        CommentPanel.Hide();
 
         // Fade + niveau suivant via SceneFader (loading cache par la porte d'entree)
         int nextScene = GetNextSceneIndex();
