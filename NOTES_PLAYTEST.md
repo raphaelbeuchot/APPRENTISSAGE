@@ -158,5 +158,5 @@
   placer le perso derriere la start door
 - [ ] **Level_TrafficJam_04** — 2026-11-26 15:44 — pos (3.9, 0.0, -3.5)
   mettre les 4 phases
-- [ ] **Level_TrafficJam_04** — 2026-11-26 15:46 — pos (84.6, -0.4, 76.0)
+- [x] **Level_TrafficJam_04** — 2026-11-26 15:46 — pos (84.6, -0.4, 76.0)
   la porte ne marche plus, celle de la fin ! pas de trasitino au noir*
