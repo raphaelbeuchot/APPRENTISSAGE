@@ -29,6 +29,9 @@ public class LevelCatalogEntry
     [Tooltip("Texte qui tourne au lancement du niveau (optionnel : texte du CountdownTextConfig de la scene si vide)")]
     public string launchText;
 
+    [Tooltip("Texte affiche a l'ouverture de la porte de la TransitionRoom (optionnel : phrase par defaut du prefab si vide). Cle de la Sheet ou texte")]
+    public string exitText;
+
     [Tooltip("Loadout du joueur dans ce niveau (le catalogue decide : la case du PlayerLoadout de la scene est ignoree)")]
     public bool hasBroom = true;
     public bool hasSpray = true;

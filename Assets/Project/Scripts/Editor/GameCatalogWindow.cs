@@ -159,7 +159,7 @@ public class GameCatalogWindow : EditorWindow
     private float ElementHeight(int index)
     {
         SerializedProperty entry = list.serializedProperty.GetArrayElementAtIndex(index);
-        float height = 3f * (Line + Gap) + 6f;
+        float height = 4f * (Line + Gap) + 6f;
         if (entry.isExpanded)
         {
             height += 2f * (Line + Gap);
@@ -194,11 +194,13 @@ public class GameCatalogWindow : EditorWindow
         x += ObservedChecks.Count * ObservedColumnWidth;
         EditorGUI.LabelField(new Rect(x, columnsY, CollectiblesWidth, Line), collectibles.arraySize > 0 ? collectibles.arraySize.ToString() : "-", centeredLabel);
 
-        // Lignes 2-3 : appellation
+        // Lignes 2-4 : appellation
         y += Line + Gap;
         DrawField(new Rect(rect.x + 26f, y, levelWidth - 30f, Line), "Nom affiche", entry.FindPropertyRelative("levelName"));
         y += Line + Gap;
         DrawField(new Rect(rect.x + 26f, y, levelWidth - 30f, Line), "Texte de lancement", entry.FindPropertyRelative("launchText"));
+        y += Line + Gap;
+        DrawField(new Rect(rect.x + 26f, y, levelWidth - 30f, Line), "Texte de sortie", entry.FindPropertyRelative("exitText"));
 
         if (!entry.isExpanded) return;
 

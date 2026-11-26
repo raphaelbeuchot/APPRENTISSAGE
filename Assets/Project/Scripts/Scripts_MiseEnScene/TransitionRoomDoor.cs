@@ -25,7 +25,7 @@ public class TransitionRoomDoor : MonoBehaviour
     [SerializeField] private DoorBasic door;
 
     [Header("Message")]
-    [Tooltip("Texte affiche dans CommentPanel quand la porte s'ouvre")]
+    [Tooltip("Texte par defaut affiche dans CommentPanel quand la porte s'ouvre (le Exit Text du LevelCatalog passe devant s'il est rempli)")]
     [SerializeField] private string doorOpenMessage = "Continue";
 
     [Header("Chargement")]
@@ -80,8 +80,23 @@ public class TransitionRoomDoor : MonoBehaviour
 
     private void HandleDoorOpened()
     {
-        if (!string.IsNullOrEmpty(doorOpenMessage))
-            CommentPanel.ShowPersistent(doorOpenMessage, CommentStyle.Fade);
+        string message = GetDoorMessage();
+        if (!string.IsNullOrEmpty(message))
+            CommentPanel.ShowPersistent(message, CommentStyle.Fade);
+    }
+
+    // Niveau du catalogue avec un Exit Text rempli : ce texte. Sinon (champ vide, scene hors catalogue) : doorOpenMessage.
+    // CommentPanel passe le texte par Loc.Text (cle de la Sheet ou texte brut).
+    private string GetDoorMessage()
+    {
+        LevelCatalog catalog = LevelCatalog.Get();
+        if (catalog != null)
+        {
+            LevelCatalogEntry entry = catalog.FindByScenePath(SceneManager.GetActiveScene().path);
+            if (entry != null && !string.IsNullOrEmpty(entry.exitText))
+                return entry.exitText;
+        }
+        return doorOpenMessage;
     }
 
     // ============================================
