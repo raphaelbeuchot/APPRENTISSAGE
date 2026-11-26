@@ -223,11 +223,13 @@ public class EnemyHealthBarPipsUI : EnemyHealthBarUI
     }
     public override void SetChaseOutline(bool isChasing)
     {
-        Color targetOutline = isChasing ? outlineColorChase : outlineColorDefault;
+        // Seuls les pips encore actifs passent en rouge : le contour est un disque plein derriere
+        // le pip ; sur un pip perdu (remplissage transparent), un contour rouge ressemblait a un
+        // pip de vie revenu. Meme regle que EnemyHealthBarPipsWorldUI (multi).
         for (int i = 0; i < outlineImages.Count; i++)
         {
             if (outlineImages[i] != null)
-                outlineImages[i].color = targetOutline;
+                outlineImages[i].color = (isChasing && pipActive[i]) ? outlineColorChase : outlineColorDefault;
         }
 
         for (int i = 0; i < pipImages.Count; i++)
