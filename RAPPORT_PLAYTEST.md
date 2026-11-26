@@ -140,7 +140,7 @@
 ### Trou normand (`Level_TrouNormand`)
 - [ ] Hauteur du perso au spawn, petit mouvement de caméra parasite
 - [ ] Supprimer le dummy du couloir
-- [ ] Les dummies ont tous bougé, et ils bougent quand on appuie sur Entrée
+- [x] Les dummies ont tous bougé, et ils bougent quand on appuie sur Entrée. **Réglé le 2026-11-26** : `PhysicsProp` ajoutait sa gravité en plus dans `Update` ; pendant la pause de F2 (timeScale 0), la force s’empilait et partait d’un coup à la reprise. Passée en `FixedUpdate` (concerne tous les props, menu pause compris).
 - [ ] Projecteurs juste avant l'ascenseur : à détailler, ils sont au premier plan
 - [ ] **Changer impérativement le texte de la porte du fond**
 

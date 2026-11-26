@@ -56,7 +56,9 @@ public class PhysicsProp : MonoBehaviour
         rb.Sleep();
     }
 
-    void Update()
+    // FixedUpdate, pas Update : en Update la force s'empilait pendant une pause (timeScale 0, pas de pas physique)
+    // et partait d'un coup a la reprise ; elle dependait aussi du nombre d'images par seconde.
+    void FixedUpdate()
     {
         if (!rb.IsSleeping())
             rb.AddForce(Physics.gravity * (gravityMultiplier - 1f) * rb.mass);
