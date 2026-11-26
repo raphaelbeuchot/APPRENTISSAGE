@@ -135,7 +135,7 @@
 
 ### Lava Train I (`Level_LavaTrain01`)
 - [ ] Repositionner les particules au-dessus de la lave, ou les enlever
-- [ ] La plateforme finale réapparaît après la victoire : vérifier son layer
+- [x] La plateforme finale réapparaît après la victoire : vérifier son layer. **Réglé le 2026-11-26** : layer non assigné (Default), corrigé.
 
 ### Trou normand (`Level_TrouNormand`)
 - [ ] Hauteur du perso au spawn, petit mouvement de caméra parasite
