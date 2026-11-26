@@ -152,9 +152,9 @@
   globalement  probleme des barres de vie ennemis en mod enormal et dur. quand un ennmy a perdu de la vie, lla detection fait bug la barre (un cercl ebanc, l'autre couleur rempli)
 - [ ] **Level_Flower02** — 2026-11-26 15:41 — pos (4.2, 0.7, 32.3)
   pb le balai disaprait pas en mm tps que le jouer dans la phase victory
-- [ ] **Level_Casino** — 2026-11-26 15:43 — pos (3.7, 0.0, 32.1)
+- [x] **Level_Casino** — 2026-11-26 15:43 — pos (3.7, 0.0, 32.1)
   les flares a faire disparaitre. creer u gab entre zone blanche et jaune car enemy ne marhce pas sur zone jaune
-- [ ] **Level_TrafficJam_04** — 2026-11-26 15:44 — pos (3.2, 0.0, -10.0)
+- [x] **Level_TrafficJam_04** — 2026-11-26 15:44 — pos (3.2, 0.0, -10.0)
   placer le perso derriere la start door
 - [ ] **Level_TrafficJam_04** — 2026-11-26 15:44 — pos (3.9, 0.0, -3.5)
   mettre les 4 phases
