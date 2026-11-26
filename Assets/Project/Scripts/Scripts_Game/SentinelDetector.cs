@@ -174,7 +174,10 @@ public class SentinelDetector : MonoBehaviour
                 hasCrouchStateChanged = (trackData.wasPlayerCrouched != isPlayerCrouched);
             }
 
-            if (hasCrouchStateChanged && !trackData.crouchStateChangeInProgress && !trackData.isBeingShot && trackData.wasInLOS)
+            // Meme temps de recharge que le tir "mouvement" : sinon un crouch juste apres un tir declenche un second tir
+            // (ex. rotplat : tir mouvement force, puis crouch -> deux tirs d'affilee)
+            if (hasCrouchStateChanged && !trackData.crouchStateChangeInProgress && !trackData.isBeingShot && trackData.wasInLOS
+                && Time.time - trackData.lastShotTime >= gm.sentinelSettings.shootCooldown)
             {
                 Debug.Log($"[CROUCH STATE CHANGE] {col.name} - Timer 0.3s lance!");
 
