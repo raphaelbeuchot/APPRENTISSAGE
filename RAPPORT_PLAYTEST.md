@@ -138,7 +138,7 @@
 - [x] La plateforme finale réapparaît après la victoire : vérifier son layer. **Réglé le 2026-11-26** : layer non assigné (Default), corrigé.
 
 ### Trou normand (`Level_TrouNormand`)
-- [ ] Hauteur du perso au spawn, petit mouvement de caméra parasite
+- [x] Hauteur du perso au spawn, petit mouvement de caméra parasite. **Réglé le 2026-11-26** (utilisateur).
 - [x] ~~Supprimer le dummy du couloir~~ : sans objet, le dummy y avait été projeté par le bug de la pause F2 (réglé, `PhysicsProp`).
 - [x] Les dummies ont tous bougé, et ils bougent quand on appuie sur Entrée. **Réglé le 2026-11-26** : `PhysicsProp` ajoutait sa gravité en plus dans `Update` ; pendant la pause de F2 (timeScale 0), la force s’empilait et partait d’un coup à la reprise. Passée en `FixedUpdate` (concerne tous les props, menu pause compris).
 - [ ] Projecteurs juste avant l'ascenseur : à détailler, ils sont au premier plan
