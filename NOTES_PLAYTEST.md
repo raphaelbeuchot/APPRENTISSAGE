@@ -136,3 +136,27 @@
   ah on a le mme bug que ds western cayon il y a qques jour : perso deplacé vers la guache, un collider invisible ?
 - [x] **Level_Pit'em All** — 2026-11-25 22:36 — pos (4.4, 0.3, -1.2)
   placer le coffre a tomates comme il faut
+- [ ] **Level_HandleHurdles** — 2026-11-26 14:49 — pos (4.9, 0.8, 29.6)
+  changer les coulzeurs victoyr scales. appliquer l'override de sprmeiers niveaux sur le prefa b?
+- [ ] **Level_LavaTrain01** — 2026-11-26 14:57 — pos (4.0, 0.3, 29.2)
+  idem changer couleur victoryscale
+- [ ] **Level_LavaTrain02** — 2026-11-26 14:58 — pos (3.8, 0.4, 29.6)
+  idem
+- [ ] **Level_Pit'em All** — 2026-11-26 15:10 — pos (0.2, 0.9, 29.1)
+  idem
+- [ ] **Level_WesternCanyon** — 2026-11-26 15:11 — pos (3.2, -0.1, 29.1)
+  idsem
+- [ ] **Level_LavaTrain03** — 2026-11-26 15:39 — pos (3.7, 0.4, 29.2)
+  idem
+- [ ] **Level_LavaTrain03** — 2026-11-26 15:39 — pos (3.7, 0.4, 29.2)
+  globalement  probleme des barres de vie ennemis en mod enormal et dur. quand un ennmy a perdu de la vie, lla detection fait bug la barre (un cercl ebanc, l'autre couleur rempli)
+- [ ] **Level_Flower02** — 2026-11-26 15:41 — pos (4.2, 0.7, 32.3)
+  pb le balai disaprait pas en mm tps que le jouer dans la phase victory
+- [ ] **Level_Casino** — 2026-11-26 15:43 — pos (3.7, 0.0, 32.1)
+  les flares a faire disparaitre. creer u gab entre zone blanche et jaune car enemy ne marhce pas sur zone jaune
+- [ ] **Level_TrafficJam_04** — 2026-11-26 15:44 — pos (3.2, 0.0, -10.0)
+  placer le perso derriere la start door
+- [ ] **Level_TrafficJam_04** — 2026-11-26 15:44 — pos (3.9, 0.0, -3.5)
+  mettre les 4 phases
+- [ ] **Level_TrafficJam_04** — 2026-11-26 15:46 — pos (84.6, -0.4, 76.0)
+  la porte ne marche plus, celle de la fin ! pas de trasitino au noir*
