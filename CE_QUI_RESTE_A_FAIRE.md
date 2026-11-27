@@ -114,6 +114,8 @@
 
 *(son, feel, visuel, animations, feedbacks)*
 
+- [ ] 🟡 **Rideaux : rayures qui penchent et flottent quand ils glissent** (2026-11-26, **en essai, pas encore sûr de le garder**) : `CurtainShader` tourne les rayures autour du bas (nœud Rotate sur l’UV, centre 0,5 ; 0, propriété `_Sway` en radians) ; `CurtainSway` (sur chaque panneau, posé dans le boss) calcule l’angle : inclinaison selon la vitesse latérale, flottement aléatoire d’un seul côté, retour en ressort à l’arrêt. Limite connue : l’angle à l’œil dépend de la forme de la face (largeur / hauteur) et de la vitesse du rideau ; compensation par l’échelle proposée, non faite.
+- [ ] 🟡 **À discuter (prochaine session)** : passage en Global Volume de la TransitionRoom sur le dernier niveau (boss) ; polish de la musique.
 - [ ] 🟡 **Texte de fin de niveau jusqu’au fondu** (note F2 du 2026-11-25, Level_Ice, tous niveaux) : le texte qui s’affiche à l’activation de la porte de fin doit rester jusqu’au fondu de sortie.
 - [x] 🟢 **Textes de commentaire en fondu** (note F2 du 2026-11-25, Go For a Spin) : apparition et disparition en fondu au lieu d’un pop. **Fait le 2026-11-26** pour les invites (Press X, balai, pupitre, train, TutoFreezeTile, standup) : `CommentPanel` a un style Pop / Fade choisi à l’appel, `Hide()` suit le style en cours, fondus de 0,6 s (prefab `CommentManager`). Le nettoyage garde le pop (voulu). Le lore de la TransitionRoom (`TransitionRoomDoor`) reste à discuter : apparition, persistance, forme.
 

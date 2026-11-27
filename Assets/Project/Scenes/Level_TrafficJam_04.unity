@@ -1442,6 +1442,7 @@ GameObject:
   - component: {fileID: 16533636}
   - component: {fileID: 16533635}
   - component: {fileID: 16533634}
+  - component: {fileID: 16533637}
   m_Layer: 3
   m_Name: MetalShutter (2)
   m_TagString: Untagged
@@ -1541,6 +1542,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 16533631}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &16533637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 16533631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.5
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!1001 &16574399
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4325,6 +4346,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &68620663 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 68620659}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 68620661}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &69735323
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16065,6 +16097,7 @@ GameObject:
   - component: {fileID: 267719773}
   - component: {fileID: 267719772}
   - component: {fileID: 267719771}
+  - component: {fileID: 267719774}
   m_Layer: 3
   m_Name: Rideau03
   m_TagString: Untagged
@@ -16164,6 +16197,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 267719769}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &267719774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 267719769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!4 &267899186 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
@@ -29622,17 +29675,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &467406092 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 1258154205}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 467406089}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!4 &469150369 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
@@ -35297,8 +35339,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1.2000002
-  widthSource: {fileID: 1402757534}
+  usedWidth: 1.2000004
+  widthSource: {fileID: 68620663}
 --- !u!23 &561584258
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -36831,6 +36873,7 @@ GameObject:
   - component: {fileID: 583237854}
   - component: {fileID: 583237853}
   - component: {fileID: 583237852}
+  - component: {fileID: 583237855}
   m_Layer: 3
   m_Name: MetalShutter (1)
   m_TagString: Untagged
@@ -36930,6 +36973,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 583237849}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &583237855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 583237849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.5
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!4 &583358618 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
@@ -37632,6 +37695,7 @@ GameObject:
   - component: {fileID: 599572439}
   - component: {fileID: 599572438}
   - component: {fileID: 599572437}
+  - component: {fileID: 599572440}
   m_Layer: 3
   m_Name: Rideau03
   m_TagString: Untagged
@@ -37731,6 +37795,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 599572435}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &599572440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 599572435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!4 &599922132 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
@@ -46520,6 +46604,7 @@ GameObject:
   - component: {fileID: 746441047}
   - component: {fileID: 746441046}
   - component: {fileID: 746441045}
+  - component: {fileID: 746441048}
   m_Layer: 3
   m_Name: Rideau03
   m_TagString: Untagged
@@ -46619,6 +46704,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 746441043}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &746441048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 746441043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!1001 &746813271
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -53609,6 +53714,7 @@ GameObject:
   - component: {fileID: 858168754}
   - component: {fileID: 858168753}
   - component: {fileID: 858168752}
+  - component: {fileID: 858168755}
   m_Layer: 3
   m_Name: Rideau 2
   m_TagString: Untagged
@@ -53708,6 +53814,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 858168750}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &858168755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 858168750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!4 &858732467 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
@@ -58841,7 +58967,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &942319590
 Transform:
   m_ObjectHideFlags: 0
@@ -69447,6 +69573,7 @@ GameObject:
   - component: {fileID: 1114402530}
   - component: {fileID: 1114402529}
   - component: {fileID: 1114402528}
+  - component: {fileID: 1114402531}
   m_Layer: 3
   m_Name: Rideau 2 (1)
   m_TagString: Untagged
@@ -69546,6 +69673,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1114402526}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1114402531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1114402526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!1001 &1114822824
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -74924,7 +75071,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1208890638
 Transform:
   m_ObjectHideFlags: 0
@@ -75782,6 +75929,7 @@ GameObject:
   - component: {fileID: 1216035904}
   - component: {fileID: 1216035903}
   - component: {fileID: 1216035902}
+  - component: {fileID: 1216035905}
   m_Layer: 3
   m_Name: MetalShutter (3)
   m_TagString: Untagged
@@ -75881,6 +76029,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1216035900}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1216035905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1216035900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!4 &1217312085 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
@@ -86030,6 +86198,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1380846529 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 1380846525}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1380846527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!4 &1381489539 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: 4147fdfa88e9aef4eba4a5ffbfebaeb1, type: 3}
@@ -86057,6 +86236,7 @@ GameObject:
   - component: {fileID: 1382316228}
   - component: {fileID: 1382316227}
   - component: {fileID: 1382316226}
+  - component: {fileID: 1382316229}
   m_Layer: 3
   m_Name: MetalShutter (4)
   m_TagString: Untagged
@@ -86156,6 +86336,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1382316224}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1382316229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1382316224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!1001 &1382685103
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -87831,17 +88031,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1402757534 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 1402757530}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1402757532}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &1402812139
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -90073,6 +90262,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1435904410 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 630568483}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435904407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &1437220525
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -95403,6 +95603,7 @@ GameObject:
   - component: {fileID: 1522579241}
   - component: {fileID: 1522579240}
   - component: {fileID: 1522579239}
+  - component: {fileID: 1522579242}
   m_Layer: 3
   m_Name: MetalShutter (4)
   m_TagString: Untagged
@@ -95502,6 +95703,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1522579237}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1522579242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1522579237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!4 &1523754736 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
@@ -100053,6 +100274,7 @@ GameObject:
   - component: {fileID: 1585439273}
   - component: {fileID: 1585439272}
   - component: {fileID: 1585439271}
+  - component: {fileID: 1585439274}
   m_Layer: 3
   m_Name: MetalShutter (3)
   m_TagString: Untagged
@@ -100152,6 +100374,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1585439269}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1585439274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1585439269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!1001 &1585895520
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -104362,6 +104604,7 @@ GameObject:
   - component: {fileID: 1644610188}
   - component: {fileID: 1644610187}
   - component: {fileID: 1644610186}
+  - component: {fileID: 1644610189}
   m_Layer: 3
   m_Name: MetalShutter (3)
   m_TagString: Untagged
@@ -104461,6 +104704,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1644610184}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1644610189
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1644610184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!1 &1645193019
 GameObject:
   m_ObjectHideFlags: 0
@@ -109902,6 +110165,7 @@ GameObject:
   - component: {fileID: 1738482290}
   - component: {fileID: 1738482289}
   - component: {fileID: 1738482288}
+  - component: {fileID: 1738482291}
   m_Layer: 3
   m_Name: MetalShutter (4)
   m_TagString: Untagged
@@ -110001,6 +110265,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1738482286}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1738482291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1738482286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!4 &1739225950 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: b529e64c8efcbf8499896de24df6f28b, type: 3}
@@ -110405,17 +110689,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1741039014 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 1741039010}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1741039012}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &1743701351
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -122491,8 +122764,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1.0000001
-  widthSource: {fileID: 1741039014}
+  usedWidth: 1
+  widthSource: {fileID: 1380846529}
 --- !u!23 &1928467117
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -127731,8 +128004,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1.0000001
-  widthSource: {fileID: 467406092}
+  usedWidth: 1.0000004
+  widthSource: {fileID: 1435904410}
 --- !u!23 &2015631814
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -130477,6 +130750,7 @@ GameObject:
   - component: {fileID: 2062144359}
   - component: {fileID: 2062144358}
   - component: {fileID: 2062144357}
+  - component: {fileID: 2062144360}
   m_Layer: 3
   m_Name: MetalShutter (3)
   m_TagString: Untagged
@@ -130576,6 +130850,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2062144355}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &2062144360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2062144355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!1 &2062505079
 GameObject:
   m_ObjectHideFlags: 0
@@ -132601,6 +132895,7 @@ GameObject:
   - component: {fileID: 2099640968}
   - component: {fileID: 2099640967}
   - component: {fileID: 2099640966}
+  - component: {fileID: 2099640969}
   m_Layer: 3
   m_Name: MetalShutter (4)
   m_TagString: Untagged
@@ -132700,6 +132995,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2099640964}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &2099640969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2099640964}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1719f5d9ece42644ca93a02cd541f526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CurtainSway
+  inclinaisonParVitesse: 0
+  angleMaximum: 0.1
+  amplitudeFlottement: 0.02
+  rapiditeFlottement: 0.3
+  vitesseFlottementPlein: 2
+  raideurRessort: 60
+  amortissement: 6
+  inverserLeSens: 0
 --- !u!4 &2101126375 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
