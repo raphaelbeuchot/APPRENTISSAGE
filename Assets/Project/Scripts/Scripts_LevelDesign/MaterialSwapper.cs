@@ -5,7 +5,8 @@ using UnityEngine;
 /// Remplace d'un coup les materiaux de tous les MeshRenderer / SkinnedMeshRenderer sous des racines
 /// par un seul materiau (ex. gris unlit), sauf exceptions (GO glisses ou layers, enfants compris).
 /// Le joueur est toujours epargne. Particules, LineRenderer, TMP, sprites : jamais touches.
-/// Swap() / Restore() a appeler depuis un UnityEvent, une Timeline (Signal) ou le menu (trois points) du composant.
+/// Swap() / Restore() a appeler depuis un UnityEvent, une Timeline (Signal) ou le menu (trois points) du composant,
+/// en Play uniquement : hors Play, Swap est refuse.
 /// </summary>
 public class MaterialSwapper : MonoBehaviour
 {
@@ -28,6 +29,12 @@ public class MaterialSwapper : MonoBehaviour
     [ContextMenu("Swap")]
     public void Swap()
     {
+        // Hors Play, le remplacement s'ecrirait dans la scene a la sauvegarde (incident du 2026-11-27)
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[MaterialSwapper] Swap refuse hors Play : il modifierait la scene sauvegardee.", this);
+            return;
+        }
         if (replacement == null)
         {
             Debug.LogWarning("[MaterialSwapper] Pas de materiau de remplacement.", this);
