@@ -16,6 +16,7 @@ Lu à chaque démarrage. L'architecture du jeu est dans `Assets/Project/CLAUDE.m
 ## Git
 - Une seule machine en pratique (l'autre est rarissime) : ne pas poser la question « l'autre poste a-t-il poussé ? ».
 - Au démarrage : `git status` et dernier commit. Modifs en attente : les commiter sans demander (diff --stat vérifié).
+- Exception (2026-11-26) : une scène ou un prefab dont le changement est gros et inexpliqué (objets supprimés, prefabs remplacés, volume sans rapport avec le sujet) n'est **jamais** commité sans l'avis de l'utilisateur, même au démarrage : le signaler en décrivant ce qui a changé, il décide.
 - `Assets/Project/Fonts/KeeponTruckin SDF.asset` est toujours modifié (police TMP en mode Dynamic) : ne pas le commiter avec le reste.
 
 ## Reprise de chantier
