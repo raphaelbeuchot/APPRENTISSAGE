@@ -4558,17 +4558,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &68620663 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 68620659}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 68620661}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &69735323
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8505,17 +8494,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &133825755 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 133825751}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 133825753}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &136846385
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -32107,17 +32085,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &467406092 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
-  m_PrefabInstance: {fileID: 1258154205}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 467406089}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!4 &469150369 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
@@ -38184,8 +38151,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1.2000004
-  widthSource: {fileID: 68620663}
+  usedWidth: 1.2000002
+  widthSource: {fileID: 1402757534}
 --- !u!23 &561584258
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -51288,18 +51255,6 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 504134361}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
         m_CallState: 2
 --- !u!4 &765652416
 Transform:
@@ -86177,17 +86132,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossEndSequence
   cylinder: {fileID: 3119987101729186338}
   spheres: {fileID: 1846995142}
-  delay: 0.5
-  spheresShrinkDuration: 2
+  delay: 0
+  spheresShrinkDuration: 1
   cylinderDelay: 0
-  rampDuration: 0.01
+  rampDuration: 0.75
   rampIntensity: 5
   growScale: 0
   pitLid: {fileID: 309371803}
   pitLidMoveX: 0
   pitLidMoveZ: -14
   pitLidDuration: 4
-  retractDuration: 0.75
+  retractDuration: 0
   onRetract:
     m_PersistentCalls:
       m_Calls:
@@ -86476,6 +86431,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1277291292}
   - component: {fileID: 1277291291}
+  - component: {fileID: 1277291293}
   m_Layer: 0
   m_Name: SpotDelay
   m_TagString: Untagged
@@ -86500,10 +86456,10 @@ MonoBehaviour:
   onFire:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 87532738}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 1277291293}
+        m_TargetAssemblyTypeName: LightFadeIn, Assembly-CSharp
+        m_MethodName: FadeIn
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -86551,6 +86507,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1277291293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1277291290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6dcda23a8c34e1387dc57e6eda57fe0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LightFadeIn
+  targets:
+  - {fileID: 504134361}
+  - {fileID: 87532738}
+  duration: 1
 --- !u!114 &1277697062 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2290338201528535282, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
@@ -95382,6 +95354,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1402757534 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 1402757530}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1402757532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &1402812139
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -97914,6 +97897,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1435904410 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 630568483}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435904407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &1437220525
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -120376,6 +120370,17 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1741039014 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8321031686715922476, guid: 265b95b0768b200439126120894c07a1, type: 3}
+  m_PrefabInstance: {fileID: 1741039010}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1741039012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e8209215008414b9b511829ef1cb4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoamingObstacle
 --- !u!1001 &1743701351
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -133418,7 +133423,7 @@ MonoBehaviour:
   shrinkDuration: 0.4
   growDuration: 0.2
   usedWidth: 1.0000001
-  widthSource: {fileID: 133825755}
+  widthSource: {fileID: 1741039014}
 --- !u!23 &1928467117
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -139085,8 +139090,8 @@ MonoBehaviour:
   outlineRange: 2
   shrinkDuration: 0.4
   growDuration: 0.2
-  usedWidth: 1.0000001
-  widthSource: {fileID: 467406092}
+  usedWidth: 1.0000004
+  widthSource: {fileID: 1435904410}
 --- !u!23 &2015631814
 MeshRenderer:
   m_ObjectHideFlags: 0
