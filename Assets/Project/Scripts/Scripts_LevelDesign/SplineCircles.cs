@@ -197,11 +197,15 @@ public class SplineCircles : MonoBehaviour
     {
         Spline.Changed += OnSplineChanged;
         Rebuild();
+        // Composant recoche : les disques d'obstacles reviennent
+        if (outlineRoot != null) outlineRoot.SetActive(true);
     }
 
     void OnDisable()
     {
         Spline.Changed -= OnSplineChanged;
+        // Composant decoche (ex. fin du boss) : les disques d'obstacles disparaissent au lieu de rester figes
+        if (outlineRoot != null) outlineRoot.SetActive(false);
     }
 
     void OnDestroy()
