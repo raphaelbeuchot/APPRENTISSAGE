@@ -160,3 +160,9 @@
   mettre les 4 phases
 - [x] **Level_TrafficJam_04** — 2026-11-26 15:46 — pos (84.6, -0.4, 76.0)
   la porte ne marche plus, celle de la fin ! pas de trasitino au noir*
+- [ ] **Level_TrafficJam_04** — 2026-11-27 21:32 — pos (-1.4, 0.0, 18.2)
+  edesactiver le ciollider de cmaera  apres la victry, verifier si il est ralluém automatiquement a lf in ?
+- [ ] **Level_TrouNormand** — 2026-11-27 21:52 — pos (52.8, 10.3, 29.9)
+  mettre u collider derriere les fenetres du point de vuie
+- [ ] **Level_TrouNormand** — 2026-11-27 21:52 — pos (54.3, 10.3, 28.4)
+  mettre un son d'engrenage

@@ -22021,6 +22021,7 @@ GameObject:
   - component: {fileID: 309371802}
   - component: {fileID: 309371801}
   - component: {fileID: 309371804}
+  - component: {fileID: 309371805}
   m_Layer: 0
   m_Name: COUVERCLE
   m_TagString: Untagged
@@ -22121,6 +22122,22 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &309371805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309371799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2de9cbeb68257234596195c133167ea4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HideWhenCameraPasses
+  hideWhenCameraZGreater: 1
+  zOffset: 0
+  keepShadow: 1
+  targetCamera: {fileID: 1361275056}
 --- !u!1001 &310337814
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -41108,7 +41125,7 @@ Transform:
   m_GameObject: {fileID: 562873752}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.42262363, z: -0, w: 0.9063053}
-  m_LocalPosition: {x: -9.776289, y: -1.7172701, z: -8.33}
+  m_LocalPosition: {x: -29.429998, y: 1.95, z: -0.6399994}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -41118,7 +41135,7 @@ Transform:
   - {fileID: 817426434}
   - {fileID: 1912998996}
   - {fileID: 544456282}
-  m_Father: {fileID: 1083466039}
+  m_Father: {fileID: 2029008379}
   m_LocalEulerAnglesHint: {x: 0, y: -50.001, z: 0}
 --- !u!1001 &562924815
 PrefabInstance:
@@ -78939,9 +78956,6 @@ Transform:
   - {fileID: 1600802018}
   - {fileID: 148903956}
   - {fileID: 1723511285}
-  - {fileID: 562873753}
-  - {fileID: 1130728697}
-  - {fileID: 2142647040}
   - {fileID: 949801102}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -81431,8 +81445,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1130728696}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.1824767, y: -0.1824767, z: 0.68315613, w: 0.6831561}
-  m_LocalPosition: {x: -3.2662897, y: -1.9372702, z: -3.290001}
+  m_LocalRotation: {x: -0.23502047, y: -0.23502049, z: 0.66690737, w: 0.66690737}
+  m_LocalPosition: {x: -23.74371, y: 1.7272701, z: 3.8600006}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -81442,8 +81456,8 @@ Transform:
   - {fileID: 1658641183}
   - {fileID: 836233052}
   - {fileID: 41189772}
-  m_Father: {fileID: 1083466039}
-  m_LocalEulerAnglesHint: {x: 0, y: -29.91, z: 90}
+  m_Father: {fileID: 2029008379}
+  m_LocalEulerAnglesHint: {x: 0, y: -38.825, z: 90}
 --- !u!4 &1130815619 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2971840628774419974, guid: c4553cd506fc1bc4aac3a669a39dbacc, type: 3}
@@ -92277,6 +92291,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+      - m_Target: {fileID: 1723511292}
+        m_TargetAssemblyTypeName: SlidingCurtain, Assembly-CSharp
+        m_MethodName: Open
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
   exitCamera: {fileID: 2055239008}
   exitCameraPriority: 40
   decorExit: {fileID: 0}
@@ -99609,6 +99635,7 @@ GameObject:
   - component: {fileID: 1382316227}
   - component: {fileID: 1382316226}
   - component: {fileID: 1382316229}
+  - component: {fileID: 1382316230}
   m_Layer: 3
   m_Name: MetalShutter (4)
   m_TagString: Untagged
@@ -99728,6 +99755,22 @@ MonoBehaviour:
   raideurRessort: 60
   amortissement: 6
   inverserLeSens: 0
+--- !u!114 &1382316230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1382316224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2de9cbeb68257234596195c133167ea4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HideWhenCameraPasses
+  hideWhenCameraZGreater: 1
+  zOffset: 0
+  keepShadow: 1
+  targetCamera: {fileID: 1361275056}
 --- !u!1001 &1382685103
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -115691,6 +115734,7 @@ GameObject:
   - component: {fileID: 1585439272}
   - component: {fileID: 1585439271}
   - component: {fileID: 1585439274}
+  - component: {fileID: 1585439275}
   m_Layer: 3
   m_Name: MetalShutter (3)
   m_TagString: Untagged
@@ -115810,6 +115854,22 @@ MonoBehaviour:
   raideurRessort: 60
   amortissement: 6
   inverserLeSens: 0
+--- !u!114 &1585439275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1585439269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2de9cbeb68257234596195c133167ea4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HideWhenCameraPasses
+  hideWhenCameraZGreater: 1
+  zOffset: 0
+  keepShadow: 1
+  targetCamera: {fileID: 1361275056}
 --- !u!1001 &1585895520
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -126274,6 +126334,8 @@ GameObject:
   - component: {fileID: 1723511288}
   - component: {fileID: 1723511287}
   - component: {fileID: 1723511286}
+  - component: {fileID: 1723511291}
+  - component: {fileID: 1723511292}
   m_Layer: 0
   m_Name: TitleMesh
   m_TagString: Untagged
@@ -126450,6 +126512,44 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1723511284}
   m_Mesh: {fileID: 0}
+--- !u!114 &1723511291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1723511284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2de9cbeb68257234596195c133167ea4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HideWhenCameraPasses
+  hideWhenCameraZGreater: 1
+  zOffset: 0
+  keepShadow: 1
+  targetCamera: {fileID: 1361275056}
+--- !u!114 &1723511292
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1723511284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 570008b43944b974c8a2baf2f0d34f93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlidingCurtain
+  mode: 2
+  delay: 0
+  duration: 3
+  distance: 5
+  leftPanel: {fileID: 0}
+  rightPanel: {fileID: 0}
+  singlePanel: {fileID: 1723511285}
+  singleDirection: 0
+  topPanel: {fileID: 0}
+  bottomPanel: {fileID: 0}
 --- !u!1 &1726156572
 GameObject:
   m_ObjectHideFlags: 0
@@ -149445,6 +149545,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 562873753}
+  - {fileID: 1130728697}
+  - {fileID: 2142647040}
   - {fileID: 1266735422}
   - {fileID: 1246696081}
   - {fileID: 1169183767}
@@ -156274,7 +156377,7 @@ Transform:
   m_GameObject: {fileID: 2142647039}
   serializedVersion: 2
   m_LocalRotation: {x: 0.43919295, y: -0, z: 0.8983928, w: 0}
-  m_LocalPosition: {x: 18.633709, y: -1.9372702, z: -5.5200005}
+  m_LocalPosition: {x: -1.0200005, y: 1.73, z: 2.17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -156284,7 +156387,7 @@ Transform:
   - {fileID: 2140266782}
   - {fileID: 1743739835}
   - {fileID: 1459173243}
-  m_Father: {fileID: 1083466039}
+  m_Father: {fileID: 2029008379}
   m_LocalEulerAnglesHint: {x: 0, y: 52.105, z: 180}
 --- !u!1001 &2143585796
 PrefabInstance:
