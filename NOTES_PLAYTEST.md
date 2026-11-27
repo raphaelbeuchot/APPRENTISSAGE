@@ -166,3 +166,5 @@
   mettre u collider derriere les fenetres du point de vuie
 - [ ] **Level_TrouNormand** — 2026-11-27 21:52 — pos (54.3, 10.3, 28.4)
   mettre un son d'engrenage
+- [ ] **Level_TrafficJam_04** — 2026-11-27 22:36 — pos (4.7, 0.0, 16.8)
+  fenetres qui ne swap mat pas a gauche dans un immeuble
