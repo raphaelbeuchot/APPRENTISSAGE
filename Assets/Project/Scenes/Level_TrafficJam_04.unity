@@ -4924,7 +4924,7 @@ MonoBehaviour:
   fadeInDelay: 0
   fadeInDuration: 1.5
   fadeOutDelay: 0
-  fadeOutDuration: 0
+  fadeOutDuration: 1
   disableAtZero: 1
 --- !u!1001 &76474751
 PrefabInstance:
@@ -51097,7 +51097,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83567ad9342ac124e8ba066ab3f52487, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DelayedEvent
-  delay: 3.5
+  delay: 1.5
   restartIfTriggeredAgain: 0
   onFire:
     m_PersistentCalls:
@@ -51114,9 +51114,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 74934672}
-        m_TargetAssemblyTypeName: VolumeWeightFade, Assembly-CSharp
-        m_MethodName: FadeOut
+      - m_Target: {fileID: 1277291291}
+        m_TargetAssemblyTypeName: DelayedEvent, Assembly-CSharp
+        m_MethodName: Trigger
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -51125,18 +51125,6 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 87532738}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
         m_CallState: 2
 --- !u!4 &765652416
 Transform:
@@ -86001,18 +85989,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1622815167}
-        m_TargetAssemblyTypeName: SlidingCurtain, Assembly-CSharp
-        m_MethodName: Open
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!4 &1276199835
 Transform:
   m_ObjectHideFlags: 0
@@ -86244,6 +86220,91 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8099775066773994023, guid: 630ca69c9c80b8d43a11e02bb0122469, type: 3}
   m_PrefabInstance: {fileID: 1276621177}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1277291290
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1277291292}
+  - component: {fileID: 1277291291}
+  m_Layer: 0
+  m_Name: SpotDelay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1277291291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1277291290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83567ad9342ac124e8ba066ab3f52487, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DelayedEvent
+  delay: 2
+  restartIfTriggeredAgain: 0
+  onFire:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 87532738}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 74934672}
+        m_TargetAssemblyTypeName: VolumeWeightFade, Assembly-CSharp
+        m_MethodName: FadeOut
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1622815167}
+        m_TargetAssemblyTypeName: SlidingCurtain, Assembly-CSharp
+        m_MethodName: Open
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+--- !u!4 &1277291292
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1277291290}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8.70127, y: 0.025, z: 29.4413}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1277697062 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2290338201528535282, guid: 71fe89c97a0182f4fbe15eed7bb1a42b, type: 3}
@@ -110932,7 +110993,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlidingCurtain
   mode: 0
-  delay: 5
+  delay: 2
   duration: 2
   distance: 3
   leftPanel: {fileID: 1585439270}
@@ -147521,3 +147582,4 @@ SceneRoots:
   - {fileID: 1083466039}
   - {fileID: 1922343740}
   - {fileID: 765652416}
+  - {fileID: 1277291292}
